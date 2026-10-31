@@ -1,0 +1,17 @@
+/-
+(C) 2026 Ralf Stephan, in collaboration with Claude Code.
+Released under CC0 1.0 Universal (public-domain dedication).
+See https://creativecommons.org/publicdomain/zero/1.0/
+-/
+module
+
+public import BornRuleEntropy
+
+/-!
+# The Born rule is equivalent to the von Neumann entropy, re-exported for `lake comparator`
+
+`lake comparator` compares the theorems named in `comparator.json` between this module's
+environment and `ChallengeBornRuleEntropy.lean`'s, constant by constant over the definitional
+closure of each statement. These imports are the modules of the brief that own the certified
+statements; nothing is proved here, and no library imports this module. See `COMPARATOR.md`.
+-/

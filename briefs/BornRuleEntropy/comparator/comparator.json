@@ -1,0 +1,12 @@
+{
+  "challenge_module": "ChallengeBornRuleEntropy",
+  "solution_module": "SolutionBornRuleEntropy",
+  "theorem_names": [
+    "BornRuleEntropy.two_conditions_imply_third"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

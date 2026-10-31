@@ -55,6 +55,16 @@ srcDir = "briefs/SuperpositionAndMultipleMixtures"
 name = "BornRuleEntropy"
 srcDir = "briefs/BornRuleEntropy"
 
+# Its comparator lane (not default targets; see COMPARATOR.md): the generated statements of
+# record, and the re-export of the modules that prove them.
+[[lean_lib]]
+name = "ChallengeBornRuleEntropy"
+srcDir = "briefs/BornRuleEntropy/comparator"
+
+[[lean_lib]]
+name = "SolutionBornRuleEntropy"
+srcDir = "briefs/BornRuleEntropy/comparator"
+
 # Technical brief: classical uncertainty principle.
 [[lean_lib]]
 name = "ClassicalUncertaintyPrinciple"
