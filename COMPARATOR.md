@@ -38,6 +38,7 @@ be unique across the project.
 | brief | certified | Lean | challenge |
 | --- | --- | --- | --- |
 | The Born rule is equivalent to the von Neumann entropy | Theorem 9 | `BornRuleEntropy.two_conditions_imply_third` | 117 lines, 6 KiB |
+| Classical uncertainty principle | Corollary 1, Theorem 2 (eqs. 3 and 5), the final remark | 7 theorems, see `theorems.txt` | 101 lines, 5 KiB |
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
@@ -109,4 +110,11 @@ development elaborates:
 
 On the BornRuleEntropy lane, changing `‖⟪ψ, ϕ⟫_ℂ‖ ^ 2` to `^ 3` in the challenge's `BornRule` is
 rejected with `Const does not match between challenge and target 'BornRuleEntropy.BornRule'`.
+
+On the ClassicalUncertaintyPrinciple lane, changing `hbar h` from `h / (2 * π)` to `h / π` is
+rejected with `Const does not match between challenge and target
+'ClassicalUncertaintyPrinciple.hbar'`, and dropping the hypothesis `hpos` of `entropy_uniform`
+with `Challenge and solution theorem statement do not match:
+'ClassicalUncertaintyPrinciple.entropy_uniform'`.
+
 Re-run a control after any change to the generator.

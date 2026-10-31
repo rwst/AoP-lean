@@ -1,0 +1,12 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+ClassicalUncertaintyPrinciple.entropy_uniform  # Corollary 1
+ClassicalUncertaintyPrinciple.entropy_uniform_phaseSpace  # Corollary 1, on phase space
+ClassicalUncertaintyPrinciple.entropy_uniform_eq_zero_iff  # Corollary 1, zero entropy
+ClassicalUncertaintyPrinciple.uncertaintyPrinciple_of_lowerEntropicBound  # Theorem 2, eq. (3)
+ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_iff  # Theorem 2, eq. (3), equality
+ClassicalUncertaintyPrinciple.hbar_div_exp_mul_exp_le_sd_mul_sd  # Theorem 2, eq. (5)
+ClassicalUncertaintyPrinciple.exists_not_lowerEntropicBound  # Remark: CUP does not imply ZENT

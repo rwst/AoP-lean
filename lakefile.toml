@@ -70,6 +70,15 @@ srcDir = "briefs/BornRuleEntropy/comparator"
 name = "ClassicalUncertaintyPrinciple"
 srcDir = "briefs/ClassicalUncertaintyPrinciple"
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeClassicalUncertaintyPrinciple"
+srcDir = "briefs/ClassicalUncertaintyPrinciple/comparator"
+
+[[lean_lib]]
+name = "SolutionClassicalUncertaintyPrinciple"
+srcDir = "briefs/ClassicalUncertaintyPrinciple/comparator"
+
 # Technical brief: quantum pure states are not enough.
 [[lean_lib]]
 name = "PureStatesNotEnough"
