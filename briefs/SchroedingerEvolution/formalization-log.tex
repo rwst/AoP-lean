@@ -17,7 +17,7 @@
 \def\UrlBreaks{\do\.\do\_\do\/}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
-\emergencystretch=2em
+\emergencystretch=6em
 
 \title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
 \author{}
@@ -27,9 +27,9 @@
 \maketitle
 
 \noindent
-This log records which statements of the technical brief in this directory
-(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
-the formal version differs from the brief, and any problems found in the brief.
+This log records which statements of the technical brief in this directory were checked in Lean,
+where the formal version differs from the brief, and any problems found in the brief.
+The brief is available at \url{https://assumptionsofphysics.org/resources/briefs}.
 
 \section*{Setup}
 
@@ -222,7 +222,7 @@ Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
   \lean{Compact} (Hilbert--Schmidt and trace-class operators are compact) and
   \lean{CanonicalExpansion} (a positive trace-class operator is $\sum_i \mu_i
   \ket{b_i}\bra{b_i}$ in the trace norm, with the tail estimate).
-\item New file \lean{ForPhyslib/QuantumMechanics/TraceNorm.lean}: the map
+\item New file \lean{ForPhyslib/QuantumMechanics/TraceNorm.lean}:\newline the map
   \lean{AffineOnDensityOperators} and, for later use, the facts that such maps contract the trace
   norm, that conjugation by a strongly continuous family of contractions is trace-norm
   continuous, and that the pure states are closed. Only the definition is used here.

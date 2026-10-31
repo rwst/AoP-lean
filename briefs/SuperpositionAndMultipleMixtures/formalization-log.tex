@@ -17,7 +17,7 @@
 \def\UrlBreaks{\do\.\do\_\do\/}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
-\emergencystretch=2em
+\emergencystretch=6em
 
 \title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
 \author{}
@@ -27,9 +27,9 @@
 \maketitle
 
 \noindent
-This log records which statements of the technical brief in this directory
-(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
-the formal version differs from the brief, and any problems found in the brief.
+This log records which statements of the technical brief in this directory were checked in Lean,
+where the formal version differs from the brief, and any problems found in the brief.
+The brief is available at \url{https://assumptionsofphysics.org/resources/briefs}.
 
 \section*{Setup}
 
@@ -52,7 +52,8 @@ the formal version differs from the brief, and any problems found in the brief.
 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
-\item File: \lean{briefs/SuperpositionAndMultipleMixtures/SuperpositionAndMultipleMixtures.lean}
+\item File:\newline
+  \lean{briefs/SuperpositionAndMultipleMixtures/SuperpositionAndMultipleMixtures.lean}
 \item Library: \lean{SuperpositionAndMultipleMixtures}
 \item Imports: \lean{ForPhyslib.QuantumMechanics.Wigner.Density} (for \lean{proj},
   $\ket\psi\bra\psi$, and its parallelogram law),\newline
