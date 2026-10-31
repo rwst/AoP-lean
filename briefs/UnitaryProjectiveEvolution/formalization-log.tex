@@ -9,6 +9,8 @@
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs,tabularx}
+% A results table longer than a page
+\usepackage{xltabular}
 \usepackage{braket}
 \usepackage[hidelinks]{hyperref}
 
@@ -17,7 +19,7 @@
 \def\UrlBreaks{\do\.\do\_\do\/}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
-\emergencystretch=2em
+\emergencystretch=6em
 
 \title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
 \author{}
@@ -27,9 +29,9 @@
 \maketitle
 
 \noindent
-This log records which statements of the technical brief in this directory
-(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
-the formal version differs from the brief, and any problems found in the brief.
+This log records which statements of the technical brief in this directory were checked in Lean,
+where the formal version differs from the brief, and any problems found in the brief.
+The brief is available at \url{https://assumptionsofphysics.org/resources/briefs}.
 
 \section*{Setup}
 
@@ -102,11 +104,15 @@ $\mathrm{End}(E)$. The definitions are
 \end{itemize}
 
 \paragraph{Results.}
-\begin{center}
-\begin{tabularx}{\textwidth}{@{}BL@{}}
+\begin{xltabular}{\textwidth}{@{}BL@{}}
 \toprule
 Brief & Lean \\
 \midrule
+\endfirsthead
+\toprule
+Brief & Lean \\
+\midrule
+\endhead
 Definition~1 & \lean{IsStateAdaptiveProjective} \\
 Proposition~2, $(I - \tau L)^{-1}$ exists & \lean{injective_vonNeumannStep},
   \lean{vonNeumannResolvent} \\
@@ -147,8 +153,7 @@ Affinity of the limit, eqs.~(28)--(29), composition for all durations &
   \lean{IsProjectiveLimit.isEvolution}, \lean{DrProj.isEvolution} \\
 Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero} \\
 \bottomrule
-\end{tabularx}
-\end{center}
+\end{xltabular}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
@@ -264,7 +269,7 @@ directions, with an unbounded generator.
   density of the density operators supported in projections $P_a \to 1$
   (\lean{exists_isDensityOperator_mul_eq}); and closedness of the pure states under trace-norm
   limits (\lean{isPure_of_tendsto_traceENorm}).
-\item Addition to \lean{ForPhyslib/QuantumMechanics/Stone.lean}:
+\item Addition to \lean{ForPhyslib/QuantumMechanics/Stone.lean}:\newline
   \lean{StronglyContinuousUnitaryGroup.exists_expIntegral}, every strongly continuous unitary
   group is $t \mapsto \int e^{itx}\,d\mu_S(x)$ for a projection-valued measure $\mu_S$ on
   $\mathbb{R}$.
@@ -291,11 +296,15 @@ operator on $\mathrm{End}(E)$. The definitions are those of finite dimension, wi
 \end{itemize}
 
 \paragraph{Results.}
-\begin{center}
-\begin{tabularx}{\textwidth}{@{}BL@{}}
+\begin{xltabular}{\textwidth}{@{}BL@{}}
 \toprule
 Brief & Lean \\
 \midrule
+\endfirsthead
+\toprule
+Brief & Lean \\
+\midrule
+\endhead
 Definition~1 & \lean{IsStateAdaptiveProjective}, \lean{IsProjectiveDecomposition} \\
 Eq.~(7), $\Psi_\tau$ as a mixture of unitary channels & \lean{laplaceResolvent} \\
 Eqs.~(8)--(9), $(I - \tau L)\Psi_\tau = I$ & \lean{integral_laplace_vonNeumannStep},
@@ -346,8 +355,7 @@ Proposition~17 and eq.~(27), phases & from the brief on the Schr\"odinger equati
 DR-PROJ $\Rightarrow$ DR-UNIT & \lean{DrProj.drUnit} \\
 Theorem~18 & \lean{drUnit_iff_drProj} \\
 \bottomrule
-\end{tabularx}
-\end{center}
+\end{xltabular}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
