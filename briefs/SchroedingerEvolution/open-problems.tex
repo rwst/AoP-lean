@@ -1,0 +1,66 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+
+\title{Open problems:\\ Multiple equivalent characterizations of the Schr\"odinger equation}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Injectivity suffices in finite dimension.} For $\dim\mathcal{H} < \infty$, an affine
+  map $T : D(\mathcal{H}) \to D(\mathcal{H})$ injective on the pure states $P(\mathcal{H})$ is
+  bijective on them. The brief's reason, ``the compactness of $P(\mathcal{H})$ will force $T$ to
+  be bijective'', does not suffice; the log points to invariance of domain on the manifold
+  $P(\mathbb{C}^n)$. Not formalized (only the version with surjectivity is). (Brief, Remark after
+  Proposition~1; log, ``Problems found in the brief'', finite-dimensional part.)
+\item \textbf{Time-dependent evolution.} The equivalence of DR-SCEQ, DR-UNIT, DR-EV, DR-PROB and
+  DR-INFO without EVTI, for two-parameter families $\Phi_{t_0 \to t_1}$ and a time-dependent
+  Hamiltonian $H(t)$, as DR-SCEQ is written. The brief only says ``We are going to restrict the
+  dynamics to the time-independent case''; the formalization uses a constant $H$. (Brief, Sec.~3,
+  before Condition EVTI, and Condition DR-SCEQ; log, ``Differences from the brief''.)
+\item \textbf{Isolation as determinism and reversibility.} ``Conceptually, all these are
+  equivalent to saying that the system is isolated, as future and past states are determined,
+  and only determined, by the present state of the system.'' Isolation is not defined, so this
+  equivalence is not stated as a theorem. (Brief, Sec.~6.)
+\end{enumerate}
+
+\section*{From the formalization}
+\noindent Beyond finite dimension the formalization has a part in any dimension, which covers
+unbounded $H$; it leaves open the item ``Shift semigroup counterexample'' below.
+\begin{enumerate}
+\item \textbf{Shift semigroup counterexample.} The right shifts $V_t$ on $L^2(0,\infty)$ give an
+  evolution $\Phi_t(\rho) = V_t\rho V_t^\dagger$ that maps pure states to pure states and
+  preserves the Born rule and the entropy, but satisfies neither DR-EV nor DR-UNIT. It shows
+  that the reconstructed past clauses of DR-PROB and DR-INFO are needed in infinite dimension.
+  Formalized only as a single map (\lean{shift_preserves_not_unitary}), not as a semigroup
+  satisfying \lean{IsEvolution}. (Log, ``Hilbert spaces of any dimension'', ``Problems found in
+  the brief''.)
+\item \textbf{Proposition~1 for equal mixtures.} Proposition~1 is proved for maps affine under
+  all convex combinations. A version assuming only $T(\tfrac12\rho + \tfrac12\sigma) =
+  \tfrac12T\rho + \tfrac12T\sigma$ ``would need continuity first, to pass from dyadic weights to
+  all weights''; not formalized. (Log, ``Hilbert spaces of any dimension'', ``Differences from
+  the brief''.)
+\end{enumerate}
+
+\end{document}

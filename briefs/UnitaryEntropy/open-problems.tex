@@ -1,0 +1,76 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+
+\title{Open problems:\\ Schr\"odinger equation is equivalent to information conservation}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Classical counterpart.} State and prove the classical analogue: Hamiltonian
+  evolution is equivalent to preservation of the Shannon entropy and of ``the definitional
+  independence of degrees of freedom''. (Brief, Sec.~4: ``This parallels the classical case
+  where Hamiltonian evolution is equivalent to the preservation of Shannon entropy (Liouville's
+  theorem)''.)
+\item \textbf{Entropy conservation as determinism and reversibility.} The brief reads DR-INFO as
+  ``an information theoretic way to characterize determinism and reversibility''. A precise
+  definition of deterministic and reversible evolution, and a proof that it is equivalent to
+  DR-INFO, are not given. (Brief, Sec.~1.)
+\item \textbf{Propagator for time-dependent $H(t)$.} ``The Schr\"odinger equation gives rise to a
+  differentiable unitary propagator $U_{t_0\to t_1}$'' is assumed. The formalization proves
+  existence for constant $H$ only; for bounded $H(t)$ it is the linear ODE existence theorem,
+  and for unbounded self-adjoint $H(t)$ it needs Kato-type hypotheses. (Brief, Sec.~3, proof of
+  Theorem~2 ($\Rightarrow$); Log, ``Differences from the brief''.)
+\end{enumerate}
+
+\section*{From the formalization}
+\noindent Beyond finite dimension the formalization has a part in any dimension; it leaves
+open the items ``Unbounded Hamiltonians'', ``Norm-differentiable $U(t)$ in infinite
+dimension'' and ``Isometric semigroup without a past'' below.
+\begin{enumerate}
+\item \textbf{Unbounded Hamiltonians.} Step~3 assumes $U_{t_0\to t_0+dt} = I + A(t_0)dt + o(dt)$,
+  and EVDIFF on every density operator forces a bounded $H$ (Banach--Steinhaus). The right form
+  of EVDIFF for unbounded $H(t)$, differentiable only on a dense set of states, and the
+  corresponding version of Theorem~2 are open here. (Log, ``Problems found in the brief'', Step~3
+  item and last item of the any-dimension part.)
+\item \textbf{Mixed states.} $\Phi_{t_0\to t_1}(\rho) = U_{t_0\to t_1}\rho\,U_{t_0\to t_1}^\dagger$
+  for mixed $\rho$ is not formalized. It needs $\Phi$ affine (Kadison); whether preservation of
+  equal mixtures alone suffices is not settled. (Log, ``Differences from the brief'', last item
+  of the finite-dimensional part.)
+\item \textbf{Equation at every time.} The formalization gives $U(t)$ only for $t$ near $t_0$ and
+  the Schr\"odinger equation only at $t_0$. A global differentiable unitary propagator
+  $U_{t_0\to t_1}$ for all times, with phases chosen consistently with
+  $\Phi_{t_1\to t_2}\circ\Phi_{t_0\to t_1} = \Phi_{t_0\to t_2}$, is not built. (Log,
+  ``Differences from the brief'', item on \lean{schrodinger_of_preserves}.)
+\item \textbf{Norm-differentiable $U(t)$ in infinite dimension.} In any dimension only the strong
+  equation $\psi'(t_0) = (i\hbar)^{-1}H\psi(t_0)$ is proved; the phase-fixing basis sum does not
+  converge in operator norm. Whether a phase choice makes $t\mapsto U(t)$ differentiable in
+  operator norm is open. (Log, any-dimension part, ``Differences from the brief'', EVDIFF item.)
+\item \textbf{Isometric semigroup without a past.} The right shifts $V_t$ on $L^2(0,\infty)$ give
+  an evolution that satisfies [B]EVMIX and preserves the entropy but is induced by no unitary;
+  this example, and the Wold--Cooper reduction of every such semigroup to it, are not
+  formalized. (Log, any-dimension part, ``Problems found in the brief'', second item.)
+\end{enumerate}
+
+\end{document}

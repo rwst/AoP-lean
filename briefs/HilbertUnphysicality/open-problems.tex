@@ -1,0 +1,76 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+
+\title{Open problems:\\ Unphysicality of Hilbert spaces for quantum mechanics}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Further problems.} The list of ways in which QSTO:H fails the base conditions is
+  open-ended: ``If the reader is aware of other problems that should be added, do contact us.''
+  (Brief, Sec.~1, footnote~1.)
+\item \textbf{A physically adequate model.} The brief concludes that ``the solution is not to
+  find workarounds for these issues, but to fix the mathematical model to better reflect the
+  physical requirements''. A replacement for QSTO:H that satisfies [B]COBS, [B]WDQ and
+  [B]STDIST is not given here; one candidate is the brief ``Physical vector spaces for quantum
+  mechanics''. (Brief, Sec.~5.)
+\item \textbf{Expectations of a general unbounded observable.} [B]COBS is about the expectation
+  $\psi \mapsto \braket{\psi|O|\psi}$, while ``boundedness is equivalent to continuity'' is about
+  everywhere-defined linear maps; an unbounded observable $O$ is only densely defined. That the
+  expectation of every unbounded observable is discontinuous is not proved. The formalization
+  covers everywhere-defined linear maps (\lean{not_continuous_of_unbounded}) and the oscillator
+  example for $N$ only. (Brief, Sec.~3, proof of Theorem~1, first paragraph; Log,
+  ``Results''.)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \blocker{brief issue}
+  \textbf{The conditions themselves.}
+  [B]COBS, [B]WDQ, [B]STDIST and the inconsistency
+  claimed in Theorem~1 are informal; only the mathematics behind each of the three arguments is
+  checked. (Log, ``Setting''.)
+\item \textbf{The unitary between the two frames.} The unitary $U$ that implements the frame
+  change $y(x) = \tan\bigl(\tfrac{\pi}{2}\operatorname{erf}(x)\bigr)$ on wave functions, and the
+  change of variables in the integral, are not formalized; only the densities $|\psi|^2$,
+  $|\phi|^2$ and eq.~(2) are. So is the general claim that ``we can find a unitary $U$ that
+  connects operators with different domains''. (Brief, Sec.~3; Log, ``Differences''.)
+\item \textbf{Point-wise values.} That $\psi(x)$, and so $|\psi(x)|^2$, is not defined at each
+  point of a ray of $L^2$ is not formalized. (Brief, Sec.~4; Log, ``Differences'', last item.)
+\item \textbf{Commutator relations.} That $[X,P]/(i\hbar) = I$ cannot hold on the whole of
+  $\mathcal{H}$ and must be restricted to a domain is not formalized. (Brief, Sec.~4; Log,
+  ``Differences'', last item.)
+\item \textbf{Domain of the Schr\"odinger equation.} That the Schr\"odinger equation holds
+  only on the domain of $H$, since $P\psi$ and $V(x)\psi(x)$ need not be defined, is not
+  formalized. (Brief, Sec.~4; Log, ``Differences'', last item.)
+\end{enumerate}
+
+\end{document}

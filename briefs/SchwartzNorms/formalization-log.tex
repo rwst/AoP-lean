@@ -1,0 +1,119 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Equivalence of sup-norm, \texorpdfstring{$L^1$}{L1}, and \texorpdfstring{$L^2$}{L2}
+  seminorms on the Schwartz space}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/SchwartzNorms/SchwartzNorms.lean}
+\item Library: \lean{SchwartzNorms}
+\item Imports: \lean{SchwartzMomentProblem} (for the moments in eq.~(10)) and three new
+  \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/Analysis/LocallyConvex/WithSeminorms.lean} (bounds between seminorm
+  families compose),\newline
+  \lean{ForMathlib/Analysis/SpecialFunctions/ImproperIntegrals.lean}
+  ($\int (1+x^2)^{-2} = \pi/2$, $\int_{|x|>1} x^{-2} = 2$),\newline
+  \lean{ForMathlib/MeasureTheory/Integral/IntegralEqImproper.lean}
+  ($\|g(x)\| \le \|g'\|_{L^1}$ for integrable $g$, $g'$)
+\end{itemize}
+
+\paragraph{Setting.} For $f : \mathbb{R} \to \mathbb{C}$ and $g = x^\alpha \partial^\beta f$
+(\lean{weighted}), the seminorms (1)--(3) are \lean{supNorm}, \lean{l1Norm} and \lean{l2Norm},
+with values in $[0, \infty]$ (\lean{eLpNorm} for $L^1$ and $L^2$). Smoothness is
+\lean{ContDiff} of order $\infty$. On $\mathcal{S}(\mathbb{R})$, the $L^1$ and $L^2$ seminorms
+are real seminorms \lean{l1Seminorm}, \lean{l2Seminorm}, collected in the families
+\lean{l1Family}, \lean{l2Family}; the sup family is Mathlib's \lean{schwartzSeminormFamily}.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+eq.~(6), sup controls $L^2$ & \lean{l2Norm_sq_le} \\
+eq.~(7), $L^2$ controls $L^1$ & \lean{l1Norm_le} \\
+eq.~(9), $L^1$ controls sup & \lean{supNorm_le} (with $\|f\|^{L^1}_{\alpha,\beta} < \infty$);
+  \lean{not_supNorm_le_const} (the hypothesis is needed) \\
+Theorem 5, (i) $\Leftrightarrow$ (ii) $\Leftrightarrow$ (iii) & \lean{tfae_finite} \\
+definition (4) is Mathlib's $\mathcal{S}(\mathbb{R})$ & \lean{exists_schwartzMap_iff},
+  \lean{supNorm_eq_seminorm} \\
+Step 4, same topology & \lean{withSeminorms_l1_l2}, from \lean{isBounded_sup_l2},
+  \lean{isBounded_l2_l1}, \lean{isBounded_l1_sup} and \lean{WithSeminorms.congr_of_cycle} \\
+eq.~(10) & \lean{enorm_moment_le} (with the factor $|\hbar|^\beta$) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item The seminorms take values in $[0, \infty]$, so that Theorem~5 can be stated for every
+  smooth $f$. On $\mathcal{S}(\mathbb{R})$ they are finite and give real seminorms.
+\item ``Generate the same locally convex topology'' is stated as \lean{WithSeminorms}: each
+  family induces Mathlib's topology on $\mathcal{S}(\mathbb{R})$. Step~4's ``this relation is
+  transitive'' is \lean{Seminorm.IsBounded.comp}, new in \lean{ForMathlib}.
+\item In Step~3, $g(x) = \int_{-\infty}^x g'$ uses Mathlib's improper FTC and the fact that an
+  integrable $g$ with integrable $g'$ tends to $0$ at $-\infty$.
+\item The converse in the remark after eq.~(10) (finite expectation values imply membership in
+  $\mathcal{S}(\mathbb{R})$) and the remark on general $L^p$ are not formalized.
+\end{itemize}
+
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item Eq.~(9) needs $\|f\|^{L^1}_{\alpha,\beta} < \infty$, so that $g \to 0$ at $-\infty$. The
+  brief has it from (ii), but (9) is stated as an inequality between seminorms, and it is false
+  without it: for $f = 1$, $\alpha = \beta = 0$, the left side is $1$ and the right side is $0$.
+\item In eq.~(7) the coefficient of $\|f\|^{L^2}_{\alpha+1,\beta}$ is $2$; the argument given
+  ($\sqrt{a+b+c} \le \sqrt a + \sqrt b + \sqrt c$ with $b = 2(\|f\|^{L^2}_{\alpha+1,\beta})^2$)
+  gives $\sqrt 2$. The stated bound is still true, and is the one formalized.
+\item Eq.~(10) omits the factor $|\hbar|^\beta$ from $P^\beta = (-i\hbar\partial)^\beta$.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,110 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+
+\title{Open problems:\\ Unitary evolution as infinitesimal projective processes}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Thermodynamic analogy.} The brief compares the result with the way ``reversible
+  quasi-static evolution in thermodynamics can be understood as a limit of equilibration
+  processes''. No precise statement linking the two limits is given.
+  (Brief, Sec.~1; Sec.~6: ``a reversible quasi-static limit of projective processes''.)
+\item \textbf{Resolvent of an unbounded generator.} The brief states that ``direct use of the
+  resolvent of an unbounded generator still gives a completely positive trace-preserving map
+  and the resolvent exponential formula'', and that the spectral truncations are needed only
+  for states outside the domain of $H$. Neither claim is proved, and whether the untruncated
+  $(I - \tau\mathcal{L})^{-1}$ gives perfect prediction on the domain of $H$ is left open.
+  Not formalized. (Brief, Sec.~5, ``Unbounded generators''; Log, Sec.~1.1, ``Differences'',
+  last item.)
+\end{enumerate}
+
+\section*{From the formalization}
+\noindent Beyond finite dimension the formalization has a part in any dimension, which covers
+unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ; it leaves open the item ``Resolvent of an
+unbounded generator'' above and the items ``DR-PROJ without \lean{IsEvolution}'', ``Complete
+positivity'', ``The generator of the cutoff family'' and ``General cutoff levels'' below (the
+second is open in finite dimension too).
+\begin{enumerate}
+\item \blocker{formalization gap; brief issue}
+  \textbf{DR-PROJ without \lean{IsEvolution}.}
+  In infinite dimension Theorem~18 is proved only for families $\Phi_t$ that are already
+  affine on density operators, with $\Phi_0 = I$, $\Phi_{t+s} = \Phi_t\circ\Phi_s$ and
+  continuity at $0^+$. The brief derives these from DR-PROJ (affinity of the limit,
+  eqs.~(28)--(29), common refinements, and ``the continuity used in the proof is not an
+  additional assumption''). In finite dimension they are now derived, with $\Phi_0 = I$
+  assumed, by the corrected argument of the next item (\lean{IsProjectiveLimit.isEvolution},
+  \lean{drUnit_iff_drProj_and_map_zero}); the argument uses a finite basis of density operators
+  and does not carry over. (Log, ``Differences'', item on \lean{IsEvolution}; Sec.~1.1,
+  ``Differences''.)
+\item \blocker{brief issue}
+  \textbf{Durations with irrational ratio.}
+  DR-PROJ defines $\Phi_t$ only as
+  $\lim_n(\Psi_{t/n})^n$. For $t/s$ irrational a common step $\tau$ gives blocks $\Psi_\tau^k$ that
+  are not of this form, so ``common refinements'' and continuity at zero do not prove
+  $\Phi_{t+s} = \Phi_t\circ\Phi_s$; eq.~(26) would have to hold uniformly along the trajectory.
+  The remaining interval itself is harmless. A fix: in finite dimension a telescoping estimate
+  gives $\Phi_t = e^{tL}$ directly, which is formalized (\lean{IsProjectiveLimit.exists_eq_exp});
+  in infinite dimension Chernoff's product formula does, if the closure of $L$ generates a
+  contraction semigroup, which is open. (Brief, Sec.~4, after eq.~(29); Log, ``Problems
+  found''.)
+\item \blocker{brief issue}\textbf{What perfect reconstruction means.}
+  DR-PROJ only asks that the probabilities of
+  the reconstructed sequences tend to one. The formalization instead assumes a second projective
+  limit $\Phi'_t$ with $\Phi'_t(\Phi_t P) = P$ and $\Phi_t(\Phi'_t P) = P$ on pure states. It is
+  not settled whether the brief's weaker wording already makes $\Phi_t$ a bijection of the pure
+  states, or what the right formulation is. (Brief, Sec.~4: ``Perfect reconstruction gives the
+  converse correspondence''; Log, ``Differences'' and ``Problems found''.)
+\item \textbf{Complete positivity.} Proposition~2 says that $\Psi_\tau$ is completely positive,
+  as a mixture of unitary channels by eq.~(7). Only positivity and trace preservation are
+  formalized, in either dimension. (Log, ``Differences''; Sec.~1.1, ``Differences'', last
+  item.)
+\item \textbf{The generator of the cutoff family.} For unbounded $H$ the brief states that the
+  family~(23) is infinitesimal with generator $\mathcal{L}(\rho) = [H,\rho]/(i\hbar)$. The
+  formalization only shows that $(\Psi_\tau(\rho) - \rho)/\tau$ converges on the core; it does
+  not identify the limit. (Brief, Sec.~4, after eq.~(23); Log, Sec.~1.1, ``Differences'', item
+  on eq.~(26).)
+\item \textbf{General cutoff levels.} DR-UNIT $\Rightarrow$ DR-PROJ for unbounded $H$ is
+  formalized for the single choice $M_\tau = \tau^{-1/4}$. The brief's argument for every
+  cutoff satisfying eq.~(22) is not formalized. (Brief, eq.~(22); Log, Sec.~1.1,
+  ``Differences''.)
+\item \textbf{The qubit picture.} $\Psi_\tau = (I + \mathcal{C}_\tau)/2$ with the Cayley
+  transform $\mathcal{C}_\tau = (I + \tau\mathcal{L})(I - \tau\mathcal{L})^{-1}$, its
+  orthogonality for the Hilbert--Schmidt inner product, and the midpoint picture on the Bloch
+  ball are not formalized. (Brief, Sec.~5, ``The qubit picture''; Log, ``Problems found'', last
+  item.)
+\item \textbf{The finite process is not unitary.} The claims that $\Psi_\tau$ is generally
+  irreversible, maps pure ensembles to mixed ones, and that $I - \tau\mathcal{L}$ is not
+  generally positive are not formalized. (Brief, Sec.~5, ``The finite process is not unitary'';
+  Log, ``Problems found'', last item.)
+\end{enumerate}
+
+\end{document}

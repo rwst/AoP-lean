@@ -1,0 +1,57 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+
+\title{Open problems:\\ Superpositions correspond to multiple decompositions}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+No item below blocks the verification of a main claim of the brief.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{No classical superpositions.} The introduction argues that ``mixtures of different
+  classical states always yield a different ensemble'', so that classical superpositions are not
+  possible. The uniqueness of the decomposition of a classical ensemble (a probability measure)
+  into pure (Dirac) states, and the resulting failure of the classical analogue of QSUP-MIX, are
+  not formalized. (Brief, Sec.~1.)
+\item \textbf{Superpositions of more than two states.} The brief treats superpositions of two
+  states. Whether a superposition of $n$ linearly independent states corresponds in the same way
+  to an ensemble with a decomposition into those $n$ states and one into $\phi$ and some other
+  states is not addressed. (Brief, Sec.~2, QSUP-PUR, QSUP-MIX.)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \textbf{Density operators.} QSUP-MIX is stated for convex combinations of pure states
+  without the trace; that $\rho$ is a density operator in the sense of QST (positive, trace one,
+  and trace class in infinite dimension) is not checked. (Log, ``Differences''.)
+\end{enumerate}
+
+\end{document}

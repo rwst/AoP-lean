@@ -1,0 +1,143 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Directional vectors vs quantum state vectors}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/SuperpositionAndLinearity/SuperpositionAndLinearity.lean}
+\item Library: \lean{SuperpositionAndLinearity}
+\item Imports: \lean{ForPhyslib.QuantumMechanics.Qubit.Bloch}
+\item New file \lean{ForPhyslib/QuantumMechanics/Qubit/Bloch.lean} (imports
+  \lean{Mathlib.Analysis.InnerProductSpace.PiL2},\newline
+  \lean{Mathlib.LinearAlgebra.Matrix.DotProduct} and physlib's
+  \lean{Physlib.Relativity.PauliMatrices.Basic}): the Bloch vector of a vector of
+  $\mathbb{C}^2$, the Born probability in terms of Bloch vectors, rays and orthogonality.
+\end{itemize}
+
+\paragraph{Setting.} $H = \mathbb{C}^2$ (\texttt{EuclideanSpace} $\mathbb{C}$ \texttt{(Fin 2)}),
+with $\ket{z^+} = e_0$, $\ket{z^-} = e_1$. The direction and the state vector are
+\[
+  v(\theta,\varphi) = (\cos\varphi\sin\theta,\ \sin\varphi\sin\theta,\ \cos\theta), \qquad
+  \psi(\theta,\varphi) = \cos\tfrac\theta2\, e^{-i\varphi/2}\ket{z^+}
+    + \sin\tfrac\theta2\, e^{i\varphi/2}\ket{z^-},
+\]
+(\lean{direction}, \lean{stateVector}). The Bloch vector of $\psi = \psi_0 e_0 + \psi_1 e_1$ is
+\lean{blochVector}~$\psi = (2\operatorname{Re}\bar\psi_0\psi_1,\ 2\operatorname{Im}
+\bar\psi_0\psi_1,\ |\psi_0|^2 - |\psi_1|^2)$, the vector of Pauli expectations
+$\braket{\psi|\sigma_i|\psi}$ (\lean{blochVector_apply}). It is not normalized; its length is
+$\|\psi\|^2$.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+eq.~(1), $(v^x)^2 + (v^y)^2 + (v^z)^2 = 1$ & \lean{direction_dotProduct_self} \\
+eqs.~(2), (3), $p(z^+) = \cos^2\frac\theta2 = \frac{1+\cos\theta}2$ & \lean{prob_zp} \\
+eqs.~(2), (3), $p(z^-) = \sin^2\frac\theta2 = \frac{1-\cos\theta}2$ & \lean{prob_zm} \\
+eq.~(3), $\braket{\psi|\psi} = 1$ & \lean{norm_stateVector} \\
+abstract: $\psi(\theta,\varphi)$ is the state for the direction $v(\theta,\varphi)$ &
+  \lean{blochVector_stateVector}: the Bloch vector of $\psi(\theta,\varphi)$ is
+  $v(\theta,\varphi)$ \\
+Sec.~2, ``linearity is in terms of probability'' & \lean{born_stateVector}:
+  $|\braket{\psi(\theta',\varphi')|\psi(\theta,\varphi)}|^2 = (1 + v' \cdot v)/2$; eq.~(2) is
+  the case $v' = e_z$ (\lean{stateVector_zero_zero}, \lean{direction_zero_zero}) \\
+Sec.~2, $\theta + 2\pi$: negative components, same direction & \lean{stateVector_add_two_pi},
+  \lean{direction_add_two_pi} \\
+Sec.~1, states are rays, not vectors & \lean{exists_eq_smul_stateVector_iff}: two state vectors
+  span the same ray if and only if they have the same direction \\
+Sec.~2, the outcomes are opposite directions & \lean{inner_stateVector_eq_zero_iff}: two state
+  vectors are orthogonal if and only if their directions are opposite \\
+abstract: every qubit state is of the form (3) & \lean{exists_eq_smul_stateVector}: every unit
+  vector is a phase times some $\psi(\theta,\varphi)$ with $0 \le \theta \le \pi$ \\
+(completeness) & \lean{exists_direction_eq}: every unit vector of $\mathbb{R}^3$ is some
+  $v(\theta,\varphi)$ \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{In \lean{ForPhyslib/QuantumMechanics/Qubit/Bloch.lean}}} \\
+\midrule
+$\ket\psi\bra\psi = (\|\psi\|^2 + a\cdot\sigma)/2$ & \lean{vecMulVec_eq} \\
+Born probability & \lean{norm_inner_sq}:
+  $|\braket{\chi|\psi}|^2 = (\|\chi\|^2\|\psi\|^2 + a\cdot b)/2$ \\
+length of the Bloch vector & \lean{blochVector_dotProduct_self}: $a\cdot a = \|\psi\|^4$ \\
+rays & \lean{exists_eq_smul_iff}: unit vectors span the same ray iff their Bloch vectors agree \\
+orthogonality & \lean{inner_eq_zero_iff}: unit vectors are orthogonal iff their Bloch vectors
+  are opposite \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item The brief relates the state vector to the direction through the probabilities along $z$
+  only. The formalization uses the Bloch vector, which fixes the ray completely, so that ``the
+  state vector for a qubit, which also corresponds to a direction in physical space'' becomes a
+  theorem in both directions (\lean{blochVector_stateVector},
+  \lean{exists_eq_smul_stateVector_iff}, \lean{exists_eq_smul_stateVector},
+  \lean{exists_direction_eq}).
+\item The brief says the probability ``must be proportional to the component in that
+  direction''. It is proportional to the length $\overline{Az^-} = 1 + \cos\theta$ in Fig.~2,
+  that is, affine in the component: $p(z^+) = (1 + v\cdot e_z)/2$. The formalization states the
+  affine law for every pair of directions (\lean{born_stateVector}).
+\item The bijection between rays of $\mathbb{C}^2$ and the unit sphere is proved pointwise
+  (injectivity and surjectivity of the map from state vectors to directions); it is not stated as
+  an equivalence or homeomorphism of the projective line with the sphere.
+\end{itemize}
+
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item The abstract and eq.~(3) write the state as $\cos\frac\theta2 e^{-i\varphi/2}\ket{z^+}
+  + \sin\frac\theta2 e^{i\varphi/2}\ket{z^+}$. The second ket is $\ket{z^-}$, as the computation
+  of $p(z^-)$ in eq.~(3) shows. With $\ket{z^-}$ the signs of the phases are the right ones: the
+  Bloch vector is $v(\theta,\varphi)$ and not its mirror image $v(\theta,-\varphi)$.
+\end{itemize}
+
+\end{document}

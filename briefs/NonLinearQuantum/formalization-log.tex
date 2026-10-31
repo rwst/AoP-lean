@@ -1,0 +1,98 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Non-linear representations in quantum mechanics}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/NonLinearQuantum/NonLinearQuantum.lean}
+\item Library: \lean{NonLinearQuantum}
+\item Imports: \lean{Mathlib.Analysis.InnerProductSpace.Calculus},\newline
+  \lean{Mathlib.Analysis.SpecialFunctions.ExpDeriv}
+\end{itemize}
+
+\paragraph{Setting.} $H = \mathbb{C}^2$ (\texttt{EuclideanSpace} $\mathbb{C}$ \texttt{(Fin 2)}), with
+$\ket{z^+} = e_0$, $\ket{z^-} = e_1$, and
+\[
+  m(v) = e^{i\theta\, p(z^+\mid v)}\, v, \qquad p(z^+\mid v) = \frac{|v_0|^2}{\|v\|^2}.
+\]
+In Lean $m(0) = 0$ holds without a case split, since $0/0 = 0$.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+eq.~(3), rays to rays & \lean{nlMap_smul}: $m(kv) = k\,m(v)$ for every $k\in\mathbb{C}$ \\
+each ray is mapped to itself & \lean{nlMap_mem_ray} \\
+eq.~(4), $m$ not linear & \lean{nlMap_not_add}, \lean{not_isLinearMap_nlMap}, for $\theta\in(0,2\pi)$ \\
+eq.~(5), inner product & \lean{inner_nlMap} \\
+eq.~(6), Born rule preserved & \lean{born_nlMap} \\
+Remark: $m$ bijective & \lean{nlHomeomorph}: a homeomorphism of $\mathbb{C}^2$, inverse $m_{-\theta}$ \\
+Remark: $m$ a diffeomorphism & \lean{contDiffAt_nlMap}: smooth at every $v \ne 0$ \\
+(correction) & \lean{not_differentiableAt_nlMap_zero}: not differentiable at $0$ \\
+Theorem~1, mathematical content & \lean{exists_nonlinear_born_preserving} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.} Theorem~1 (``REP-VSLIN is independent of QST'') is a
+statement about the logical independence of two conditions. The checked content is the
+existence of a homeomorphism of $H$ that maps every ray to itself, preserves the Born rule and
+is not additive.
+
+\paragraph{Problems found in the brief.} The closing remark says that $m$ is a
+diffeomorphism. It is not differentiable at $0$: along every real line $m(tv) = t\,m(v)$, so a
+derivative at $0$ would have to equal $m$ itself, and $m$ is not additive. The correct
+statement is that $m$ is a homeomorphism of $\mathbb{C}^2$ and a diffeomorphism of
+$\mathbb{C}^2\setminus\{0\}$. Theorem~1 only needs a bijection, so it is not affected.
+
+\end{document}

@@ -1,0 +1,128 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Superpositions correspond to multiple decompositions}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/SuperpositionAndMultipleMixtures/SuperpositionAndMultipleMixtures.lean}
+\item Library: \lean{SuperpositionAndMultipleMixtures}
+\item Imports: \lean{ForPhyslib.QuantumMechanics.Wigner.Density} (for \lean{proj},
+  $\ket\psi\bra\psi$, and its parallelogram law),\newline
+  \lean{ForMathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional}
+\item New \lean{ForMathlib} material:\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/Projection/FiniteDimensional.lean}
+  (\lean{Submodule.mem_span_of_forall_inner_eq_zero}: a vector orthogonal to everything that is
+  orthogonal to a finite set lies in its span).
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a complex inner product space of any dimension, not necessarily
+complete. For a vector $\psi$ the pure state is \lean{pureState}~$\psi = \rho_\psi =
+\ket\psi\bra\psi/\braket{\psi|\psi}$ (it is $0$ at $\psi = 0$), and \lean{mixture}~$p\ \psi\ q\
+\chi = p\rho_\psi + q\rho_\chi$. An operator is mixed (\lean{IsMixed}) if it is not
+$\rho_\psi$ for any $\psi \ne 0$. The conditions are:
+\begin{itemize}
+\item \lean{QSupPur}~$\phi\ \psi_1\ \psi_2$: $\psi_1, \psi_2$ linearly independent and
+  $\phi = c_1\psi_1 + c_2\psi_2$ with $c_1, c_2 \ne 0$;
+\item \lean{QSupMix}~$\phi\ \psi_1\ \psi_2$: there are $p_1, p_2, p_\phi, p_{\hat\phi} \in (0,1)$
+  with $p_1 + p_2 = p_\phi + p_{\hat\phi} = 1$ and a state $\hat\phi \ne 0$ such that
+  $\rho = p_1\rho_{\psi_1} + p_2\rho_{\psi_2}$ is mixed, $\rho = p_\phi\rho_\phi +
+  p_{\hat\phi}\rho_{\hat\phi}$, and $\rho_\phi \notin \{\rho_{\psi_1}, \rho_{\psi_2}\}$.
+\end{itemize}
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+eq.~(2), $\ket\phi\bra\phi + \ket{\hat\phi}\bra{\hat\phi} = 2|c_1|^2\ket{\psi_1}\bra{\psi_1} +
+  2|c_2|^2\ket{\psi_2}\bra{\psi_2}$ & \lean{proj_add_proj_hat} \\
+eqs.~(3), (4), QSUP-PUR $\Rightarrow$ QSUP-MIX & \lean{QSupPur.qSupMix}, with the weights of
+  eq.~(3) \\
+``it is supported by a two dimensional subspace'' & \lean{mem_span_of_mixture_eq}: if
+  $q\rho_\phi + q'\rho_{\phi'} = p_1\rho_{\psi_1} + p_2\rho_{\psi_2}$ with $q > 0$, $q' \ge 0$,
+  then $\phi \in \operatorname{span}\{\psi_1, \psi_2\}$ \\
+QSUP-MIX $\Rightarrow$ QSUP-PUR & \lean{QSupMix.qSupPur}, for $\phi \ne 0$ \\
+Theorem~1 & \lean{qSupPur_iff_qSupMix}, for $\phi \ne 0$ \\
+(used for QSUP-MIX) & \lean{isMixed_mixture}: a mixture of two linearly independent states with
+  positive weights is not pure \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item The equivalence is proved for each triple $\phi, \psi_1, \psi_2$ with $\phi \ne 0$; no
+  other vector needs to be nonzero, and $E$ need not be complete or finite-dimensional.
+\item The brief writes $\rho$ as a density operator. The formalization does not use the trace:
+  $\rho$ is a convex combination of two pure states, which is all the argument needs.
+\item QSUP-MIX $\Rightarrow$ QSUP-PUR uses neither that $\rho$ is mixed nor that
+  $p_{\hat\phi} > 0$; only $p_\phi > 0$, $p_{\hat\phi} \ge 0$ and $\rho_\phi \notin
+  \{\rho_{\psi_1}, \rho_{\psi_2}\}$.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} None that affect the theorem; the demonstration leaves
+out some steps, which the formalization supplies.
+\begin{itemize}
+\item QSUP-PUR $\Rightarrow$ QSUP-MIX: the brief does not check that $\hat\phi \ne 0$ (needed to
+  form $\rho_{\hat\phi}$), that $\rho_\phi \notin \{\rho_{\psi_1}, \rho_{\psi_2}\}$, or that $\rho$
+  is mixed. All three follow from the linear independence of $\psi_1, \psi_2$ and
+  $c_1, c_2 \ne 0$.
+\item QSUP-MIX $\Rightarrow$ QSUP-PUR: ``Since $\rho$ is the mixture of two pure states, it is
+  supported by a two dimensional subspace'' presupposes that $\psi_1$ and $\psi_2$ are linearly
+  independent, which QSUP-MIX does not state, and the brief does not show that $c_1, c_2 \ne 0$.
+  Both follow from $\rho_\phi \notin \{\rho_{\psi_1}, \rho_{\psi_2}\}$: if $\psi_2$ were a
+  multiple of $\psi_1$, or $c_1$ or $c_2$ were $0$, then $\phi$ would be a multiple of $\psi_1$ or
+  of $\psi_2$. The support claim itself is proved from the quadratic form: a vector orthogonal to
+  $\psi_1$ and $\psi_2$ gives $\braket{x|\rho|x} = 0$, hence $\braket{\phi|x} = 0$.
+\end{itemize}
+
+\end{document}

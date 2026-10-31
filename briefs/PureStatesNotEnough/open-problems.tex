@@ -1,0 +1,72 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+
+\title{Open problems:\\ Quantum pure states are not enough}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+Theorems~3 and 5 are verified. Theorem~1 is not: see the two items marked below.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \blocker{brief issue}\textbf{The range of Theorem~1.} The theorem claims consistency for
+  $1 \le \dim V < \infty$, while its proof uses $2 \le \dim X$. For $\dim V = 1$ the state space
+  is a single point (\lean{subsingleton_projectivization}). Whether a $0$-dimensional symplectic
+  manifold ($n = 0$ degrees of freedom) is allowed, which fixes whether the range starts at $1$ or
+  at $2$, is open. (Log, ``Problems found'', first item.)
+\item \textbf{Ensembles supported on a subspace.} The proof of Theorem~3 compares the ensembles
+  with support in a two-dimensional subspace $A$. For $\dim\mathcal H \ge 3$ no CST ensemble has
+  support in $P(A)$, which has Liouville measure zero. Whether the brief means the classical
+  ensembles of the subsystem $P(A)$, with its own Liouville measure, is open. The formalization
+  compares the whole ensemble spaces instead. (Log, ``Problems found'', second item.)
+\item \textbf{Hamiltonian evolution on the classical qubit.} Example~2 identifies Hamiltonian
+  evolution with the diffeomorphisms that conserve the volume. Area-preserving reflections of the
+  sphere are not Hamiltonian, so the area form should be meant. The claim that quantum evolutions
+  are exactly the rotations is not checked. (Log, ``Problems found'', fourth item.)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \blocker{formalization gap}\textbf{Theorem~1.} Mathlib has no symplectic manifolds and no
+  manifold structure on projective space, so neither direction of Theorem~1 is formalized: that
+  $P(V)$ with the Fubini--Study form is symplectic for $\dim V < \infty$, and that a symplectic
+  $P(V)$ forces $\dim V < \infty$. Theorem~3 for $\dim\mathcal H = \infty$ rests on the second
+  direction, so it is formalized only for $\dim\mathcal H < \infty$. (Log, ``Results''.)
+\item \textbf{Example~2.} The identification of $P(\mathbb C^2)$ with the sphere, with Darboux
+  coordinates $z$, $\theta_{xy}$ and the area as Liouville measure, is not formalized.
+  \lean{ForPhyslib/QuantumMechanics/Qubit/Bloch.lean} shows that the Bloch vector determines the
+  ray, which is injectivity of the map to the sphere; surjectivity and the measure are missing.
+  (Log, ``Differences'', last item.)
+\item \textbf{Extreme points.} The proof of Theorem~5 starts from the fact that the pure states are
+  the extreme points of $D(\mathcal H)$. The formalization does not need it and does not prove
+  it. (Log, ``Differences'', last item.)
+\end{enumerate}
+
+\end{document}

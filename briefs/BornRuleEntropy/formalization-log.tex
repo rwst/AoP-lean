@@ -1,0 +1,175 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{The Born rule is equivalent to the von Neumann entropy}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/BornRuleEntropy/BornRuleEntropy.lean}
+\item Library: \lean{BornRuleEntropy}
+\item Imports: \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture}
+\item New \lean{ForPhyslib} material:\newline
+  \lean{ForPhyslib/QuantumMechanics/VonNeumannEntropyMixture.lean}: a mixture
+  $\sum_i p_i\ket{\psi_i}\bra{\psi_i}$ of orthonormal pure states, in any dimension, is a density
+  operator (\lean{isDensityOperator_tsum_smul_proj}) with entropy $\sum_i \eta(p_i)$,
+  $\eta(x) = -x\log x$ (\lean{vonNeumannEntropy_tsum_smul_proj}); the entropy of an equal mixture
+  of two pure states is $h((1 + |\braket{\psi|\phi}|)/2)$, $h$ the binary entropy
+  (\lean{vonNeumannEntropy_mix_proj}).
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a complex Hilbert space of any dimension. A pure state is
+$\ket\psi\bra\psi$ (\lean{proj}~$\psi$) for a unit vector $\psi$, and an ensemble is a density
+operator (\lean{IsDensityOperator}: positive, trace class, trace one). The entropy
+$S$ is a function from operators to $[0, \infty]$, and the von Neumann entropy
+\lean{vonNeumannEntropy} is $\operatorname{tr}\eta(\rho) \in [0, \infty]$ with the natural
+logarithm, so the brief's ``$S = 1$'' (one bit) reads $S = \log 2$. The conditional probability
+is a function $p$ of two operators; $p(\ket\psi\bra\psi, \rho)$ is the probability of finding
+$\psi$ having prepared $\rho$. The conditions are:
+\begin{itemize}
+\item \lean{EnsemblesAndStates}~$p$ (EQST): $p(\ket\psi\bra\psi, \rho) \in [0, 1]$ for density
+  operators $\rho$; $p(\ket\psi\bra\psi, t\ket{\phi_1}\bra{\phi_1} +
+  (1 - t)\ket{\phi_2}\bra{\phi_2}) = t\,p(\ket\psi\bra\psi, \ket{\phi_1}\bra{\phi_1}) +
+  (1 - t)\,p(\ket\psi\bra\psi, \ket{\phi_2}\bra{\phi_2})$ for $t \in [0, 1]$; and
+  $p(\ket\psi\bra\psi, \ket\phi\bra\phi) = 1$ iff $\ket\psi\bra\psi = \ket\phi\bra\phi$;
+\item \lean{BornRule}~$p$ (BR-BORN): $p(\ket\psi\bra\psi, \ket\phi\bra\phi) =
+  |\braket{\psi|\phi}|^2$;
+\item \lean{IsVonNeumannEntropy}~$S$ (BR-ENT): $S(\rho) = $ \lean{vonNeumannEntropy}~$\rho$ for
+  density operators $\rho$;
+\item \lean{MutualExclusivity}~$S\ p$ ([B]MUTEX): for every countable family $(\psi_i)$ of unit
+  vectors, $p(\ket{\psi_i}\bra{\psi_i}, \ket{\psi_j}\bra{\psi_j}) = 0$ for all $i \ne j$ iff
+  $S(\sum_i w_i\ket{\psi_i}\bra{\psi_i}) = \sum_i \eta(w_i)$ for all weights $w_i \ge 0$ with
+  $\sum_i w_i = 1$ (the sum of operators converging in operator norm).
+\end{itemize}
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Proposition~3, eq.~(6), $S(\tfrac12\rho_\psi + \tfrac12\rho_\phi) = h\bigl((1 +
+  \sqrt\lambda)/2\bigr)$, $\lambda = |\braket{\psi|\phi}|^2$ & \lean{vonNeumannEntropy_mix_proj_eq}
+  (from \lean{vonNeumannEntropy_mix_proj}) \\
+Proposition~3, $p(\phi|\psi) = \lambda$ iff $S(\tfrac12\rho_\psi + \tfrac12\rho_\phi) =
+  h((1 + \sqrt\lambda)/2)$ & \lean{norm_inner_sq_eq_iff}, for $\lambda \in [0, 1]$, with
+  $p$ the Born rule \\
+Fig.~2, the entropy is strictly decreasing in the Born probability &
+  \lean{strictAntiOn_entropyOfBorn} \\
+Corollary~7, $\braket{\phi|\psi} = 0$ iff $S(\tfrac12\rho_\psi + \tfrac12\rho_\phi) = 1$ &
+  \lean{inner_eq_zero_iff}, with $\log 2$ for $1$ \\
+EQST, BR-BORN, BR-ENT, [B]MUTEX & \lean{EnsemblesAndStates}, \lean{BornRule},
+  \lean{IsVonNeumannEntropy}, \lean{MutualExclusivity} \\
+Theorem~9, BR-BORN and BR-ENT imply [B]MUTEX & \lean{MutualExclusivity.of_bornRule} \\
+Theorem~9, BR-BORN and [B]MUTEX imply BR-ENT & \lean{IsVonNeumannEntropy.of_bornRule} \\
+Theorem~9, BR-ENT and [B]MUTEX imply BR-BORN & \lean{BornRule.of_isVonNeumannEntropy}, over
+  EQST \\
+Theorem~9 & \lean{two_conditions_imply_third} \\
+(used for the last direction) orthogonal states are mutually exclusive &
+  \lean{apply_eq_zero_of_inner_eq_zero} \\
+(used for the last direction) the Born rule on the qubit spanned by $\psi$ and $\chi \perp \psi$
+  & \lean{apply_planeVec_eq}: $p(\psi | r\psi + s\bar\zeta\chi) = r^2$; from
+  \lean{apply_planeVec} and \lean{apply_halfVec} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item $E$ is a Hilbert space of any dimension; separability is not used. [B]MUTEX quantifies over
+  countable index types (in the universe of $E$). For BR-BORN + [B]MUTEX $\Rightarrow$ BR-ENT the
+  eigenbasis of $\rho$ is restricted to the eigenvectors with nonzero eigenvalue, a countable
+  family since the eigenvalues are summable.
+\item Entropies take values in $[0, \infty]$, not in $\mathbb{R}$: the von Neumann entropy and the
+  Shannon entropy of a countable family of weights can be infinite (see ``Problems found'').
+\item In EQST, affinity is assumed only for mixtures of two pure states, which is weaker than the
+  brief's countable mixtures. EQST is used only for BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN,
+  and there only through $p(\psi|\psi) = 1$, $p \ge 0$ on pure states, and affinity for two pure
+  states. The other two directions do not use EQST. Corollary~8 is not formalized.
+\item The first argument of $p$ is the projection $\ket\psi\bra\psi$, so $p$ depends on the ray of
+  $\psi$ only.
+\item In BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN, [B]MUTEX is used only for pairs of orthogonal
+  states, and only in the direction ``Shannon entropy $\Rightarrow$ mutually exclusive''. In
+  BR-BORN + [B]MUTEX $\Rightarrow$ BR-ENT only the other direction is used.
+\item The Bloch-ball argument for BR-BORN (Fig.~3) is replaced by an algebraic one in the qubit
+  spanned by $\psi$ and a unit $\chi \perp \psi$. With $f = p(\psi|\cdot)$, $f(\psi) = 1$ and
+  $f(\chi) = 0$, the convex identities
+  $\ket u\bra u + s(r - s)\ket\chi\bra\chi =
+  r(r - s)\ket\psi\bra\psi + 2rs\ket{e_\zeta}\bra{e_\zeta}$
+  (for $r \ge s$, and symmetrically for $r \le s$), with $u = r\psi + s\bar\zeta\chi$ and
+  $e_\zeta = (\psi + \bar\zeta\chi)/\sqrt2$, give $f(u) = r^2 + 2rs(f(e_\zeta) - \tfrac12)$, and
+  $\ket{e_\zeta}\bra{e_\zeta} + \ket{e_{-\zeta}}\bra{e_{-\zeta}} = \ket\psi\bra\psi +
+  \ket\chi\bra\chi$ gives $f(e_\zeta) + f(e_{-\zeta}) = 1$. If $d = f(e_\zeta) - \tfrac12 < 0$,
+  the state with $r/s = -d$ has $f(u) = -d^2/(1 + d^2) < 0$, so $f(e_\zeta) = \tfrac12$ and
+  $f(u) = r^2 = |\braket{\psi|u}|^2$.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} None that affect Theorem~9; some statements need care.
+\begin{itemize}
+\item EQST takes $S : \mathcal E(\mathcal H) \to \mathbb R$, but in infinite dimension the von
+  Neumann entropy is $+\infty$ for some density operators, and $-\sum_i p_i\log p_i$ can be
+  $+\infty$ for countably many weights. With a real-valued $S$, BR-ENT and [B]MUTEX cannot hold in
+  infinite dimension, and Theorem~9 is true there only vacuously. The formalization uses
+  $[0, \infty]$.
+\item The units are not fixed: eq.~(2) writes $\log$, while Corollary~7 and Fig.~2 use entropy
+  $1$ for two orthogonal states, which needs $\log_2$.
+\item BR-ENT calls $-\operatorname{tr}(\rho\log\rho)$ ``the Shannon entropy''.
+\item The proof of BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN refers to ``the proof of 1'' and
+  ``the same trigonometric arguments in the proof of 1''; there is no item~1, and
+  Proposition~3 and Corollary~7 are meant. It also says ``$p$ must take its extreme values on
+  $\psi$ and $\phi$'', where $\psi$ and $\psi^\perp$ are meant.
+\item In the same proof, ``Given that the range of $p$ is $[0,1]$, $p$ must take its extreme
+  values on $\psi$ and $\psi^\perp$. Therefore, $\psi$ and $\psi^\perp$ must be opposite points on
+  the ball'' does not say why the affine function $p(\psi|\cdot)$ has its gradient along the axis
+  through $\psi$ and $\psi^\perp$; that two orthogonal states are antipodal already holds in
+  the Bloch ball of EQST. The gradient is fixed because $p \ge 0$ near $\psi^\perp$, where
+  $p = 0$; the formalization makes this explicit (``Differences'', last item).
+\end{itemize}
+
+\end{document}

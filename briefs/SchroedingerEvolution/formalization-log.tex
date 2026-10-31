@@ -1,0 +1,389 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Multiple equivalent characterizations of the Schr\"odinger equation}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/SchroedingerEvolution/SchroedingerEvolution.lean}
+\item Library: \lean{SchroedingerEvolution}
+\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.Wigner.OneParameter} and the brief
+  \lean{UnitaryEntropy} (for \lean{born}, \lean{vonNeumann} and
+  \lean{pure_and_born_of_preserves})
+\item Wigner library, new files in \lean{ForPhyslib/QuantumMechanics/Wigner/}:
+  \lean{Kadison} (mixed-state extension, the two-state bound, Parseval averaging, Kadison's
+  theorem without continuity or injectivity, pure states as extreme points, the three-way
+  equivalence), \lean{OneParameter} (exclusion of anti-unitaries by composition, the phase-free
+  conjugation group on $\mathbb{R}$, its generator as an inner $*$-derivation, the lift to a
+  unitary one-parameter group). \lean{Density} gained finite convex combinations, affine maps
+  of density operators, conjugation \lean{conjOp} by a unitary or an anti-unitary, and the
+  spectral decomposition. \lean{OneParameter} imports physlib's
+  \lean{Physlib.Mathematics.ForMathlib.OneParameterSubgroups.Unitary} (bounded Stone theorem,
+  \lean{UnitaryOneParameterGroup}).
+\item New \lean{ForMathlib} material:\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/Positive.lean} (a positive operator kills every
+  vector on which its quadratic form vanishes),\newline
+  \lean{ForMathlib/Analysis/Calculus/Deriv/ContinuousLinearMapApply.lean} (derivative of
+  $s \mapsto f(s)\,x$ for operators linear over a larger field),\newline
+  and in \lean{ForMathlib/Analysis/InnerProductSpace/LinearMap.lean}: a norm-preserving ring
+  endomorphism of $\mathbb{C}$ is the identity or conjugation, semilinear isometries conjugate the
+  inner product, and every continuous derivation of the bounded operators on an inner product
+  space is inner (\lean{InnerProductSpace.exists_eq_mul_sub_mul_of_map_mul}).
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a finite-dimensional complex Hilbert space, with density operators,
+pure states \lean{proj}~$\psi = \ket{\psi}\bra{\psi}$, \lean{born} and \lean{vonNeumann} as in
+the brief ``Schr\"odinger equation is equivalent to information conservation''. A map $T$ on
+operators is \lean{AffineOnDensities} if $T(t\rho + (1-t)\sigma) = tT\rho + (1-t)T\sigma$ for
+density operators $\rho, \sigma$ and $t \in [0,1]$. \lean{IsPure}~$\rho$ means $\rho = P_\psi$ for
+a unit $\psi$, \lean{BijOnPure}~$T$ that $T$ maps the pure states bijectively onto the pure
+states, and \lean{ImplementedByUnitaryOrAntiunitary}~$T$ that $T\rho = W\rho W^{-1}$ on density
+operators for a unitary or an anti-unitary $W$. An evolution is a family $\Phi_t$ of maps on
+operators, used for $t \ge 0$ and on density operators only. \lean{IsEvolution}~$\Phi$
+(QST:H + [B]EVMIX + EVTI) says that each $\Phi_t$ maps density operators to density operators and
+is affine on them, $\Phi_0 = \mathrm{id}$, $\Phi_{s+t} = \Phi_s \circ \Phi_t$, and
+$t \mapsto \Phi_t(\rho)$ is continuous at $0^+$. The conditions are
+\begin{itemize}
+\item \lean{DrSceq}~$\hbar$: $\Phi_t(\rho) = U_t\rho U_t^\dagger$ with $U_0 = 1$ and
+  $U'(t) = (i\hbar)^{-1}HU(t)$ for a self-adjoint $H$;
+\item \lean{DrUnit}: $\Phi_t(\rho) = U_t\rho U_t^\dagger$ for physlib's
+  \lean{UnitaryOneParameterGroup} $U$ (unitary, $U_0 = 1$, $U_{s+t} = U_sU_t$ on $\mathbb{R}$,
+  norm-continuous);
+\item \lean{DrEv}: each $\Phi_t$ is \lean{BijOnPure};
+\item \lean{DrProb}: each $\Phi_t$ maps pure states to pure states (\lean{MapsPure}) and
+  preserves the Born rule between them (\lean{PreservesBorn});
+\item \lean{DrInfo}: each $\Phi_t$ preserves the von Neumann entropy of density operators.
+\end{itemize}
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Proposition 1, complete & \lean{affine_pure_state_correspondence} (from
+  \lean{Wigner.kadison_tfae}) \\
+Proposition 1, (i) $\Rightarrow$ (iii) & \lean{Wigner.kadison}: onto the pure states suffices \\
+Proposition 1, mixed states from pure states & \lean{Wigner.AffineOnDensities.eq_conjOp} \\
+Proposition 1, (iii) $\Rightarrow$ (ii) & \lean{Wigner.bijOn_of_eq_conjOp} \\
+Proposition 1, extreme points are the pure states & \lean{Wigner.isPure_iff_isExtremeDensity} \\
+Proposition 1, (ii) $\Rightarrow$ (i) & \lean{Wigner.AffineOnDensities.bijOnPure} \\
+Theorem 3, DR-EV $\Rightarrow$ DR-UNIT & \lean{DrEv.drUnit} \\
+Theorem 3, anti-unitary case excluded by $\Phi_t = \Phi_{t/2}^2$ &
+  \lean{Wigner.exists_unitary_of_map_add} \\
+Theorem 3, ``the phases can be chosen'' & \lean{Wigner.exists_addChar_adL},
+  \lean{Wigner.exists_unitaryOneParameterGroup_of_addChar},
+  \lean{Wigner.exists_unitaryOneParameterGroup}, \lean{drUnit_of_implemented} \\
+Theorem 3, DR-PROB $\Rightarrow$ DR-UNIT & \lean{DrProb.drUnit} (via
+  \lean{implemented_of_mapsPure}) \\
+Theorem 3, DR-INFO $\Rightarrow$ DR-UNIT & \lean{DrInfo.drProb}, then \lean{DrProb.drUnit} \\
+Theorem 3, DR-UNIT $\Rightarrow$ DR-EV, DR-PROB, DR-INFO & \lean{DrUnit.drEv},
+  \lean{DrUnit.drProb}, \lean{DrUnit.drInfo} \\
+Theorem 3, DR-UNIT $\Leftrightarrow$ DR-SCEQ & \lean{drUnit_iff_drSceq} (for $\hbar \ne 0$),
+  \lean{eq_exp_of_schrodinger} \\
+Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Finite dimension only; the brief has a separable Hilbert space. In finite dimension the
+  trace class is all of $\mathrm{End}(E)$, strong and norm continuity agree, and the generator is
+  bounded, so Stone's theorem is physlib's bounded version.
+\item The brief's evolution is defined for $t \ge 0$ only ([B]EVMIX has $t_1 \ge t_0$), so all
+  conditions quantify over $t \ge 0$. DR-UNIT still asserts a unitary group on all of
+  $\mathbb{R}$, as the brief's $U_{-t} = U_t^\dagger$ does.
+\item Joint continuity of $(\rho, t_0, t_1) \mapsto \Phi_{t_0 \to t_1}(\rho)$ is weakened to
+  continuity of $t \mapsto \Phi_t(\rho)$ at $0^+$ for each density operator $\rho$, which joint
+  continuity implies. Proposition~1 needs no continuity at all.
+\item Under EVTI the Hamiltonian of DR-SCEQ is constant, so DR-SCEQ is stated with a constant $H$;
+  the brief writes $H(t)$. It is stated for the propagator $U$, which gives the brief's form
+  $\psi(t) = U(t)\psi(0)$ for every initial vector.
+\item The ``reconstructed past'' clauses of DR-PROB and DR-INFO are dropped: a past state $\psi_P$
+  is one with $\Phi_t(\psi_P) = \psi_F$, so its equality follows from the future one. In DR-EV
+  they become injectivity and surjectivity on pure states.
+\item DR-PROB $\Rightarrow$ DR-UNIT goes directly through Wigner's theorem in its non-bijective
+  form (Geh\'er) and the mixed-state extension, not through DR-EV. DR-INFO $\Rightarrow$ DR-UNIT
+  goes through DR-PROB: zero entropy characterizes pure states, and the entropy of an equal
+  mixture of two pure states determines their transition probability
+  (\lean{pure_and_born_of_preserves}, with equal mixtures preserved by affinity,
+  \lean{Wigner.AffineOnDensities.map_mix}). Neither needs bijectivity on pure states.
+\item DR-UNIT $\Rightarrow$ DR-PROB compares $\operatorname{tr}(P_{\psi'}P_{\phi'}) =
+  |\braket{\psi'|\phi'}|^2$, so the phases of the image vectors never enter.
+\item The proof of DR-SCEQ $\Rightarrow$ DR-UNIT shows $U_t = \exp(t(i\hbar)^{-1}H)$ because
+  $\exp(-t(i\hbar)^{-1}H)U_t$ has derivative zero; it needs no $\hbar \ne 0$. The converse,
+  $H = \hbar\cdot$generator, does.
+\item \lean{DrSceq} and \lean{DrUnit} use the adjoint and physlib's
+  \lean{UnitaryOneParameterGroup}, which require \lean{CompleteSpace E}. The brief file therefore
+  carries \lean{[CompleteSpace E]} next to \texttt{[FiniteDimensional $\mathbb{C}$ E]}, although
+  the second implies the first.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} No errors in the statements. Gaps and implicit points:
+\begin{itemize}
+\item Proposition~1, (i) $\Rightarrow$ (iii), rests on ``the standard linear rank-one preserver
+  result'' without a reference; it is not in any Lean library. In finite dimension it is
+  replaced by a direct argument: the two-state decomposition
+  $\tfrac12(P_\psi + P_\phi) = \lambda P_{\hat r} + (1-\lambda)P_{\hat s}$ with
+  $\lambda = (1 + |\braket{\psi|\phi}|)/2$ shows that affinity cannot decrease
+  $|\braket{\psi|\phi}|$, Parseval averaging over an orthonormal basis turns this into equality,
+  and Wigner's theorem finishes. Only surjectivity onto the pure states is used; injectivity is
+  not needed, and surjectivity cannot be dropped (the constant map $\rho \mapsto P_e$ is affine
+  and maps pure states to pure states).
+\item The Remark claims that injectivity on the pure states suffices in finite dimension ``as the
+  compactness of $P(H)$ will force $T$ to be bijective''. Compactness alone does not give this;
+  an injective continuous self-map of the manifold $P(\mathbb{C}^n)$ is onto by invariance of
+  domain. This weakening is not formalized; the surjective one above is.
+\item ``The phases can be chosen so that $U_0 = I$ and $U_{t+s} = U_tU_s$'' is a lifting theorem
+  (Bargmann's theorem for $\mathbb{R}$) that the brief does not prove. In finite dimension it is
+  avoided by working with the phase-free maps $A_t = U_t(\cdot)U_t^\dagger$ on
+  $\mathrm{End}(E)$: they form a norm-continuous group on $\mathbb{R}$ (the pure states span
+  $\mathrm{End}(E)$), so $A_t = \exp(tL)$ in $\mathrm{End}(\mathrm{End}(E))$. $L$ is a
+  $*$-derivation, every derivation of $\mathrm{End}(E)$ is inner, $L = [K, \cdot\,]$, and the
+  skew part $K_0 = \tfrac12(K - K^\dagger)$ has the same commutator. Then $V_t = \exp(tK_0)$ is
+  the required unitary group, and $A_t = V_t(\cdot)V_t^\dagger$.
+\item The exclusion of anti-unitaries by $\Phi_t = \Phi_{t/2} \circ \Phi_{t/2}$ needs EVTI and
+  the group law. In the brief ``Schr\"odinger equation is equivalent to information
+  conservation'' it was not available, and continuity was used instead.
+\item DR-PROB $\Rightarrow$ DR-EV: ``$p = 1$ iff same state'' gives injectivity on pure states;
+  surjectivity has to come from the reconstructed past states. The direct route through Wigner's
+  theorem needs neither.
+\item DR-INFO $\Rightarrow$ DR-UNIT: zero entropy shows that pure states, and only pure states,
+  map to pure states. Bijectivity on the pure states, which Proposition~1 needs, does not follow
+  from this alone: injectivity needs the entropy of mixtures, surjectivity the reconstructed past.
+  The route through DR-PROB needs neither, and no continuity is used in this step.
+\item The overall phase of $U_t$ and the additive constant in $H$ (the brief's last remark) appear
+  in the lift as the freedom in $K$: $K + c$ has the same commutator for every scalar $c$.
+  Taking the skew part removes the real part of $c$; the imaginary part is that constant.
+\end{itemize}
+
+%======================================================================
+\subsection{Hilbert spaces of any dimension}\label{sec:schroedinger-evolution-any-dim}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/SchroedingerEvolution/SchroedingerEvolution/InfiniteDimensional.lean}
+\item Library: \lean{SchroedingerEvolution}, which now builds every module
+  \lean{SchroedingerEvolution.*}
+\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.Stone},\newline
+  \lean{UnitaryEntropy.InfiniteDimensional} (for \lean{pure_and_born_of_preserves_vonNeumannEntropy}
+  and \lean{exists_proj_of_past}),\newline
+  and the finite-dimensional part \lean{SchroedingerEvolution} (for \lean{MapsPure},
+  \lean{PreservesBorn} and \lean{mul_mul_star_eq_conjOp}, none of which assumes finite dimension)
+\item New files in \lean{ForPhyslib/ProbabilisticTheory/HilbertSpace/TraceClass/}:
+  \lean{Compact} (Hilbert--Schmidt and trace-class operators are compact) and
+  \lean{CanonicalExpansion} (a positive trace-class operator is $\sum_i \mu_i
+  \ket{b_i}\bra{b_i}$ in the trace norm, with the tail estimate).
+\item New file \lean{ForPhyslib/QuantumMechanics/TraceNorm.lean}: the map
+  \lean{AffineOnDensityOperators} and, for later use, the facts that such maps contract the trace
+  norm, that conjugation by a strongly continuous family of contractions is trace-norm
+  continuous, and that the pure states are closed. Only the definition is used here.
+\item New file \lean{ForPhyslib/QuantumMechanics/Kadison.lean}: Kadison's theorem in any
+  dimension, without continuity.
+\item New file \lean{ForPhyslib/QuantumMechanics/Bargmann.lean}: strongly continuous unitary
+  groups, and Bargmann's theorem for $\mathbb{R}$, the lift of a continuous evolution by unitary or
+  anti-unitary conjugations to a strongly continuous unitary group.
+\item New file \lean{ForPhyslib/QuantumMechanics/Stone.lean}: Stone's theorem in Schr\"odinger form,
+  on top of PhyslibAlpha's Stone theorem
+  (\lean{PhyslibAlpha/ProbabilisticTheory/HilbertSpace/Unbounded/Existence/StoneReconstruction})
+  and unbounded spectral theorem.
+\item New \lean{ForMathlib} material:
+  \lean{ForMathlib/MeasureTheory/Integral/IntervalIntegral/LocalCocycle.lean} (a continuous local
+  2-cocycle on an interval of $\mathbb{R}$ is a coboundary; the circle-valued form).
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
+Density operators (\lean{IsDensityOperator}), pure states and the entropy
+(\lean{vonNeumannEntropy}) are as in the section ``Hilbert spaces of any dimension'' of
+\lean{briefs/UnitaryEntropy/formalization-log.tex}. A map $T$ on
+operators is \lean{AffineOnDensityOperators} if $T(t\rho + (1-t)\sigma) = tT\rho + (1-t)T\sigma$
+for density operators $\rho, \sigma$ and $t \in [0,1]$, and
+\lean{ImplementedOnDensityOperators}~$T$ means $T\rho = W\rho W^{-1}$ on density operators for a
+unitary or an anti-unitary $W$. A \lean{StronglyContinuousUnitaryGroup} is a family of unitaries
+$U_t$, $t \in \mathbb{R}$, with $U_0 = 1$, $U_{s+t} = U_sU_t$ and $t \mapsto U_t x$ continuous for
+every $x$. \lean{SolvesSchrodinger}~$\hbar\,H\,U$, for a partially defined operator $H$ and bounded
+operators $U_t$, says that for $\psi$ in the domain of $H$ every $U_t\psi$ is in the domain and
+$\frac{d}{dt}U_t\psi = (i\hbar)^{-1}HU_t\psi$. \lean{IsEvolution} is as in finite dimension, with
+\lean{IsDensityOperator} and \lean{AffineOnDensityOperators}; continuity of
+$t \mapsto \Phi_t(\rho)$ at $0^+$ is in operator norm. The conditions are
+\begin{itemize}
+\item \lean{DrSceq}~$\hbar$: $\Phi_t(\rho) = U_t\rho U_t^\dagger$ with $U_0 = 1$ and
+  \lean{SolvesSchrodinger}~$\hbar\,H\,U$ for a self-adjoint $H$;
+\item \lean{DrUnit}: $\Phi_t(\rho) = U_t\rho U_t^\dagger$ for a
+  \lean{StronglyContinuousUnitaryGroup} $U$;
+\item \lean{DrEv}: each $\Phi_t$ is \lean{BijOnPure};
+\item \lean{DrProb}: each $\Phi_t$ satisfies \lean{MapsPure} and \lean{PreservesBorn}, and every
+  pure state is $\Phi_t$ of a pure state (\lean{HasPurePast});
+\item \lean{DrInfo}: each $\Phi_t$ preserves the von Neumann entropy, and every density operator
+  is $\Phi_t$ of a density operator.
+\end{itemize}
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Proposition 1, complete & \lean{affine_pure_state_correspondence} (from
+  \lean{AffineOnDensityOperators.tfae}) \\
+Proposition 1, orthogonal pure states stay orthogonal & \lean{AffineOnDensityOperators.inner_eq_zero} \\
+Proposition 1, overlaps preserved & \lean{AffineOnDensityOperators.norm_inner_eq} \\
+Proposition 1, (i) $\Rightarrow$ (iii) on pure states &
+  \lean{AffineOnDensityOperators.exists_unitary_or_antiunitary} \\
+Proposition 1, mixed states from pure states & \lean{AffineOnDensityOperators.eq_conjOp} \\
+Proposition 1, conjugation preserves density operators & \lean{IsDensityOperator.conjOp} \\
+Proposition 1, extreme points are the pure states & \lean{isPure_iff_isExtremeDensityOperator} \\
+Theorem 3, DR-UNIT $\Leftrightarrow$ DR-SCEQ & \lean{drUnit_iff_drSceq} (for $\hbar \ne 0$), from
+  \lean{StronglyContinuousUnitaryGroup.exists_solvesSchrodinger} and
+  \lean{exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger} \\
+Theorem 3, DR-UNIT $\Rightarrow$ DR-EV, DR-PROB, DR-INFO & \lean{DrUnit.drEv},
+  \lean{DrUnit.drProb}, \lean{DrUnit.drInfo} \\
+Theorem 3, DR-EV $\Rightarrow$ DR-UNIT & \lean{DrEv.drUnit} \\
+Theorem 3, anti-unitaries excluded and ``the phases can be chosen'' &
+  \lean{exists_stronglyContinuousUnitaryGroup} (Bargmann's theorem for $\mathbb{R}$) \\
+Bargmann, the cocycle lemma & \lean{Real.exists_eq_exp_of_localCocycle},
+  \lean{Real.exists_eq_of_continuousOn_localCocycle} \\
+Theorem 3, DR-PROB $\Rightarrow$ DR-UNIT & \lean{DrProb.drEv}, then \lean{DrEv.drUnit} \\
+Theorem 3, DR-INFO $\Rightarrow$ DR-UNIT & \lean{DrInfo.drProb}, then \lean{DrProb.drUnit} \\
+Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Proposition~1 assumes affinity under all convex combinations, as in finite dimension
+  (\lean{AffineOnDensityOperators}); the proof uses weights other than $\tfrac12$, namely
+  $(1 + |\braket{\psi|\phi}|)/2$ in the two-state decomposition and the eigenvalues of the
+  canonical expansion. A hypothesis for equal mixtures only, like the one of the brief
+  ``Schr\"odinger equation is equivalent to information conservation'', would need continuity
+  first, to pass from dyadic weights to all weights. The trace-norm contraction of affine maps
+  (in \lean{TraceNorm}) is not used: mixed states follow from pure states without continuity.
+\item Proposition~1, (i) $\Rightarrow$ (iii), replaces the finite-dimensional Parseval averaging,
+  which needs the trace of the identity, by a two-dimensional argument. Let $r \perp s$ with
+  images $a, b$ and suppose $\braket{a|b} = \delta \in (0,1)$. For the normalized $f_\pm$ of
+  $a \pm b$, the number $z(x) = \braket{f_-|T(P_x) f_+}$ lies on the circle
+  $|z|^2 = (1-\delta^2)/4$, and affinity sends pairs at overlap $\tfrac12$ to perpendicular
+  points. The vectors $r$, $(r+s)/\sqrt2$ and $(r+is)/\sqrt2$ are pairwise at overlap $\tfrac12$,
+  and three pairwise perpendicular nonzero vectors do not fit in the plane. So orthogonal pure
+  states stay orthogonal, overlaps are preserved, and Wigner's theorem in any dimension with
+  surjectivity gives $W$. Mixed states: cut the canonical expansion
+  $\rho = \sum_i \mu_i P_{b_i}$ after weight $m$, $\rho = m\rho_F + (1-m)\sigma_F$; $T$ and
+  conjugation by $W$ agree on the finite mixture $\rho_F$, so they differ on $\rho$ by at most
+  $2(1-m)$ in operator norm, and $m \to 1$.
+\item Continuity at $0^+$ is in operator norm, which trace-norm continuity implies, and is used
+  only on pure states.
+\item DR-UNIT is a strongly continuous unitary group, and DR-SCEQ allows an unbounded $H$. For
+  unbounded $H$ the Schr\"odinger equation holds only for initial vectors in the domain, and
+  \lean{SolvesSchrodinger} requires that the domain is invariant. DR-SCEQ asks for bounded
+  operators $U_t$ with $U_0 = 1$, not for unitaries; unitarity and the group law follow.
+\item The ``reconstructed past'' clauses of DR-PROB and DR-INFO are kept: every pure state has a
+  pure past in DR-PROB, every density operator has a past in DR-INFO. In finite dimension they
+  were dropped, but in infinite dimension they are needed (see below).
+\item DR-PROB $\Rightarrow$ DR-UNIT goes through DR-EV. Born preservation gives injectivity on
+  pure states (two states with the same image have transition probability $1$), and the pure past
+  gives surjectivity; then Proposition~1. In finite dimension the route was Wigner's theorem
+  without surjectivity, which in infinite dimension gives only an isometry.
+\item The lift (\lean{exists_stronglyContinuousUnitaryGroup}) replaces the finite-dimensional
+  argument through $A_t = \exp(tL)$ on $\mathrm{End}(E)$, which needs norm continuity of the
+  conjugation group. Anti-unitaries are excluded by $\Phi_t = \Phi_{t/2}^2$ as before. The
+  unitaries $u_t$ are then determined up to a phase: an operator commuting with every pure state
+  is a scalar (\lean{exists_eq_smul_of_proj_eq}). Continuity of $t \mapsto P_{u_t\psi}$ at $0^+$
+  extends to every $t \ge 0$, since $u_{t_0-h}$ is $u_h^\dagger u_{t_0}$ up to phase, and by
+  polarization to $t \mapsto \ket{u_tx}\bra{u_ty}$. For a fixed unit $e$, the phase with
+  $\braket{e|U_te} > 0$ makes $U_tx = \braket{U_te|e}^{-1}\ket{u_tx}\bra{u_te}\,e$ strongly
+  continuous near $0$. Its multiplier $\omega(a,b) = \braket{e|U_aU_be}/\braket{e|U_{a+b}e}$,
+  with $U_aU_b = \omega(a,b)U_{a+b}$, is continuous, of modulus $1$, near $1$ and a local
+  2-cocycle, so $\omega(a,b) = e^{i(f(a)+f(b)-f(a+b))}$ with continuous $f$. Then
+  $V_t = e^{-if(t)}U_t$ is a local homomorphism on $[0,\varepsilon]$. It extends to $t \ge 0$ by
+  $V_{t/n}^n$ and to $\mathbb{R}$ by $V_{-t} = V_t^\dagger$, and the group law carries strong
+  continuity from $0$ to every $t$.
+\item The cocycle lemma is proved without a mollifier and without derivatives. Integrate the
+  cocycle identity over $c \in [0,\varepsilon]$ at $(a,b,c)$, and over $u$ between $0$ and $b$ at
+  $(a,u,\varepsilon)$. With $\Phi(x) = \int_0^\varepsilon\theta(x,c)\,dc$ and
+  $K(x) = \int_0^x\theta(u,\varepsilon)\,du$ this gives
+  $\varepsilon\theta(a,b) = \Phi(a) + \Phi(b) - \Phi(a+b) + K(a+b) - K(a) - K(b)$, so
+  $f = (\Phi - K)/\varepsilon$. The interval may be one-sided, which the lift needs, since $U_t$ is
+  given only for $t \ge 0$.
+\item DR-UNIT $\Rightarrow$ DR-SCEQ takes $H = -\hbar T$ with $T$ the self-adjoint closure of the
+  candidate generator, $U_t = e^{itT}$ (PhyslibAlpha's Stone theorem). DR-SCEQ $\Rightarrow$
+  DR-UNIT: with $T = -\hbar^{-1}H$ and $V_t = e^{itT}$ from the spectral theorem, $U_t\psi$ and
+  $V_t\psi$ solve $w' = iTw$ with the same initial value for $\psi$ in the domain, so they agree
+  ($\|w_1 - w_2\|^2$ has derivative zero because $T$ is symmetric); the domain is dense, so
+  $U_t = V_t$.
+\item As in finite dimension, $\hbar \ne 0$ is assumed in DR-UNIT $\Leftrightarrow$ DR-SCEQ.
+\end{itemize}
+
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item In infinite dimension the reconstructed past clauses of DR-PROB and DR-INFO cannot be
+  dropped. On $L^2(0,\infty)$ the right shifts $(V_tf)(x) = f(x-t)$ for $x > t$ and $0$ otherwise
+  form a strongly continuous semigroup of isometries. $\Phi_t(\rho) = V_t\rho V_t^\dagger$
+  satisfies \lean{IsEvolution}, maps pure states to pure states, preserves the Born rule and the
+  entropy, but is not a bijection of the pure states and so satisfies neither DR-EV nor DR-UNIT.
+  Not formalized as a semigroup; \lean{shift_preserves_not_unitary} is the single-map version.
+  The brief's abstract claims the infinite-dimensional case, and its definitions do contain past
+  states, so the theorem holds as stated once the past is read as part of DR-PROB and DR-INFO.
+\item ``The phases can be chosen so that $U_0 = I$ and $U_{t+s} = U_tU_s$'' is Bargmann's lifting
+  theorem for $\mathbb{R}$; the brief neither proves nor cites it. In infinite dimension the
+  finite-dimensional trick is not available, because the conjugation group is only strongly
+  continuous. The proof above is Bargmann's 1954 idea specialized to $\mathbb{R}$, with continuous
+  instead of measurable multipliers.
+\item Proposition~1 needs no continuity in any dimension, so the continuity in the brief's
+  hypotheses is redundant there. The Remark's weakening to injectivity does not extend to infinite
+  dimension: conjugation by the shift on $\ell^2(\mathbb{N})$ is affine and injective on pure
+  states but not onto them (\lean{shift_preserves_not_unitary}).
+\item For unbounded $H$, DR-SCEQ's ``$\psi(t) = U(t)\psi(0)$ solves the Schr\"odinger equation''
+  must be restricted to $\psi(0)$ in the domain of $H$, which the brief leaves implicit. Otherwise
+  no problems beyond those of the finite-dimensional part.
+\end{itemize}
+
+\end{document}

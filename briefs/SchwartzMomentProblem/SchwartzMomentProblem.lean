@@ -1,0 +1,177 @@
+/-
+(C) 2026 Ralf Stephan, in collaboration with Claude Code.
+Released under CC0 1.0 Universal (public-domain dedication).
+See https://creativecommons.org/publicdomain/zero/1.0/
+-/
+module
+
+/-
+Non-uniqueness of the moment problem for Schwartz functions.
+Technical brief by T. Thrien for the Assumptions of Physics collaboration,
+https://assumptionsofphysics.org/resources/briefs
+
+For Schwartz functions `f, g` with disjoint compact supports, the states `ψ_θ = f + e^{iθ} g`
+all have the same moments `⟨ψ_θ|Xᵐ Pⁿ|ψ_θ⟩`, with `P = -iħ d/dx`, but are pairwise linearly
+independent for different phases `e^{iθ}`. So the moments of position and momentum do not
+determine a state.
+
+Formalized here:
+* `moment_psi`   eq. (3): `⟨ψ_θ|XᵐPⁿ|ψ_θ⟩ = ⟨f|XᵐPⁿ|f⟩ + ⟨g|XᵐPⁿ|g⟩`, independent of `θ`;
+* `linearIndependent_psi`  `ψ_θ` and `ψ_θ'` are linearly independent when `e^{iθ} ≠ e^{iθ'}`;
+* `bump`, `tsupport_bump_subset`, `bump_ne_zero`  explicit `f, g` as in Fig. 1;
+* `exists_same_moments`  Theorem 1.
+
+The moment is the integral `∫ conj(ψ x) xᵐ (-iħ)ⁿ ψ⁽ⁿ⁾(x) dx`.
+-/
+public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
+public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+
+open Complex ComplexConjugate MeasureTheory SchwartzMap
+
+@[expose] public noncomputable section
+
+namespace SchwartzMomentProblem
+
+/-- The integrand of `⟨ψ|Xᵐ Pⁿ|ψ⟩`, with `P = -iħ d/dx`. -/
+def density (ħ : ℝ) (ψ : ℝ → ℂ) (m n : ℕ) (x : ℝ) : ℂ :=
+  conj (ψ x) * ((x : ℂ) ^ m * ((-I * ħ) ^ n * iteratedDeriv n ψ x))
+
+/-- The moment `⟨ψ|Xᵐ Pⁿ|ψ⟩`. -/
+def moment (ħ : ℝ) (ψ : 𝓢(ℝ, ℂ)) (m n : ℕ) : ℂ := ∫ x, density ħ ψ m n x
+
+/-- `ψ_θ = f + e^{iθ} g`. -/
+def psi (f g : 𝓢(ℝ, ℂ)) (θ : ℝ) : 𝓢(ℝ, ℂ) := f + exp (θ * I) • g
+
+variable {f g : 𝓢(ℝ, ℂ)}
+
+lemma iteratedDeriv_psi (θ : ℝ) (n : ℕ) (x : ℝ) :
+    iteratedDeriv n (psi f g θ) x = iteratedDeriv n f x + exp (θ * I) * iteratedDeriv n g x := by
+  have h : (⇑(psi f g θ)) = fun y => f y + exp (θ * I) • g y := by ext y; simp [psi]
+  have hf : ContDiffAt ℝ n (⇑f) x := (f.smooth ⊤).contDiffAt.of_le (by exact_mod_cast le_top)
+  have hg : ContDiffAt ℝ n (⇑g) x := (g.smooth ⊤).contDiffAt.of_le (by exact_mod_cast le_top)
+  rw [h, iteratedDeriv_fun_add hf (hg.const_smul _), iteratedDeriv_fun_const_smul_field,
+    smul_eq_mul]
+
+/-- Off the support of `g`, every derivative of `g` vanishes. -/
+lemma iteratedDeriv_eq_zero_of_notMem {x : ℝ} (hx : x ∉ tsupport g) (n : ℕ) :
+    iteratedDeriv n g x = 0 := by
+  have : iteratedFDeriv ℝ n g x = 0 :=
+    Function.notMem_support.mp fun h => hx (support_iteratedFDeriv_subset n h)
+  rw [iteratedDeriv_eq_iteratedFDeriv, this, zero_apply]
+
+lemma notMem_tsupport_of_ne_zero (hfg : Disjoint (tsupport f) (tsupport g)) {x : ℝ}
+    (hx : f x ≠ 0) : x ∉ tsupport g :=
+  hfg.notMem_of_mem_left (subset_tsupport _ hx)
+
+/-- The cross terms vanish pointwise: `conj (f x) · g⁽ⁿ⁾(x) = 0`. -/
+lemma conj_mul_iteratedDeriv_eq_zero (hfg : Disjoint (tsupport f) (tsupport g)) (n : ℕ)
+    (x : ℝ) : conj (f x) * iteratedDeriv n g x = 0 := by
+  by_cases hx : f x = 0
+  · simp [hx]
+  · rw [iteratedDeriv_eq_zero_of_notMem (notMem_tsupport_of_ne_zero hfg hx), mul_zero]
+
+/-- Eq. (2) with the cross terms removed, pointwise. -/
+lemma density_psi (ħ : ℝ) (hfg : Disjoint (tsupport f) (tsupport g)) (θ : ℝ) (m n : ℕ)
+    (x : ℝ) : density ħ (psi f g θ) m n x = density ħ f m n x + density ħ g m n x := by
+  have h1 := conj_mul_iteratedDeriv_eq_zero hfg n x
+  have h2 := conj_mul_iteratedDeriv_eq_zero hfg.symm n x
+  have hc : conj (exp (θ * I)) * exp (θ * I) = 1 := by
+    rw [conj_mul', norm_exp_ofReal_mul_I]
+    simp
+  have hψ : psi f g θ x = f x + exp (θ * I) * g x := by simp [psi]
+  simp only [density, iteratedDeriv_psi, hψ, map_add, map_mul]
+  linear_combination ((x : ℂ) ^ m * (-I * ħ) ^ n) *
+    (exp (θ * I) * h1 + conj (exp (θ * I)) * h2 + conj (g x) * iteratedDeriv n g x * hc)
+
+lemma integrable_density (ħ : ℝ) {ψ : 𝓢(ℝ, ℂ)} (hψ : HasCompactSupport ψ) (m n : ℕ) :
+    Integrable (density ħ ψ m n) := by
+  have hcont : Continuous (density ħ ψ m n) := by
+    unfold density
+    have := (ψ.smooth ⊤).continuous_iteratedDeriv n (by exact_mod_cast le_top)
+    fun_prop
+  have hsupp : HasCompactSupport (density ħ ψ m n) :=
+    (hψ.comp_left (map_zero (starRingEnd ℂ))).mul_right
+  exact hcont.integrable_of_hasCompactSupport hsupp
+
+/-- Eq. (3): the moments of `ψ_θ` do not depend on `θ`. -/
+theorem moment_psi (ħ : ℝ) (hf : HasCompactSupport f) (hg : HasCompactSupport g)
+    (hfg : Disjoint (tsupport f) (tsupport g)) (θ : ℝ) (m n : ℕ) :
+    moment ħ (psi f g θ) m n = moment ħ f m n + moment ħ g m n := by
+  simp only [moment, density_psi ħ hfg]
+  exact integral_add (integrable_density ħ hf m n) (integrable_density ħ hg m n)
+
+lemma exists_apply_ne_zero {φ : 𝓢(ℝ, ℂ)} (hφ : φ ≠ 0) : ∃ x, φ x ≠ 0 := by
+  by_contra h
+  push Not at h
+  exact hφ (SchwartzMap.ext h)
+
+/-- Different phases give linearly independent states, hence different rays. -/
+theorem linearIndependent_psi (hf0 : f ≠ 0) (hg0 : g ≠ 0)
+    (hfg : Disjoint (tsupport f) (tsupport g)) {θ θ' : ℝ} (hθ : exp (θ * I) ≠ exp (θ' * I)) :
+    LinearIndependent ℂ ![psi f g θ, psi f g θ'] := by
+  obtain ⟨x₀, hx₀⟩ := exists_apply_ne_zero hf0
+  obtain ⟨y₀, hy₀⟩ := exists_apply_ne_zero hg0
+  have hgx : g x₀ = 0 :=
+    image_eq_zero_of_notMem_tsupport (notMem_tsupport_of_ne_zero hfg hx₀)
+  have hfy : f y₀ = 0 :=
+    image_eq_zero_of_notMem_tsupport (notMem_tsupport_of_ne_zero hfg.symm hy₀)
+  rw [LinearIndependent.pair_iff]
+  intro s t hst
+  have ex := congrArg (· x₀) hst
+  have ey := congrArg (· y₀) hst
+  simp only [psi, add_apply, smul_apply, smul_eq_mul, hgx, hfy, zero_apply] at ex ey
+  have hst' : s + t = 0 := by
+    have : (s + t) * f x₀ = 0 := by linear_combination ex
+    exact (mul_eq_zero.mp this).resolve_right hx₀
+  have hs' : s * exp (θ * I) + t * exp (θ' * I) = 0 := by
+    have : (s * exp (θ * I) + t * exp (θ' * I)) * g y₀ = 0 := by linear_combination ey
+    exact (mul_eq_zero.mp this).resolve_right hy₀
+  have hs : s = 0 := by
+    have : s * (exp (θ * I) - exp (θ' * I)) = 0 := by
+      linear_combination hs' - exp (θ' * I) * hst'
+    exact (mul_eq_zero.mp this).resolve_right (sub_ne_zero.mpr hθ)
+  exact ⟨hs, by linear_combination hst' - hs⟩
+
+/-- The real bump function centred at `c`, equal to `1` on `[c - 1/2, c + 1/2]` and supported
+in `[c - 1, c + 1]`. -/
+def realBump (c : ℝ) : ContDiffBump c := ⟨1 / 2, 1, by norm_num, by norm_num⟩
+
+/-- The bump function of Fig. 1, as a complex Schwartz function. -/
+def bump (c : ℝ) : 𝓢(ℝ, ℂ) :=
+  HasCompactSupport.toSchwartzMap (f := fun x => ((realBump c x : ℝ) : ℂ))
+    ((realBump c).hasCompactSupport.comp_left ofReal_zero)
+    (ofRealCLM.contDiff.comp (realBump c).contDiff)
+
+lemma hasCompactSupport_bump (c : ℝ) : HasCompactSupport (bump c) :=
+  (realBump c).hasCompactSupport.comp_left ofReal_zero
+
+lemma tsupport_bump_subset (c : ℝ) : tsupport (bump c) ⊆ Metric.closedBall c 1 := by
+  have := tsupport_comp_subset ofReal_zero (realBump c)
+  rwa [(realBump c).tsupport_eq] at this
+
+lemma bump_ne_zero (c : ℝ) : bump c ≠ 0 := by
+  intro h
+  have h1 : (realBump c) c = 1 :=
+    (realBump c).one_of_mem_closedBall (Metric.mem_closedBall_self (by norm_num [realBump]))
+  have hc : bump c c = ((realBump c c : ℝ) : ℂ) := rfl
+  have : ((realBump c c : ℝ) : ℂ) = 0 := by simpa [hc] using congrArg (· c) h
+  simp [h1] at this
+
+/-- Theorem 1: two linearly independent Schwartz functions with the same moments
+`⟨ψ|Xᵐ Pⁿ|ψ⟩` for all `m, n`. They are `ψ₀ = f + g` and `ψ_π = f - g` for two bumps. -/
+theorem exists_same_moments (ħ : ℝ) :
+    ∃ ψ₁ ψ₂ : 𝓢(ℝ, ℂ), LinearIndependent ℂ ![ψ₁, ψ₂] ∧
+      ∀ m n, moment ħ ψ₁ m n = moment ħ ψ₂ m n := by
+  have hdisj : Disjoint (tsupport (bump 0)) (tsupport (bump 3)) :=
+    (Metric.closedBall_disjoint_closedBall (by norm_num [Real.dist_eq])).mono
+      (tsupport_bump_subset 0) (tsupport_bump_subset 3)
+  have hθ : exp ((0 : ℝ) * I) ≠ exp ((Real.pi : ℝ) * I) := by
+    rw [ofReal_zero, zero_mul, exp_zero, exp_pi_mul_I]
+    norm_num
+  refine ⟨psi (bump 0) (bump 3) 0, psi (bump 0) (bump 3) Real.pi,
+    linearIndependent_psi (bump_ne_zero 0) (bump_ne_zero 3) hdisj hθ, fun m n => ?_⟩
+  rw [moment_psi ħ (hasCompactSupport_bump 0) (hasCompactSupport_bump 3) hdisj,
+    moment_psi ħ (hasCompactSupport_bump 0) (hasCompactSupport_bump 3) hdisj]
+
+end SchwartzMomentProblem

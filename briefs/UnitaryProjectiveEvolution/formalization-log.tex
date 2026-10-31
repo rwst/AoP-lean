@@ -1,0 +1,435 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Unitary evolution as infinitesimal projective processes}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryProjectiveEvolution/UnitaryProjectiveEvolution.lean}
+\item Library: \lean{UnitaryProjectiveEvolution}
+\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.VonNeumannResolvent},\newline
+  \lean{ForPhyslib.QuantumMechanics.Wigner.AffineExtension},\newline
+  \lean{ForMathlib.Analysis.SpecialFunctions.Exponential},\newline
+  and the brief \lean{SchroedingerEvolution} (for \lean{IsEvolution}, \lean{DrUnit}, \lean{DrEv},
+  \lean{DrEv.drUnit} and Proposition~1)
+\item New file \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent.lean}: the von Neumann
+  generator, the unitary channel of physlib's \lean{UnitaryOneParameterGroup}, the resolvent and
+  its spectral identity, the second-order estimates, the largest outcome on a pure state with a
+  Davis--Kahan bound, the resolvent exponential formula and time reversal. \lean{Pinching} gained
+  the spectral decomposition \lean{sum_smul_spectralProj} and \lean{spectralProj_ne_zero}.
+\item New \lean{ForMathlib} material:\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/Trace.lean} (the operator norm of a positive
+  operator is at most its trace).
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a finite-dimensional complex Hilbert space, with density operators,
+pure states and \lean{AffineOnDensities} as in the brief ``Multiple equivalent characterizations
+of the Schr\"odinger equation''. $V$ is a norm-continuous unitary one-parameter group with
+self-adjoint generator $K$, $V_t = e^{-itK}$; $\hbar = 1$, so $K = H/\hbar$.
+\lean{vonNeumannGenerator}~$K$~$\rho = -i(K\rho - \rho K)$ is $L$,
+\lean{unitaryChannel}~$V$~$t$~$\rho = V_t\rho V_t^\dagger$ is $T_t$, and
+\lean{vonNeumannResolvent}~$V$~$\tau = (1 - \tau L)^{-1}$ is $\Psi_\tau$, a linear equivalence of
+$\mathrm{End}(E)$. The definitions are
+\begin{itemize}
+\item \lean{IsProjectiveDecomposition}~$P$: star projections $P_a$, $P_aP_b = 0$ for
+  $a \ne b$, $\sum_a P_a = 1$, over a finite index type;
+\item \lean{IsStateAdaptiveProjective}~$\Psi$: $\Psi$ maps density operators to density
+  operators, is affine on them, and for each density operator $\rho$ there is a projective
+  decomposition with $\Psi\rho = \sum_a P_a\rho P_a$ (Definition~1);
+\item \lean{IsOutcome}~$\Psi$~$P$~$p$~$Q$: $Q$ is pure and $F_aPF_a = pQ$ for one term of a
+  projective decomposition with $\Psi P = \sum_a F_aPF_a$;
+  \lean{IsBranch}~$\Psi$~$n$~$Q$~$p$: $Q_0$ is pure and each $Q_{k+1}$ is an outcome on $Q_k$
+  of probability $p_k$, for $k < n$;
+\item \lean{PerfectPrediction}~$\Psi$~$t$: from every pure $P$ there are, for all large $n$,
+  branches $Q^{(n)}$ of $n$ steps of $\Psi_{t/n}$ with $Q^{(n)}_0 = P$, whose probability
+  $\prod_k p^{(n)}_k$ tends to $1$ and whose final state $Q^{(n)}_n$ converges;
+\item \lean{IsProjectiveLimit}~$\Phi$~$\Psi$: every $\Psi_\tau$ with $\tau > 0$ is
+  state-adaptive projective, $(\Psi_\tau\rho - \rho)/\tau$ converges as $\tau \to 0^+$ for every
+  density operator, $(\Psi_{t/n})^n\rho \to \Phi_t\rho$ for $t > 0$, and prediction is perfect
+  for every $t > 0$;
+\item \lean{DrProj}~$\Phi$ (DR-PROJ): $\Phi$ is a projective limit, and a second projective limit
+  $\Phi'$ (reconstruction) satisfies $\Phi'_t(\Phi_tP) = P$ and $\Phi_t(\Phi'_tP) = P$ for pure
+  $P$ and $t > 0$;
+\item \lean{DrUnit} (DR-UNIT) and \lean{IsEvolution} are those of the brief on the
+  Schr\"odinger equation.
+\end{itemize}
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Definition~1 & \lean{IsStateAdaptiveProjective} \\
+Proposition~2, $(I - \tau L)^{-1}$ exists & \lean{injective_vonNeumannStep},
+  \lean{vonNeumannResolvent} \\
+Eq.~(10) & \lean{vonNeumannResolvent_sub} \\
+Eq.~(11) & \lean{spectralProj_mul_vonNeumannGenerator_mul} \\
+Eq.~(12) & \lean{spectralProj_mul_mul_vonNeumannResolvent} \\
+Eq.~(4), $\Psi_\tau\rho = \sum_a P_a^\rho\rho P_a^\rho$ & \lean{pinching_vonNeumannResolvent} \\
+$\Psi_\tau$ is affine, positive, trace preserving & \lean{isDensity_vonNeumannResolvent},
+  \lean{trace_vonNeumannResolvent} \\
+Proposition~2 & \lean{isStateAdaptiveProjective_vonNeumannResolvent} \\
+$\|L_K\| \le 2M/\hbar$ & \lean{norm_vonNeumannGenerator_apply_le} \\
+Eq.~(16) & \lean{norm_vonNeumannResolvent_sub_sub_le}, \lean{norm_unitaryChannel_sub_sub_le} \\
+Proposition~13, eq.~(14) & \lean{norm_vonNeumannResolvent_sub_unitaryChannel_le}:
+  $\le 8\|K\|^2\tau^2$ \\
+Proposition~13, eq.~(15), and $F_\tau(P)$ has rank one & \lean{exists_spectralProj_max_eq_proj}:
+  $1 - q_\tau(P) \le 8\|K\|^2\tau^2$, $\|F_\tau(P) - T_\tau P\| \le 48\|K\|^2\tau^2$ \\
+Proposition~17 & \lean{implemented_of_bijOnPure} \\
+$(\Psi_\tau - I)/\tau = L\Psi_\tau \to L$ & \lean{tendsto_inv_smul_vonNeumannResolvent_sub} \\
+Eq.~(20) & \lean{tendsto_vonNeumannResolvent_iterate}, error $\le 8\|K\|^2t^2/n$ \\
+Eq.~(21), errors accumulate to $O(t^2/n)$ & \lean{perfectPrediction_vonNeumannResolvent},
+  \lean{norm_sub_unitaryChannel_le_of_step} \\
+``Replacing $H$ with $-H$'' & \lean{timeReversal}, \lean{unitaryChannel_timeReversal} \\
+DR-UNIT $\Rightarrow$ DR-PROJ & \lean{DrUnit.drProj} \\
+The branch has weight tending to one in the unconditioned output &
+  \lean{isPositive_iterate_sub_of_isBranch}, \lean{norm_iterate_sub_le_of_isBranch} \\
+$\Phi_t$ maps pure states to pure states & \lean{IsProjectiveLimit.isPure},
+  \lean{isClosed_setOf_isPure} \\
+$\Phi_t$ maps pure states bijectively onto pure states & \lean{DrProj.drEv} \\
+Eq.~(27), phases & from the brief on the Schr\"odinger equation, \lean{DrEv.drUnit} \\
+DR-PROJ $\Rightarrow$ DR-UNIT & \lean{DrProj.drUnit} \\
+Theorem~18 & \lean{drUnit_iff_drProj} \\
+A map affine on density operators is linear on them & \lean{exists_basis_isDensity},
+  \lean{AffineOnDensities.basis_constr_apply}, \lean{AffineOnDensities.exists_linearMap} \\
+$(T_{t/n})^n \to e^{tB}$ when $(T_\tau - I)/\tau \to B$ &
+  \lean{tendsto_pow_exp_of_tendsto_smul_sub_one} \\
+Affinity of the limit, eqs.~(28)--(29), composition for all durations &
+  \lean{IsProjectiveLimit.exists_eq_exp} ($\Phi_t = e^{tB}$ on density operators),
+  \lean{IsProjectiveLimit.isEvolution}, \lean{DrProj.isEvolution} \\
+Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Finite dimension only; the brief has a separable Hilbert space. Every generator is bounded,
+  so the cutoffs $H_\tau = f_\tau(H)$, eqs.~(22)--(25) and the remark on unbounded generators are
+  not needed and not formalized.
+\item Norms are operator norms, not trace norms. Density operators have operator norm at most one,
+  so the bounds of Proposition~13 are uniform over density operators as in the brief, with the
+  explicit constants $8$ and $48$. In finite dimension trace-norm convergence follows, but a
+  trace-norm version of (14) and (15) would carry the dimension.
+\item Positivity and trace preservation of $\Psi_\tau$ come from eq.~(12), not from the integral
+  representation~(7): $\Psi_\tau\rho = \sum_x P_x\rho P_x$, which is a density operator when
+  $\rho$ is. Eqs.~(5)--(9) and complete positivity are not formalized. The same identity gives
+  injectivity of $1 - \tau L$, so Proposition~2 holds for every real $\tau$.
+\item Eq.~(15) is proved for the largest eigenvalue, once $8\|K\|^2\tau^2 \le \frac12$; it is the
+  only case the proof of Theorem~18 uses.
+\item DR-PROJ is made precise as follows. Outcomes and branches refer to a projective
+  decomposition that realizes $\Psi$ on the current pure state. Perfect prediction asks that the
+  final branch state converges, without naming the limit; DR-PROJ $\Rightarrow$ DR-UNIT shows that
+  it is $\Phi_tP$. Reconstruction is a second projective limit that inverts $\Phi_t$ on pure
+  states. For the resolvents it is the limit of $(1 + \tau L)^{-1}$, as in the remark ``The
+  finite process is not unitary''.
+\item \lean{drUnit_iff_drProj} assumes \lean{IsEvolution} of the brief on the Schr\"odinger
+  equation: $\Phi_t$ is affine and preserves density operators, $\Phi_0 = I$,
+  $\Phi_{s+t} = \Phi_s\Phi_t$, and $t \mapsto \Phi_t\rho$ is continuous at $0^+$. The brief
+  derives these from DR-PROJ (affinity of the limit, eqs.~(28)--(29), common refinements).
+  \lean{IsProjectiveLimit.isEvolution} derives them too, but not by the brief's route. Each
+  $\Psi_\tau$ agrees on density operators with a linear map $T_\tau$, because the density
+  operators contain a basis of the operators; $(T_\tau - I)/\tau \to B$ in operator norm, because
+  convergence on a basis is norm convergence; and $(T_{t/n})^n \to e^{tB}$ by telescoping. So
+  $\Phi_t = e^{tB}$ on density operators for every $t > 0$, which gives affinity, preservation of
+  density operators, continuity at $0^+$ and composition for all durations at once; eq.~(28) and
+  the common refinements are not needed. DR-PROJ says nothing about $\Phi_0$, which is assumed to
+  be the identity: \lean{drUnit_iff_drProj_and_map_zero} is DR-UNIT $\Leftrightarrow$ DR-PROJ
+  with $\Phi_0 = I$.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} No errors in the statements. Gaps and implicit points:
+\begin{itemize}
+\item Proposition~2 shows that the integral~(7) is a right inverse of $I - \tau L$. That it is
+  $(I - \tau L)^{-1}$ also needs injectivity, which is not mentioned. In finite dimension it
+  follows from eq.~(11): for self-adjoint $\sigma$, $\sigma = \sum_x P_x(\sigma - \tau L\sigma)P_x$
+  over the spectral projectors of $\sigma$, so $(I - \tau L)\sigma = 0$ forces $\sigma = 0$.
+\item Proposition~13 appeals to ``standard perturbation of an isolated eigenvalue'' without a
+  reference or a gap condition. Here it is a Davis--Kahan bound. Let $q \ge \frac12$ be the
+  largest eigenvalue of $\sigma = \Psi_\tau P$, $F = \ket{\phi}\bra{\phi}$ its spectral projector
+  and $u = V_\tau\psi$. Then $\sigma - qF$ is positive with trace $1 - q$, so
+  $\braket{w|\sigma w} \le (1-q)\|w\|^2$ for $w = u - \braket{\phi|u}\phi$. Comparing with
+  $\sigma u = u + (\sigma - P_u)u$ gives $\|w\| \le 2\|\sigma - P_u\|$, and
+  $\|F - P_u\| \le 3\|w\|$.
+\item Section~3 states DR-PROJ only as ``the probabilities of the predicted and reconstructed
+  state sequences tend to one''. The remark on prediction and reconstruction adds that the
+  predicted states converge. This is not an extra assumption: since the branch is within
+  $2(1-w)$ of $\Psi^nP \to \Phi_tP$, the predicted states converge to $\Phi_tP$ anyway. The
+  finite-dimensional proof still uses the clause; the proof in any dimension does not
+  (Section~\ref{sec:unitary-projective-any-dim}).
+\item ``Perfect reconstruction gives the converse correspondence'' does not say how the
+  reconstructed sequence relates to the predicted one. Injectivity and surjectivity of $\Phi_t$ on
+  pure states need the reconstruction to invert $\Phi_t$; this is what DR-PROJ assumes here.
+\item Composition for durations with irrational ratio, ``take common refinements with a
+  remaining interval whose duration tends to zero'', is a gap. The remaining interval is
+  harmless: with a common step $\tau$ the powers of $\Psi_\tau$ commute, so
+  $\|\Psi_\tau^k(\Psi_\tau^j\rho - \rho)\|_1 \le j\|\Psi_\tau\rho - \rho\|_1
+  \approx j\tau\|L\rho\|_1
+  \to 0$ by the telescoping of eq.~(28). The problem is the step size. DR-PROJ defines $\Phi_t$
+  only as $\lim_n (\Psi_{t/n})^n$. With $t/s$ irrational and $\tau = (t+s)/N$, the block of
+  $k = \lfloor t/\tau\rfloor$ steps is $\Psi_\tau^k$, which is not of the form $(\Psi_{t/k})^k$,
+  and DR-PROJ says nothing about its limit. Comparing $(\Psi_a)^k$ with $(\Psi_b)^k$ for nearby
+  $a, b$ needs the $o(\tau)$ in eq.~(26) to be uniform along the states $\Psi_b^j\rho$, while
+  eq.~(26) holds for each $\rho$ separately. Continuity at zero does not supply this. In finite
+  dimension $L$ is bounded, eq.~(26) holds in operator norm, and telescoping gives
+  $\|(\Psi_{t/n})^n - e^{tL}\| \le n\,o(t/n)\,e^{t\|L\|} \to 0$, so $\Phi_t = e^{tL}$ and
+  composition follow at once (formalized, \lean{IsProjectiveLimit.exists_eq_exp}). In infinite
+  dimension Chernoff's product formula gives the same,
+  uniformly on compact $t$-intervals, provided the closure of $L$ generates a contraction
+  semigroup; the brief's ``single, possibly unbounded generator $L$'' must be read to include
+  this, or it must be assumed.
+\item ``The phases of the implementing unitaries may be chosen'' is the lifting step already noted
+  for the brief on the Schr\"odinger equation; it is filled in the same way.
+\item The remarks ``The qubit picture'' ($\Psi_\tau = \frac12(I + C_\tau)$ with the Cayley
+  transform $C_\tau$) and ``The finite process is not unitary'' are not formalized.
+\end{itemize}
+
+\subsection{Hilbert spaces of any dimension}\label{sec:unitary-projective-any-dim}
+
+This subsection covers Definition~1, Propositions~2 and~13, eq.~(20) and Theorem~18 in both
+directions, with an unbounded generator.
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryProjectiveEvolution/UnitaryProjectiveEvolution/InfiniteDimensional.lean}
+\item Library: \lean{UnitaryProjectiveEvolution}, which now builds every module
+  \lean{UnitaryProjectiveEvolution.*}
+\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.SpectralCutoff},\newline
+  \lean{ForPhyslib.QuantumMechanics.VonNeumannResolvent.Laplace},\newline
+  and \lean{SchroedingerEvolution.InfiniteDimensional} (for \lean{IsEvolution}, \lean{DrUnit},
+  \lean{DrEv} and \lean{DrEv.drUnit}; it brings \lean{StronglyContinuousUnitaryGroup} and
+  \lean{AffineOnDensityOperators})
+\item New file \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Laplace.lean}: the resolvent
+  of a bounded generator in any dimension as the Laplace integral of the unitary channel, its
+  inverse identities, preservation of density operators, the eigenbasis decomposition, the
+  second-order estimates and the largest outcome in trace norm, the exponential formula and the
+  generator limit.
+\item New file \lean{ForPhyslib/QuantumMechanics/SpectralCutoff.lean}: the cutoff groups
+  $\int e^{itc_M(x)}\,d\mu_S(x)$ through PhyslibAlpha's bounded spectral integral, the bound
+  $\|H_M\| \le M$ on their generators, strong convergence as $M \to \infty$, and the spectral
+  projectors $P_m = \mu_S[-m,m]$.
+\item Additions to \lean{ForPhyslib/QuantumMechanics/TraceNorm.lean}: \lean{traceENorm}, the trace
+  norm $\operatorname{tr}|T| \in [0,\infty]$ of any operator, with its calculus; the trace-norm
+  distance of two pure states (\lean{traceENorm_proj_sub_proj_le}); extension of trace-norm bounds
+  from pure states to density operators (\lean{traceENorm_apply_le_of_forall_proj}); trace-norm
+  convergence of $U_a\rho U_a^\dagger$ when $U_a \to U$ strongly (\lean{tendsto_traceENorm_conj});
+  density of the density operators supported in projections $P_a \to 1$
+  (\lean{exists_isDensityOperator_mul_eq}); and closedness of the pure states under trace-norm
+  limits (\lean{isPure_of_tendsto_traceENorm}).
+\item Addition to \lean{ForPhyslib/QuantumMechanics/Stone.lean}:
+  \lean{StronglyContinuousUnitaryGroup.exists_expIntegral}, every strongly continuous unitary
+  group is $t \mapsto \int e^{itx}\,d\mu_S(x)$ for a projection-valued measure $\mu_S$ on
+  $\mathbb{R}$.
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
+Density operators (\lean{IsDensityOperator}) and pure states are as in
+the section ``Hilbert spaces of any dimension'' of
+\lean{briefs/SchroedingerEvolution/formalization-log.tex}, and DR-UNIT is \lean{DrUnit} from there:
+$\Phi_t\rho = U_t\rho U_t^\dagger$ for a strongly continuous unitary group, whose generator may be
+unbounded. Limits are in the trace norm, through \lean{traceENorm}. For a norm-continuous group
+$V_t = e^{-itK}$ with bounded generator, $L$, $T_t$ and $\hbar = 1$ are as in finite dimension, and
+\lean{laplaceResolvent}~$V$~$\tau = \int_0^\infty e^{-s}T_{\tau s}\,ds$ is $\Psi_\tau$, a bounded
+operator on $\mathrm{End}(E)$. The definitions are those of finite dimension, with these changes:
+\begin{itemize}
+\item \lean{IsProjectiveDecomposition}~$P$: the index type is arbitrary and $\sum_a P_a = 1$
+  converges strongly; \lean{IsStateAdaptiveProjective}, \lean{IsOutcome}: the sums
+  $\sum_a P_a\rho P_a$ converge strongly;
+\item \lean{PerfectPrediction}: the final branch state converges in trace norm;
+\item \lean{IsProjectiveLimit}~$\Phi$~$\Psi$: $(\Psi_{t/n})^n\rho \to \Phi_t\rho$ in trace norm,
+  and the infinitesimal condition is eq.~(26): there is a set $D$ of density operators, dense in
+  trace norm, such that $(\Psi_\tau\rho - \rho)/\tau$ converges in trace norm as $\tau \to 0^+$ for
+  every $\rho \in D$.
+\end{itemize}
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Definition~1 & \lean{IsStateAdaptiveProjective}, \lean{IsProjectiveDecomposition} \\
+Eq.~(7), $\Psi_\tau$ as a mixture of unitary channels & \lean{laplaceResolvent} \\
+Eqs.~(8)--(9), $(I - \tau L)\Psi_\tau = I$ & \lean{integral_laplace_vonNeumannStep},
+  \lean{laplaceResolvent_sub} \\
+$\Psi_\tau(I - \tau L) = I$ & \lean{laplaceResolvent_vonNeumannStep} \\
+$\Psi_\tau$ is affine, positive, trace preserving & \lean{laplaceResolvent_nonneg},
+  \lean{isDensityOperator_laplaceResolvent} \\
+Eq.~(11), on an eigenbasis & \lean{inner_vonNeumannGenerator_apply_eq_zero} \\
+Eqs.~(4), (12) & \lean{exists_hilbertBasis_laplaceResolvent}: $\Psi_\tau\rho = \sum_i
+  P_i\rho P_i$ with $P_i\rho P_i = \mu_iP_i$ \\
+Proposition~2 & \lean{isStateAdaptiveProjective_laplaceResolvent} \\
+$\|L_K\| \le 2M/\hbar$ on trace-class operators & \lean{traceENorm_vonNeumannGenerator_le} \\
+Proposition~13, eq.~(14), in trace norm &
+  \lean{traceENorm_laplaceResolvent_sub_unitaryChannel_le}: $\le 80\|K\|^2\tau^2$ \\
+Proposition~13, eq.~(15), in trace norm & \lean{exists_max_laplaceResolvent_proj}:
+  $1 - q_\tau(P) \le 8\|K\|^2\tau^2$, $\|F_\tau(P) - T_\tau P\|_1 \le 64\|K\|^2\tau^2$ \\
+$(\Psi_\tau - I)/\tau = L\Psi_\tau \to L$, bounded $K$ &
+  \lean{tendsto_inv_smul_laplaceResolvent_sub}, error $\le 4\|K\|^2\tau$ \\
+Eq.~(20), bounded $K$ & \lean{tendsto_laplaceResolvent_iterate},
+  \lean{traceENorm_laplaceResolvent_iterate_sub_le}: error $\le 80\|K\|^2t^2/n$ \\
+Eq.~(22) & \lean{cutoffLevel}: $M_\tau = \tau^{-1/4}$, \lean{mul_cutoffLevel_sq},
+  \lean{tendsto_cutoffLevel} \\
+$H_\tau = f_\tau(H)$, $\|H_\tau\| \le M_\tau$ & \lean{cutoffGroup},
+  \lean{norm_cutoffGroup_generator_le} \\
+$e^{tH_\tau/(i\hbar)} \to e^{tH/(i\hbar)}$ strongly & \lean{tendsto_cutoffGroup_apply} \\
+Eq.~(23) & \lean{cutoffResolvent} \\
+Eq.~(26), on the core of bounded spectral support & \lean{infinitesimal_cutoffResolvent},
+  \lean{laplaceResolvent_cutoffGroup_eq}, \lean{cutoffGroup_mul_spectralCutoffProj} \\
+The core is dense & \lean{exists_isDensityOperator_mul_eq},
+  \lean{tendsto_spectralCutoffProj_apply} \\
+Eqs.~(24)--(25), hence eq.~(20) for unbounded $H$ & \lean{tendsto_cutoffResolvent_iterate},
+  \lean{traceENorm_sub_unitaryChannel_le_of_step}, \lean{tendsto_traceENorm_conj} \\
+Perfect prediction, unbounded $H$, total failure $O(t\tau M_\tau^2)$ &
+  \lean{perfectPrediction_cutoffResolvent} \\
+$U_t = e^{tH/(i\hbar)}$ for a spectral measure & \lean{StronglyContinuousUnitaryGroup.exists_expIntegral} \\
+``Replacing $H_\tau$ with $-H_\tau$'' & \lean{timeReversal} \\
+DR-UNIT $\Rightarrow$ DR-PROJ & \lean{DrUnit.drProj}, from \lean{isProjectiveLimit_cutoffResolvent}
+  and \lean{exists_isProjectiveLimit} \\
+The branch has weight tending to one in the unconditioned output &
+  \lean{IsOutcome.nonneg}, \lean{nonneg_iterate_sub_of_isBranch},
+  \lean{traceENorm_iterate_sub_le_of_isBranch}: $\|\Psi^n Q_0 - Q_n\|_1 \le 2(1 - w)$ \\
+$\Phi_t$ maps pure states to pure states & \lean{IsProjectiveLimit.isPure},
+  \lean{isPure_of_tendsto_traceENorm} \\
+$\Phi_t$ maps pure states bijectively onto pure states & \lean{DrProj.drEv} \\
+Proposition~17 and eq.~(27), phases & from the brief on the Schr\"odinger equation,
+  \lean{DrEv.drUnit} (the section ``Hilbert spaces of any dimension'' of
+\lean{briefs/SchroedingerEvolution/formalization-log.tex}) \\
+DR-PROJ $\Rightarrow$ DR-UNIT & \lean{DrProj.drUnit} \\
+Theorem~18 & \lean{drUnit_iff_drProj} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Limits and the bounds of Proposition~13 are in the trace norm, as the brief's remark on
+  prediction and reconstruction asks. \lean{traceENorm} is $\operatorname{tr}|T|$ in $[0,\infty]$
+  for every operator, so convergence statements carry no trace-class witnesses; it is finite
+  exactly on the trace class, where it is PhyslibAlpha's trace norm.
+\item In Definition~1 the projective decomposition has an arbitrary index type and its sums
+  converge strongly. For a density operator $\rho$ the sum $\sum_a P_a\rho P_a$ converges in trace
+  norm anyway, so nothing is lost; in a separable space at most countably many $P_a$ are nonzero.
+\item $\Psi_\tau$ is defined by the integral~(7), which converges in operator norm on
+  $\mathrm{End}(E)$ for every real $\tau$. It is a two-sided inverse of $I - \tau L$: the brief's
+  eqs.~(8)--(9) give the right inverse, and since $L$ commutes with every $T_s$ the same integral
+  is a left inverse. Positivity comes from the integral. That $\Psi_\tau\rho$ is trace class with
+  trace one uses the integral again, now in the trace class $\mathcal{S}_1$, where
+  $s \mapsto T_s\rho$ is continuous and the trace is a continuous functional. Interchanging a
+  basis sum with the integral would need a countable basis.
+\item The decomposition of Proposition~2 uses the rank-one projectors $P_i$ onto an eigenbasis of
+  $\sigma = \Psi_\tau\rho$, not the spectral projectors that group equal eigenvalues. Both satisfy
+  Definition~1. Eq.~(11) becomes $\braket{b_i|L\sigma\,b_i} = 0$, so
+  $P_i\rho P_i = \braket{b_i|\rho\,b_i}P_i = \mu_iP_i$, and ``every $P_a^P$ with $\lambda_a > 0$ has
+  rank one'' is automatic. For a pure state the largest eigenvalue is at least
+  $1 - 8\|K\|^2\tau^2 > \frac12$ and the eigenvalues sum to one, so it is simple and its
+  eigenprojector is the brief's $F_\tau(P)$.
+\item Proposition~13 is proved through the finite-dimensional operator-norm argument: the
+  Davis--Kahan bound $\|w\| \le 2\|\sigma - P_u\|$ for the component $w$ of $u = V_\tau\psi$
+  orthogonal to the top eigenvector $\phi$, then $\|P_\phi - P_u\|_1 \le 4\|w\|$ for unit vectors.
+  For a pure state $P$, $\Psi_\tau P - qF_\tau(P)$ is positive with trace $1-q$, which gives
+  eq.~(14) on pure states with constant $80$. It extends to all density operators by summing the
+  canonical expansion in $\mathcal{S}_1$. For $8\|K\|^2\tau^2 > \frac12$ the bound is trivial,
+  since $\|\Psi_\tau\rho - T_\tau\rho\|_1 \le 2$, so eq.~(14) holds for every $\tau \ge 0$.
+\item The cutoff of eq.~(22) is $M_\tau = \tau^{-1/4}$, so $\tau M_\tau^2 = \sqrt\tau$.
+  $H_\tau$ is never formed as an operator of its own. The cutoff group
+  $W_t = \int e^{itc_M(x)}\,d\mu_S(x)$, with $c_M(x) = \max(-M,\min(x,M))$, is a norm-continuous
+  unitary group because $\|W_t - W_s\| \le M|t-s|$, and $H_\tau$ is its bounded generator, of norm
+  at most $M$ by the same Lipschitz bound. Up to the sign convention of physlib's
+  \lean{UnitaryOneParameterGroup}, it is the brief's $f_\tau(H)$. Strong convergence of the cutoff
+  groups is dominated convergence in
+  $\|(W_t - U_t)x\|^2 = \int |e^{itc_M(x)} - e^{itx}|^2\,d\mu_x$.
+\item Eq.~(26) is formalized without naming the generator: $(\Psi_\tau\rho - \rho)/\tau$
+  converges for $\rho$ in a dense set $D$ of density operators. $D$ is the brief's core, the
+  density operators with $P_m\rho = \rho$ for $P_m = \mu_S[-m,m]$ and some $m$. On such $\rho$,
+  $W^{(M)}_tP_m = W^{(m)}_tP_m$ for $M \ge m$, so once $M_\tau \ge m$, $\Psi_\tau\rho$ is the
+  resolvent of the fixed bounded group $W^{(m)}$, and the bounded case applies. The core is dense
+  because $P_m \to 1$ strongly: $P_m\rho P_m/\operatorname{tr}(P_m\rho P_m) \to \rho$ in trace norm.
+  The limit is $L_{K_m}\rho$, the commutator with the bounded part of $H$; the formalization only
+  asserts that it exists.
+\item DR-UNIT $\Rightarrow$ DR-PROJ needs no \lean{IsEvolution}, as in finite dimension.
+  Reconstruction uses the cutoff resolvents of the reversed group $t \mapsto U_{-t}$, which has its
+  own spectral measure.
+\item DR-PROJ $\Rightarrow$ DR-UNIT assumes \lean{IsEvolution}. In finite dimension it is
+  derived from DR-PROJ (\lean{IsProjectiveLimit.isEvolution}); here it is not, since that
+  argument needs a finite basis of density operators, and eqs.~(28)--(29) are not formalized.
+  The affinity argument is the
+  finite-dimensional one, with traces in $[0,\infty]$: along a branch of probability $w$,
+  $\Psi^nQ_0 - wQ_n$ is positive with trace $1 - w$, so it is $(1-w)R$ for a density operator $R$,
+  and $\|\Psi^nQ_0 - Q_n\|_1 \le 2(1-w)$. In finite dimension the pure states are closed because
+  they are the image of the compact unit sphere; here they are closed in $\mathcal{S}_1$, as the
+  positive idempotents of trace norm one. Proposition~17 is Proposition~1 of the brief on the
+  Schr\"odinger equation in any dimension, which needs affinity under all convex combinations;
+  \lean{IsStateAdaptiveProjective} and \lean{IsEvolution} both assume it.
+\item The proof of DR-PROJ $\Rightarrow$ DR-UNIT does not use the clause of
+  \lean{PerfectPrediction} that the final branch states converge. The bound
+  $\|\Psi^nP - Q_n\|_1 \le 2(1-w_n)$ and $\Psi^nP \to \Phi_tP$ already give $Q_n \to \Phi_tP$.
+  The clause is kept so that the definitions match those of finite dimension.
+\item Complete positivity in Proposition~2 and the remark on the resolvent of an unbounded
+  generator are not formalized.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} No errors. Gaps beyond those of the finite-dimensional
+part:
+\begin{itemize}
+\item Proposition~2 uses the spectral decomposition $\sigma = \sum_a\lambda_aP_a^\rho$ of
+  $\sigma = \Psi_\tau(\rho)$. In infinite dimension this needs $\sigma$ to be compact, which
+  follows from $\sigma$ being trace class; the brief does not show that it is. The decomposition
+  may have infinitely many terms and includes the kernel of $\sigma$, and its sum converges
+  strongly.
+\item The core of eq.~(26) is asserted to be dense without proof. Density follows from $P_m \to 1$
+  strongly and trace-norm continuity of conjugation.
+\item Eq.~(25), ``strong convergence implies convergence of the corresponding conjugations on
+  every trace-class operator'', is standard, but not obvious: for density operators it follows from
+  the canonical expansion and the rank-one estimate $\|P_x - P_y\|_1 \le 2\|x - y\|$.
+\end{itemize}
+
+\end{document}

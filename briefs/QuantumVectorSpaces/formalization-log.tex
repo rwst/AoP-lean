@@ -1,0 +1,130 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Physical vector spaces for quantum mechanics}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces.lean}
+\item Library: \lean{QuantumVectorSpaces}
+\item Imports: \lean{SchwartzNorms} (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$)
+  and two new \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/Defs.lean} (the seminorm
+  $\sqrt{\operatorname{re}\langle x, x\rangle}$ of a \lean{PreInnerProductSpace.Core}, and
+  continuity of the inner product against it),\newline
+  \lean{ForMathlib/Analysis/CStarAlgebra/Matrix.lean} (\lean{Matrix.toEuclideanLin} is
+  multiplicative)
+\end{itemize}
+
+\paragraph{Setting.} $V$ is a complex vector space with an inner product given as a
+\lean{PreInnerProductSpace.Core}. Unlike Mathlib's \lean{InnerProductSpace}, this puts no norm
+or topology on $V$. The defining observables are a family $X_i$ ($i \in \iota$) in \lean{Module.End}, and
+\lean{algebra} is the unital algebra they generate (\lean{Algebra.adjoin}). The seminorms
+$p_A(v) = \sqrt{\langle Av, Av\rangle}$ form \lean{seminormFamily}, and \lean{topology}
+is the topology they generate. A topology is \lean{IsAdmissible} if it makes $V$ a topological
+vector space and makes the $X_i$ and the inner product (jointly) continuous. For Example~3,
+$X f = x f$ and $P f = -i\hbar f'$ act on Mathlib's $\mathcal{S}(\mathbb{R}, \mathbb{C})$
+(\lean{posOp}, \lean{momOp}), with the $L^2$ inner product \lean{l2Core}. For Example~4,
+$S_i = (\hbar/2)\sigma_i$ acts on $\mathbb{C}^2$ as \lean{EuclideanSpace} (\lean{spin}).
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Corollary 2, coarsest topology & \lean{isGreatest_topology} (from \lean{isAdmissible_topology}
+  and \lean{IsAdmissible.continuous_algebra}) \\
+Corollary 2, locally convex & \lean{locallyConvexSpace} \\
+finite dimension (Example 4) & \lean{topology_eq_moduleTopology}, \lean{topology_qubit} \\
+Example 3, $[X, P] = i\hbar$ & \lean{posOp_mul_momOp_sub} \\
+Example 3, $X$, $P$, $I$ symmetric & \lean{isSymmetric_obs} \\
+Example 3, Remark: the topology is that of $\mathcal{S}$ & \lean{topology_schwartz},
+  \lean{withSeminorms_schwartz}, \lean{isAdmissible_schwartz} (for $\hbar \ne 0$) \\
+Example 4, $[S_i, S_j] = i\hbar\,\epsilon_{ijk} S_k$ & \lean{spin_comm} \\
+Example 4, $S_i$ symmetric & \lean{isSymmetric_spin} \\
+Theorem 5, [B]COBS & \lean{IsAdmissible.continuous_expectation} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item ``Coarsest'' is \lean{IsGreatest} in Mathlib's order on topologies, where coarser is
+  larger.
+\item The inner product is only assumed positive semidefinite in Corollary~2; definiteness is
+  used only in finite dimension, to make the topology Hausdorff.
+\item Example~3 is formalized for $\mathcal{S}(\mathbb{R})$ only, not $\mathcal{S}(\mathbb{R}^n)$.
+  The proof that the topologies agree has two halves. (a) Each seminorm $\|x^a \partial^b f\|_2$
+  equals $|\hbar|^{-b} p_{X^a P^b}(f)$. (b) Every element of the algebra is a combination of the
+  normally ordered monomials $X^a P^b$ (\lean{algebra_le_monoSpan}, from
+  $P X^{n+1} = X^{n+1} P - (n+1) i\hbar X^n$), so every $p_A$ is bounded by finitely many
+  $\|x^a \partial^b f\|_2$. With \lean{withSeminorms_l1_l2} from the previous brief, this gives
+  the Schwartz topology.
+\item In finite dimension the topology of Corollary~2 is the unique Hausdorff vector-space
+  topology, whatever the defining observables (\lean{topology_eq_moduleTopology}). This is how
+  Example~4 is checked.
+\item Not formalized: completeness and second countability in Definition~1 (Mathlib has no
+  completeness of $\mathcal{S}$ at this pin); the ``iff $n = m$'' part of Example~3, which needs a
+  notion of isomorphism of quantum vector spaces; [B]WDQ and [B]STDIST in Theorem~5 and the
+  remarks of section~5, which are informal.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} No errors. Two steps are left implicit.
+\begin{itemize}
+\item The Remark after Example~3 says the $L^2$ seminorms and the sup seminorms dominate each
+  other. But the seminorms of Corollary~2 are $\|Af\|$ for every $A$ in the algebra, including
+  non-normally-ordered products such as $PX$. Reducing them to $\|x^a \partial^b f\|$ needs the
+  commutation relation (normal ordering), which the brief does not mention.
+\item Example~3 needs $\hbar \ne 0$: for $\hbar = 0$ we get $P = 0$, and the topology is just
+  that of $L^2$.
+\end{itemize}
+
+\end{document}

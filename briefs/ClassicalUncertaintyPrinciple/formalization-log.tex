@@ -1,0 +1,159 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Classical uncertainty principle}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple.lean}
+\item Library: \lean{ClassicalUncertaintyPrinciple}
+\item Imports: two new \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/InformationTheory/GibbsInequality.lean}: Gibbs' inequality
+  $-\int\rho\log\rho \le -\int\rho\log G$ for a probability density $\rho$ and a positive $G$
+  with $\int G \le 1$ (\lean{MeasureTheory.integral_negMulLog_le}), with equality only for
+  $\rho = G$ a.e.\ (\lean{MeasureTheory.ae_eq_of_integral_negMulLog_eq});\newline
+  \lean{ForMathlib/Probability/Distributions/Gaussian/Real.lean}: the logarithm of the Gaussian
+  density (\lean{log_gaussianPDFReal}), and its mean and variance as Lebesgue integrals
+  (\lean{integral_mul_gaussianPDFReal}, \lean{integral_sub_sq_mul_gaussianPDFReal}).
+\end{itemize}
+
+\paragraph{Setting.} An ensemble on a measure space $(X, \mu)$ (\lean{IsEnsemble}~$\rho$~$\mu$) is
+a function $\rho \ge 0$ with $\int\rho\,d\mu = 1$ and $\rho\log\rho$ integrable (finite entropy).
+Its entropy relative to a cell of size $c$ is \lean{entropy}~$c$~$\rho$~$\mu$ $= -\int
+\rho\log(c\rho)\,d\mu$, in nats. A variable $f : X \to \mathbb R$ has mean \lean{mean}, variance
+\lean{var} and standard deviation \lean{sd} under $\rho$. One DOF has phase space
+$\mathbb R \times \mathbb R$ with Lebesgue measure and cell $h > 0$, and $\hbar = h/2\pi$
+(\lean{hbar}). The conditions are:
+\begin{itemize}
+\item \lean{LowerEntropicBound}~$h$~$\rho$ (ZENT): $S_h[\rho] \ge 0$;
+\item \lean{UncertaintyPrinciple}~$h$~$\rho$ (CUP): $\sigma_q\sigma_p \ge \hbar/e$.
+\end{itemize}
+Finite second moments of the variables are hypotheses of the theorems. The Poisson bracket
+\lean{poissonBracket}~$f$~$g$ is $\partial_q f\,\partial_p g - \partial_p f\,\partial_q g$, with
+Fréchet derivatives.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Corollary~1, $S[\rho_U] = \log(\mu(U)/h^n)$ & \lean{entropy_uniform} (any measure space, any
+  cell $c > 0$); \lean{entropy_uniform_phaseSpace} (phase space $(\mathbb R^2)^n$, $c = h^n$) \\
+Corollary~1, $S[\rho_U] = 0$ iff $\mu(U) = h^n$ & \lean{entropy_uniform_eq_zero_iff} \\
+ZENT, CUP & \lean{LowerEntropicBound}, \lean{UncertaintyPrinciple} \\
+Theorem~2, proof: a product of two independent Gaussians minimizes $\sigma_q\sigma_p$ at given
+  entropy, and then $\sigma_q\sigma_p = (\hbar/e)e^{S}$ &
+  \lean{hbar_div_exp_mul_exp_entropy_le}: $\sigma_q\sigma_p \ge (\hbar/e)e^{S_h[\rho]}$ for every
+  ensemble; \lean{sd_mul_sd_eq_iff}: equality iff $\rho$ is a.e.\ a product of Gaussians \\
+Theorem~2, eq.~(3), ZENT implies CUP & \lean{uncertaintyPrinciple_of_lowerEntropicBound} \\
+CUP, equality case & \lean{sd_mul_sd_eq_hbar_div_exp_iff}, corrected (see ``Problems found'') \\
+Eq.~(4), the Poisson bracket is the Jacobian determinant & \lean{det_prod};
+  \lean{poissonBracket_fst_snd}: $\{q, p\} = 1$ \\
+Theorem~2, eq.~(5), $\sigma_f\sigma_g \ge (\hbar/e)e^{E[\log|\{f,g\}|]}$ under ZENT &
+  \lean{hbar_div_exp_mul_exp_le_sd_mul_sd}; for every ensemble
+  $\sigma_f\sigma_g \ge (\hbar/e)e^{S_h[\rho] + E[\log|\{f,g\}|]}$:
+  \lean{hbar_div_exp_mul_exp_entropy_add_le} \\
+Remark, CUP does not imply ZENT & \lean{exists_not_lowerEntropicBound} \\
+(used for both equations) the Gaussian bound on any measure space &
+  \lean{Hyp.hbar_div_exp_mul_exp_le}: $\sigma_f\sigma_g \ge (\hbar/e)e^{S_h[\rho] + E[\log J]}$
+  for a weight $J > 0$ that turns every product of Gaussians in $(f, g)$ into a subprobability
+  density (\lean{IsGaussWeight}) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item The Lagrange-multiplier argument is replaced by Gibbs' inequality against the product
+  $G$ of Gaussians in $q$ and $p$ with the means and variances of $\rho$:
+  $-\int\rho\log\rho \le -\int\rho\log G = \log(2\pi e\,\sigma_q\sigma_p)$. This proves that the
+  Gaussian is a minimum, not only a critical point, and gives the equality case. Only the
+  marginal variances enter, so no covariance matrix is needed.
+\item Only one DOF is formalized: ZENT and CUP are stated for a density on $\mathbb R^2$ (the
+  marginal of the DOF). Marginals of a density on $(\mathbb R^2)^n$ are not formalized;
+  Corollary~1 is, for any $n$.
+\item The hypotheses that the brief leaves implicit are explicit: $\rho \ge 0$, $\int\rho = 1$,
+  finite entropy and finite second moments. Positive variances are proved, not assumed: an
+  ensemble of finite entropy cannot have zero variance in any variable, since Gibbs' inequality
+  against ever narrower Gaussians would bound its entropy by $-\infty$.
+\item For eq.~(5) the brief passes to the density $\rho_{fg}$ of $(f, g)$, with
+  $\rho_{qp} = \rho_{fg}\,|\{f, g\}|$. Here $\rho_{fg}$ is not formed. The Gaussian in $(f, g)$ is
+  pulled back to phase space with the weight $|\{f, g\}|$, and the change-of-variables formula
+  shows that its integral is at most $1$. This needs $f, g$ differentiable, $(q, p) \mapsto
+  (f, g)$ injective (not surjective, not orientation preserving), $\{f, g\} \ne 0$ everywhere,
+  and $\rho\log|\{f, g\}|$ integrable. $\sigma_f$ is the standard deviation of $f$ under $\rho$.
+  Physical units are not modelled, so the brief's assumption on them is not needed.
+\item The counterexample for the remark is a uniform distribution on two squares
+  $[L, L + \varepsilon]^2$ and $[-L - \varepsilon, -L]^2$, with $\varepsilon = \sqrt h/2$ and
+  $L = \sqrt h$. Its entropy is $\log\frac12 < 0$ and $\sigma_q\sigma_p \ge h/2 \ge \hbar/e$.
+  The brief instead correlates $q$ and $p$.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} The main claim (ZENT implies CUP, eqs.~(3) and (5)) is
+correct; the equality case is misstated.
+\begin{itemize}
+\item CUP says that equality holds ``if and only if position and momentum are independent
+  gaussian distributions'', and the proof ends the same way. Independent Gaussians satisfy
+  $\sigma_q\sigma_p = (\hbar/e)e^{S}$, which equals $\hbar/e$ only when $S = 0$. Under ZENT,
+  $\sigma_q\sigma_p = \hbar/e$ holds exactly for products of Gaussians with
+  $\sigma_q\sigma_p = \hbar/e$ (\lean{sd_mul_sd_eq_hbar_div_exp_iff}).
+\item The Lagrange multipliers give only a stationary point of $\sigma_q^2\sigma_p^2$ at fixed
+  entropy. They show neither that it is a minimum nor that a minimizer exists, which the proof
+  then uses (``the gaussian is the distribution that minimizes the uncertainty'').
+\item In the derivation of eq.~(5), ``order preserving'' should be ``orientation preserving'';
+  the last two lines of the chain of equalities are identical; and CUP writes
+  $E[\ln\{f, g\}]$ where the abstract and eq.~(5) have $E[\ln|\{f, g\}|]$. The logarithm needs
+  the absolute value when $\{f, g\} < 0$.
+\item The brief does not state that the entropy and the second moments must be finite. Without
+  this $S[\rho]$ or $\sigma$ may be undefined.
+\end{itemize}
+
+\end{document}

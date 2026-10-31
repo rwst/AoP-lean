@@ -1,0 +1,85 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+
+\title{Open problems:\\ Projective measurements are equilibration processes}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Unbounded observables.} For unbounded $X$ the Lindblad equation of EQ-LIND holds
+  only on a domain; the brief claims that the blockwise solution (5) ``extends the resulting
+  semigroup to every density operator'' and that $\rho(t)$ stays a density operator. Neither the
+  extension nor Theorem~1 for unbounded $X$ is proved. (Brief, Sec.~3, after eq.~(5).)
+\item \textbf{Non-commutative Scheff\'e lemma.} ``Hilbert--Schmidt convergence to a density
+  operator implies trace-norm convergence'' for density operators is cited without reference or
+  proof. The formalization bypasses it, so the lemma itself remains unproved here. (Brief,
+  Sec.~3, between eqs.~(9) and~(10).)
+\item \textbf{Continuous spectrum.} The claim that all four conditions fail on a continuous part
+  of the spectrum of $X$: an operator commuting with $X$ and supported on a non-atomic spectral
+  sector ``cannot be a non-zero trace-class operator'', and Lindblad fixed points there are not
+  density operators. Not proved. (Brief, Sec.~4, ``Observables with continuous spectra''.)
+\item \textbf{A formalism with finite entropy.} When $S(P_X(\rho)) = +\infty$, EQ-KL does not
+  determine a closest ensemble. The brief suggests that ``the real problem is the Hilbert space
+  formalism, as it does not guarantee finite entropy for all density operators''; a state space
+  in which every ensemble has finite entropy is not given. (Brief, Sec.~4, ``Relative entropy in
+  infinite dimensions''.)
+\item \textbf{Other dynamics with the same limit.} ``Other dynamics may have the same asymptotic
+  map'': which Lindblad (or other) dynamics have $\mathcal{P}_X$ as their long-time limit, and
+  whether physical measurements are equilibrations ``that happen at a fast scale'', is left open.
+  (Brief, Sec.~4, ``Equilibration as a black-box description''; Sec.~5.)
+\item \textbf{Repeatability and state update.} The brief claims that repeatability is
+  ``intrinsic in requiring that all outputs are equilibria of the process'', and that state update
+  on a known outcome ``is equivalent to what happens in the classical case''. Neither is made
+  precise or proved. (Brief, Sec.~5.)
+\item \textbf{Destructive measurements.} ``The black-box idea could be extended to destructive
+  measurements'', with the system state as input and ``the final state of the measurement device''
+  as output. No such characterization is given. (Brief, Sec.~5.)
+\end{enumerate}
+
+\section*{From the formalization}
+\noindent Beyond finite dimension the formalization has a part in any dimension, which covers
+bounded observables with pure point spectrum only; it leaves open the items ``Unbounded
+observables'' and ``Continuous spectrum'' above and ``Bridge from the spectral theorem'' below.
+\begin{enumerate}
+\item \textbf{Bridge from the spectral theorem.} Observables are given by an eigendecomposition
+  $(P_x, x)$. That a self-adjoint $X$ with pure point spectrum has one, with $P_x = \mu_S(\{x\})$
+  its spectral projections, is not formalized. (Log, ``Hilbert spaces of any dimension'',
+  ``Differences from the brief''.)
+\item \textbf{Basis independence of the relative entropy.} Lindblad's formula for $D(\rho\|\sigma)$
+  is shown to be independent of the chosen eigenbases only when $S(\rho) < \infty$; for
+  $S(\rho) = \infty$ this is open. (Log, ``Hilbert spaces of any dimension'', ``Differences from
+  the brief''.)
+\item \textbf{Agreement of the two relative entropies.} That the relative entropy of the
+  any-dimension part agrees with the finite-dimensional \lean{relEntropy} on finite-dimensional
+  spaces is not formalized. (Log, ``Hilbert spaces of any dimension'', ``Differences from the
+  brief''.)
+\item \textbf{Infinite distance when $S(P_X(\rho)) = \infty$.} The brief's ``every ensemble
+  commuting with $X$ is infinitely distant from $\rho$'' is false as stated (block-diagonal $\rho$
+  with $S(\rho) = \infty$, $\sigma = \rho$). The corrected claim for $S(\rho) < \infty$, via
+  $D(\rho\|\sigma) \ge S(P_X(\rho)) - S(\rho)$, is not formalized. (Log, ``Hilbert spaces of any
+  dimension'', ``Problems found in the brief''.)
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,570 @@
+/-
+(C) 2026 Ralf Stephan, in collaboration with Claude Code.
+Released under CC0 1.0 Universal (public-domain dedication).
+See https://creativecommons.org/publicdomain/zero/1.0/
+-/
+module
+
+public import ForMathlib.Analysis.Convex.Combination
+public import ForMathlib.Analysis.InnerProductSpace.l2Space
+public import ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.CanonicalExpansion
+public import ForPhyslib.QuantumMechanics.DensityOperator
+public import Mathlib.Analysis.Convex.Integral
+public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+public import Mathlib.LinearAlgebra.Projectivization.Basic
+
+/-!
+# Quantum pure states are not enough
+
+## i. Overview
+
+Formalization of the technical brief *Quantum pure states are not enough* (G. Carcassi,
+Assumptions of Physics). The brief compares the classical condition CST (states form a symplectic
+manifold with Liouville measure `μ`, ensembles are the probability measures absolutely continuous
+with respect to `μ`) with the quantum conditions QP-RAY (states are the rays of a complex vector
+space), QE-DENS (ensembles are the density operators) and BR-BORN (the Born rule).
+
+**Theorem 3.** CST and QE-DENS are inconsistent. The ensembles of both conditions are convex
+spaces, and an identification of the two must preserve mixtures. Under CST the ensemble space is
+infinite-dimensional: normalizing `μ` on `N` disjoint sets of positive finite measure gives `N`
+ensembles none of which is a mixture of the others. In finite dimension (which CST forces, by
+Theorem 1) the density operators lie in the finite-dimensional real vector space of operators.
+A map that preserves mixtures of two ensembles preserves all finite mixtures, so an injective one
+would carry `dim + 2` independent ensembles to `dim + 2` independent points of a space of
+dimension `dim`, which is impossible. The argument needs neither positivity nor trace of the
+density operators, only the finite dimension of the space that contains them.
+
+**Theorem 5.** Let `H` be a separable complex Hilbert space of any dimension. A probability
+measure `μ` on the pure states (with the Borel σ-algebra of the operator norm) represents the
+density operator `r(μ) = ∫ |ψ⟩⟨ψ| dμ`, its barycenter. It is positive because the positive
+operators form a closed convex cone, and has trace one by Parseval and monotone convergence over a
+countable Hilbert basis. The map `r` is affine and onto, by the canonical expansion
+`ρ = ∑ᵢ λᵢ |eᵢ⟩⟨eᵢ|`, so the density operators are the probability measures on the pure states
+up to `r(μ₁) = r(μ₂)`. No Choquet theory is needed. The quotient is not trivial: in dimension at
+least two, `½ δ_{e₀} + ½ δ_{e₁}` and `½ δ_{e₊} + ½ δ_{e₋}` with `e± = (e₀ ± e₁)/√2` have the same
+barycenter but are told apart by the probability of the state `e₀`.
+
+**Remark after Example 2.** CST makes distinct states mutually exclusive, the Born rule does not:
+`e₀` and `e₊` are distinct rays with Born probability `½`.
+
+**Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is not formalized:
+Mathlib has neither symplectic manifolds nor the manifold structure of projective space. Only the
+low-dimensional end is checked: for `dim V = 1` the projective space is a single point.
+
+## ii. Key results
+
+- `PureStatesNotEnough.Convex.classicalEnsembles`: the ensembles of CST form a convex set.
+- `PureStatesNotEnough.not_injOn_of_map_add`: no mixture-preserving map from the ensembles of CST
+  into a finite-dimensional real vector space is injective.
+- `PureStatesNotEnough.hasManyDisjointSets_restrict`: a Darboux chart has enough disjoint sets.
+- `PureStatesNotEnough.cst_qeDens_inconsistent`: Theorem 3.
+- `PureStatesNotEnough.subsingleton_projectivization`: for `dim V = 1`, `P(V)` is one point.
+- `PureStatesNotEnough.born_ne_delta`: the Remark after Example 2.
+- `PureStatesNotEnough.barycenter`, `PureStatesNotEnough.barycenter_add`: the barycenter map `r`
+  and its affinity.
+- `PureStatesNotEnough.posTrace_barycenter`, `PureStatesNotEnough.isDensityOperator_barycenter`:
+  `r(μ)` is a density operator.
+- `PureStatesNotEnough.toDensity_surjective`, `PureStatesNotEnough.densityEquiv`: Theorem 5.
+- `PureStatesNotEnough.exists_barycenter_eq_and_ne`: distinct preparations of one ensemble.
+
+## iii. Table of contents
+
+- A. The classical ensemble space
+- B. Theorem 3: CST and QE-DENS are inconsistent
+- C. Theorem 1 and the Remark after Example 2
+- D. Theorem 5: density operators as classes of measures on pure states
+
+## iv. References
+
+- G. Carcassi, *Quantum pure states are not enough*, Assumptions of Physics technical brief.
+-/
+
+@[expose] public noncomputable section
+
+open MeasureTheory ProbabilityTheory ProbabilisticTheory QuantumMechanics QuantumMechanics.Wigner
+open ContinuousLinearMap (posTrace posTraceBasis re_inner_apply_nonneg)
+open Function
+open scoped InnerProductSpace NNReal ENNReal LinearAlgebra.Projectivization
+
+namespace PureStatesNotEnough
+
+/-! ## A. The classical ensemble space -/
+
+section Classical
+
+variable {X : Type*} [MeasurableSpace X]
+
+/-- The ensemble space of CST: the probability measures absolutely continuous with respect to the
+Liouville measure `μ`. -/
+def classicalEnsembles (μ : Measure X) : Set (Measure X) := {ν | IsProbabilityMeasure ν ∧ ν ≪ μ}
+
+/-- The ensembles of CST are closed under mixtures. -/
+theorem Convex.classicalEnsembles (μ : Measure X) : Convex ℝ≥0 (classicalEnsembles μ) := by
+  intro ν₁ h₁ ν₂ h₂ a b _ _ hab
+  have := h₁.1
+  have := h₂.1
+  refine ⟨⟨?_⟩, (h₁.2.smul_left a).add_left (h₂.2.smul_left b)⟩
+  simp only [Measure.add_apply, Measure.smul_apply, measure_univ, ENNReal.smul_def, smul_eq_mul,
+    mul_one]
+  rw [← ENNReal.coe_add, hab, ENNReal.coe_one]
+
+/-- `μ` has, for every `N`, `N` disjoint measurable sets of positive finite measure. -/
+def HasManyDisjointSets (μ : Measure X) : Prop :=
+  ∀ N : ℕ, ∃ s : Fin N → Set X, (∀ i, MeasurableSet (s i)) ∧ Pairwise (Disjoint on s) ∧
+    ∀ i, μ (s i) ≠ 0 ∧ μ (s i) ≠ ∞
+
+/-- The Liouville measure of a Darboux chart, the Lebesgue measure on an open subset of `ℝ²ⁿ` with
+`n ≥ 1`, has enough disjoint sets: the spherical shells `k δ < ‖y - x‖ < (k + 1) δ` in a ball
+around `x`. -/
+theorem hasManyDisjointSets_restrict {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [Nontrivial E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E] (μ : Measure E)
+    [μ.IsOpenPosMeasure] [IsFiniteMeasureOnCompacts μ] {U : Set E} (hU : IsOpen U)
+    (hne : U.Nonempty) : HasManyDisjointSets (μ.restrict U) := by
+  obtain ⟨x, hx⟩ := hne
+  obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hU x hx
+  obtain ⟨v, hv⟩ := exists_norm_eq E zero_le_one
+  intro N
+  set δ := r / N
+  set s : Fin N → Set E := fun k => {y | k * δ < dist y x ∧ dist y x < (k + 1) * δ}
+  have hopen : ∀ k, IsOpen (s k) := fun k =>
+    (isOpen_lt continuous_const (continuous_id.dist continuous_const)).inter
+      (isOpen_lt (continuous_id.dist continuous_const) continuous_const)
+  have hsub : ∀ k : Fin N, s k ⊆ Metric.ball x r := fun k y hy => by
+    have hN : (0 : ℝ) < N := by exact_mod_cast k.pos
+    have hk : ((k : ℕ) : ℝ) + 1 ≤ N := by exact_mod_cast k.isLt
+    have : (k + 1) * δ ≤ r := by
+      calc (k + 1) * δ ≤ N * δ := by gcongr
+        _ = r := by simp only [δ]; field_simp
+    exact Metric.mem_ball.2 (hy.2.trans_le this)
+  refine ⟨s, fun k => (hopen k).measurableSet, fun k l hkl => ?_, fun k => ?_⟩
+  · refine Set.disjoint_left.2 fun y hk hl => hkl (Fin.ext ?_)
+    have hδ : 0 < δ := div_pos hr (by exact_mod_cast k.pos)
+    have h1 : (k : ℝ) < l + 1 := lt_of_mul_lt_mul_right (hk.1.trans hl.2) hδ.le
+    have h2 : (l : ℝ) < k + 1 := lt_of_mul_lt_mul_right (hl.1.trans hk.2) hδ.le
+    have h1' : (k : ℕ) < l + 1 := by exact_mod_cast h1
+    have h2' : (l : ℕ) < k + 1 := by exact_mod_cast h2
+    omega
+  · have hδ : 0 < δ := div_pos hr (by exact_mod_cast k.pos)
+    have hne : (s k).Nonempty := by
+      refine ⟨x + ((k + 2⁻¹ : ℝ) * δ) • v, ?_⟩
+      have hd : dist (x + ((k + 2⁻¹ : ℝ) * δ) • v) x = (k + 2⁻¹) * δ := by
+        rw [dist_eq_norm, add_sub_cancel_left, norm_smul, hv, mul_one, Real.norm_eq_abs,
+          abs_of_pos (by positivity)]
+      simp only [s, Set.mem_ofPred_eq, hd]
+      constructor <;> nlinarith
+    rw [Measure.restrict_apply (hopen k).measurableSet,
+      Set.inter_eq_left.2 ((hsub k).trans hball)]
+    exact ⟨((hopen k).measure_pos μ hne).ne',
+      ((measure_mono (hsub k)).trans_lt measure_ball_lt_top).ne⟩
+
+end Classical
+
+/-! ## B. Theorem 3: CST and QE-DENS are inconsistent -/
+
+section Theorem3
+
+variable {X : Type*} [MeasurableSpace X]
+
+/-- The normalized restrictions of `μ` to disjoint sets: `μ[|sᵢ](sⱼ)` is `1` for `i = j` and `0`
+otherwise. -/
+lemma cond_apply_of_pairwise {μ : Measure X} {N : ℕ} {s : Fin N → Set X}
+    (hsm : ∀ i, MeasurableSet (s i)) (hsd : Pairwise (Disjoint on s))
+    (hs : ∀ i, μ (s i) ≠ 0 ∧ μ (s i) ≠ ∞) (i j : Fin N) :
+    μ[s j | s i] = if i = j then 1 else 0 := by
+  rw [cond_apply (hsm i)]
+  split_ifs with h
+  · subst h
+    rw [Set.inter_self, ENNReal.inv_mul_cancel (hs i).1 (hs i).2]
+  · rw [(hsd h).inter_eq, measure_empty, mul_zero]
+
+/-- No map from the ensembles of CST into a finite-dimensional real vector space that preserves
+mixtures of two ensembles is injective. -/
+theorem not_injOn_of_map_add {W : Type*} [AddCommGroup W] [Module ℝ W] [FiniteDimensional ℝ W]
+    {μ : Measure X} (hμ : HasManyDisjointSets μ) {F : Measure X → W}
+    (hF : ∀ ν₁ ∈ classicalEnsembles μ, ∀ ν₂ ∈ classicalEnsembles μ, ∀ a b : ℝ≥0, a + b = 1 →
+      F (a • ν₁ + b • ν₂) = a • F ν₁ + b • F ν₂) :
+    ¬ Set.InjOn F (classicalEnsembles μ) := by
+  intro hinj
+  set d := Module.finrank ℝ W
+  obtain ⟨s, hsm, hsd, hs⟩ := hμ (d + 2)
+  set ν : Fin (d + 2) → Measure X := fun i => μ[|s i]
+  have hν : ∀ i, ν i ∈ classicalEnsembles μ := fun i =>
+    ⟨cond_isProbabilityMeasure_of_finite (hs i).1 (hs i).2, cond_absolutelyContinuous⟩
+  -- `d + 2` points of `W` are affinely dependent: `∑ gᵢ F(νᵢ) = 0` and `∑ gᵢ = 0`, `g ≠ 0`.
+  have hdep : ¬ LinearIndependent ℝ (fun i => (F (ν i), (1 : ℝ))) := fun h => by
+    have := h.fintype_card_le_finrank
+    rw [Module.finrank_prod, Module.finrank_self, Fintype.card_fin] at this
+    omega
+  obtain ⟨g, hg, j, hj⟩ := Fintype.not_linearIndependent_iff.1 hdep
+  have hg1 : ∑ i, g i • F (ν i) = 0 := by
+    simpa [Prod.fst_sum] using congrArg Prod.fst hg
+  have hg2 : ∑ i, g i = 0 := by
+    simpa [Prod.snd_sum] using congrArg Prod.snd hg
+  -- Split `g` into its positive and negative parts, both of total weight `S > 0`.
+  set S := ∑ i, max (g i) 0
+  have hgpm : ∀ i, max (g i) 0 - max (-g i) 0 = g i := fun i => max_zero_sub_eq_self (g i)
+  have hS' : ∑ i, max (-g i) 0 = S := by
+    have := Finset.sum_sub_distrib (s := Finset.univ) (fun i => max (g i) 0)
+      (fun i => max (-g i) 0)
+    simp only [hgpm, hg2] at this
+    linarith
+  have hS : 0 < S := by
+    by_contra hS
+    have hS0 : S = 0 := le_antisymm (not_lt.1 hS) (Finset.sum_nonneg fun i _ => le_max_right _ _)
+    have hp := (Finset.sum_eq_zero_iff_of_nonneg fun i _ => le_max_right (g i) 0).1 hS0 j
+      (Finset.mem_univ _)
+    have hn := (Finset.sum_eq_zero_iff_of_nonneg fun i _ => le_max_right (-g i) 0).1
+      (hS'.trans hS0) j (Finset.mem_univ _)
+    exact hj (by rw [← hgpm j, hp, hn, sub_zero])
+  set a : Fin (d + 2) → ℝ≥0 := fun i => (max (g i) 0 / S).toNNReal
+  set b : Fin (d + 2) → ℝ≥0 := fun i => (max (-g i) 0 / S).toNNReal
+  have ha : ∀ i, (a i : ℝ) = max (g i) 0 / S := fun i =>
+    Real.coe_toNNReal _ (div_nonneg (le_max_right _ _) hS.le)
+  have hb : ∀ i, (b i : ℝ) = max (-g i) 0 / S := fun i =>
+    Real.coe_toNNReal _ (div_nonneg (le_max_right _ _) hS.le)
+  have ha1 : ∑ i, a i = 1 := NNReal.eq <| by
+    rw [NNReal.coe_sum, NNReal.coe_one]
+    simp only [ha, ← Finset.sum_div]
+    exact div_self hS.ne'
+  have hb1 : ∑ i, b i = 1 := NNReal.eq <| by
+    rw [NNReal.coe_sum, NNReal.coe_one]
+    simp only [hb, ← Finset.sum_div, hS']
+    exact div_self hS.ne'
+  have hconv := Convex.classicalEnsembles μ
+  have hFa := hconv.map_sum_of_map_add (fun x hx y hy a b _ _ hab => hF x hx y hy a b hab)
+    (t := Finset.univ) (w := a) (z := ν) (fun _ _ => zero_le) ha1 fun i _ => hν i
+  have hFb := hconv.map_sum_of_map_add (fun x hx y hy a b _ _ hab => hF x hx y hy a b hab)
+    (t := Finset.univ) (w := b) (z := ν) (fun _ _ => zero_le) hb1 fun i _ => hν i
+  have hab : ∑ i, a i • F (ν i) = ∑ i, b i • F (ν i) := by
+    have hsub : ∀ i, (a i : ℝ) - b i = S⁻¹ * g i := fun i => by
+      rw [ha, hb, ← sub_div, hgpm, div_eq_inv_mul]
+    rw [← sub_eq_zero, ← Finset.sum_sub_distrib]
+    simp only [NNReal.smul_def, ← sub_smul, hsub, mul_smul, ← Finset.smul_sum, hg1, smul_zero]
+  have heq := hinj (hconv.sum_mem_of_semifield (fun _ _ => zero_le) ha1 fun i _ => hν i)
+    (hconv.sum_mem_of_semifield (fun _ _ => zero_le) hb1 fun i _ => hν i)
+    (by rw [hFa, hFb, hab])
+  -- Evaluate both mixtures on `sⱼ`.
+  have hev : ∀ w : Fin (d + 2) → ℝ≥0, (∑ i, w i • ν i) (s j) = w j := fun w => by
+    simp only [Measure.finsetSum_apply, Measure.smul_apply, ENNReal.smul_def,
+      smul_eq_mul, ν, cond_apply_of_pairwise hsm hsd hs, mul_ite, mul_one, mul_zero,
+      Finset.sum_ite_eq', Finset.mem_univ, ite_true]
+  have hj' : a j = b j := by
+    have := congrArg (fun m : Measure X => m (s j)) heq
+    simp only [hev] at this
+    exact_mod_cast this
+  have := congrArg (fun x : ℝ≥0 => (x : ℝ) * S) hj'
+  simp only [ha, hb, div_mul_cancel₀ _ hS.ne'] at this
+  exact hj (by rw [← hgpm j, this, sub_self])
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [FiniteDimensional ℂ H]
+
+/-- **Theorem 3.** CST and QE-DENS are inconsistent: when the Liouville measure has enough
+disjoint sets (`hasManyDisjointSets_restrict`), no injective map from the ensembles of CST to the
+density operators of a finite-dimensional Hilbert space preserves mixtures. -/
+theorem cst_qeDens_inconsistent {μ : Measure X} (hμ : HasManyDisjointSets μ) :
+    ¬ ∃ F : Measure X → (H →L[ℂ] H), Set.MapsTo F (classicalEnsembles μ) {ρ | IsDensity ρ} ∧
+      Set.InjOn F (classicalEnsembles μ) ∧
+      ∀ ν₁ ∈ classicalEnsembles μ, ∀ ν₂ ∈ classicalEnsembles μ, ∀ a b : ℝ≥0, a + b = 1 →
+        F (a • ν₁ + b • ν₂) = ((a : ℝ) : ℂ) • F ν₁ + ((b : ℝ) : ℂ) • F ν₂ := by
+  rintro ⟨F, -, hinj, hF⟩
+  refine not_injOn_of_map_add hμ (fun ν₁ h₁ ν₂ h₂ a b hab => ?_) hinj
+  rw [hF ν₁ h₁ ν₂ h₂ a b hab, Complex.coe_smul, Complex.coe_smul, NNReal.smul_def,
+    NNReal.smul_def]
+
+end Theorem3
+
+/-! ## C. Theorem 1 and the Remark after Example 2 -/
+
+section Theorem1
+
+/-- For `dim V = 1` the projective space `P(V)` is a single point, a manifold of dimension `0`;
+the proof of Theorem 1 needs `2 ≤ dim P(V)`. -/
+theorem subsingleton_projectivization {V : Type*} [AddCommGroup V] [Module ℂ V]
+    (h : Module.finrank ℂ V = 1) : Subsingleton (ℙ ℂ V) := by
+  refine ⟨fun p q => ?_⟩
+  induction p using Projectivization.ind with | h v hv => ?_
+  induction q using Projectivization.ind with | h w hw => ?_
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' w hw).1 h v
+  exact (Projectivization.mk_eq_mk_iff' ℂ v w hv hw).2 ⟨c, hc⟩
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+/-- The equal superposition `(e₀ + σ e₁)/√2` of two orthonormal vectors. -/
+def superpos (e : Fin 2 → H) (σ : ℂ) : H := (((√2)⁻¹ : ℝ) : ℂ) • (e 0 + σ • e 1)
+
+section Orthonormal
+
+variable {e : Fin 2 → H} (he : Orthonormal ℂ e)
+include he
+
+lemma inner_self_of_orthonormal (i : Fin 2) : ⟪e i, e i⟫_ℂ = 1 := by
+  rw [inner_self_eq_norm_sq_to_K, he.1 i]
+  simp
+
+lemma inner_zero_superpos (σ : ℂ) : ⟪e 0, superpos e σ⟫_ℂ = (((√2)⁻¹ : ℝ) : ℂ) := by
+  rw [superpos, inner_smul_right, inner_add_right, inner_smul_right,
+    inner_self_of_orthonormal he, he.2 (by decide : (0 : Fin 2) ≠ 1), mul_zero, add_zero, mul_one]
+
+lemma inner_one_superpos (σ : ℂ) : ⟪e 1, superpos e σ⟫_ℂ = (((√2)⁻¹ : ℝ) : ℂ) * σ := by
+  rw [superpos, inner_smul_right, inner_add_right, inner_smul_right,
+    inner_self_of_orthonormal he, he.2 (by decide : (1 : Fin 2) ≠ 0), zero_add, mul_one]
+
+lemma norm_superpos {σ : ℂ} (hσ : ‖σ‖ = 1) : ‖superpos e σ‖ = 1 := by
+  have h0 : ⟪e 0, σ • e 1⟫_ℂ = 0 := by
+    rw [inner_smul_right, he.2 (by decide : (0 : Fin 2) ≠ 1), mul_zero]
+  have hsq : ‖e 0 + σ • e 1‖ ^ 2 = 2 := by
+    rw [sq, norm_add_sq_eq_norm_sq_add_norm_sq_of_inner_eq_zero _ _ h0, norm_smul, hσ, one_mul,
+      he.1 0, he.1 1]
+    norm_num
+  have hn : ‖e 0 + σ • e 1‖ = √2 := by rw [← hsq, Real.sqrt_sq (norm_nonneg _)]
+  rw [superpos, norm_smul, hn, Complex.norm_real, Real.norm_eq_abs,
+    abs_of_pos (by positivity), inv_mul_cancel₀ (by positivity)]
+
+/-- **Remark after Example 2.** Under CST distinct states are mutually exclusive,
+`p(ψ | ϕ) = δ_{ψϕ}`; under the Born rule they need not be: `e₀` and `(e₀ + e₁)/√2` span distinct
+rays and have Born probability `½`. -/
+theorem born_ne_delta :
+    (∀ c : ℂ, superpos e 1 ≠ c • e 0) ∧ ‖⟪e 0, superpos e 1⟫_ℂ‖ ^ 2 = 1 / 2 := by
+  refine ⟨fun c h => ?_, ?_⟩
+  · have := inner_one_superpos he 1
+    rw [h, inner_smul_right, he.2 (by decide : (1 : Fin 2) ≠ 0), mul_zero, mul_one] at this
+    exact (by positivity : (0 : ℝ) < (√2)⁻¹).ne' (by exact_mod_cast this.symm)
+  · rw [inner_zero_superpos he, Complex.norm_real, Real.norm_eq_abs, sq_abs, inv_pow,
+      Real.sq_sqrt (by norm_num)]
+    norm_num
+
+end Orthonormal
+
+end Theorem1
+
+/-! ## D. Theorem 5: density operators as classes of measures on pure states -/
+
+section Theorem5
+
+variable (H : Type*) [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+/-- The pure states `|ψ⟩⟨ψ|` with `‖ψ‖ = 1`: the projective space `P(H)` inside the operators. -/
+def pureStates : Set (H →L[ℂ] H) := {ρ | ∃ ψ : H, ‖ψ‖ = 1 ∧ proj ψ = ρ}
+
+/-- The pure states carry the Borel σ-algebra of the operator norm. -/
+instance : MeasurableSpace (pureStates H) := borel _
+
+instance : BorelSpace (pureStates H) := ⟨rfl⟩
+
+variable {H}
+
+/-- The pure state `|ψ⟩⟨ψ|` of a unit vector. -/
+def pureState {ψ : H} (hψ : ‖ψ‖ = 1) : pureStates H := ⟨proj ψ, ψ, hψ, rfl⟩
+
+lemma norm_coe_le_one (ρ : pureStates H) : ‖(ρ : H →L[ℂ] H)‖ ≤ 1 := by
+  obtain ⟨_, ψ, hψ, rfl⟩ := ρ
+  simp [InnerProductSpace.norm_rankOne, hψ]
+
+/-- Two pure states differ if some `x` is orthogonal to one but not to the other. -/
+lemma pureState_ne {ψ ϕ : H} (hψ : ‖ψ‖ = 1) (hϕ : ‖ϕ‖ = 1) {x : H} (hψx : ⟪ψ, x⟫_ℂ ≠ 0)
+    (hϕx : ⟪ϕ, x⟫_ℂ = 0) : pureState hψ ≠ pureState hϕ := by
+  intro h
+  have := congrArg (fun ρ : pureStates H => (ρ : H →L[ℂ] H) x) h
+  simp only [pureState, proj_apply, hϕx, zero_smul] at this
+  exact smul_ne_zero hψx (norm_ne_zero_iff.1 (by rw [hψ]; exact one_ne_zero)) this
+
+/-- `ψ ↦ |ψ⟩⟨ψ|` is continuous: `‖|ϕ⟩⟨ϕ| - |ψ⟩⟨ψ|‖ ≤ (‖ϕ‖ + ‖ψ‖) ‖ϕ - ψ‖`. -/
+lemma continuous_proj : Continuous fun ψ : H => proj ψ := by
+  refine continuous_iff_continuousAt.2 fun ψ => ?_
+  rw [ContinuousAt, tendsto_iff_norm_sub_tendsto_zero]
+  have hb : ∀ φ : H, ‖proj φ - proj ψ‖ ≤ ‖φ‖ * ‖φ - ψ‖ + ‖φ - ψ‖ * ‖ψ‖ := fun φ => by
+    have : proj φ - proj ψ = InnerProductSpace.rankOne ℂ φ (φ - ψ) +
+        InnerProductSpace.rankOne ℂ (φ - ψ) ψ := by
+      simp only [map_sub, FunLike.coe_sub, Pi.sub_apply]
+      abel
+    rw [this]
+    refine (norm_add_le _ _).trans ?_
+    rw [InnerProductSpace.norm_rankOne, InnerProductSpace.norm_rankOne]
+  refine squeeze_zero (fun _ => norm_nonneg _) hb ?_
+  have : Continuous fun φ : H => ‖φ‖ * ‖φ - ψ‖ + ‖φ - ψ‖ * ‖ψ‖ := by fun_prop
+  simpa using this.tendsto ψ
+
+variable [TopologicalSpace.SeparableSpace H]
+
+/-- In a separable Hilbert space the pure states are separable: they are the image of the unit
+sphere under the continuous map `ψ ↦ |ψ⟩⟨ψ|`. -/
+instance : TopologicalSpace.SeparableSpace (pureStates H) := by
+  have hc : Continuous fun ψ : H => proj ψ := continuous_proj
+  have himage : pureStates H = (fun ψ : H => proj ψ) '' Metric.sphere 0 1 := by
+    ext ρ
+    simp [pureStates]
+  have hsep : TopologicalSpace.IsSeparable (pureStates H) := by
+    rw [himage]
+    exact ((TopologicalSpace.isSeparable_univ_iff.2 ‹_›).mono (Set.subset_univ _)).image hc
+  exact hsep.separableSpace
+
+lemma integrable_coe (μ : Measure (pureStates H)) [IsFiniteMeasure μ] :
+    Integrable (fun ρ : pureStates H => (ρ : H →L[ℂ] H)) μ :=
+  Integrable.of_bound continuous_subtype_val.aestronglyMeasurable 1 (ae_of_all _ norm_coe_le_one)
+
+variable [CompleteSpace H]
+
+omit [TopologicalSpace.SeparableSpace H] in
+lemma isDensityOperator_coe (ρ : pureStates H) : IsDensityOperator (ρ : H →L[ℂ] H) := by
+  obtain ⟨_, ψ, hψ, rfl⟩ := ρ
+  exact isDensityOperator_proj hψ
+
+/-- The barycenter `r(μ) = ∫ ρ dμ(ρ)` of a measure on the pure states: the ensemble that `μ`
+represents. -/
+def barycenter (μ : Measure (pureStates H)) : H →L[ℂ] H := ∫ ρ, (ρ : H →L[ℂ] H) ∂μ
+
+omit [CompleteSpace H] in
+/-- The barycenter is affine. -/
+theorem barycenter_add (μ ν : Measure (pureStates H)) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (a b : ℝ≥0) : barycenter (a • μ + b • ν) = a • barycenter μ + b • barycenter ν := by
+  rw [barycenter, integral_add_measure (integrable_coe _) (integrable_coe _),
+    integral_smul_nnreal_measure, integral_smul_nnreal_measure, barycenter, barycenter]
+
+omit [TopologicalSpace.SeparableSpace H] in
+lemma barycenter_dirac (ρ : pureStates H) : barycenter (Measure.dirac ρ) = ρ :=
+  integral_dirac _ _
+
+omit [CompleteSpace H] [TopologicalSpace.SeparableSpace H] in
+theorem isClosed_setOf_isPositive : IsClosed {ρ : H →L[ℂ] H | ρ.IsPositive} := by
+  have happ : ∀ x : H, Continuous fun ρ : H →L[ℂ] H => ρ x := fun x =>
+    continuous_id.clm_apply continuous_const
+  have hsymm : IsClosed {ρ : H →L[ℂ] H | ∀ x y, ⟪ρ x, y⟫_ℂ = ⟪x, ρ y⟫_ℂ} := by
+    simp only [Set.ofPred_forall]
+    exact isClosed_iInter fun x => isClosed_iInter fun y =>
+      isClosed_eq ((happ x).inner continuous_const) (continuous_const.inner (happ y))
+  have hpos : IsClosed {ρ : H →L[ℂ] H | ∀ x, 0 ≤ RCLike.re ⟪ρ x, x⟫_ℂ} := by
+    simp only [Set.ofPred_forall]
+    exact isClosed_iInter fun x => isClosed_le continuous_const
+      (RCLike.continuous_re.comp ((happ x).inner continuous_const))
+  convert hsymm.inter hpos using 1
+  ext ρ
+  rfl
+
+omit [CompleteSpace H] [TopologicalSpace.SeparableSpace H] in
+theorem convex_setOf_isPositive : Convex ℝ {ρ : H →L[ℂ] H | ρ.IsPositive} := by
+  intro ρ hρ σ hσ a b ha hb _
+  have hc : ∀ c : ℝ, 0 ≤ c → ∀ τ : H →L[ℂ] H, τ.IsPositive → (c • τ).IsPositive :=
+    fun c hc τ hτ => by
+      rw [← Complex.coe_smul]
+      exact hτ.smul_of_nonneg (Complex.zero_le_real.2 hc)
+  exact (hc a ha ρ hρ).add (hc b hb σ hσ)
+
+/-- The functional `ρ ↦ re ⟪x, ρ x⟫`. -/
+def reInnerApply (x : H) : (H →L[ℂ] H) →L[ℝ] ℝ :=
+  Complex.reCLM.comp (((innerSL ℂ x).comp (ContinuousLinearMap.apply ℂ H x)).restrictScalars ℝ)
+
+omit [CompleteSpace H] [TopologicalSpace.SeparableSpace H] in
+lemma reInnerApply_apply (x : H) (ρ : H →L[ℂ] H) : reInnerApply x ρ = (⟪x, ρ x⟫_ℂ).re := rfl
+
+/-- The trace of the barycenter is the integral of the traces: `tr r(μ) = ∫ tr ρ dμ = 1`, by
+Parseval and monotone convergence over a countable Hilbert basis. -/
+theorem posTrace_barycenter (μ : Measure (pureStates H)) [IsProbabilityMeasure μ] :
+    posTrace (barycenter μ) = 1 := by
+  have := (posTraceBasis H).orthonormal.countable
+  set b := posTraceBasis H
+  have hL : ∀ x : H, (⟪x, barycenter μ x⟫_ℂ).re =
+      ∫ ρ : pureStates H, reInnerApply x (ρ : H →L[ℂ] H) ∂μ := fun x =>
+    ((reInnerApply x).integral_comp_comm (integrable_coe μ)).symm
+  have hnn : ∀ (x : H) (ρ : pureStates H), 0 ≤ reInnerApply x (ρ : H →L[ℂ] H) := fun x ρ =>
+    re_inner_apply_nonneg (isDensityOperator_coe ρ).nonneg x
+  have hmeas : ∀ x : H, Measurable fun ρ : pureStates H => reInnerApply x (ρ : H →L[ℂ] H) :=
+    fun x => ((reInnerApply x).continuous.comp continuous_subtype_val).measurable
+  calc posTrace (barycenter μ)
+      = ∑' i, ∫⁻ ρ : pureStates H, ENNReal.ofReal (reInnerApply (b i) (ρ : H →L[ℂ] H)) ∂μ := by
+        refine tsum_congr fun i => ?_
+        rw [hL, ofReal_integral_eq_lintegral_ofReal ((reInnerApply _).integrable_comp
+          (integrable_coe μ)) (ae_of_all _ (hnn _))]
+    _ = ∫⁻ ρ : pureStates H, ∑' i, ENNReal.ofReal (reInnerApply (b i) (ρ : H →L[ℂ] H)) ∂μ :=
+        (lintegral_tsum fun i => (hmeas _).ennreal_ofReal.aemeasurable).symm
+    _ = ∫⁻ _ : pureStates H, 1 ∂μ :=
+        lintegral_congr fun ρ => (isDensityOperator_coe ρ).posTrace_eq_one
+    _ = 1 := by simp
+
+/-- The barycenter of a probability measure on the pure states is a density operator. -/
+theorem isDensityOperator_barycenter (μ : Measure (pureStates H)) [IsProbabilityMeasure μ] :
+    IsDensityOperator (barycenter μ) := by
+  refine isDensityOperator_iff.2 ⟨ContinuousLinearMap.nonneg_iff_isPositive.2 ?_,
+    posTrace_barycenter μ⟩
+  exact Convex.integral_mem (s := {ρ : H →L[ℂ] H | ρ.IsPositive})
+    (f := fun ρ : pureStates H => (ρ : H →L[ℂ] H)) convex_setOf_isPositive
+    isClosed_setOf_isPositive
+    (ae_of_all _ fun ρ =>
+      ContinuousLinearMap.nonneg_iff_isPositive.1 (isDensityOperator_coe ρ).nonneg)
+    (integrable_coe μ)
+
+/-- The map `r : M¹(P(H)) → D(H)` of Theorem 5. -/
+def toDensity (μ : {μ : Measure (pureStates H) // IsProbabilityMeasure μ}) :
+    {ρ : H →L[ℂ] H // IsDensityOperator ρ} :=
+  have := μ.2
+  ⟨barycenter μ.1, isDensityOperator_barycenter μ.1⟩
+
+/-- Every density operator is represented by a probability measure on the pure states: by the
+canonical expansion `ρ = ∑ᵢ λᵢ |eᵢ⟩⟨eᵢ|`, by `∑ᵢ λᵢ δ_{eᵢ}`. -/
+theorem toDensity_surjective : Surjective (toDensity (H := H)) := by
+  rintro ⟨ρ, hρ⟩
+  obtain ⟨w, b, lam, -, -, hlam, -, htr, hsum⟩ :=
+    hρ.isTraceClass.exists_hasSum_rankOne hρ.nonneg
+  have hb : ∀ i, ‖b i‖ = 1 := b.orthonormal.1
+  have h1 : HasSum lam 1 := by
+    rw [hρ.trace_eq_one, ← Complex.ofReal_one] at htr
+    exact Complex.hasSum_ofReal.1 htr
+  set ν : Measure (pureStates H) :=
+    Measure.sum fun i => ENNReal.ofReal (lam i) • Measure.dirac (pureState (hb i))
+  have hν : IsProbabilityMeasure ν := ⟨by
+    rw [Measure.sum_apply _ MeasurableSet.univ]
+    simp only [Measure.smul_apply, measure_univ, smul_eq_mul, mul_one]
+    rw [← ENNReal.ofReal_tsum_of_nonneg hlam h1.summable, h1.tsum_eq, ENNReal.ofReal_one]⟩
+  refine ⟨⟨ν, hν⟩, Subtype.ext ?_⟩
+  change barycenter ν = ρ
+  have hs : HasSum (fun i => (lam i : ℂ) • proj (b i)) ρ :=
+    hsum.map (TraceClass.toOperator (H := H)) (TraceClass.toOperator (H := H)).continuous
+  rw [barycenter, integral_sum_measure (integrable_coe ν), ← hs.tsum_eq]
+  refine tsum_congr fun i => ?_
+  rw [integral_smul_measure, integral_dirac, ENNReal.toReal_ofReal (hlam i), pureState,
+    ← Complex.coe_smul]
+
+/-- **Theorem 5.** The density operators are the probability measures on the pure states up to
+the equivalence `μ₁ ∼ μ₂ ↔ r(μ₁) = r(μ₂)`. -/
+def densityEquiv :
+    Quotient (Setoid.ker (toDensity (H := H))) ≃ {ρ : H →L[ℂ] H // IsDensityOperator ρ} :=
+  Setoid.quotientKerEquivOfSurjective _ toDensity_surjective
+
+/-- The equivalence of Theorem 5 is not trivial: `½ δ_{e₀} + ½ δ_{e₁}` and `½ δ_{e₊} + ½ δ_{e₋}`
+represent the same density operator, but only the first gives the state `e₀` positive
+probability. -/
+theorem exists_barycenter_eq_and_ne {e : Fin 2 → H} (he : Orthonormal ℂ e) :
+    ∃ μ₁ μ₂ : Measure (pureStates H), IsProbabilityMeasure μ₁ ∧ IsProbabilityMeasure μ₂ ∧
+      barycenter μ₁ = barycenter μ₂ ∧ μ₁ {pureState (he.1 0)} ≠ μ₂ {pureState (he.1 0)} := by
+  have hp := norm_superpos he (σ := 1) (by simp)
+  have hm := norm_superpos he (σ := -1) (by simp)
+  have h01 : ⟪e 0, e 1⟫_ℂ = 0 := he.2 (by decide)
+  have hsup : ∀ σ : ℂ, σ ≠ 0 → ⟪superpos e σ, e 1⟫_ℂ ≠ 0 := fun σ hσ => by
+    rw [← inner_conj_symm, inner_one_superpos he, map_ne_zero]
+    exact mul_ne_zero (by exact_mod_cast (by positivity : (0 : ℝ) < (√2)⁻¹).ne') hσ
+  have hne1 : pureState (he.1 1) ≠ pureState (he.1 0) :=
+    pureState_ne _ _ (by rw [inner_self_of_orthonormal he]; exact one_ne_zero) h01
+  have hnep : pureState hp ≠ pureState (he.1 0) := pureState_ne _ _ (hsup 1 one_ne_zero) h01
+  have hnem : pureState hm ≠ pureState (he.1 0) :=
+    pureState_ne _ _ (hsup (-1) (neg_ne_zero.2 one_ne_zero)) h01
+  have hhalf : (2⁻¹ : ℝ≥0∞) + 2⁻¹ = 1 := ENNReal.inv_two_add_inv_two
+  refine ⟨(2⁻¹ : ℝ≥0) • Measure.dirac (pureState (he.1 0)) +
+      (2⁻¹ : ℝ≥0) • Measure.dirac (pureState (he.1 1)),
+    (2⁻¹ : ℝ≥0) • Measure.dirac (pureState hp) + (2⁻¹ : ℝ≥0) • Measure.dirac (pureState hm),
+    ⟨?_⟩, ⟨?_⟩, ?_, ?_⟩
+  · simpa [ENNReal.smul_def] using hhalf
+  · simpa [ENNReal.smul_def] using hhalf
+  · rw [barycenter_add, barycenter_add, barycenter_dirac, barycenter_dirac, barycenter_dirac,
+      barycenter_dirac]
+    simp only [pureState, superpos, proj_smul, one_smul, neg_one_smul, ← sub_eq_add_neg]
+    have h2 : ((‖(((√2)⁻¹ : ℝ) : ℂ)‖ ^ 2 : ℝ) : ℂ) = 2⁻¹ := by
+      rw [Complex.norm_real, Real.norm_eq_abs, sq_abs, inv_pow, Real.sq_sqrt (by norm_num)]
+      push_cast
+      ring
+    rw [h2, ← smul_add, ← smul_add, ← smul_add, proj_add_add_proj_sub]
+    simp only [NNReal.smul_def, ← Complex.coe_smul, smul_add, smul_smul]
+    rw [inv_mul_cancel₀ (two_ne_zero : (2 : ℂ) ≠ 0), mul_one]
+  · simp [Set.indicator, hne1, hnep, hnem, ENNReal.smul_def]
+
+end Theorem5
+
+end PureStatesNotEnough

@@ -1,0 +1,125 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+
+name = "AoPPhysics"
+defaultTargets = ["ForMathlib", "SuperpositionAndLinearity", "SuperpositionAndMultipleMixtures",
+  "BornRuleEntropy", "ClassicalUncertaintyPrinciple", "PureStatesNotEnough", "NonLinearQuantum",
+  "InconsistentConvergence", "SchwartzMomentProblem", "EntropyTopology", "HilbertUnphysicality",
+  "SchwartzNorms", "QuantumVectorSpaces", "UnitaryEntropy", "SchroedingerEvolution",
+  "ProjectiveMeasurement", "UnitaryProjectiveEvolution", "ForPhyslib"]
+
+# physlib's own pin is Mathlib v4.35.0; the root Mathlib below takes precedence.
+# Pinned (2026-10-30): the infinite-dimensional layer builds on PhyslibAlpha (trace class,
+# unbounded spectral theorem, Stone), which is the less stable part of physlib.
+[[require]]
+name = "physlib"
+git = "https://github.com/leanprover-community/physlib"
+rev = "848dca442b63be5fd69c82b84ae42b0632941864"
+
+# TauCeti, on the same Mathlib commit as the root pin below. Keep it out of defaultTargets
+# and never `lake build TauCeti`: only the TauCeti modules we import get compiled.
+[[require]]
+name = "TauCeti"
+git = "https://github.com/TauCetiProject/TauCeti"
+rev = "eb4dd2412a1cd62f73128361bfd3cb422df32e37"
+
+# Same Mathlib commit as TauCeti (eb4dd24); lake-manifest.json carries the exact pin.
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "2cabef97b63d3275776b8b060d802de6a6fa1055"
+
+# Material that belongs in Mathlib, in Mathlib's directory layout.
+[[lean_lib]]
+name = "ForMathlib"
+globs = ["ForMathlib.+"]
+
+# Material that belongs in physlib, in physlib's directory layout (without `Physlib/`).
+[[lean_lib]]
+name = "ForPhyslib"
+globs = ["ForPhyslib.+"]
+
+# Technical brief: directional vectors vs quantum state vectors.
+[[lean_lib]]
+name = "SuperpositionAndLinearity"
+srcDir = "briefs/SuperpositionAndLinearity"
+
+# Technical brief: superpositions correspond to multiple decompositions.
+[[lean_lib]]
+name = "SuperpositionAndMultipleMixtures"
+srcDir = "briefs/SuperpositionAndMultipleMixtures"
+
+# Technical brief: the Born rule is equivalent to the von Neumann entropy.
+[[lean_lib]]
+name = "BornRuleEntropy"
+srcDir = "briefs/BornRuleEntropy"
+
+# Technical brief: classical uncertainty principle.
+[[lean_lib]]
+name = "ClassicalUncertaintyPrinciple"
+srcDir = "briefs/ClassicalUncertaintyPrinciple"
+
+# Technical brief: quantum pure states are not enough.
+[[lean_lib]]
+name = "PureStatesNotEnough"
+srcDir = "briefs/PureStatesNotEnough"
+
+# Technical brief: non-linear representations in quantum mechanics.
+[[lean_lib]]
+name = "NonLinearQuantum"
+srcDir = "briefs/NonLinearQuantum"
+
+# Technical brief: inconsistent convergence in Hilbert space.
+[[lean_lib]]
+name = "InconsistentConvergence"
+srcDir = "briefs/InconsistentConvergence"
+
+# Technical brief: non-uniqueness of the moment problem for Schwartz functions.
+[[lean_lib]]
+name = "SchwartzMomentProblem"
+srcDir = "briefs/SchwartzMomentProblem"
+
+# Technical brief: entropy is not continuous in standard probability spaces.
+[[lean_lib]]
+name = "EntropyTopology"
+srcDir = "briefs/EntropyTopology"
+
+# Technical brief: unphysicality of Hilbert spaces for quantum mechanics.
+[[lean_lib]]
+name = "HilbertUnphysicality"
+srcDir = "briefs/HilbertUnphysicality"
+
+# Technical brief: equivalence of sup-norm, L1, and L2 seminorms on the Schwartz space.
+[[lean_lib]]
+name = "SchwartzNorms"
+srcDir = "briefs/SchwartzNorms"
+
+# Technical brief: physical vector spaces for quantum mechanics.
+[[lean_lib]]
+name = "QuantumVectorSpaces"
+srcDir = "briefs/QuantumVectorSpaces"
+
+# Technical brief: Schrödinger equation is equivalent to information conservation.
+[[lean_lib]]
+name = "UnitaryEntropy"
+srcDir = "briefs/UnitaryEntropy"
+globs = ["UnitaryEntropy.*"]
+
+# Technical brief: multiple equivalent characterizations of the Schrödinger equation.
+[[lean_lib]]
+name = "SchroedingerEvolution"
+srcDir = "briefs/SchroedingerEvolution"
+globs = ["SchroedingerEvolution.*"]
+
+# Technical brief: projective measurements are equilibration processes.
+[[lean_lib]]
+name = "ProjectiveMeasurement"
+srcDir = "briefs/ProjectiveMeasurement"
+globs = ["ProjectiveMeasurement.*"]
+
+# Technical brief: unitary evolution as infinitesimal projective processes.
+[[lean_lib]]
+name = "UnitaryProjectiveEvolution"
+srcDir = "briefs/UnitaryProjectiveEvolution"
+globs = ["UnitaryProjectiveEvolution.*"]

@@ -1,0 +1,63 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+
+\title{Open problems:\\ Inconsistent convergence in Hilbert space}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Unbounded observables in general.} The introduction states that the domain of an
+  unbounded self-adjoint operator cannot be the whole space, and that every unbounded operator
+  is ``not continuous in its own domain'', e.g.\ for the average position. Only the single
+  example $\braket{N}$ on $\ell^2$ is formalized; the general statements (Hellinger--Toeplitz,
+  discontinuity of $\psi\mapsto\braket{\psi|A|\psi}$ for every unbounded $A$) are not. (Brief,
+  Sec.~1.)
+\item \textbf{Schwartz topology prevents it.} ``A topology that keeps track of all moments, like
+  the Schwartz topology, would not allow this kind of convergence.'' That $\braket{N}$, and
+  expectations of polynomial observables in general, are continuous on $S(\mathbb{N})$ is not
+  proved. (Brief, Sec.~3, last paragraph.)
+\item \textbf{A criterion of physical convergence.} The brief concludes that the $\ell^2$ topology
+  ``is too weak to take into account all conditions for a meaningful criterion of physical
+  convergence''. Which topology is the right one, and whether it is the Schwartz topology, is
+  left open. (Brief, Sec.~4.)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \textbf{The space $S(\mathbb{N})$.} The Schwartz sequence space and its topology are not
+  constructed. Only unboundedness of the seminorm $\sum_n n^2|e^j_n|^2$ is proved, not that
+  $e^j$ (or $b^j$) has no limit in $S(\mathbb{N})$. (Log, ``Differences from the brief'', ``No
+  limit in $S(\mathbb{N})$''.)
+\item \textbf{The number operator.} $\braket{N}$ is a weighted sum $\sum_n n\,|x_n|^2$ on all of
+  $\ell^2$, with a default value outside the domain of $N$. The unbounded self-adjoint operator
+  $N = a^\dagger a$, its domain, and the agreement of $\braket{x|N|x}$ with the weighted sum on
+  that domain are not formalized. (Log, ``Differences from the brief'', third item.)
+\item \textbf{The oscillator.} $\ell^2(\mathbb{N})$ with $\ket{n} = \delta_n$ is only read as the
+  harmonic oscillator. The unitary identification with $L^2(\mathbb{R})$ through the Hermite
+  functions, under which $S(\mathbb{N})$ becomes the Schwartz space of functions, is not
+  formalized. (Log, ``Setting''.)
+\end{enumerate}
+
+\end{document}

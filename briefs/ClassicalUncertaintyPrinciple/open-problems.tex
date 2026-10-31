@@ -1,0 +1,65 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+
+\title{Open problems:\\ Classical uncertainty principle}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+No item below blocks the verification of a main claim of the brief.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{The quantum case.} The conclusion says that ``in general, the uncertainty
+  principle is a consequence of the entropic lower bound'', since pure quantum states have zero
+  entropy. The classical bound $\hbar/e \approx 0.37\,\hbar$ is weaker than Heisenberg's
+  $\hbar/2$, and no entropic derivation of the quantum bound is given. Whether, and in what form,
+  the quantum principle follows from the zero entropy of pure states is open. (Brief, Sec.~3.)
+\item \textbf{The equality case of eq.~(5).} The brief says when equality holds in eq.~(3) (see
+  the log, ``Problems found'', first item) but not in eq.~(5). Equality in Gibbs' inequality
+  would require $\rho = |\{f, g\}|\,(G \circ (f, g))$ almost everywhere, with $G$ a product of
+  Gaussians, and then also that $(f, g)$ is onto up to a null set. The exact conditions are not
+  stated. (Brief, eq.~(5).)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \textbf{Several degrees of freedom.} ZENT and CUP are formalized for one DOF, on a density
+  on $\mathbb R^2$. That the marginal of a density on $(\mathbb R^2)^n$ is again an ensemble
+  with finite entropy and finite second moments is not formalized. (Log, ``Differences'', second
+  item.)
+\item \textbf{Entropy in new variables.} The brief's identity
+  $S[\rho_{fg}] = S[\rho_{qp}] + E[\ln|\{f, g\}|]$ for the density $\rho_{fg}$ of $(f, g)$ is
+  not formalized. Eq.~(5) is proved without forming $\rho_{fg}$. (Log, ``Differences'', fourth
+  item.)
+\item \textbf{The Lagrange computation.} The variational computation of the proof of Theorem~2
+  is not formalized; Gibbs' inequality replaces it. (Log, ``Differences'', first item.)
+\end{enumerate}
+
+\end{document}

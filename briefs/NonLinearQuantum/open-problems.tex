@@ -1,0 +1,66 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+
+\title{Open problems:\\ Non-linear representations in quantum mechanics}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Transport of the rest of quantum mechanics.} The brief claims that
+  ``every other relationship in quantum mechanics can be expressed in this non-linear space
+  through $m$'', including superpositions, expectations of observables and time evolution. Only
+  rays and the Born rule are checked. (Brief, Sec.~3, Remark.)
+\item \textbf{No benefit from non-linear representations.} The transported relationships
+  ``would become considerably more complicated for likely no benefit''. This is a speculation;
+  no criterion for ``benefit'' is given. (Brief, Sec.~3, Remark.)
+\item \textbf{Madelung representation.} ``The Madelung equations \ldots\ provide such a
+  representation'', one ``not even tied to vector spaces''. The equivalence of the Madelung
+  equations with quantum theory, and in what sense they represent QST, are not shown.
+  (Brief, Sec.~4.)
+\item \textbf{Any dimension.} The proof needs a non-linear, Born-rule-preserving, ray-preserving
+  map on the $\mathcal{H}$ of the system, but constructs $m$ only for a two-state system. The
+  same formula $m(\psi) = e^{\imath\theta\,p(z^+|\psi)}\psi$ for a unit vector $\ket{z^+}$
+  should work whenever $\dim\mathcal{H} \ge 2$, including infinite dimension; this is not
+  formalized ($\mathcal{H} = \mathbb{C}^2$ only). (Brief, Sec.~3, eq.~(2); Log, ``Setting''.)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \blocker{brief issue}\textbf{Theorem~1 as an independence statement.}
+  ``REP-VSLIN is independent of QST'' is a
+  statement about logical independence; only the existence of a non-additive homeomorphism of
+  $\mathcal{H}$ that fixes rays and preserves the Born rule is proved. A precise formulation of
+  $\neg$REP-VSLIN (the map $m$ sends every ray to itself, so $m(\mathcal{H}) = \mathcal{H}$ as a
+  set) under which the brief's inference holds is not settled. (Log, ``Differences from the
+  brief''.)
+\end{enumerate}
+
+\end{document}

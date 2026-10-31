@@ -1,0 +1,99 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Inconsistent convergence in Hilbert space}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/InconsistentConvergence/InconsistentConvergence.lean}
+\item Library: \lean{InconsistentConvergence}
+\item Imports: \lean{Mathlib.Analysis.Normed.Lp.lpSpace}
+\end{itemize}
+
+\paragraph{Setting.} $H = \ell^2(\mathbb{N})$ (\texttt{lp (fun \_ : }$\mathbb{N}$\texttt{ => }$\mathbb{C}$\texttt{) 2}), with
+$\ket{n} = \delta_n$ the oscillator eigenstates and
+\[
+  \ket{e^j} = \sqrt{\tfrac{j-1}{j}}\,\ket{0} + \sqrt{\tfrac{1}{j}}\,\ket{j}.
+\]
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+eq.~(2): $\|e^j - \ket{0}\|^2 = \bigl(\sqrt{(j-1)/j} - 1\bigr)^2 + 1/j$ & \lean{norm_sub_ground_sq} \\
+$e^j \to \ket{0}$ in $\ell^2$ & \lean{tendsto_e} \\
+eq.~(3): $\sum_n n^2 |e^j_n|^2 = j \to \infty$ & \lean{secondMoment_e}, \lean{tendsto_secondMoment_e} \\
+the $\ket{j}$ alone have no limit in $\ell^2$ & \lean{not_cauchySeq_level}: $\|\ket{j}-\ket{k}\|^2 = 2$ for $j\ne k$ \\
+eq.~(4): $\braket{e^j|N|e^j} = 1$ for $j \ge 1$ & \lean{numberExp_e} \\
+eq.~(5), the inconsistency & \lean{not_continuousAt_numberExp}: $\langle N\rangle$ is not continuous at $\ket{0}$ in $\ell^2$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Indexing. Proposition~1 indexes sequences from $1$, with the ground term at $i = 1$. The
+  formalization indexes from $0$, matching the oscillator of Section~3. The divergence is the
+  same; with the brief's indexing the sum is $(j-1)/j + j$ instead of $j$.
+\item No limit in $S(\mathbb{N})$. What is proved is that the seminorm
+  $\sum_n n^2 |x_n|^2$ is unbounded along $e^j$, which is the brief's argument. The Schwartz
+  sequence space $S(\mathbb{N})$ and its topology are not constructed.
+\item $\langle N\rangle$ is defined on all of $\ell^2$ as the weighted sum
+  $\sum_n n\,|x_n|^2$, which has a default value outside the domain of $N$. The discontinuity
+  is still meaningful, because every $e^j$ is finitely supported.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} No mathematical problems. Minor: the distance is
+written $d(x, y) = \sum_i (x_i - y_i)^2$, which is the squared distance and, for complex
+entries, should read $\sum_i |x_i - y_i|^2$.
+
+\end{document}

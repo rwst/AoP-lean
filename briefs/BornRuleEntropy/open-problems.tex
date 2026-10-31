@@ -1,0 +1,62 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+
+\title{Open problems:\\ The Born rule is equivalent to the von Neumann entropy}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+No item below blocks the verification of a main claim of the brief.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Infinite entropy.} EQST takes the entropy to be real-valued, but in infinite
+  dimension the von Neumann entropy of some density operators, and the Shannon entropy of some
+  countable families of weights, is $+\infty$. With real values BR-ENT and [B]MUTEX cannot hold
+  in infinite dimension. Which codomain is intended, and whether [B]MUTEX should be restricted to
+  ensembles of finite entropy, is open. The formalization uses $[0, \infty]$. (Brief, Sec.~3,
+  EQST; Log, ``Problems found'', first item.)
+\item \textbf{Independence of the conditions.} The conclusion says that the only extra requirement
+  is the consistency [B]MUTEX. Whether BR-BORN and BR-ENT are each independent of the other over
+  EQST (without [B]MUTEX), that is, whether there are a $p$ satisfying EQST and BR-BORN and an $S$
+  violating [B]MUTEX, and conversely, is not addressed. (Brief, Sec.~4.)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \textbf{Countable affinity and Corollary~8.} EQST is formalized with affinity for mixtures of
+  two pure states only. The brief's affinity for countable mixtures, and Corollary~8 (that $p$ is
+  determined by its values on pure states, which in infinite dimension needs countable
+  mixtures and so countable affinity), are not formalized. (Log, ``Differences'', third item.)
+\item \textbf{The Bloch-ball picture.} The geometric diagonalization of Fig.~1 and eqs.~(4)--(5),
+  and the picture of $p(\psi|\cdot)$ as an affine function on the Bloch ball of Fig.~3, are not
+  formalized; the proofs are algebraic instead. (Log, ``Differences'', last item.)
+\end{enumerate}
+
+\end{document}

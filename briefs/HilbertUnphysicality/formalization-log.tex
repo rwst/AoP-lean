@@ -1,0 +1,122 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Unphysicality of Hilbert spaces for quantum mechanics}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/HilbertUnphysicality/HilbertUnphysicality.lean}
+\item Library: \lean{HilbertUnphysicality}
+\item Imports: \lean{InconsistentConvergence} and three new \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/Analysis/SpecialFunctions/Gaussian/Erf.lean} (the error function),\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/l2Space.lean} (separable Hilbert spaces are
+  $\ell^2(\mathbb{N})$),\newline
+  \lean{ForMathlib/MeasureTheory/Function/L2Space.lean} ($L^2$ is infinite-dimensional)
+\end{itemize}
+
+\paragraph{Setting.} Theorem~1 says that the Hilbert-space formulation QSTO:H is inconsistent
+with three physical conditions. The conditions are informal; what is checked is the
+mathematics behind each of the three arguments.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{[B]COBS}} \\
+unbounded $\Rightarrow$ not continuous & \lean{not_continuous_of_unbounded} \\
+oscillator example & \lean{numberExp_not_continuousAt} (from the inconsistent-convergence brief) \\
+\multicolumn{2}{@{}l}{\emph{[B]WDQ}} \\
+Hellinger--Toeplitz & \lean{bounded_of_isSymmetric}, \lean{not_isSymmetric_of_unbounded} \\
+$\operatorname{erf}$, $|\operatorname{erf}| < 1$ & \lean{Real.erf}, \lean{Real.abs_erf_lt_one},
+  \lean{Real.tendsto_erf_atTop} \\
+$y(x) = \tan(\tfrac{\pi}{2}\operatorname{erf} x)$ is a change of coordinates & \lean{frameChange},
+  \lean{strictMono_frameChange} \\
+eq.~(2), first line, integrated & \lean{arctan_frameChange}: $\arctan(y)/\pi = \operatorname{erf}(x)/2$ \\
+eq.~(2), second line & \lean{cauchyDensity_frameChange_mul_deriv}:
+  $|\phi(y(x))|^2\, y'(x) = |\psi(x)|^2$ \\
+$\psi$ normalized, in the domain of $X$ & \lean{integral_gaussDensity},
+  \lean{integrable_sq_mul_gaussDensity} \\
+$\phi$ normalized, not in the domain of $Y$ & \lean{integral_cauchyDensity},
+  \lean{not_integrable_sq_mul_cauchyDensity} \\
+\multicolumn{2}{@{}l}{\emph{[B]STDIST}} \\
+separable Hilbert spaces are isomorphic & \lean{nonempty_linearIsometryEquiv_of_separable} \\
+$L^2(\mathbb{R}^{n})$ is separable and infinite-dimensional &
+  \lean{L2.separableSpace_euclidean}, \lean{L2.not_finiteDimensional_euclidean} \\
+$L^2(\mathbb{R}^{n+1}) \cong L^2(\mathbb{R}^{m+1})$ & \lean{L2_euclidean_iso} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item The wave functions are handled through their densities $|\psi|^2 = e^{-x^2}/\sqrt\pi$ and
+  $|\phi|^2 = 1/(\pi(1+y^2))$. ``In the domain of the position operator'' is read as
+  $\int x^2|\psi|^2 < \infty$, i.e.\ $x\psi \in L^2$.
+\item The frame change is checked as a strictly increasing coordinate change satisfying
+  eq.~(2) in both forms. The unitary $U$ between the two $L^2$ spaces and the change of
+  variables in the integral are not formalized.
+\item Mathlib has no error function; \lean{Real.erf} is defined in \lean{ForMathlib}.
+\item {[B]}STDIST is proved for $n, m \ge 1$ through the classification of separable
+  infinite-dimensional Hilbert spaces, which is also new in \lean{ForMathlib}.
+\item The additional remarks of Section~4 are not formalized.
+\end{itemize}
+
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item The brief says that $\phi(y)$ ``goes to zero at infinity like $1/y^2$''. It is $|\phi|^2$
+  that decays like $1/y^2$; $\phi$ itself decays like $1/|y|$. The conclusion is unaffected:
+  $y\,\phi(y) \not\in L^2$.
+\item ``$L^2(\mathbb{R}^n)$ is a separable Hilbert space for any $n$'' is true, but the
+  isomorphism argument also needs infinite dimension, which fails for $n = 0$.
+\end{itemize}
+
+\end{document}

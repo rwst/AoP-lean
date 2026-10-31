@@ -1,0 +1,334 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Projective measurements are equilibration processes}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/ProjectiveMeasurement/ProjectiveMeasurement.lean}
+\item Library: \lean{ProjectiveMeasurement}
+\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.Dephasing},\newline
+  \lean{ForPhyslib.QuantumMechanics.RelativeEntropy},\newline
+  and the brief \lean{UnitaryEntropy} (for \lean{vonNeumann})
+\item New files in \lean{ForPhyslib/QuantumMechanics/}: \lean{Pinching} (spectral projectors
+  as the functional calculus of indicators, the pinching, the commutant, trace duality, density
+  operators and supports, the Hilbert--Schmidt Pythagoras identity), \lean{Dephasing} (the
+  Lindblad generator, the explicit solution, uniqueness, the limit), \lean{RelativeEntropy}
+  (relative entropy, Klein's inequality with its equality case, the relative-entropy Pythagoras
+  identity). They use from TauCeti:
+  \begin{itemize}
+  \item the Hilbert--Schmidt norm,
+    \lean{TauCeti.Analysis.InnerProductSpace.HilbertSchmidt.Basic};
+  \item finiteness of the spectrum, \lean{TauCeti.Analysis.Normed.Operator.FiniteDimensional};
+  \item the eigenvector action of the functional calculus,\newline
+    \lean{TauCeti.Analysis.InnerProductSpace.FunctionalCalculusComparison};
+  \item the supporting-line bound for $x\log x$,
+    \lean{TauCeti.Analysis.SpecialFunctions.Log.MulLog}.
+  \end{itemize}
+\item New \lean{ForMathlib} material:\newline
+  \lean{ForMathlib/Analysis/Calculus/MeanValue.lean} (a function continuous from the right at
+  $a$ with derivative zero on $(a, \infty)$ is constant on $[a, \infty)$).
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a finite-dimensional complex Hilbert space with density operators as
+in the brief ``Schr\"odinger equation is equivalent to information conservation''. A process is a
+map $\Phi$ sending an observable $X$ and an incoming ensemble $\rho$ to $\Phi(X, \rho)$; the
+conditions constrain it for self-adjoint $X$ and density operators $\rho$. For self-adjoint $X$,
+\lean{spectralProj}~$X$~$x$ is \lean{cfc} of the indicator of $\{x\}$, the projector $P_x$ onto
+the $x$-eigenspace, and \lean{pinching}~$X$~$\rho = \sum_x P_x\rho P_x$, the sum running over the
+real spectrum of $X$. \lean{dephasingGenerator}~$X$~$\rho = X\rho X - \tfrac12(X^2\rho +
+\rho X^2)$. The Hilbert--Schmidt norm is TauCeti's \lean{hilbertSchmidtNorm}. The relative entropy
+\lean{relEntropy}~$\rho$~$\sigma \in [0, \infty]$ is
+$\operatorname{tr}(\rho\log\rho) - \operatorname{tr}(\rho\log\sigma)$ if
+$\ker\sigma \subseteq \ker\rho$ and $\infty$ otherwise, with $\log = $ \texttt{cfc Real.log}, which
+is the logarithm on the support since $\log 0 = 0$. \lean{IsUniqueMinOn}~$f$~$s$~$a$ says that $a
+\in s$ and $f(a) < f(b)$ for every other $b \in s$; \lean{commutingDensities}~$X$ is the set of
+density operators commuting with $X$. The conditions are
+\begin{itemize}
+\item \lean{EqMeas}: $\Phi(X, \rho) = P_X(\rho)$;
+\item \lean{EqLind}: every $r : \mathbb{R} \to \mathrm{End}(E)$ with $r(0) = \rho$,
+  $r'(t) = L(r(t))$ for $t > 0$ and $r$ continuous from the right at $0$ tends to
+  $\Phi(X, \rho)$;
+\item \lean{EqHS}: $\Phi(X, \rho)$ is the unique minimizer of $\|\rho - \sigma\|_{HS}$ over
+  \lean{commutingDensities}~$X$;
+\item \lean{EqKL}: $\Phi(X, \rho)$ is the unique minimizer of $D(\rho\|\sigma)$ over the same
+  set.
+\end{itemize}
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Eqs.~(3)--(4), blockwise evolution & \lean{spectralProj_mul_dephasingGenerator_mul},
+  \lean{dephasingGenerator_block} \\
+Eq.~(5), the solution & \lean{dephasing}, \lean{hasDerivAt_dephasing}, \lean{dephasing_zero};
+  uniqueness \lean{eq_dephasing} \\
+Eqs.~(6)--(10), the limit & \lean{tendsto_dephasing}, \lean{tendsto_pinching_of_hasDerivAt} \\
+EQ-LIND $\Leftrightarrow$ EQ-MEAS & \lean{eqMeas_iff_eqLind} \\
+``$[\sigma, X] = 0$ iff $P_X(\sigma) = \sigma$'' & \lean{commute_iff_pinching_eq} \\
+$P_X$ is positive and trace preserving & \lean{isDensity_pinching} \\
+Eq.~(11) & \lean{sq_hilbertSchmidtNorm_sub}, \lean{hilbertSchmidtNorm_sub_pinching_lt} \\
+EQ-HS $\Leftrightarrow$ EQ-MEAS & \lean{eqMeas_iff_eqHS} \\
+``$\operatorname{tr}(\rho\log\sigma) = \operatorname{tr}(P_X(\rho)\log\sigma)$'' &
+  \lean{trace_pinching_mul_of_commute} \\
+Eq.~(12) & \lean{relEntropy_eq_add} \\
+Eq.~(13) & \lean{relEntropy_pinching}, \lean{relEntropy_pinching_eq} \\
+``non-negative and vanishes iff $\sigma = P_X(\rho)$'' (Klein) &
+  \lean{re_trace_mul_log_sub_log_nonneg}, \lean{re_trace_mul_log_sub_log_eq_zero_iff},
+  \lean{relEntropy_eq_zero_iff} \\
+Supports in eq.~(12) & \lean{ker_pinching_le}, \lean{ker_le_ker_pinching} \\
+EQ-KL $\Leftrightarrow$ EQ-MEAS & \lean{eqMeas_iff_eqKL}, via \lean{relEntropy_pinching_lt} \\
+Theorem~1, complete & \lean{projective_measurement_tfae} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Finite dimension only; the brief has a separable Hilbert space. Then every self-adjoint $X$
+  has pure point spectrum, every density operator has finite entropy, so [B]FINENT holds and
+  the two halves of Theorem~1 merge into one equivalence of four conditions. The convergence in
+  EQ-LIND is in operator norm, which in finite dimension is trace-norm convergence; the
+  non-commutative Scheff\'e lemma and dominated convergence are not needed.
+\item The Lindblad equation is assumed only for $t > 0$, with continuity from the right at
+  $t = 0$. Under these assumptions the solution is unique (\lean{eq_dephasing}), which the brief
+  takes for granted when it solves eq.~(4). EQ-LIND is stated for every solution; the explicit
+  one shows that there is one.
+\item The Hilbert--Schmidt Pythagoras identity and the strict inequality hold for every operator
+  $\sigma$ commuting with $X$, not only for density operators; the constraint $\sigma \in D(H)$ in
+  EQ-HS is not needed. For EQ-KL it is, through Klein's inequality.
+\item Eq.~(13) is stated with the entropy \lean{vonNeumann} of the brief ``Schr\"odinger equation
+  is equivalent to information conservation'' and the identity
+  $S(\rho) = -\operatorname{tr}(\rho\log\rho)$ (\lean{vonNeumann_eq_neg_re_trace}). As a value in
+  $[0, \infty]$ it is $\max(S(P_X(\rho)) - S(\rho), 0)$, which equals $S(P_X(\rho)) - S(\rho)$ by
+  Klein's inequality.
+\item The relative entropy takes values in $[0, \infty]$, as physlib's \lean{qRelativeEnt}.
+  physlib's pinching and \lean{pinching_pythagoras} are stated for matrices and pinch by the
+  eigenprojectors of a state; this formalization works with operators on $E$, as the other
+  briefs do, and pinches by an observable.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} No errors in the statements. Gaps and implicit points:
+\begin{itemize}
+\item Klein's inequality, ``the last term is non-negative and vanishes if and only if
+  $\sigma = P_X(\rho)$'', is used without a reference. It is proved here in eigenbases: with
+  $c_{ij} = |\braket{u_i|v_j}|^2$,
+  $D(\rho\|\sigma) = \sum_{ij} c_{ij}(r_i\log r_i - r_i\log s_j - r_i + s_j) \ge
+  \sum_{ij} c_{ij}(\sqrt{r_i} - \sqrt{s_j})^2$.
+\item ``For non-faithful $\sigma$, the identity is understood on its support'' hides two support
+  facts that eq.~(12) needs: $\ker P_X(\rho) \subseteq \ker\rho$ for positive $\rho$, and
+  $\ker\sigma \subseteq \ker\rho \Rightarrow \ker\sigma \subseteq \ker P_X(\rho)$ for $\sigma$
+  commuting with $X$. The first also gives eq.~(12) when $\ker\sigma \not\subseteq \ker\rho$:
+  then both sides are infinite.
+\item ``Both $\rho(t)$ and $P_X(\rho(0))$ are density operators'': that $\rho(t)$ stays a density
+  operator is asserted, not shown. It holds because the matrix
+  $\bigl(e^{-t(x-y)^2/2}\bigr)_{x,y}$ is positive semidefinite, so by the Schur product theorem the
+  blockwise multiplication preserves positivity. In infinite dimension the Scheff\'e step needs
+  it; in finite dimension it is not needed and is not formalized.
+\item The sentence ``This base condition states the ensembles have finite entropy'' follows
+  QSTO:H, which does not say this; it describes [B]FINENT, stated next.
+\item The remark on observables with continuous spectrum is not formalized; in finite dimension
+  there is none.
+\end{itemize}
+
+\subsection{Hilbert spaces of any dimension}\label{sec:projective-measurement-any-dim}
+
+This subsection covers Theorem~1 for bounded observables with pure point spectrum: EQ-MEAS,
+EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-MEAS.
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/ProjectiveMeasurement/ProjectiveMeasurement/InfiniteDimensional.lean}
+\item Library: \lean{ProjectiveMeasurement}, which now builds every module
+  \lean{ProjectiveMeasurement.*}
+\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.DephasingFlow},\newline
+  \lean{ForPhyslib.QuantumMechanics.VonNeumannRelativeEntropy},\newline
+  and the finite-dimensional \lean{ProjectiveMeasurement} (for \lean{IsUniqueMinOn})
+\item New file \lean{ForPhyslib/QuantumMechanics/DiscreteObservable.lean}: resolutions of the
+  identity and observables with pure point spectrum, the pinching as a strong sum, blocks and
+  block-diagonal operators, positivity and trace of the pinching, and the Hilbert--Schmidt
+  Pythagoras identity, through TauCeti's block splitting of the Hilbert--Schmidt energy
+  (\lean{TauCeti.Analysis.InnerProductSpace.HilbertSchmidt.Pythagoras}).
+\item New file \lean{ForPhyslib/QuantumMechanics/DephasingFlow.lean}: the bounded generator and
+  its exponential, the blocks of a solution, the unitary group $e^{isX}$, the Gaussian average and
+  its trace-norm contraction, equilibration in trace norm.
+\item New file \lean{ForPhyslib/QuantumMechanics/VonNeumannRelativeEntropy.lean}: eigenbases,
+  the entropy as $\sum_i\eta(\lambda_i)$, the cross term $-\operatorname{tr}(\rho\log\sigma)$,
+  Lindblad's formula, Klein's inequality, and the behaviour under pinching.
+\item New file \lean{ForMathlib/Analysis/InnerProductSpace/CFCEigenvector.lean}:
+  $g(T)v = g(\mu)v$ for $Tv = \mu v$, $T$ self-adjoint and $g$ continuous on the spectrum, in any
+  dimension (TauCeti's version is finite-dimensional).
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
+Density operators, pure states and the entropy \lean{vonNeumannEntropy} $\in [0,\infty]$ are as
+in the section ``Hilbert spaces of any dimension'' of
+\lean{briefs/SchroedingerEvolution/formalization-log.tex}. An observable is $X \in \mathrm{End}(E)$ with
+\lean{IsEigenDecomposition}~$X$~$P$~$x$: the $P_x$ are pairwise orthogonal projections with
+$\sum_x P_x = 1$ strongly, the $x$ are distinct reals, and $XP_x = xP_x$; the index set is
+arbitrary. The pinching \lean{IsResolutionOfIdentity.pinching}~$\rho = \sum_x P_x\rho P_x$ is a
+strong sum, defined for every bounded $\rho$. The conditions are those of finite dimension, with
+these changes:
+\begin{itemize}
+\item \lean{EqLind}: solutions are differentiable in operator norm for $t > 0$ and continuous from
+  the right at $0$; they tend to $\Phi(X, \rho)$ in trace norm.
+\item \lean{EqHS}: minimization over \lean{commutingDensityOperators}~$X$, with TauCeti's
+  \lean{hilbertSchmidtNorm}.
+\item \lean{EqKL}: only for $\rho$ with $S(\rho)$ and $S(P_X(\rho))$ finite, and minimization over
+  the density operators of finite entropy commuting with $X$. \lean{EqMeasFinEnt} is EQ-MEAS on
+  the same $\rho$.
+\item The relative entropy \lean{relativeEntropy} is Lindblad's formula
+  $\sum_{ij}|\braket{e_i|f_j}|^2(\lambda_i\log\lambda_i - \lambda_i\log\mu_j + \mu_j - \lambda_i)$
+  in eigenbases of $\rho$ and $\sigma$ chosen once, each term in $[0,\infty]$ and $+\infty$ for
+  $\mu_j = 0 < \lambda_i$.
+\end{itemize}
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Eq.~(2), blocks determine $\rho$ & \lean{IsResolutionOfIdentity.ext_block} \\
+Eqs.~(3)--(4) & \lean{IsEigenDecomposition.mul_dephasingGenerator_mul} \\
+Eq.~(5), for every solution & \lean{IsEigenDecomposition.mul_eq_of_hasDerivAt} \\
+A solution exists & \lean{dephasingFlow}, \lean{hasDerivAt_dephasingFlow} \\
+$\rho(t)$ is a mixture of unitary conjugations of $\rho(0)$ &
+  \lean{gaussianDephasing}, \lean{IsEigenDecomposition.mul_gaussianDephasing_mul},
+  \lean{IsEigenDecomposition.eq_gaussianDephasing} \\
+Eqs.~(6)--(10), trace-norm convergence &
+  \lean{IsEigenDecomposition.traceENorm_gaussianDephasing_sub_le},
+  \lean{IsEigenDecomposition.tendsto_traceENorm_of_hasDerivAt} \\
+EQ-LIND $\Leftrightarrow$ EQ-MEAS & \lean{eqMeas_iff_eqLind} \\
+``$[\sigma, X] = 0$ iff block diagonal iff $P_X(\sigma) = \sigma$'' &
+  \lean{IsEigenDecomposition.commute_iff}, \lean{IsResolutionOfIdentity.pinching_eq_self_iff} \\
+$P_X$ is positive and trace preserving & \lean{IsResolutionOfIdentity.pinching_nonneg},
+  \lean{posTrace_pinching}, \lean{isDensityOperator_pinching} \\
+Eq.~(11) & \lean{IsResolutionOfIdentity.hilbertSchmidtEnergy_sub},
+  \lean{hilbertSchmidtNorm_sub_pinching_lt} \\
+EQ-HS $\Leftrightarrow$ EQ-MEAS & \lean{eqMeas_iff_eqHS} \\
+$-\operatorname{tr}(\rho\log\sigma)$ & \lean{crossEntropy},
+  \lean{IsEigenbasis.crossEntropy_eq} \\
+$D(\rho\|\sigma) = -\operatorname{tr}(\rho\log\sigma) - S(\rho)$ &
+  \lean{crossEntropy_eq_lindbladSum_add}, \lean{relativeEntropy_add_vonNeumannEntropy},
+  \lean{relativeEntropy_eq_lindbladSum} \\
+``$\operatorname{tr}(\rho\log\sigma) = \operatorname{tr}(P_X(\rho)\log\sigma)$'' &
+  \lean{IsResolutionOfIdentity.crossEntropy_pinching} \\
+Eq.~(12) & \lean{IsResolutionOfIdentity.relativeEntropy_eq_add} \\
+Eq.~(13) & \lean{IsResolutionOfIdentity.relativeEntropy_pinching},
+  \lean{relativeEntropy_pinching_eq} \\
+Klein, ``vanishes iff $\sigma = P_X(\rho)$'' & \lean{eq_of_lindbladSum_eq_zero},
+  \lean{relativeEntropy_eq_zero_iff} \\
+EQ-KL $\Leftrightarrow$ EQ-MEAS under [B]FINENT & \lean{eqKL_iff_eqMeasFinEnt}, via
+  \lean{IsResolutionOfIdentity.relativeEntropy_pinching_lt} \\
+Theorem~1 & \lean{projective_measurement_tfae} and \lean{eqKL_iff_eqMeasFinEnt} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Observables are bounded with pure point spectrum, given by their eigenprojections and
+  distinct eigenvalues. The brief allows any self-adjoint $X$ and remarks that the conditions fail
+  on a continuous part of the spectrum; unbounded $X$, where the Lindblad equation holds only on
+  a domain, is not formalized. Nor is a bridge from the spectral theorem: for a self-adjoint $X$
+  with pure point spectrum, the $P_x$ would be the spectral projections $\mu_S(\{x\})$.
+\item EQ-LIND is proved without the Hilbert--Schmidt estimate (6)--(9) and without the
+  non-commutative Scheff\'e lemma. Every solution has the blocks of eq.~(5), so it equals the
+  Gaussian average $\int e^{isX}\rho\,e^{-isX}\,dN(0,t)(s)$, whose blocks carry the characteristic
+  function $e^{-t(x-y)^2/2}$. As an average of unitary conjugations, computed in
+  $\mathcal{S}_1$, it is a trace-norm contraction. With $Q = \sum_{x \in F} P_x$ for a finite set
+  $F$, $\|\rho(t) - P_X(\rho)\|_1$ is at most $\|\rho - Q\rho Q\|_1 + \|QP_X(\rho)Q - P_X(\rho)\|_1$,
+  both small for large $F$ uniformly in $t$, plus finitely many off-diagonal blocks of
+  $Q\rho Q$, each decaying like $e^{-t(x-y)^2/2}$.
+\item The relative entropy follows decision~D4: Lindblad's formula, in eigenbases chosen once.
+  The cross term $-\operatorname{tr}(\rho\log\sigma)$ is defined without bases, as
+  $\sup_n \operatorname{tr}(g_n(\sigma)\rho\,g_n(\sigma))$ for continuous $g_n$ with
+  $g_n^2 \uparrow -\log$. In any eigenbases, Lindblad's sum plus $S(\rho)$ equals the cross term,
+  so the formula does not depend on the bases once $S(\rho) < \infty$; for $S(\rho) = \infty$
+  independence is not formalized. Klein's equality case is read off the sum: a vanishing term
+  forces $\lambda_i = \mu_j$ or $\braket{e_i|f_j} = 0$, so $\rho$ and $\sigma$ agree on every
+  $\braket{e_i|\,\cdot\,f_j}$. Agreement with the finite-dimensional \lean{relEntropy} is not
+  formalized.
+\item The Pythagoras identity (12) is proved in the form $D(\rho\|\sigma) + S(\rho) =
+  -\operatorname{tr}(P_X(\rho)\log\sigma) = D(P_X(\rho)\|\sigma) + S(P_X(\rho))$. The middle step
+  holds because each $g_n(\sigma)$ commutes with every $P_x$ and the pinching preserves traces. No
+  eigenbasis adapted to the blocks is needed.
+\item Under [B]FINENT the hypothesis $S(\rho) < \infty$ is redundant: $S(\rho) \le
+  S(P_X(\rho))$ follows from the identities above. \lean{EqKL} keeps it, as the brief does.
+\item The Hilbert--Schmidt Pythagoras identity holds in $[0, \infty]$ for every operator, through
+  TauCeti's block splitting of the energy, with no summability assumption. The strict inequality
+  uses that differences of density operators have finite energy.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} No errors in the statements. Gaps beyond those of the
+finite-dimensional part:
+\begin{itemize}
+\item ``Both $\rho(t)$ and $P_X(\rho(0))$ are density operators'' is asserted. In infinite
+  dimension it is needed for the Scheff\'e step. The Gaussian representation above proves it,
+  and also gives the contraction that replaces that step.
+\item The Scheff\'e step itself (``Hilbert--Schmidt convergence to a density operator implies
+  trace-norm convergence'') is cited without reference or proof; it is not needed here.
+\item The brief solves the block equations (4) but does not say that the solution is unique; the
+  argument behind \lean{IsEigenDecomposition.mul_eq_of_hasDerivAt} gives uniqueness for every
+  solution continuous from the right at $0$.
+\item Eq.~(13)'s ``finite if and only if $S(P_X(\rho))$ is finite'' uses $S(\rho) < \infty$,
+  which the admissible domain provides; outside it the equivalence fails, since a block-diagonal
+  $\rho$ with $S(\rho) = \infty$ has $D(\rho\|P_X(\rho)) = D(\rho\|\rho) = 0$. The remark
+  ``Relative entropy in infinite dimensions'' says that in the case $S(P_X(\rho)) = +\infty$
+  ``every ensemble commuting with $X$ is infinitely distant from $\rho$''. Read literally, the same
+  $\rho$ is a counterexample, with $\sigma = \rho$. The claim holds when $S(\rho) < \infty$, by
+  $D(\rho\|\sigma) = -\operatorname{tr}(P_X(\rho)\log\sigma) - S(\rho) \ge S(P_X(\rho)) - S(\rho)$;
+  this is not formalized.
+\end{itemize}
+
+\end{document}

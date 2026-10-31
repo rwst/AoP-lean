@@ -1,0 +1,360 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Schr\"odinger equation is equivalent to information conservation}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy.lean}
+\item Library: \lean{UnitaryEntropy}
+\item Imports: \lean{Mathlib.Analysis.SpecialFunctions.BinaryEntropy}, the Wigner library files \lean{Density.lean} and
+  \lean{Differentiable.lean} (which imports the rest of\newline
+  \lean{ForPhyslib/QuantumMechanics/Wigner}), and two new \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/Analysis/Calculus/Deriv/Star.lean} (in a normed star algebra, the derivative
+  of a path of unitaries through $1$ is skew-adjoint, and $U^\dagger U$ is constant when
+  $U' = XU$ with $X$ skew-adjoint),\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/Adjoint.lean} (in finite dimension,
+  $U^\dagger U = 1$ already makes $U$ unitary)
+\item Wigner library, in \lean{ForPhyslib/QuantumMechanics/Wigner/}: \lean{Density} (density
+  operators, pure states \lean{proj}, equal mixtures \lean{mix}; moved there from this brief),
+  \lean{Basic},
+  \lean{Normalize}, \lean{Rigidity}, \lean{Theorem} (Wigner's theorem without bijectivity, after
+  Geh\'er, now in any dimension, see Section~\ref{sec:unitary-entropy-any-dim}; uniqueness up to
+  one phase in finite dimension), \lean{Projection} (the same for
+  maps on rank-one projections), \lean{Continuity} (Bargmann's triple product excludes the
+  anti-unitary case near $t_0$), \lean{Differentiable} (explicit, differentiable choice of the
+  phase). Its \lean{ForMathlib} helpers are \lean{Analysis/Complex/ThreeCircles.lean},
+  \lean{Analysis/InnerProductSpace/PhaseUnitary.lean} and
+  \lean{Analysis/InnerProductSpace/LinearMap.lean} (conjugate-linear isometries conjugate the
+  inner product; polarization of $\ket{x}\bra{y}$). Coordinate conjugation in an orthonormal
+  basis came from TauCeti (\lean{TauCeti.Analysis.InnerProductSpace.Conjugation}) until the
+  library moved to Hilbert bases.
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a finite-dimensional complex Hilbert space, and operators are
+continuous linear maps $E \to E$. A density operator (\lean{IsDensity}) is a positive operator of
+trace $1$. The pure state of a unit vector $\psi$ is \lean{proj}~$\psi = \ket{\psi}\bra{\psi}$
+(Mathlib's \lean{rankOne}), and \lean{mix}~$\rho\,\sigma = \tfrac12\rho + \tfrac12\sigma$. The
+von Neumann entropy \lean{vonNeumann} is $\sum -\mu \log \mu$ over the roots $\mu$ of the
+characteristic polynomial. For self-adjoint $\rho$ these are its eigenvalues
+(\lean{vonNeumann_eq_sum}), and the definition makes invariance under conjugation immediate.
+\lean{born}~$\psi\,\phi = |\braket{\psi|\phi}|^2/(\|\psi\|^2\|\phi\|^2)$, and
+\lean{mixEntropy}~$p = H_2((1+\sqrt p)/2)$ with $H_2$ Mathlib's \lean{binEntropy}. The
+Schr\"odinger equation for a propagator is $U'(t) = (i\hbar)^{-1} H(t)\,U(t)$ with $H(t)$
+self-adjoint.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Corollary 1, entropy of $\tfrac12\rho_\psi + \tfrac12\rho_\phi$ & \lean{vonNeumann_mix_proj},
+  \lean{mixEntropy_eq} \\
+Corollary 1, strictly decreasing & \lean{mixEntropy_strictAntiOn} (on $[0,1]$) \\
+Corollary 1, $p(\phi|\psi) = \lambda$ iff $S = \ldots$ & \lean{born_eq_iff} (for
+  $\lambda \in [0,1]$) \\
+Theorem 2 ($\Rightarrow$), unitary propagator & \lean{star_mul_self_of_schrodinger},
+  \lean{ContinuousLinearMap.mem_unitary_of_star_mul_self} \\
+Theorem 2 ($\Rightarrow$), existence for constant $H$ & \lean{hasDerivAt_exp_schrodinger}:
+  $U(t) = \exp(t(i\hbar)^{-1}H)$ \\
+Theorem 2 ($\Rightarrow$), DR-INFO & \lean{vonNeumann_unitary_conj},
+  \lean{IsDensity.unitary_conj}, \lean{schrodinger_conserves_entropy} \\
+Theorem 2 ($\Leftarrow$), Step 1 & \lean{vonNeumann_eq_zero_iff}: $S(\rho) = 0$ iff $\rho$ is
+  pure \\
+Theorem 2 ($\Leftarrow$), Steps 1--2 up to Wigner & \lean{pure_and_born_of_preserves} \\
+Theorem 2 ($\Leftarrow$), Step 2, Wigner's theorem & \lean{Wigner.wigner_rankOne} (from
+  \lean{Wigner.wigner}) \\
+Theorem 2 ($\Leftarrow$), anti-unitary case excluded & \lean{Wigner.eventually_exists_unitary},
+  \lean{PhaseEqOnSphere.false_of_unitary_of_antiunitary} \\
+Theorem 2 ($\Leftarrow$), differentiable $U(t)$ & \lean{Wigner.exists_unitary_differentiableAt} \\
+Theorem 2 ($\Leftarrow$), Step 3 & \lean{exists_hamiltonian} (from
+  \lean{star_eq_neg_of_hasDerivAt_of_mem_unitary}), for $\hbar \ne 0$ \\
+Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item This part is finite-dimensional; the brief has a separable Hilbert space. The calculus
+  results (\lean{star_mul_self_of_schrodinger}, \lean{exists_hamiltonian}) hold in any Hilbert
+  space for bounded $H(t)$. Corollary~1 and Theorem~2 through Wigner's theorem are redone in
+  any dimension in Section~\ref{sec:unitary-entropy-any-dim}.
+\item Corollary~1 is proved without diagonalizing the mixture. $\rho = \tfrac12\rho_\psi +
+  \tfrac12\rho_\phi$ satisfies $\rho^3 = \rho^2 - \frac{1-\lambda}{4}\rho$
+  (\lean{mix_proj_cubic}), so every eigenvalue is $0$ or $(1 \pm \sqrt\lambda)/2$. On these three
+  points $-\mu\log\mu = \alpha\mu + \beta\mu^2$ for suitable $\alpha, \beta$, and
+  $\operatorname{tr}\rho = 1$, $\operatorname{tr}\rho^2 = (1+\lambda)/2$ fix the sum. This also
+  covers the degenerate cases $\lambda = 0$ (double eigenvalue $\tfrac12$) and $\lambda = 1$
+  ($\rho$ pure).
+\item [B]EVMIX is used only for equal mixtures, which is all Step~2 needs. For the
+  ($\Rightarrow$) direction, $\rho \mapsto U\rho U^\dagger$ is linear, so it preserves all mixtures.
+\item DR-INFO is $S(\rho_I) = S(\rho_F) = S(\rho_P)$. The reconstructed past
+  $U^\dagger\rho_F U$ is $\rho_I$ itself, which is also proved.
+\item The ($\Rightarrow$) direction shows that every propagator solving the equation is unitary.
+  Existence is shown for constant $H$ only; for time-dependent $H(t)$ it is the linear ODE
+  existence theorem, which the brief also assumes.
+\item \lean{schrodinger_of_preserves} assumes $\Phi_{t_0} = \mathrm{id}$ and differentiability of
+  $t \mapsto \Phi_t(\rho)$ at $t_0$ only on density operators, one $\rho$ at a time. It concludes
+  that $\Phi_t(\ket{\psi}\bra{\psi}) = \ket{U(t)\psi}\bra{U(t)\psi}$ for $t$ near $t_0$, with
+  $U(t)$ unitary for every $t$, $U(t_0) = 1$ and $U'(t_0) = (i\hbar)^{-1} H U(t_0)$ for a
+  self-adjoint $H$. This is the Schr\"odinger equation at $t_0$, which is what EVDIFF at $t_0$
+  gives; the brief's two-time evolution maps give it at every initial time.
+\item Wigner's theorem is used in its non-bijective form (Geh\'er), so the bijectivity of the
+  correspondence of pure states via the reconstructed past (Step~1) is not needed.
+\item Not formalized: $\Phi_t(\rho) = U(t)\rho U(t)^\dagger$ for mixed $\rho$. It would need
+  $\Phi_t$ to be affine (Kadison), while the brief assumes only equal mixtures, and the
+  conclusion of the brief concerns $U$ only.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} No errors. Implicit points:
+\begin{itemize}
+\item The ``iff'' in Corollary~1 needs $\lambda \in [0,1]$, where the entropy is strictly
+  decreasing in $\lambda$; for other $\lambda$, $\sqrt\lambda$ and the logarithms are not
+  meaningful.
+\item Step~3 assumes a norm-differentiable unitary family, which forces a bounded generator. On
+  an infinite-dimensional Hilbert space it therefore covers bounded Hamiltonians only. The brief ``Multiple
+  equivalent characterizations of the Schr\"odinger equation'' treats the general case with
+  Stone's theorem.
+\item In Step~3, $\hbar \ne 0$ is needed to write $A = H/(i\hbar)$.
+\item Wigner's theorem gives each $U(t)$ only up to a phase, and Step~3 differentiates $U(t)$. A
+  differentiable choice exists. Extend $\Phi_t$ to all $\ket{x}\bra{y}$ by polarization, so
+  that it sends $\ket{x}\bra{y}$ to $\ket{Ux}\bra{Uy}$, and fix an orthonormal basis $(b_k)$ and
+  an index $i$. Then
+  \[ U(t) = \bigl(\operatorname{Re}\braket{b_i|\Phi_t(\ket{b_i}\bra{b_i})\,b_i}\bigr)^{-1/2}
+    \sum_k \Phi_t(\ket{b_k}\bra{b_i})\,\ket{b_i}\bra{b_k} \]
+  is the unitary with $\braket{b_i|U(t)b_i} > 0$. It is a finite expression in values of $\Phi_t$ on pure states, so
+  it is differentiable at $t_0$ whenever these are.
+\item ``Joint continuity and $\Phi_{t_0} = I$ exclude the anti-unitary case'' needs only continuity
+  at $t_0$ of $t \mapsto \Phi_t(P)$ for three pure states $P$: the imaginary part of Bargmann's
+  triple product $\operatorname{tr}(\Phi_t(P_1)\Phi_t(P_2)\Phi_t(P_3))$ is $\tfrac14$ at $t_0$ and
+  would be $-\tfrac14$ for an anti-unitary. In dimension $1$ there is nothing to exclude.
+\end{itemize}
+
+\subsection{Hilbert spaces of any dimension}\label{sec:unitary-entropy-any-dim}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/InfiniteDimensional.lean}
+\item Library: \lean{UnitaryEntropy}, which now builds every module \lean{UnitaryEntropy.*}
+\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropy},\newline
+  \lean{ForMathlib.Analysis.InnerProductSpace.StrongDerivative},\newline
+  \lean{TauCeti.Analysis.InnerProductSpace.FunctionalCalculusComparison} (eigenvector action of
+  the functional calculus, for the comparison in finite dimension),\newline
+  and the finite-dimensional part \lean{UnitaryEntropy} (for \lean{born}, \lean{mixEntropy},
+  \lean{mix_proj_cubic}, \lean{mix_proj_sq}, \lean{star_mul_self_of_schrodinger} and
+  \lean{exists_hamiltonian}, none of which assumes finite dimension)
+\item New file \lean{ForPhyslib/QuantumMechanics/DensityOperator.lean}: density operators on a
+  Hilbert space of any dimension, on top of the trace-class operators of PhyslibAlpha
+  (\lean{PhyslibAlpha/ProbabilisticTheory/HilbertSpace/TraceClass/}, from the physlib
+  dependency; it builds against our Mathlib pin). Pure states, convex combinations, conjugation
+  by an isometry, idempotent density operators are pure, and agreement with \lean{IsDensity} in
+  finite dimension.
+\item New file \lean{ForPhyslib/QuantumMechanics/VonNeumannEntropy.lean}: the von Neumann entropy
+  in $[0,\infty]$, its invariance under conjugation by an isometry, and $S(\rho) = 0$ iff $\rho$
+  is pure.
+\item New \lean{ForMathlib} material:\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/PositiveTrace.lean} (the trace of a positive
+  operator in $[0,\infty]$, independent of the Hilbert basis),\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/HilbertBasisMaps.lean} (for a Hilbert basis: a
+  vector is determined by its coordinates, Parseval for their moduli, the diagonal unitary
+  $b_i \mapsto \delta_i b_i$, coordinatewise conjugation, the isometry $b_i \mapsto v_i$ onto an
+  orthonormal family, and $V(V^\dagger x) = x$ when $\|V^\dagger x\| = \|x\|$),\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/StrongDerivative.lean}\newline (by Banach--Steinhaus,
+  the strong derivative of an operator family is a bounded operator; for unitaries with
+  $U(t_0) = 1$ it is skew-adjoint).
+\item The Wigner library \lean{ForPhyslib/QuantumMechanics/Wigner/} (\lean{Basic},
+  \lean{Normalize}, \lean{Rigidity}, \lean{Theorem}) now works over a Hilbert basis of any
+  Hilbert space. \lean{Theorem} proves Wigner's theorem in any dimension, with isometries, and
+  derives the finite-dimensional theorem from it. \lean{Continuity} excludes the anti-unitary
+  branch in any dimension, without a trace, and derives the finite-dimensional exclusion from it.
+  \lean{Differentiable} adds the differentiable choice of the phase in any dimension. The other
+  files built on the library are unchanged.
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
+\lean{posTrace}~$T = \sum_i \braket{e_i|Te_i} \in [0,\infty]$ for a Hilbert basis $(e_i)$. For
+positive $T$ it does not depend on the basis (\lean{posTrace_eq_tsum}): write
+$\braket{e_i|RR^\dagger e_i} = \|R^\dagger e_i\|^2$, expand by Parseval in a second basis and
+exchange the two sums of nonnegative terms. A density operator (\lean{IsDensityOperator}) is a
+positive operator that is trace class in the sense of PhyslibAlpha (\lean{IsTraceClass}) with
+\lean{trace}~$\rho = 1$; equivalently, $0 \le \rho$ and \lean{posTrace}~$\rho = 1$
+(\lean{isDensityOperator_iff}). The entropy is \lean{vonNeumannEntropy}~$\rho =$
+\lean{posTrace}~$\eta(\rho)$ with $\eta(x) = -x\log x$ and $\eta(\rho)$ given by the continuous
+functional calculus. The spectrum of a density operator lies in $[0,1]$, where $\eta \ge 0$, so
+$\eta(\rho)$ is positive. \lean{proj}, \lean{mix}, \lean{born} and \lean{mixEntropy} are as above.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+QST:H, density operators & \lean{IsDensityOperator}, \lean{isDensityOperator_proj},
+  \lean{IsDensityOperator.mix} \\
+QST:H, von Neumann entropy & \lean{vonNeumannEntropy} \\
+Agreement in finite dimension & \lean{isDensityOperator_iff_isDensity},
+  \lean{vonNeumannEntropy_eq_ofReal_vonNeumann} \\
+Corollary 1, entropy of $\tfrac12\rho_\psi + \tfrac12\rho_\phi$ &
+  \lean{vonNeumannEntropy_mix_proj} \\
+Corollary 1, $p(\phi|\psi) = \lambda$ iff $S = \ldots$ & \lean{born_eq_iff_vonNeumannEntropy}
+  (for $\lambda \in [0,1]$) \\
+Theorem 2 ($\Rightarrow$), unitary conjugation preserves the entropy &
+  \lean{IsDensityOperator.vonNeumannEntropy_conj} (for isometries) \\
+Theorem 2 ($\Rightarrow$), DR-INFO & \lean{IsDensityOperator.conj},
+  \lean{schrodinger_conserves_vonNeumannEntropy} \\
+Theorem 2 ($\Leftarrow$), Step 1 & \lean{IsDensityOperator.vonNeumannEntropy_eq_zero_iff} \\
+Theorem 2 ($\Leftarrow$), Steps 1--2 up to Wigner &
+  \lean{pure_and_born_of_preserves_vonNeumannEntropy}, \lean{exists_isWignerMap_of_preserves} \\
+Wigner's theorem, any dimension &
+  \lean{Wigner.IsWignerMap.exists_linearIsometry_or_conjLinearIsometry},
+  \lean{Wigner.wigner_isometry} \\
+Wigner's theorem, onto the rays &
+  \lean{Wigner.IsWignerMap.exists_unitary_or_antiunitary_of_surjective} \\
+Theorem 2 ($\Leftarrow$), Steps 1--2 with Wigner & \lean{exists_isometry_of_preserves};
+  \lean{exists_unitary_of_preserves} if every pure state is an image \\
+Theorem 2 ($\Leftarrow$), surjectivity from the reconstructed past & \lean{exists_proj_of_past},
+  \lean{exists_unitary_of_preserves_of_past} \\
+Theorem 2 ($\Leftarrow$), anti-unitary case excluded &
+  \lean{eventually_exists_unitary_of_preserves} (from
+  \lean{Wigner.eventually_exists_unitary_of_unitary_or_antiunitary}) \\
+Theorem 2 ($\Leftarrow$), surjectivity is needed & \lean{shift_preserves_not_unitary} \\
+Theorem 2 ($\Leftarrow$), differentiable $U(t)\psi$ & \lean{Wigner.exists_unitary_differentiableAt_apply} \\
+Theorem 2 ($\Leftarrow$), Step 3 & \lean{ContinuousLinearMap.exists_hasDerivAt_apply},
+  \lean{star_eq_neg_of_hasDerivAt_apply_of_mem_unitary}, \lean{exists_hamiltonian_of_star_eq_neg} \\
+Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEntropy} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Wigner's theorem in any dimension follows Geh\'er's proof with a Hilbert basis $(b_k)$. The
+  first normalization changes: the images $f(b_k)$ are orthonormal but need not span, so they
+  define an isometry $V$ with $Vb_k = f(b_k)$, not a unitary. By Parseval,
+  $\|V^\dagger f(v)\|^2 = \sum_k |\braket{f(b_k)|f(v)}|^2 = \sum_k |\braket{b_k|v}|^2 = 1 =
+  \|f(v)\|^2$, so $f(v)$ lies in the range of $V$ and $V^\dagger \circ f$ is a Wigner map that
+  fixes every $b_k$. The diagonal unitary and the conjugation are then built from the basis as in
+  finite dimension. The result is a linear or conjugate-linear isometry; it is onto, hence
+  unitary or anti-unitary, when every ray is the image of a ray, and always in finite dimension.
+\item The anti-unitary branch is excluded by continuity without a trace. For $P = \ket{a}\bra{a}$,
+  $Q$, $R$ rank-one projections onto $a, b, c$ and a fixed vector $x$,
+  $\braket{x|PQRP\,x} = |\braket{a|x}|^2\,\Delta(a,b,c)$
+  (\lean{inner_rankOne_mul_rankOne_mul_rankOne_mul_rankOne_apply}). Take the test triple
+  $b_i, (b_i - b_k)/\sqrt2, (b_i - ib_k)/\sqrt2$ with $\Delta = (1+i)/4$, $x = b_i$, and the
+  images $\Phi_t(P)$. The imaginary part is $\tfrac14$ at $t_0$ and continuous at $t_0$ in
+  operator norm, but $\le 0$ for an anti-unitary, since its triple product is
+  $\overline{\Delta}$ and the factor $|\braket{a|x}|^2$ is nonnegative. The finite-dimensional
+  \lean{Wigner.eventually_exists_unitary}, which used $\operatorname{tr}(PQR) = \Delta$, is now
+  a corollary. Continuity is assumed in operator norm; continuity in trace norm implies it.
+\item EVDIFF is formalized as in finite dimension: $t \mapsto \Phi_t(\rho)$ is differentiable at
+  $t_0$ in operator norm for every density operator $\rho$. The conclusion is the Schr\"odinger
+  equation on vectors, as in DR-SCEQ: $\psi(t) = U(t)\psi$ satisfies $\psi'(t_0) = (i\hbar)^{-1}
+  H\psi(t_0)$ for every $\psi$, with one bounded self-adjoint $H$. It is not the equation for
+  $t \mapsto U(t)$ in operator norm, which the finite-dimensional \lean{schrodinger_of_preserves}
+  gives. The basis sum that fixes the phase in finite dimension does not converge in operator
+  norm; instead, for a fixed unit vector $e$, $\Phi_t$ extended by polarization gives
+  $(\ket{U x}\bra{U e})\,e = \braket{U e|e}\,U x$, and dividing by $|\braket{U e|e}|$ fixes the
+  phase one vector at a time. So $t \mapsto U(t)x$ is differentiable at $t_0$ for each $x$. By
+  Banach--Steinhaus, applied to the difference quotients, the derivatives $x \mapsto
+  (U(\cdot)x)'(t_0)$ form a bounded operator $A$. Differentiating $\braket{U(t)x|U(t)y} =
+  \braket{x|y}$ gives $A^\dagger = -A$, and $H = i\hbar A$.
+\item No spectral decomposition is used. The entropy is the trace of $\eta(\rho)$, and pure states
+  are found through the spectrum: $S(\rho) = 0$ forces $\eta(\rho) = 0$, so $\eta$ vanishes on
+  the spectrum, which then lies in $\{0, 1\}$; $\rho$ is idempotent, and an idempotent density
+  operator is $\ket{\psi}\bra{\psi}$ (\lean{IsDensityOperator.eq_proj_of_isIdempotentElem}).
+\item Corollary~1 uses the cubic relation as in finite dimension, with the spectral mapping
+  theorem for polynomials in place of eigenvalues. Then $\eta(\rho) = \alpha\rho + \beta\rho^2$,
+  and its trace is computed from $\sum_i \braket{e_i|x}\braket{y|e_i} = \braket{y|x}$ for the
+  rank-one terms.
+\item The ($\Rightarrow$) direction uses only $U(t)^\dagger U(t) = 1$, which every propagator
+  satisfies. Conjugation $X \mapsto UXU^\dagger$ by an isometry is a non-unital star algebra
+  homomorphism, so it commutes with the functional calculus of $\eta$ (since $\eta(0) = 0$), and
+  it preserves \lean{posTrace}. Unitarity is not needed.
+\item Entropies are compared in $[0,\infty]$; in infinite dimension $S(\rho) = \infty$ occurs.
+\item DR-INFO is formalized in full: $S(\Phi\rho) = S(\rho)$, and every density operator $\rho$
+  has a reconstructed past, a density operator $\sigma$ with $\Phi\sigma = \rho$; then
+  $S(\sigma) = S(\rho)$ by the first condition. The finite-dimensional part does not need the past,
+  and \lean{exists_isometry_of_preserves} shows what remains without it.
+\end{itemize}
+
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item In infinite dimension the reconstructed past in DR-INFO is essential, and Step~1 uses it
+  when it says that pure states ``correspond bijectively''. DR-INFO presupposes a past ensemble
+  $\rho_P$ for every initial ensemble, so $\Phi$ is onto the density operators, as in the
+  introduction's ``deterministic and reversible''. Then every pure state is the image of a pure
+  state, since its past has entropy zero (\lean{exists_proj_of_past}), and Wigner's theorem gives
+  a unitary or an anti-unitary (\lean{exists_unitary_of_preserves_of_past}). The brief's proof
+  is therefore correct, but the past cannot be dropped. Conjugation
+  $\rho \mapsto S\rho S^\dagger$ by the shift $S$ on $\ell^2(\mathbb{N})$ maps density operators
+  to density operators and preserves the entropy and equal mixtures, but no pure state goes to
+  $\ket{e_0}\bra{e_0}$. So it is induced by no unitary and by no anti-unitary
+  (\lean{shift_preserves_not_unitary}), and Wigner's theorem gives only an isometry. In finite
+  dimension the past is automatic.
+\item The time structure of [B]EVMIX does not replace the past. On $L^2(0,\infty)$ the right
+  shifts $(V_tf)(x) = f(x-t)$ for $x > t$ and $0$ otherwise are isometries forming a strongly
+  continuous semigroup with $V_0 = I$. Then $\Phi_{t_0 \to t_1}(\rho) =
+  V_{t_1-t_0}\rho V_{t_1-t_0}^\dagger$ satisfies [B]EVMIX, preserves the entropy, and is induced
+  by no unitary for $t_1 > t_0$; it has no reconstructed past. (By the Wold--Cooper
+  decomposition, every strongly continuous semigroup of isometries is a unitary group plus copies of
+  this one.) Not formalized. A norm-continuous semigroup of isometries is $V_t = e^{tA}$ with
+  bounded $A$, and differentiating $V_t^\dagger V_t = I$ at $0$ gives $A^\dagger = -A$, so it is
+  unitary. The example therefore needs an unbounded generator, which Step~3 does not cover
+  anyway.
+\item EVDIFF for every density operator forces a bounded Hamiltonian, as the Banach--Steinhaus
+  step shows. Unbounded Hamiltonians, whose evolution is differentiable only on a dense set of
+  states, are outside the theorem as stated; the brief ``Multiple equivalent characterizations of
+  the Schr\"odinger equation'' treats them with Stone's theorem. Otherwise no problems beyond
+  those of the finite-dimensional part.
+\end{itemize}
+
+\end{document}

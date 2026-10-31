@@ -1,0 +1,65 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+
+\title{Open problems:\\ Directional vectors vs quantum state vectors}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+No item below blocks the verification of a main claim of the brief.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Why the probability is affine.} The brief requires that ``for any other state, the
+  probability of outcome must be proportional to the component in that direction'' and reads
+  off eq.~(2) from Fig.~2. The requirement is stated, not derived. A precise version, that an
+  affine function of the direction which is invariant under rotations about $z$ and takes the
+  values $1$ at $e_z$ and $0$ at $-e_z$ is $(1 + v^z)/2$, is not formalized; only the resulting
+  law is (\lean{born_stateVector}). (Brief, Sec.~2, before eq.~(2).)
+\item \textbf{Half a turn and rotations.} ``A line returns to itself after half a turn'' is
+  formalized only as $\theta \mapsto \theta + 2\pi$ (\lean{stateVector_add_two_pi}). The
+  statement behind it, that a rotation of the direction by an angle $\alpha$ acts on state
+  vectors by a unitary of half the angle, and that $SU(2) \to SO(3)$ is two-to-one, is not
+  formalized. (Brief, Sec.~2, last paragraph.)
+\item \textbf{Beyond the qubit.} The introduction says in general that quantum states are rays,
+  with linearity in terms of probability. Only the two-state system is formalized, where rays
+  are directions in space; for more levels the pure states are not a sphere of directions, and
+  the brief does not say what replaces eq.~(1). (Brief, Sec.~1.)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \textbf{The projective line as the sphere.} That rays of $\mathbb{C}^2$ correspond one to
+  one to unit vectors of $\mathbb{R}^3$ is proved pointwise (\lean{exists_eq_smul_iff},
+  \lean{exists_eq_smul_stateVector}, \lean{exists_direction_eq}). It is not stated as an
+  equivalence, or a homeomorphism, between Mathlib's \lean{Projectivization} of $\mathbb{C}^2$
+  and the unit sphere. (Log, ``Differences''.)
+\end{enumerate}
+
+\end{document}

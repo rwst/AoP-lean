@@ -1,0 +1,175 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{B}{>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\emergencystretch=2em
+
+\title{Lean formalization of an Assumptions of Physics technical brief:\\ log}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This log records which statements of the technical brief in this directory
+(\url{https://assumptionsofphysics.org/resources/briefs}) were checked in Lean, where
+the formal version differs from the brief, and any problems found in the brief.
+
+\section*{Setup}
+
+\begin{itemize}
+\item Lean \texttt{v4.36.0-rc1}; Mathlib at commit \texttt{2cabef97}; physlib (\texttt{master})
+  and TauCeti (commit \texttt{eb4dd24}, on the same Mathlib) as further dependencies.
+\item Build: \texttt{lake build} in the project root.
+\item Every file is checked with \texttt{\#print axioms} on its main results. A result is
+  recorded here only if it depends on no axioms beyond \lean{propext},
+  \lean{Classical.choice} and \lean{Quot.sound}, and so has no \lean{sorry}.
+\item Imports are kept to the Mathlib modules actually needed.
+\item Material that belongs in Mathlib is kept in \lean{ForMathlib/}, in Mathlib's directory
+  layout (library \lean{ForMathlib}), and imported by the brief files.
+\end{itemize}
+
+
+%======================================================================
+
+\section{Quantum pure states are not enough}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/PureStatesNotEnough/PureStatesNotEnough.lean}
+\item Library: \lean{PureStatesNotEnough}
+\item Imports: one new \lean{ForMathlib} file:\newline
+  \lean{ForMathlib/Analysis/Convex/Combination.lean}: a map that preserves the convex combinations
+  of two points of a convex set preserves all finite convex combinations
+  (\lean{Convex.map_sum_of_map_add}), and a convex set contains them
+  (\lean{Convex.sum_mem_of_semifield}), with scalars in any ordered semifield such as
+  $\mathbb R_{\ge 0}$.\newline
+  Existing files: \lean{ForMathlib/Analysis/InnerProductSpace/l2Space.lean}
+  (\lean{Orthonormal.countable}), \lean{ForPhyslib/QuantumMechanics/DensityOperator.lean}
+  (\lean{IsDensityOperator}, \lean{posTrace}), \lean{ForPhyslib/QuantumMechanics/Wigner/Density.lean}
+  (\lean{IsDensity}, \lean{proj}) and
+  \lean{ForPhyslib/ProbabilisticTheory/HilbertSpace/TraceClass/CanonicalExpansion.lean}
+  (\lean{IsTraceClass.exists_hasSum_rankOne}).
+\end{itemize}
+
+\paragraph{Setting.} The ensembles of CST over a measurable space $X$ with Liouville measure
+$\mu$ are the probability measures $\nu \ll \mu$ (\lean{classicalEnsembles}~$\mu$). Their mixtures
+are $a\nu_1 + b\nu_2$ with $a, b \in \mathbb R_{\ge 0}$, $a + b = 1$.
+\lean{HasManyDisjointSets}~$\mu$ says that for every $N$ there are $N$ disjoint measurable sets of
+positive finite measure. The density operators of QE-DENS are \lean{IsDensity} (positive, trace
+one) on a finite-dimensional space and \lean{IsDensityOperator} (positive, trace class, trace one)
+on a separable complex Hilbert space $\mathcal H$ of any dimension. The pure states
+(\lean{pureStates}) are the projections $|\psi\rangle\langle\psi|$ with $\|\psi\| = 1$, a copy
+of $P(\mathcal H)$ inside the bounded operators, with the Borel $\sigma$-algebra of the operator
+norm. An identification of two ensemble spaces is modelled as a map that preserves mixtures of two
+ensembles.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+CST, the ensemble space & \lean{classicalEnsembles}; it is convex:
+  \lean{Convex.classicalEnsembles} \\
+(used for Theorem~3) a Darboux chart has $N$ disjoint sets of positive finite Liouville measure
+  for every $N$ & \lean{hasManyDisjointSets_restrict}: any nonempty open set in a nontrivial
+  finite-dimensional real normed space, for any measure that is positive on open sets and finite
+  on compact sets \\
+(used for Theorem~3) the CST ensemble space is infinite-dimensional &
+  \lean{not_injOn_of_map_add}: no mixture-preserving map from it into a finite-dimensional real
+  vector space is injective \\
+Theorem~3, CST and QE-DENS are inconsistent & \lean{cst_qeDens_inconsistent}, for
+  $\dim\mathcal H < \infty$ \\
+Theorem~1, QP-RAY and CST are consistent iff $1 \le \dim V < \infty$ & not formalized;
+  \lean{subsingleton_projectivization}: for $\dim V = 1$, $P(V)$ is a single point \\
+Remark after Example~2, the Born rule is not $\delta_{\psi\phi}$ & \lean{born_ne_delta}: $e_0$ and
+  $(e_0 + e_1)/\sqrt2$ are distinct rays with Born probability $\frac12$ \\
+Theorem~5, the map $r : M^1(P(\mathcal H)) \to D(\mathcal H)$ & \lean{barycenter}
+  $r(\mu) = \int \rho\,d\mu(\rho)$; \lean{isDensityOperator_barycenter},
+  \lean{posTrace_barycenter}; \lean{toDensity} \\
+Theorem~5, $r$ is affine & \lean{barycenter_add} \\
+Theorem~5, $D(\mathcal H) \equiv M^1(P(\mathcal H))/{\sim}$ & \lean{toDensity_surjective},
+  \lean{densityEquiv} \\
+Remark after Theorem~5, a class records the different preparations of one ensemble &
+  \lean{exists_barycenter_eq_and_ne}: $\frac12\delta_{e_0} + \frac12\delta_{e_1}$ and
+  $\frac12\delta_{e_+} + \frac12\delta_{e_-}$ have the same barycenter but give $e_0$ different
+  probabilities \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Theorem~3 compares the whole ensemble spaces, not those supported on a two-dimensional
+  subspace $A$ (see ``Problems found''). It assumes $\dim\mathcal H < \infty$, which the brief
+  derives from Theorem~1. Only the finite dimension of the real vector space of operators is
+  used, not positivity or trace. ``The spaces correspond'' becomes a map from the CST ensembles to
+  the density operators that is injective and preserves mixtures of two ensembles. The proof
+  normalizes $\mu$ on $\dim + 2$ disjoint sets, takes an affine dependence among the images, and
+  separates its positive and negative parts into two different mixtures with the same image.
+\item The Liouville measure enters only through \lean{HasManyDisjointSets}, which holds on every
+  Darboux chart. The symplectic structure itself is not used.
+\item Theorem~5 is proved for every separable complex Hilbert space, not only in finite dimension.
+  $r(\mu)$ is the Bochner integral of the pure states in the operator norm. It is positive because
+  the positive operators form a closed convex cone, and it has trace one by Parseval and monotone
+  convergence over a countable Hilbert basis. $r$ is onto by the canonical expansion
+  $\rho = \sum_i\lambda_i|e_i\rangle\langle e_i|$, represented by $\sum_i\lambda_i\delta_{e_i}$.
+  No Choquet theory is used. ``$\equiv$'' is the bijection between the quotient by
+  $r(\mu_1) = r(\mu_2)$ and $D(\mathcal H)$.
+\item Not formalized:
+  \begin{itemize}
+  \item Theorem~1;
+  \item Example~2: $P(\mathbb C^2)$ is a sphere with Darboux coordinates $z$, $\theta_{xy}$;
+    Hamiltonian flows; quantum evolution as rotations;
+  \item Insight~4, which is informal;
+  \item that the pure states are the extreme points of $D(\mathcal H)$, which the proof of
+    Theorem~5 does not need.
+  \end{itemize}
+\end{itemize}
+
+\paragraph{Problems found in the brief.} Theorems~3 and 5 hold, but their proofs have gaps.
+Theorem~1 is not checked.
+\begin{itemize}
+\item Theorem~1 states $1 \le \dim V$, while its proof uses $2 \le \dim X$. For $\dim V = 1$ the
+  state space $P(V)$ is a single point (\lean{subsingleton_projectivization}), a manifold of
+  dimension $0$. So either $0$-dimensional symplectic manifolds count, and the proof's bound
+  should be $0 \le \dim X$, or they do not, and the theorem should say $2 \le \dim V < \infty$.
+  ``Since $X$ is a symplectic manifold, $\dim X < \infty$'' holds only for finite-dimensional
+  symplectic manifolds, and the projective space of an infinite-dimensional Hilbert space is an
+  infinite-dimensional one. The finiteness comes from CST itself: the Liouville measure $\omega^n$
+  needs a finite $n$.
+\item In the proof of Theorem~3, for $\dim\mathcal H \ge 3$ the sphere $P(A)$ has dimension
+  $2 < 2(\dim\mathcal H - 1)$ and therefore Liouville measure zero. No CST ensemble has support in
+  $P(A)$, so the classical side is empty, not infinite-dimensional. The argument works as written
+  only for $\dim\mathcal H = 2$. Comparing the whole spaces repairs it.
+\item The proof of Theorem~5 cites Choquet theory, which concerns compact convex sets, but
+  $D(\mathcal H)$ is not compact when $\dim\mathcal H = \infty$. The proof also never shows that
+  every density operator is represented, which $D(\mathcal H) \equiv M^1/{\sim}$ needs. Both gaps
+  are closed by the canonical expansion. ``Every continuous linear functional
+  $f : D(\mathcal H) \to \mathbb R$'' should read continuous affine function, since
+  $D(\mathcal H)$ is not a vector space.
+\item Example~2 (not checked in Lean): area-preserving diffeomorphisms of the sphere include the
+  orientation-reversing ones, such as $z \mapsto -z$, which are not Hamiltonian. So Hamiltonian
+  evolution preserves the area form, not only the area.
+\item Typos: ``non necessarily'' should be ``not necessarily''; ``$r$ defined about'' should be
+  ``$r$ defined above''.
+\end{itemize}
+
+\end{document}
