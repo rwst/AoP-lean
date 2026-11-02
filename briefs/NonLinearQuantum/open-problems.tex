@@ -57,12 +57,30 @@ precise first.
 \section*{From the formalization}
 \begin{enumerate}
 \item \blocker{brief issue}\textbf{Theorem~1 as an independence statement.}
-  ``REP-VSLIN is independent of QST'' is a
-  statement about logical independence; only the existence of a non-additive homeomorphism of
-  $\mathcal{H}$ that fixes rays and preserves the Born rule is proved. A precise formulation of
-  $\neg$REP-VSLIN (the map $m$ sends every ray to itself, so $m(\mathcal{H}) = \mathcal{H}$ as a
-  set) under which the brief's inference holds is not settled. (Log, ``Differences from the
-  brief''.)
+  ``REP-VSLIN is independent of QST'' is a statement about logical independence, but
+  $\neg$REP-VSLIN is not made precise, and its truth depends on the reading.
+  \begin{itemize}
+  \item \emph{Literal independence over models.} If a system is only its state space and
+    probability, REP-VSLIN follows from QST (take the $H$ that QST provides), so
+    $\neg$REP-VSLIN is inconsistent with QST. If a system also carries vector-level data that
+    may be arbitrary, any data that is not an inner product space gives a model of
+    $\neg$REP-VSLIN, and $m$ is not needed.
+  \item \emph{No vector space is fixed, even up to isomorphism.} This is false: by Wigner's
+    theorem the Born rule on $P(H)$ fixes $H$ up to a unitary or anti-unitary map (not checked
+    in Lean for two different spaces; the Wigner theorem in \lean{ForPhyslib} is for maps of
+    one space to itself). For $m(H)$ in particular, $m(H) \cong H$ by construction
+    (\lean{twistedIsometry}).
+  \item \emph{The linear structure is not fixed by the rays and the Born rule.} This is
+    proved (\lean{exists_second_linear_structure}): the carrier of $H$ has a second complex
+    inner product space structure, carried over along $m$, with the same scalar
+    multiplication, hence the same rays, and the same Born rule, but a different addition. It
+    uses eqs.~(3), (4) and (6), and needs $\dim H \ge 2$ (\lean{map_add_of_map_smul}).
+  \end{itemize}
+  The step of the proof that breaks under the first two readings is ``since the map is
+  non-linear, $H \not\equiv m(H)$ in the category of vector spaces'', which is false (Log,
+  ``Problems found''). The third reading is proposed as the precise statement. The item stays
+  open until the brief adopts it, or another one, and corrects that sentence. (Log,
+  ``Differences from the brief''.)
 \end{enumerate}
 
 \end{document}

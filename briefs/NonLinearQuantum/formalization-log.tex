@@ -80,19 +80,53 @@ Remark: $m$ bijective & \lean{nlHomeomorph}: a homeomorphism of $\mathbb{C}^2$, 
 Remark: $m$ a diffeomorphism & \lean{contDiffAt_nlMap}: smooth at every $v \ne 0$ \\
 (correction) & \lean{not_differentiableAt_nlMap_zero}: not differentiable at $0$ \\
 Theorem~1, mathematical content & \lean{exists_nonlinear_born_preserving} \\
+Born rule depends only on rays & \lean{born_smul}: $p(cv\mid dw) = p(v\mid w)$ for $c, d \ne 0$ \\
+$m(H)$, structure carried along $m$ & \lean{Twisted}, \lean{toTwisted} (identity of the carrier) \\
+same scalars, hence same rays & \lean{toTwisted_smul} \\
+same Born rule & \lean{born_toTwisted} \\
+different addition & \lean{not_map_add_toTwisted} \\
+(correction) $H \cong m(H)$ & \lean{twistedIsometry}: $m$ is a linear isometry onto $m(H)$ \\
+Theorem~1, precise form & \lean{exists_second_linear_structure} \\
+(caveat) dimension one & \lean{map_add_of_map_smul}: maps commuting with scalars are additive \\
 \bottomrule
 \end{tabularx}
 \end{center}
 
 \paragraph{Differences from the brief.} Theorem~1 (``REP-VSLIN is independent of QST'') is a
-statement about the logical independence of two conditions. The checked content is the
-existence of a homeomorphism of $H$ that maps every ray to itself, preserves the Born rule and
-is not additive.
+statement about the logical independence of two conditions, which the brief does not make
+precise. Two things are checked.
+\begin{itemize}
+\item The existence of a homeomorphism of $H$ that maps every ray to itself, preserves the Born
+  rule and is not additive.
+\item A precise form of $\neg$REP-VSLIN under which the brief's proof is a proof: the linear
+  structure of $H$ is not fixed by the rays and the Born rule. The type \lean{Twisted}~$\theta$
+  is the carrier of $H$ with addition $v \oplus w = m(m^{-1}v + m^{-1}w)$, scalar multiplication
+  $k \odot v = m(k\,m^{-1}v)$ and inner product $\langle m^{-1}v, m^{-1}w\rangle$; it is a complex
+  inner product space. By eq.~(3) its scalar multiplication is that of $H$, so it has the same
+  rays; by eq.~(6) it has the same Born rule; by eq.~(4) its addition differs from that of $H$.
+\end{itemize}
+See the open problems for why the brief has to choose this reading.
 
-\paragraph{Problems found in the brief.} The closing remark says that $m$ is a
-diffeomorphism. It is not differentiable at $0$: along every real line $m(tv) = t\,m(v)$, so a
-derivative at $0$ would have to equal $m$ itself, and $m$ is not additive. The correct
-statement is that $m$ is a homeomorphism of $\mathbb{C}^2$ and a diffeomorphism of
-$\mathbb{C}^2\setminus\{0\}$. Theorem~1 only needs a bijection, so it is not affected.
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item The closing remark says that $m$ is a diffeomorphism. It is not differentiable at $0$:
+  along every real line $m(tv) = t\,m(v)$, so a derivative at $0$ would have to equal $m$
+  itself, and $m$ is not additive. The correct statement is that $m$ is a homeomorphism of
+  $\mathbb{C}^2$ and a diffeomorphism of $\mathbb{C}^2\setminus\{0\}$. Theorem~1 only needs a
+  bijection, so it is not affected.
+\item The proof says that ``since the map is non-linear, $H \not\equiv m(H)$ in the category of
+  vector spaces''. This is false. As a set $m(H) = H$, since $m$ is a bijection. With the vector
+  space structure of $H$, $m(H)$ is $H$. With the structure carried over along $m$, $m$ is by
+  construction a linear isometry $H \to m(H)$ (\lean{twistedIsometry}). What is true is that
+  the identity of the carrier is not linear from one structure to the other.
+\item Eq.~(6) holds for every map that sends each vector into its own ray, since the Born rule
+  only sees rays (\lean{born_smul}). Any $v \mapsto \varphi([v])\,v$ with
+  $\varphi \colon P(H) \to \mathbb{C}\setminus\{0\}$ would do. What matters for the proof is
+  that $m$ commutes with scalars (eq.~(3)) and is not additive (eq.~(4)).
+\item QST allows $\dim H \le 1$. There every map that commutes with scalars is additive
+  (\lean{map_add_of_map_smul}), so there is no second linear structure. Theorem~1 claims only
+  consistency, so the two-state example suffices; ``for every system'' would need
+  $\dim H \ge 2$.
+\end{itemize}
 
 \end{document}
