@@ -48,8 +48,12 @@ barycenter but are told apart by the probability of the state `e₀`.
 `e₀` and `e₊` are distinct rays with Born probability `½`.
 
 **Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is not formalized:
-Mathlib has neither symplectic manifolds nor the manifold structure of projective space. Only the
-low-dimensional end is checked: for `dim V = 1` the projective space is a single point.
+Mathlib has neither symplectic manifolds nor the manifold structure of projective space. Only its
+edges are checked. `P(V)` is empty for `V = 0`, a single point for `dim V = 1`, and has two points
+exactly when `2 ≤ dim V`. If a point counts as a `0`-dimensional symplectic manifold, Theorem 3
+fails for `dim H = 1`: the CST ensembles of a point and the density operators of `ℂ` are both a
+single point. And as sets `P(ℓ²)` and `P(ℂ²)` are in bijection, so the "only if" of Theorem 1
+needs the topology of `P(V)`, not only its points.
 
 ## ii. Key results
 
@@ -59,6 +63,15 @@ low-dimensional end is checked: for `dim V = 1` the projective space is a single
 - `PureStatesNotEnough.hasManyDisjointSets_restrict`: a Darboux chart has enough disjoint sets.
 - `PureStatesNotEnough.cst_qeDens_inconsistent`: Theorem 3.
 - `PureStatesNotEnough.subsingleton_projectivization`: for `dim V = 1`, `P(V)` is one point.
+- `PureStatesNotEnough.isEmpty_projectivization`,
+  `PureStatesNotEnough.nonempty_projectivization_iff`,
+  `PureStatesNotEnough.nontrivial_projectivization_iff`: `P(V)` is empty for `V = 0` and has two
+  points exactly when `2 ≤ dim V`.
+- `PureStatesNotEnough.not_hasManyDisjointSets_dirac`,
+  `PureStatesNotEnough.cst_qeDens_consistent_of_finrank_one`: with `0` degrees of freedom allowed,
+  Theorem 3 fails for `dim H = 1`.
+- `PureStatesNotEnough.mk_projectivization`, `PureStatesNotEnough.nonempty_projectivization_equiv`:
+  `P(ℓ²)` and `P(ℂ²)` have the same cardinality `𝔠`.
 - `PureStatesNotEnough.born_ne_delta`: the Remark after Example 2.
 - `PureStatesNotEnough.barycenter`, `PureStatesNotEnough.barycenter_add`: the barycenter map `r`
   and its affinity.
@@ -286,6 +299,126 @@ theorem subsingleton_projectivization {V : Type*} [AddCommGroup V] [Module ℂ V
   induction q using Projectivization.ind with | h w hw => ?_
   obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' w hw).1 h v
   exact (Projectivization.mk_eq_mk_iff' ℂ v w hv hw).2 ⟨c, hc⟩
+
+/-- For `V = 0` the projective space `P(V)` is empty. -/
+theorem isEmpty_projectivization {V : Type*} [AddCommGroup V] [Module ℂ V] [Subsingleton V] :
+    IsEmpty (ℙ ℂ V) :=
+  ⟨fun p => p.rep_nonzero (Subsingleton.elim _ _)⟩
+
+/-- `P(V)` is nonempty if and only if `V ≠ 0`. -/
+theorem nonempty_projectivization_iff {V : Type*} [AddCommGroup V] [Module ℂ V] :
+    Nonempty (ℙ ℂ V) ↔ Nontrivial V := by
+  refine ⟨fun ⟨p⟩ => nontrivial_of_ne _ _ p.rep_nonzero, fun _ => ?_⟩
+  obtain ⟨v, hv⟩ := exists_ne (0 : V)
+  exact ⟨Projectivization.mk ℂ v hv⟩
+
+/-- In finite dimension `P(V)` has two distinct points if and only if `2 ≤ dim V`. So `P(V)` is a
+manifold of positive dimension exactly when `2 ≤ dim V`. -/
+theorem nontrivial_projectivization_iff {V : Type*} [AddCommGroup V] [Module ℂ V]
+    [FiniteDimensional ℂ V] : Nontrivial (ℙ ℂ V) ↔ 2 ≤ Module.finrank ℂ V := by
+  constructor
+  · intro h
+    by_contra h2
+    obtain ⟨p, -⟩ := exists_pair_ne (ℙ ℂ V)
+    rcases (by omega : Module.finrank ℂ V = 0 ∨ Module.finrank ℂ V = 1) with hd | hd
+    · have : Subsingleton V := Module.finrank_zero_iff.mp hd
+      exact isEmpty_projectivization.elim p
+    · exact not_subsingleton _ (subsingleton_projectivization hd)
+  · intro h
+    let b := Module.finBasis ℂ V
+    let i : Fin (Module.finrank ℂ V) := ⟨0, by omega⟩
+    let j : Fin (Module.finrank ℂ V) := ⟨1, by omega⟩
+    refine ⟨⟨Projectivization.mk ℂ (b i) (b.ne_zero i),
+      Projectivization.mk ℂ (b j) (b.ne_zero j), ?_⟩⟩
+    rw [Ne, Projectivization.mk_eq_mk_iff' ℂ _ _ (b.ne_zero i) (b.ne_zero j)]
+    rintro ⟨a, ha⟩
+    have := congrArg (fun v => b.repr v i) ha
+    simp [b.repr_self, i, j] at this
+
+/-- For `n = 0` degrees of freedom the state space is one point and its Liouville measure is `δ`,
+which does not have enough disjoint sets. So the proof of Theorem 3 needs `n ≥ 1`. -/
+theorem not_hasManyDisjointSets_dirac : ¬ HasManyDisjointSets (Measure.dirac ()) := by
+  intro h
+  obtain ⟨s, hs, hd, hpos⟩ := h 2
+  have hmem : ∀ i, () ∈ s i := fun i => by
+    by_contra hni
+    exact (hpos i).1 (by simp [Measure.dirac_apply' _ (hs i), hni])
+  exact Set.disjoint_left.mp (hd (show (0 : Fin 2) ≠ 1 by decide)) (hmem 0) (hmem 1)
+
+/-- If `0`-dimensional symplectic manifolds count, Theorem 3 fails in dimension one. For
+`dim H = 1` the state space is one point with Liouville measure `δ`; the constant map onto the
+identity, the only density operator, is injective on the ensembles of CST and preserves mixtures.
+-/
+theorem cst_qeDens_consistent_of_finrank_one {H : Type*} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [FiniteDimensional ℂ H] (hH : Module.finrank ℂ H = 1) :
+    ∃ F : Measure Unit → (H →L[ℂ] H),
+      Set.MapsTo F (classicalEnsembles (Measure.dirac ())) {ρ | IsDensity ρ} ∧
+      Set.InjOn F (classicalEnsembles (Measure.dirac ())) ∧
+      ∀ ν₁ ∈ classicalEnsembles (Measure.dirac ()), ∀ ν₂ ∈ classicalEnsembles (Measure.dirac ()),
+        ∀ a b : ℝ≥0, a + b = 1 →
+          F (a • ν₁ + b • ν₂) = ((a : ℝ) : ℂ) • F ν₁ + ((b : ℝ) : ℂ) • F ν₂ := by
+  refine ⟨fun _ => 1, fun _ _ => ⟨?_, ?_⟩, fun ν₁ h₁ ν₂ h₂ _ => ?_, fun _ _ _ _ a b hab => ?_⟩
+  · exact ContinuousLinearMap.isPositive_one.toLinearMap
+  · simp [hH]
+  · have := h₁.1
+    have := h₂.1
+    ext s -
+    rcases s.eq_empty_or_nonempty with rfl | hs
+    · simp
+    · simp [Subsingleton.eq_univ_of_nonempty hs]
+  · rw [← add_smul, ← Complex.ofReal_add, ← NNReal.coe_add, hab]
+    simp
+
+/-- If `V` has two linearly independent vectors and at most `𝔠` elements, `P(V)` has exactly `𝔠`
+points. -/
+theorem mk_projectivization {V : Type} [AddCommGroup V] [Module ℂ V] {v w : V}
+    (hvw : LinearIndependent ℂ ![v, w]) (hV : Cardinal.mk V ≤ Cardinal.continuum) :
+    Cardinal.mk (ℙ ℂ V) = Cardinal.continuum := by
+  have hpair := LinearIndependent.pair_iff.mp hvw
+  have hne : ∀ z : ℂ, v + z • w ≠ 0 := fun z h => one_ne_zero (hpair 1 z (by simpa using h)).1
+  refine le_antisymm ((Cardinal.mk_le_of_injective (f := Projectivization.rep) ?_).trans hV) ?_
+  · intro p q h
+    rw [← p.mk_rep, ← q.mk_rep]
+    simp only [h]
+  · rw [← Cardinal.mk_complex]
+    refine Cardinal.mk_le_of_injective (f := fun z : ℂ => Projectivization.mk ℂ _ (hne z)) ?_
+    intro z z' h
+    obtain ⟨a, ha⟩ := (Projectivization.mk_eq_mk_iff' ℂ _ _ (hne z) (hne z')).1 h
+    have h0 : (a - 1) • v + (a * z' - z) • w = 0 := by
+      rw [← sub_eq_zero.mpr ha]
+      module
+    obtain ⟨h1, h2⟩ := hpair _ _ h0
+    rw [sub_eq_zero.mp h1, one_mul, sub_eq_zero] at h2
+    exact h2.symm
+
+lemma mk_fun_le_continuum (ι : Type) [Countable ι] :
+    Cardinal.mk (ι → ℂ) ≤ Cardinal.continuum := by
+  rw [← Cardinal.power_def, Cardinal.mk_complex]
+  exact (Cardinal.power_le_power_left Cardinal.continuum_ne_zero
+    (Cardinal.mk_le_aleph0 (α := ι))).trans_eq Cardinal.continuum_power_aleph0
+
+/-- As sets, the projective space of `ℓ²` and the Riemann sphere `P(ℂ²)` are in bijection. If
+"represented by" in CST and QP-RAY meant only a bijection, the symplectic structure of the sphere
+could be carried over to `P(ℓ²)`, and the "only if" of Theorem 1 would fail. It needs the
+topology of `P(V)`. -/
+theorem nonempty_projectivization_equiv :
+    Nonempty (ℙ ℂ (lp (fun _ : ℕ => ℂ) 2) ≃ ℙ ℂ (Fin 2 → ℂ)) := by
+  let e : ℕ → lp (fun _ : ℕ => ℂ) 2 := fun i => lp.single 2 i 1
+  have hl : LinearIndependent ℂ ![e 0, e 1] := by
+    refine LinearIndependent.pair_iff.mpr fun s t h => ⟨?_, ?_⟩
+    · have h0 : s * e 0 0 + t * e 1 0 = 0 := congrArg (fun f : lp (fun _ : ℕ => ℂ) 2 => f 0) h
+      simpa [e, lp.single_apply] using h0
+    · have h1 : s * e 0 1 + t * e 1 1 = 0 := congrArg (fun f : lp (fun _ : ℕ => ℂ) 2 => f 1) h
+      simpa [e, lp.single_apply] using h1
+  have hc : LinearIndependent ℂ ![(Pi.single 0 1 : Fin 2 → ℂ), Pi.single 1 1] := by
+    refine LinearIndependent.pair_iff.mpr fun s t h => ⟨?_, ?_⟩
+    · simpa using congrFun h 0
+    · simpa using congrFun h 1
+  have hlc : Cardinal.mk (lp (fun _ : ℕ => ℂ) 2) ≤ Cardinal.continuum :=
+    (Cardinal.mk_le_of_injective (f := fun f : lp (fun _ : ℕ => ℂ) 2 => (f : ℕ → ℂ))
+      fun _ _ => lp.ext).trans (mk_fun_le_continuum ℕ)
+  exact Cardinal.eq.mp
+    (by rw [mk_projectivization hl hlc, mk_projectivization hc (mk_fun_le_continuum (Fin 2))])
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 

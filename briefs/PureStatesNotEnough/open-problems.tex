@@ -34,15 +34,38 @@ claim of the brief as the brief states it: a \emph{formalization gap} can be clo
 in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
 precise first.
 
-Theorems~3 and 5 are verified. Theorem~1 is not: see the two items marked below.
+Theorem~5 is verified, and Theorem~3 for $\dim\mathcal H \ge 2$. Theorem~1 is not: see the two
+items marked below.
 
 \section*{From the brief}
 \begin{enumerate}
 \item \blocker{brief issue}\textbf{The range of Theorem~1.} The theorem claims consistency for
-  $1 \le \dim V < \infty$, while its proof uses $2 \le \dim X$. For $\dim V = 1$ the state space
-  is a single point (\lean{subsingleton_projectivization}). Whether a $0$-dimensional symplectic
-  manifold ($n = 0$ degrees of freedom) is allowed, which fixes whether the range starts at $1$ or
-  at $2$, is open. (Log, ``Problems found'', first item.)
+  $1 \le \dim V < \infty$, while its proof uses $2 \le \dim X$. Making it precise needs four
+  choices.
+  \begin{itemize}
+  \item \emph{Dimension $0$.} The range starts at $1$ if a $0$-dimensional symplectic manifold
+    ($n = 0$ degrees of freedom) is allowed, and at $2$ if not. For $\dim V = 1$ the state space
+    is a single point, and $P(V)$ has two points exactly when $2 \le \dim V$
+    (\lean{subsingleton_projectivization}, \lean{nontrivial_projectivization_iff}).
+  \item \emph{Theorem~3 depends on it.} If a point is allowed, Theorem~3 is false for
+    $\dim\mathcal H = 1$: the CST ensembles of a point and the density operators of
+    $\mathbb C$ are both a single point, and the constant map identifies them
+    (\lean{cst_qeDens_consistent_of_finrank_one}). So the brief cannot keep both
+    $1 \le \dim V$ in Theorem~1 and Theorem~3 for every $\mathcal H$.
+  \item \emph{The empty space.} For $\dim V = 0$, $P(V)$ is empty
+    (\lean{isEmpty_projectivization}), which is a symplectic manifold of every dimension. Either
+    lower bound, $1$ or $2$, needs CST to exclude it, for instance by requiring an ensemble.
+  \item \emph{What ``represented by'' keeps.} If $X$ and $P(V)$ need only be in bijection, the
+    ``only if'' is false: $P(\ell^2)$ and the sphere $P(\mathbb C^2)$ both have $\mathfrak c$
+    points (\lean{nonempty_projectivization_equiv}), and the sphere's symplectic structure can be
+    carried over. The theorem needs $V$ Hausdorff and $X$ to carry the quotient topology of
+    $P(V)$; finiteness then comes from CST's Liouville measure $\omega^n$ with finite $n$, not
+    from $X$ being symplectic (Log, ``Problems found'').
+  \end{itemize}
+  Proposed: exclude dimension $0$ and the empty space, so that Theorem~1 reads
+  $2 \le \dim V < \infty$ for a Hausdorff $V$ with $X = P(V)$ as topological spaces. Theorem~3 and its Lean proof then stand
+  as they are. The alternative keeps $1 \le \dim V$, also excludes the empty space and restricts
+  Theorem~3 to $\dim\mathcal H \ge 2$. (Log, ``Problems found'', first three items.)
 \item \textbf{Ensembles supported on a subspace.} The proof of Theorem~3 compares the ensembles
   with support in a two-dimensional subspace $A$. For $\dim\mathcal H \ge 3$ no CST ensemble has
   support in $P(A)$, which has Liouville measure zero. Whether the brief means the classical
@@ -60,7 +83,9 @@ Theorems~3 and 5 are verified. Theorem~1 is not: see the two items marked below.
   manifold structure on projective space, so neither direction of Theorem~1 is formalized: that
   $P(V)$ with the Fubini--Study form is symplectic for $\dim V < \infty$, and that a symplectic
   $P(V)$ forces $\dim V < \infty$. Theorem~3 for $\dim\mathcal H = \infty$ rests on the second
-  direction, so it is formalized only for $\dim\mathcal H < \infty$. (Log, ``Results''.)
+  direction, so it is formalized only for $\dim\mathcal H < \infty$. The second direction
+  needs the topology of $P(V)$; as sets it is false (\lean{nonempty_projectivization_equiv}).
+  (Log, ``Results''.)
 \item \textbf{Example~2.} The identification of $P(\mathbb C^2)$ with the sphere, with Darboux
   coordinates $z$, $\theta_{xy}$ and the area as Liouville measure, is not formalized.
   \lean{ForPhyslib/QuantumMechanics/Qubit/Bloch.lean} shows that the Bloch vector determines the

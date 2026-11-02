@@ -98,7 +98,18 @@ CST, the ensemble space & \lean{classicalEnsembles}; it is convex:
 Theorem~3, CST and QE-DENS are inconsistent & \lean{cst_qeDens_inconsistent}, for
   $\dim\mathcal H < \infty$ \\
 Theorem~1, QP-RAY and CST are consistent iff $1 \le \dim V < \infty$ & not formalized;
-  \lean{subsingleton_projectivization}: for $\dim V = 1$, $P(V)$ is a single point \\
+  only its edges, below \\
+(Theorem~1) $\dim V = 0$ & \lean{isEmpty_projectivization}: $P(V)$ is empty;
+  \lean{nonempty_projectivization_iff} \\
+(Theorem~1) $\dim V = 1$ & \lean{subsingleton_projectivization}: $P(V)$ is a single point \\
+(Theorem~1) $2 \le \dim V$ & \lean{nontrivial_projectivization_iff}: in finite dimension $P(V)$
+  has two points iff $2 \le \dim V$ \\
+(Theorem~3 at $\dim\mathcal H = 1$) a point with Liouville measure $\delta$ &
+  \lean{not_hasManyDisjointSets_dirac}; \lean{cst_qeDens_consistent_of_finrank_one}: an
+  injective mixture-preserving map exists \\
+(Theorem~1, ``only if'') $P(\ell^2)$ versus the sphere & \lean{mk_projectivization}: $P(V)$ has
+  $\mathfrak c$ points; \lean{nonempty_projectivization_equiv}: $P(\ell^2) \simeq P(\mathbb C^2)$
+  as sets \\
 Remark after Example~2, the Born rule is not $\delta_{\psi\phi}$ & \lean{born_ne_delta}: $e_0$ and
   $(e_0 + e_1)/\sqrt2$ are distinct rays with Born probability $\frac12$ \\
 Theorem~5, the map $r : M^1(P(\mathcal H)) \to D(\mathcal H)$ & \lean{barycenter}
@@ -144,13 +155,29 @@ Remark after Theorem~5, a class records the different preparations of one ensemb
   \end{itemize}
 \end{itemize}
 
-\paragraph{Problems found in the brief.} Theorems~3 and 5 hold, but their proofs have gaps.
-Theorem~1 is not checked.
+\paragraph{Problems found in the brief.} Theorem~5 holds, and Theorem~3 holds for
+$\dim\mathcal H \ge 2$, but their proofs have gaps. At $\dim\mathcal H = 1$ Theorem~3 depends on a
+convention of Theorem~1. Theorem~1 is not checked.
 \begin{itemize}
 \item Theorem~1 states $1 \le \dim V$, while its proof uses $2 \le \dim X$. For $\dim V = 1$ the
   state space $P(V)$ is a single point (\lean{subsingleton_projectivization}), a manifold of
   dimension $0$. So either $0$-dimensional symplectic manifolds count, and the proof's bound
   should be $0 \le \dim X$, or they do not, and the theorem should say $2 \le \dim V < \infty$.
+  The choice also decides Theorem~3. If a point counts, then for $\dim\mathcal H = 1$, which
+  QE-DENS allows, the CST ensembles of the point are $\{\delta\}$ and the density operators are
+  $\{1\}$, and the constant map identifies the two (\lean{cst_qeDens_consistent_of_finrank_one}):
+  Theorem~3 fails. The Lean proof of Theorem~3 avoids this through \lean{HasManyDisjointSets},
+  which fails for a point (\lean{not_hasManyDisjointSets_dirac}). So either Theorem~1 says
+  $2 \le \dim V$, or Theorem~3 needs $\dim\mathcal H \ge 2$.
+\item For $\dim V = 0$, $P(V)$ is empty (\lean{isEmpty_projectivization}), and the empty set is a
+  symplectic manifold of every dimension. Either lower bound, $1$ or $2$, needs CST to exclude it,
+  for instance by requiring an ensemble: there is no probability measure on the empty set.
+\item The ``only if'' of Theorem~1 needs the identification of $X$ with $P(V)$ to respect the
+  topology. As sets, $P(\ell^2)$ and $P(\mathbb C^2)$, the sphere, are in bijection: both have
+  $\mathfrak c$ points (\lean{nonempty_projectivization_equiv}). Carrying the symplectic structure
+  of the sphere over along such a bijection would make $P(\ell^2)$ a symplectic manifold. The
+  theorem holds when $V$ is Hausdorff and $X$ has the quotient topology of $P(V)$; for a
+  non-Hausdorff $V$, $P(V)$ need not be Hausdorff even in finite dimension, and the ``if'' fails.
   ``Since $X$ is a symplectic manifold, $\dim X < \infty$'' holds only for finite-dimensional
   symplectic manifolds, and the projective space of an infinite-dimensional Hilbert space is an
   infinite-dimensional one. The finiteness comes from CST itself: the Liouville measure $\omega^n$
@@ -168,6 +195,9 @@ Theorem~1 is not checked.
 \item Example~2 (not checked in Lean): area-preserving diffeomorphisms of the sphere include the
   orientation-reversing ones, such as $z \mapsto -z$, which are not Hamiltonian. So Hamiltonian
   evolution preserves the area form, not only the area.
+\item CST says $p(\xi_1\mid\xi_2) = 0$ ``for all $\xi_1, \xi_2 \in X$'', which includes
+  $p(\xi\mid\xi) = 0$. It should say $\xi_1 \ne \xi_2$, as the Remark after Example~2
+  ($p(\psi\mid\phi) = \delta_{\psi\phi}$) has it.
 \item Typos: ``non necessarily'' should be ``not necessarily''; ``$r$ defined about'' should be
   ``$r$ defined above''.
 \end{itemize}
