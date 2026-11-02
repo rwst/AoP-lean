@@ -55,24 +55,42 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item File: \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces.lean}
 \item Library: \lean{QuantumVectorSpaces}
 \item Imports: \lean{SchwartzNorms} (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$)
-  and two new \lean{ForMathlib} files:\newline
+  and new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Defs.lean} (the seminorm
   $\sqrt{\operatorname{re}\langle x, x\rangle}$ of a \lean{PreInnerProductSpace.Core}, and
   continuity of the inner product against it),\newline
   \lean{ForMathlib/Analysis/CStarAlgebra/Matrix.lean} (\lean{Matrix.toEuclideanLin} is
-  multiplicative)
+  multiplicative),\newline
+  \lean{ForMathlib/Analysis/Distribution/SchwartzSpace/Complete.lean}
+  (\lean{SchwartzMap.instCompleteSpace}: $\mathcal{S}(E, F)$ is complete for complete $F$),\newline
+  \lean{ForMathlib/Analysis/Distribution/SchwartzSpace/SupNorm.lean}
+  (\lean{SchwartzMap.exists_norm_le_toLp_two}: a Sobolev bound for the values of a Schwartz
+  function, from TauCeti's \lean{SchwartzMap.exists_integral_norm_fourierInv_le}),\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/MultilinearBasis.lean}\newline
+  (\lean{ContinuousMultilinearMap.norm_le_sum_orthonormalBasis}: a multilinear map is bounded
+  by its values on an orthonormal basis)
 \end{itemize}
 
 \paragraph{Setting.} $V$ is a complex vector space with an inner product given as a
 \lean{PreInnerProductSpace.Core}. Unlike Mathlib's \lean{InnerProductSpace}, this puts no norm
-or topology on $V$. The defining observables are a family $X_i$ ($i \in \iota$) in \lean{Module.End}, and
-\lean{algebra} is the unital algebra they generate (\lean{Algebra.adjoin}). The seminorms
+or topology on $V$. The defining observables are a family $X_i$ ($i \in \iota$) in
+\lean{Module.End}, and \lean{algebra} is the unital algebra they generate
+(\lean{Algebra.adjoin}). The seminorms
 $p_A(v) = \sqrt{\langle Av, Av\rangle}$ form \lean{seminormFamily}, and \lean{topology}
 is the topology they generate. A topology is \lean{IsAdmissible} if it makes $V$ a topological
 vector space and makes the $X_i$ and the inner product (jointly) continuous. For Example~3,
 $X f = x f$ and $P f = -i\hbar f'$ act on Mathlib's $\mathcal{S}(\mathbb{R}, \mathbb{C})$
 (\lean{posOp}, \lean{momOp}), with the $L^2$ inner product \lean{l2Core}. For Example~4,
 $S_i = (\hbar/2)\sigma_i$ acts on $\mathbb{C}^2$ as \lean{EuclideanSpace} (\lean{spin}).
+In $n$ dimensions, $X^i f = x_i f$ and $P_i f = -i\hbar\, \partial_{e_i} f$ act on
+$\mathcal{S}(\mathbb{R}^n, \mathbb{C})$, with $\mathbb{R}^n$ as \lean{EuclideanSpace ℝ (Fin n)}
+(\lean{posOpN}, \lean{momOpN}, indexed by \lean{ObsN n}), and the $L^2$ inner product
+\lean{l2CoreN}.
+
+Definition~1 is \lean{IsQuantumVectorSpace c X ħ C}: the $X_i$ are symmetric, they satisfy
+$[X_i, X_j] = i\hbar \sum_k C_{ijk} X_k$ with finitely many nonzero $C_{ijk}$ for each $i, j$,
+and $V$ with \lean{topology} is complete and second-countable. Completeness refers to
+\lean{uniformSpace}, the uniform structure that every topological vector space carries.
 
 \paragraph{Results.}
 \begin{center}
@@ -90,6 +108,19 @@ Example 3, Remark: the topology is that of $\mathcal{S}$ & \lean{topology_schwar
   \lean{withSeminorms_schwartz}, \lean{isAdmissible_schwartz} (for $\hbar \ne 0$) \\
 Example 4, $[S_i, S_j] = i\hbar\,\epsilon_{ijk} S_k$ & \lean{spin_comm} \\
 Example 4, $S_i$ symmetric & \lean{isSymmetric_spin} \\
+Example 4 is a quantum vector space & \lean{isQuantumVectorSpace_qubit} \\
+Example 3, second countability & \lean{secondCountableTopology_schwartz} \\
+Example 3, completeness & \lean{SchwartzMap.instCompleteSpace} \\
+Example 3 is a quantum vector space & \lean{isQuantumVectorSpace_schwartz} (for
+  $\hbar \ne 0$) \\
+Example 3 in $n$ dimensions, commutation relations & \lean{posOpN_comm},
+  \lean{momOpN_comm}, \lean{posOpN_comm_momOpN} \\
+Example 3 in $n$ dimensions, symmetric observables & \lean{isSymmetric_obsN} \\
+Example 3 in $n$ dimensions, Remark: the topology is that of $\mathcal{S}$ &
+  \lean{topology_schwartzN} (for $\hbar \ne 0$) \\
+Example 3 in $n$ dimensions, second countability & \lean{secondCountableTopology_schwartzN} \\
+Example 3 in $n$ dimensions is a quantum vector space & \lean{isQuantumVectorSpace_schwartzN}
+  (for $\hbar \ne 0$) \\
 Theorem 5, [B]COBS & \lean{IsAdmissible.continuous_expectation} \\
 \bottomrule
 \end{tabularx}
@@ -101,18 +132,41 @@ Theorem 5, [B]COBS & \lean{IsAdmissible.continuous_expectation} \\
   larger.
 \item The inner product is only assumed positive semidefinite in Corollary~2; definiteness is
   used only in finite dimension, to make the topology Hausdorff.
-\item Example~3 is formalized for $\mathcal{S}(\mathbb{R})$ only, not $\mathcal{S}(\mathbb{R}^n)$.
-  The proof that the topologies agree has two halves. (a) Each seminorm $\|x^a \partial^b f\|_2$
+\item Example~3 is formalized twice. For $\mathcal{S}(\mathbb{R})$, the proof that the
+  topologies agree has two halves. (a) Each seminorm $\|x^a \partial^b f\|_2$
   equals $|\hbar|^{-b} p_{X^a P^b}(f)$. (b) Every element of the algebra is a combination of the
   normally ordered monomials $X^a P^b$ (\lean{algebra_le_monoSpan}, from
   $P X^{n+1} = X^{n+1} P - (n+1) i\hbar X^n$), so every $p_A$ is bounded by finitely many
   $\|x^a \partial^b f\|_2$. With \lean{withSeminorms_l1_l2} from the previous brief, this gives
   the Schwartz topology.
+\item For $\mathcal{S}(\mathbb{R}^n)$, one half is that the Schwartz topology is admissible
+  (\lean{isAdmissible_schwartzN}), hence finer than the topology of Corollary~2. For the other
+  half, each Schwartz seminorm $\sup_x \|x\|^k \|D^m f(x)\|$ is bounded by finitely many $p_A$
+  (\lean{exists_seminorm_le}). The derivative $D^m f(x)$ is bounded by its values on the unit
+  vectors, $\|x\|^k \le (1 + \|x\|^2)^k$ is the polynomial $(1 + \sum_i (X^i)^2)^k$, and the
+  Sobolev bound $|g(x)| \le C (\|g\|_2 + \sum_i \|\partial_i^{n+1} g\|_2)$ turns the supremum
+  into $L^2$ norms of elements of the algebra applied to $f$. No normal ordering is needed, since
+  the operators $\partial_i^{n+1} (1 + \sum_j (X^j)^2)^k \partial^r$ are themselves in the
+  algebra.
 \item In finite dimension the topology of Corollary~2 is the unique Hausdorff vector-space
   topology, whatever the defining observables (\lean{topology_eq_moduleTopology}). This is how
   Example~4 is checked.
-\item Not formalized: completeness and second countability in Definition~1 (Mathlib has no
-  completeness of $\mathcal{S}$ at this pin); the ``iff $n = m$'' part of Example~3, which needs a
+\item Second countability in $n$ dimensions comes from a general fact
+  (\lean{secondCountableTopology_topology}). With countably many defining observables, the $p_A$
+  for the words $A = X_{i_1} \cdots X_{i_k}$ already generate the topology, so $v \mapsto (Av)_A$
+  embeds $V$ into a countable product of copies of $L^2$.
+\item Second countability of $\mathcal{S}(\mathbb{R})$ is proved by embedding it into a countable
+  product of copies of $L^2(\mathbb{R})$ through $f \mapsto (x^a \partial^b f)_{a,b}$
+  (\lean{l2Embedding}). The topology of $\mathcal{S}(\mathbb{R})$ is induced by this map,
+  because it is given by the $L^2$ seminorms (\lean{withSeminorms_l1_l2}).
+\item Completeness of $\mathcal{S}(E, F)$, for any complete $F$, is proved in
+  \lean{ForMathlib}, since neither Mathlib (at this pin or on master) nor TauCeti nor physlib
+  has it. The proof is the classical one (Becnel and Sengupta, \emph{Mathematics} 3 (2015),
+  \S3.5): along a Cauchy sequence the weighted derivatives $\|x\|^k D^n u_m$ converge
+  uniformly; the limits are the derivatives of the limit function, by the theorem on uniform
+  limits of derivatives (\lean{hasFDerivAt_of_tendstoUniformly}); and the bounds pass to the
+  limit. For the qubit, completeness and second countability come from finite dimension.
+\item Not formalized: the ``iff $n = m$'' part of Example~3, which needs a
   notion of isomorphism of quantum vector spaces; [B]WDQ and [B]STDIST in Theorem~5 and the
   remarks of section~5, which are informal.
 \end{itemize}

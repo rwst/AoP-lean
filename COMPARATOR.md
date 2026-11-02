@@ -42,8 +42,9 @@ be unique across the project.
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
-InconsistentConvergence, ProjectiveMeasurement, SchroedingerEvolution, SchwartzMomentProblem,
-SchwartzNorms, SuperpositionAndLinearity, SuperpositionAndMultipleMixtures and UnitaryEntropy.
+InconsistentConvergence, ProjectiveMeasurement, QuantumVectorSpaces, SchroedingerEvolution,
+SchwartzMomentProblem, SchwartzNorms, SuperpositionAndLinearity, SuperpositionAndMultipleMixtures
+and UnitaryEntropy.
 
 ## Running it
 

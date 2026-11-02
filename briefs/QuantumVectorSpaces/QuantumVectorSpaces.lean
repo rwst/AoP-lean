@@ -22,28 +22,53 @@ Corollary 2:
 * `locallyConvexSpace`   so `V` is locally convex;
 * `topology_eq_moduleTopology`  in finite dimension it is the usual topology.
 
-Example 3 (`𝓢(ℝ)` with `X`, `P`, `I`, for `ħ ≠ 0`; the brief has `𝓢(ℝⁿ)`):
+Definition 1:
+* `uniformSpace`          the uniform structure of `topology`, for completeness;
+* `IsQuantumVectorSpace`  symmetric observables, commutation relations, completeness and second
+  countability;
+* `secondCountableTopology_topology`  with countably many observables, `V` is second-countable as
+  soon as its inner-product norm embeds into a second-countable normed space.
+
+Example 3 in one dimension (`𝓢(ℝ)` with `X`, `P`, `I`, for `ħ ≠ 0`):
 * `posOp_mul_momOp_sub`  `[X, P] = iħ`;
 * `isSymmetric_obs`      `X`, `P`, `I` are symmetric for the `L²` inner product;
 * `algebra_le_monoSpan`  every element of the algebra is a combination of the `X^a P^b`;
 * `topology_schwartz`    the topology of Corollary 2 is the Schwartz topology (via the `L²`
   seminorms of `SchwartzNorms`);
-* `isAdmissible_schwartz`.
+* `isAdmissible_schwartz`;
+* `secondCountableTopology_schwartz`  `𝓢(ℝ)` embeds into a countable product of copies of `L²`;
+* `isQuantumVectorSpace_schwartz`     Definition 1 holds (`𝓢(ℝ)` is complete by
+  `SchwartzMap.instCompleteSpace`).
+
+Example 3 in `n` dimensions (`𝓢(ℝⁿ)` with `Xⁱ`, `Pᵢ`, `I`, for `ħ ≠ 0`):
+* `posOpN_comm`, `momOpN_comm`, `posOpN_comm_momOpN`  `[Xⁱ, Xʲ] = [Pᵢ, Pⱼ] = 0` and
+  `[Xⁱ, Pⱼ] = iħ δᵢⱼ`;
+* `isSymmetric_obsN`      `Xⁱ`, `Pᵢ`, `I` are symmetric for the `L²` inner product;
+* `exists_seminorm_le`    every Schwartz seminorm is bounded by finitely many `p_A` (by the
+  Sobolev bound `SchwartzMap.exists_norm_le_toLp_two`);
+* `topology_schwartzN`    so the topology of Corollary 2 is the Schwartz topology;
+* `secondCountableTopology_schwartzN`, `isQuantumVectorSpace_schwartzN`  Definition 1 holds.
 
 Example 4 (qubit):
 * `spin_comm`           `[Sᵢ, Sᵢ₊₁] = iħ Sᵢ₊₂` for `Sᵢ = (ħ/2) σᵢ`;
-* `isSymmetric_spin`, `topology_qubit`  the topology of Corollary 2 is the usual one on `ℂ²`.
+* `isSymmetric_spin`, `topology_qubit`  the topology of Corollary 2 is the usual one on `ℂ²`;
+* `isQuantumVectorSpace_qubit`  Definition 1 holds.
 
 Theorem 5, [B]COBS:
 * `IsAdmissible.continuous_expectation`  expectations `⟨v, Av⟩` are continuous.
 -/
 public import ForMathlib.Analysis.CStarAlgebra.Matrix
+public import ForMathlib.Analysis.Distribution.SchwartzSpace.Complete
+public import ForMathlib.Analysis.Distribution.SchwartzSpace.SupNorm
 public import ForMathlib.Analysis.InnerProductSpace.Defs
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
+public import ForMathlib.Analysis.InnerProductSpace.MultilinearBasis
+public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 public import Mathlib.Analysis.Matrix.Hermitian
+public import Mathlib.MeasureTheory.Measure.SeparableMeasure
 public import SchwartzNorms
 
 open Topology
+open scoped NNReal
 
 @[expose] public noncomputable section
 
@@ -165,6 +190,117 @@ theorem topology_eq_moduleTopology [FiniteDimensional ℂ V]
     exact (Real.sqrt_pos.mpr hpos).ne'⟩
   have := isModuleTopologyOfFiniteDimensional (𝕜 := ℂ) (E := V)
   exact eq_moduleTopology ℂ V
+
+/-- The uniform structure of `topology c X`, which every topological vector space carries. -/
+@[instance_reducible]
+def uniformSpace : UniformSpace V :=
+  letI := topology c X
+  haveI := (withSeminorms c X).isTopologicalAddGroup
+  IsTopologicalAddGroup.rightUniformSpace V
+
+/-- If `topology c X` is the topology of a uniform additive group, the uniform structures agree
+as well. -/
+lemma uniformSpace_eq [u : UniformSpace V] [IsUniformAddGroup V]
+    (h : topology c X = u.toTopologicalSpace) : uniformSpace c X = u := by
+  have key : ∀ (t : TopologicalSpace V), t = u.toTopologicalSpace →
+      ∀ _ : @IsTopologicalAddGroup V t _,
+        @IsTopologicalAddGroup.rightUniformSpace V _ t ‹_› = u := by
+    rintro t rfl _
+    exact IsUniformAddGroup.rightUniformSpace_eq
+  exact key _ h _
+
+/-- Definition 1: with the inner product `c` and the defining observables `X`, the space `V` is a
+quantum vector space with commutation relations `[X i, X j] = iħ ∑ₖ C i j k X k`.
+
+Its topology is the coarsest vector-space topology making the `X i` and the inner product
+continuous, that is `topology c X` (`isGreatest_topology`). It must be complete, for the uniform
+structure of a topological vector space, and second-countable. Everywhere-defined self-adjoint
+operators are the symmetric ones. -/
+structure IsQuantumVectorSpace (ħ : ℝ) (C : ι → ι → ι →₀ ℂ) : Prop where
+  isSymmetric (i : ι) : IsSymmetric c (X i)
+  comm (i j : ι) :
+    X i * X j - X j * X i = (Complex.I * ħ) • Finsupp.linearCombination ℂ X (C i j)
+  completeSpace : @CompleteSpace V (uniformSpace c X)
+  secondCountableTopology : @SecondCountableTopology V (topology c X)
+
+/-- A seminorm bounded by finitely many of the `p_A` is continuous. -/
+lemma continuous_of_le_sum (q : Seminorm ℂ V) {ρ : Type*} [Fintype ρ] (A : ρ → algebra X) (C : ℝ)
+    (h : ∀ v, q v ≤ C * ∑ r, seminormFamily c X (A r) v) :
+    letI := topology c X; Continuous q := by
+  let := topology c X
+  have hp : WithSeminorms (seminormFamily c X) := withSeminorms c X
+  have := hp.isTopologicalAddGroup
+  refine Seminorm.continuous_of_continuousAt_zero ?_
+  rw [ContinuousAt, map_zero]
+  have hg : Continuous fun v => C * ∑ r, seminormFamily c X (A r) v :=
+    continuous_const.mul (continuous_finsetSum _ fun r _ => hp.continuous_seminorm _)
+  have hg0 := hg.tendsto 0
+  simp only [map_zero, Finset.sum_const_zero, mul_zero] at hg0
+  exact squeeze_zero (fun v => apply_nonneg _ _) h hg0
+
+/-- The product `X i₁ ⋯ X iₖ` of the observables along a word `i₁ ⋯ iₖ`, in the algebra. -/
+def word (w : FreeMonoid ι) : algebra X :=
+  ⟨FreeMonoid.lift X w, by
+    have h : FreeMonoid.lift X w ∈ Submonoid.closure (Set.range X) :=
+      FreeMonoid.mrange_lift X ▸ ⟨w, rfl⟩
+    exact (Submonoid.closure_le (S := (algebra X).toSubmonoid)).2 Algebra.subset_adjoin h⟩
+
+lemma exists_le_sup_word {A : Module.End ℂ V} (hA : A ∈ algebra X) :
+    ∃ (s : Finset (FreeMonoid ι)) (C : ℝ≥0),
+      c.toSeminorm.comp A ≤ C • s.sup fun w => seminormFamily c X (word X w) := by
+  classical
+  rw [← Subalgebra.mem_toSubmodule, Algebra.adjoin_eq_span] at hA
+  induction hA using Submodule.span_induction with
+  | mem x hx =>
+    rw [← FreeMonoid.mrange_lift] at hx
+    obtain ⟨w, rfl⟩ := hx
+    exact ⟨{w}, 1, by rw [Finset.sup_singleton, one_smul]; rfl⟩
+  | zero => exact ⟨∅, 0, by simp⟩
+  | add x y _ _ hx hy =>
+    obtain ⟨s, C, hC⟩ := hx
+    obtain ⟨t, D, hD⟩ := hy
+    refine ⟨s ∪ t, C + D, (Seminorm.comp_add_le _ _ _).trans ?_⟩
+    rw [add_smul]
+    exact add_le_add (hC.trans (IsOrderedSMul.smul_le_smul le_rfl
+      (Finset.sup_mono Finset.subset_union_left)))
+      (hD.trans (IsOrderedSMul.smul_le_smul le_rfl (Finset.sup_mono Finset.subset_union_right)))
+  | smul r x _ hx =>
+    obtain ⟨s, C, hC⟩ := hx
+    refine ⟨s, ‖r‖₊ * C, ?_⟩
+    rw [Seminorm.comp_smul, mul_smul]
+    exact IsOrderedSMul.smul_le_smul le_rfl hC
+
+/-- The seminorms `p_A` for the words `A = X i₁ ⋯ X iₖ` already generate the topology. -/
+theorem withSeminorms_word :
+    letI := topology c X; WithSeminorms fun w : FreeMonoid ι => seminormFamily c X (word X w) :=
+  let := topology c X
+  (withSeminorms c X).congr (fun w => ⟨{word X w}, 1, by rw [Finset.sup_singleton, one_smul]; rfl⟩)
+    fun A => exists_le_sup_word c X A.2
+
+/-- If there are countably many defining observables and `v ↦ √⟨v, v⟩` is the norm of `J v` in a
+second-countable normed space, then `V` is second-countable: `v ↦ (J (A v))_A`, for the words
+`A`, embeds `V` into a countable product of copies of that space. -/
+theorem secondCountableTopology_topology [Countable ι] {H : Type*} [SeminormedAddCommGroup H]
+    [NormedSpace ℂ H] [SecondCountableTopology H] (J : V →ₗ[ℂ] H)
+    (hJ : ∀ v, ‖J v‖ = c.toSeminorm v) : @SecondCountableTopology V (topology c X) := by
+  let := topology c X
+  have : Countable (FreeMonoid ι) := inferInstanceAs (Countable (List ι))
+  let Φ : V →ₗ[ℂ] (FreeMonoid ι → H) := LinearMap.pi fun w => J ∘ₗ (word X w).1
+  have hq := withSeminorms_pi fun _ : FreeMonoid ι => norm_withSeminorms ℂ H
+  have hind := Φ.withSeminorms_induced hq
+  have hev : ∀ (w : FreeMonoid ι) (u : Unit) (v : V), ((SeminormFamily.sigma fun w : FreeMonoid ι =>
+      SeminormFamily.comp (fun _ : Unit => normSeminorm ℂ H) (LinearMap.proj w)).comp Φ ⟨w, u⟩) v =
+        seminormFamily c X (word X w) v :=
+    fun w _ v => hJ _
+  have hS : WithSeminorms ((SeminormFamily.sigma fun w : FreeMonoid ι =>
+      SeminormFamily.comp (fun _ : Unit => normSeminorm ℂ H) (LinearMap.proj w)).comp Φ) := by
+    refine (withSeminorms_word c X).congr (fun w => ⟨{w.1}, 1, fun v => ?_⟩)
+      (fun w => ⟨{⟨w, ()⟩}, 1, fun v => ?_⟩)
+    · simp [hev]
+    · simp [hev]
+  have h := WithSeminorms.topology_eq_withSeminorms
+    (topology := TopologicalSpace.induced Φ inferInstance) hind
+  exact (Topology.IsInducing.mk (hS.1.trans h.symm)).secondCountableTopology
 
 end Corollary2
 
@@ -398,6 +534,56 @@ theorem isAdmissible_schwartz (hħ : ħ ≠ 0) :
     IsAdmissible l2Core (obs ħ) (inferInstance : TopologicalSpace 𝓢(ℝ, ℂ)) :=
   topology_schwartz ħ hħ ▸ isAdmissible_topology l2Core (obs ħ)
 
+/-- The map `f ↦ (xᵃ ∂ᵇ f)_{a,b}` (up to the factors `(-i)ᵇ`) into countably many copies of `L²`. -/
+def l2Embedding : 𝓢(ℝ, ℂ) →ₗ[ℂ] (ℕ × ℕ → Lp ℂ 2 (volume : Measure ℝ)) :=
+  LinearMap.pi fun ab => (toLpCLM ℂ ℂ 2 volume).toLinearMap ∘ₗ mono 1 ab.1 ab.2
+
+lemma norm_l2Embedding (f : 𝓢(ℝ, ℂ)) (ab : ℕ × ℕ) : ‖l2Embedding f ab‖ = l2Family ab f := by
+  have h := congrArg (fun p : Seminorm ℂ 𝓢(ℝ, ℂ) => p f) (toSeminorm_comp_mono 1 ab.1 ab.2)
+  simp only [Seminorm.comp_apply, l2Core_toSeminorm, nnnorm_one, one_pow, one_smul] at h
+  simp [l2Embedding, norm_toLp, h]
+
+/-- The Schwartz space `𝓢(ℝ)` is second-countable: `l2Embedding` embeds it into a countable
+product of copies of `L²(ℝ)`. -/
+theorem secondCountableTopology_schwartz : SecondCountableTopology 𝓢(ℝ, ℂ) := by
+  have : Fact ((2 : ENNReal) ≠ ⊤) := ⟨ENNReal.ofNat_ne_top⟩
+  have hq := withSeminorms_pi fun _ : ℕ × ℕ => norm_withSeminorms ℂ (Lp ℂ 2 (volume : Measure ℝ))
+  have hind := l2Embedding.withSeminorms_induced hq
+  have hev : ∀ (ab : ℕ × ℕ) (u : Unit) (f : 𝓢(ℝ, ℂ)), ((SeminormFamily.sigma fun ab : ℕ × ℕ =>
+      SeminormFamily.comp (fun _ : Unit => normSeminorm ℂ (Lp ℂ 2 (volume : Measure ℝ)))
+        (LinearMap.proj ab)).comp l2Embedding ⟨ab, u⟩) f = l2Family ab f :=
+    fun ab _ f => norm_l2Embedding f ab
+  have hS : WithSeminorms (((SeminormFamily.sigma fun ab : ℕ × ℕ =>
+      SeminormFamily.comp (fun _ : Unit => normSeminorm ℂ (Lp ℂ 2 (volume : Measure ℝ)))
+        (LinearMap.proj ab)).comp l2Embedding)) := by
+    refine withSeminorms_l1_l2.2.congr (fun ab => ⟨{ab.1}, 1, fun f => ?_⟩)
+      (fun ab => ⟨{⟨ab, ()⟩}, 1, fun f => ?_⟩)
+    · simp [hev]
+    · simp [hev]
+  have h := WithSeminorms.topology_eq_withSeminorms
+    (topology := TopologicalSpace.induced l2Embedding inferInstance) hind
+  exact (Topology.IsInducing.mk (hS.1.trans h.symm)).secondCountableTopology
+
+/-- The structure constants of Example 3: `[X, P] = iħ I`, and the other commutators vanish. -/
+def obsConst (i j : Fin 3) : Fin 3 →₀ ℂ :=
+  if i = 0 ∧ j = 1 then Finsupp.single 2 1
+  else if i = 1 ∧ j = 0 then Finsupp.single 2 (-1) else 0
+
+/-- Example 3: for `ħ ≠ 0`, `𝓢(ℝ)` with `X, P, I` is a quantum vector space. -/
+theorem isQuantumVectorSpace_schwartz (hħ : ħ ≠ 0) :
+    IsQuantumVectorSpace l2Core (obs ħ) ħ obsConst where
+  isSymmetric := isSymmetric_obs ħ
+  comm i j := by
+    have h := posOp_mul_momOp_sub ħ
+    fin_cases i <;> fin_cases j <;> simp [obs, obsConst] at h ⊢
+    all_goals first | assumption | (rw [← neg_sub]; congr 1)
+  completeSpace := by
+    rw [uniformSpace_eq l2Core (obs ħ) (topology_schwartz ħ hħ)]
+    infer_instance
+  secondCountableTopology := by
+    rw [topology_schwartz ħ hħ]
+    exact secondCountableTopology_schwartz
+
 end Schwartz
 
 /-! ### Example 4: the qubit -/
@@ -449,6 +635,374 @@ theorem topology_qubit (ħ : ℝ) :
   have := isModuleTopologyOfFiniteDimensional (𝕜 := ℂ) (E := EuclideanSpace ℂ (Fin 2))
   exact (eq_moduleTopology ℂ _).symm
 
+/-- The structure constants `εᵢⱼₖ` of `[Sᵢ, Sⱼ] = iħ εᵢⱼₖ Sₖ`. -/
+def levi (i j : Fin 3) : Fin 3 →₀ ℂ :=
+  if j = i + 1 then Finsupp.single (i + 2) 1
+  else if i = j + 1 then Finsupp.single (j + 2) (-1) else 0
+
+/-- Example 4: the qubit `ℂ²` with the spin observables is a quantum vector space. -/
+theorem isQuantumVectorSpace_qubit (ħ : ℝ) : IsQuantumVectorSpace qubitCore (spin ħ) ħ levi where
+  isSymmetric := isSymmetric_spin ħ
+  comm i j := by
+    have h0 := spin_comm ħ 0
+    have h1 := spin_comm ħ 1
+    have h2 := spin_comm ħ 2
+    fin_cases i <;> fin_cases j <;> simp [levi] at h0 h1 h2 ⊢
+    all_goals first | assumption | (rw [← neg_sub]; congr 1)
+  completeSpace := by
+    rw [uniformSpace_eq qubitCore (spin ħ) (topology_qubit ħ)]
+    infer_instance
+  secondCountableTopology := by
+    rw [topology_qubit ħ]
+    infer_instance
+
 end Qubit
+
+/-! ### Example 3 in `n` dimensions: the Schwartz space `𝓢(ℝⁿ)` -/
+
+/-- The defining observables of Example 3 in `n` dimensions: the positions `Xⁱ`, the momenta `Pᵢ`
+and the identity `I`. -/
+inductive ObsN (n : ℕ)
+  | pos (i : Fin n)
+  | mom (i : Fin n)
+  | one
+  deriving DecidableEq, Fintype
+
+section SchwartzN
+
+open SchwartzMap MeasureTheory Complex ComplexConjugate LineDeriv
+
+variable (n : ℕ)
+
+set_option hygiene false in
+/-- The Schwartz space `𝓢(ℝⁿ)` of complex functions. -/
+local notation "𝓢ₙ" => 𝓢(EuclideanSpace ℝ (Fin n), ℂ)
+
+/-- The `L²` inner product `⟨f, g⟩ = ∫ conj(f) g` on `𝓢(ℝⁿ)`. -/
+@[instance_reducible]
+def l2CoreN : PreInnerProductSpace.Core ℂ 𝓢ₙ where
+  inner f g := inner ℂ (f.toLp 2) (g.toLp 2)
+  conj_inner_symm f g := inner_conj_symm _ _
+  re_inner_nonneg f := inner_self_nonneg (𝕜 := ℂ) (x := f.toLp 2)
+  add_left f g h := by
+    rw [← toLpCLM_apply (𝕜 := ℂ), map_add, inner_add_left]
+    rfl
+  smul_left f g r := by
+    rw [← toLpCLM_apply (𝕜 := ℂ), map_smul, inner_smul_left]
+    rfl
+
+lemma l2CoreN_toSeminorm (f : 𝓢ₙ) : (l2CoreN n).toSeminorm f = ‖f.toLp 2‖ := by
+  rw [PreInnerProductSpace.Core.toSeminorm_apply]
+  exact (norm_eq_sqrt_re_inner (𝕜 := ℂ) (f.toLp 2)).symm
+
+lemma l2CoreN_inner (f g : 𝓢ₙ) : (l2CoreN n).inner f g = ∫ x, conj (f x) * g x := by
+  change inner ℂ (f.toLp 2) (g.toLp 2) = _
+  rw [L2.inner_def]
+  refine integral_congr_ae ?_
+  filter_upwards [f.coeFn_toLp 2, g.coeFn_toLp 2] with x hf hg
+  rw [hf, hg, RCLike.inner_apply, mul_comm]
+
+/-- The coordinate `x ↦ xᵢ`, as a complex function. -/
+def coord (i : Fin n) (x : EuclideanSpace ℝ (Fin n)) : ℂ := x i
+
+/-- The coordinate `x ↦ xᵢ`, as a continuous real-linear map. -/
+def coordL (i : Fin n) : EuclideanSpace ℝ (Fin n) →L[ℝ] ℂ :=
+  Complex.ofRealCLM.comp (EuclideanSpace.proj i)
+
+lemma coordL_eq (i : Fin n) : ⇑(coordL n i) = coord n i := rfl
+
+lemma hasTemperateGrowth_coord (i : Fin n) : (coord n i).HasTemperateGrowth :=
+  coordL_eq n i ▸ (coordL n i).hasTemperateGrowth
+
+/-- The unit vector `eᵢ` of `ℝⁿ`. -/
+abbrev unitVec (i : Fin n) : EuclideanSpace ℝ (Fin n) := EuclideanSpace.single i 1
+
+/-- The position operator `Xⁱ f = xᵢ f`. -/
+def posOpN (i : Fin n) : Module.End ℂ 𝓢ₙ := (smulLeftCLM ℂ (coord n i)).toLinearMap
+
+/-- The derivative `∂ᵢ` along the unit vector `eᵢ`. -/
+def derivN (i : Fin n) : Module.End ℂ 𝓢ₙ := (lineDerivOpCLM ℂ 𝓢ₙ (unitVec n i)).toLinearMap
+
+/-- The momentum operator `Pᵢ f = -iħ ∂ᵢ f`. -/
+def momOpN (ħ : ℝ) (i : Fin n) : Module.End ℂ 𝓢ₙ :=
+  ((-I * ħ) • lineDerivOpCLM ℂ 𝓢ₙ (unitVec n i)).toLinearMap
+
+/-- The defining observables `Xⁱ, Pᵢ, I` of Example 3 in `n` dimensions. -/
+def obsN (ħ : ℝ) : ObsN n → Module.End ℂ 𝓢ₙ
+  | .pos i => posOpN n i
+  | .mom i => momOpN n ħ i
+  | .one => 1
+
+variable (ħ : ℝ)
+
+lemma posOpN_apply (i : Fin n) (f : 𝓢ₙ) (x : EuclideanSpace ℝ (Fin n)) :
+    posOpN n i f x = x i * f x :=
+  smulLeftCLM_apply_apply (hasTemperateGrowth_coord n i) f x
+
+lemma derivN_apply (i : Fin n) (f : 𝓢ₙ) : derivN n i f = ∂_{unitVec n i} f := rfl
+
+lemma momOpN_eq (i : Fin n) : momOpN n ħ i = (-I * ħ) • derivN n i := rfl
+
+/-- The product rule `∂ᵥ (xᵢ f) = vᵢ f + xᵢ ∂ᵥ f`. -/
+lemma lineDerivOp_posOpN (i : Fin n) (v : EuclideanSpace ℝ (Fin n)) (f : 𝓢ₙ)
+    (x : EuclideanSpace ℝ (Fin n)) : ∂_{v} (posOpN n i f) x = v i * f x + x i * ∂_{v} f x := by
+  have he : ⇑(posOpN n i f) = fun y => coord n i y * f y := funext (posOpN_apply n i f)
+  have hd := ((coordL n i).hasFDerivAt (x := x)).mul (f.differentiableAt (x := x)).hasFDerivAt
+  rw [coordL_eq] at hd
+  rw [lineDerivOp_apply_eq_fderiv, lineDerivOp_apply_eq_fderiv, he,
+    show (fun y => coord n i y * f y) = coord n i * ⇑f from rfl, hd.fderiv]
+  simp [coordL, coord]
+  ring
+
+/-- Derivatives of Schwartz functions commute. -/
+lemma lineDerivOp_comm (u v : EuclideanSpace ℝ (Fin n)) (f : 𝓢ₙ) :
+    ∂_{u} (∂_{v} f) = ∂_{v} (∂_{u} f) := by
+  ext x
+  have h (a b : EuclideanSpace ℝ (Fin n)) :
+      ∂_{a} (∂_{b} f) x = iteratedFDeriv ℝ 2 f x ![a, b] :=
+    iteratedLineDerivOp_eq_iteratedFDeriv (m := ![a, b])
+  rw [h, h]
+  simp only [iteratedFDeriv_two_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
+  exact ContDiffAt.isSymmSndFDerivAt ((f.smooth ⊤).contDiffAt (x := x)) (by simp) u v
+
+lemma posOpN_comm (i j : Fin n) : posOpN n i * posOpN n j - posOpN n j * posOpN n i = 0 := by
+  ext f x
+  simp only [LinearMap.sub_apply, Module.End.mul_apply, posOpN_apply, LinearMap.zero_apply,
+    sub_apply, zero_apply]
+  ring
+
+lemma momOpN_comm (i j : Fin n) :
+    momOpN n ħ i * momOpN n ħ j - momOpN n ħ j * momOpN n ħ i = 0 := by
+  ext f : 1
+  simp only [LinearMap.sub_apply, Module.End.mul_apply, momOpN_eq, LinearMap.smul_apply,
+    derivN_apply, lineDerivOp_smul, lineDerivOp_comm n (unitVec n i), sub_self,
+    LinearMap.zero_apply]
+
+/-- The canonical commutation relations `[Xⁱ, Pⱼ] = iħ δᵢⱼ`. -/
+lemma posOpN_comm_momOpN (i j : Fin n) :
+    posOpN n i * momOpN n ħ j - momOpN n ħ j * posOpN n i =
+      if i = j then (I * ħ) • (1 : Module.End ℂ 𝓢ₙ) else 0 := by
+  ext f x
+  have h := lineDerivOp_posOpN n i (unitVec n j) f x
+  simp only [LinearMap.sub_apply, Module.End.mul_apply, momOpN_eq, LinearMap.smul_apply,
+    derivN_apply, sub_apply, smul_apply, posOpN_apply, h, PiLp.single_apply, smul_eq_mul]
+  split_ifs with hij <;> simp [hij] <;> ring
+
+/-- The structure constants of Example 3 in `n` dimensions: `[Xⁱ, Pⱼ] = iħ δᵢⱼ I`, and the
+other commutators vanish. -/
+def obsNConst : ObsN n → ObsN n → ObsN n →₀ ℂ
+  | .pos i, .mom j => if i = j then Finsupp.single .one 1 else 0
+  | .mom j, .pos i => if i = j then Finsupp.single .one (-1) else 0
+  | _, _ => 0
+
+lemma obsN_comm (a b : ObsN n) :
+    obsN n ħ a * obsN n ħ b - obsN n ħ b * obsN n ħ a =
+      (I * ħ) • Finsupp.linearCombination ℂ (obsN n ħ) (obsNConst n a b) := by
+  cases a <;> cases b <;> simp only [obsN, obsNConst, mul_one, one_mul, sub_self, map_zero,
+    smul_zero]
+  · exact posOpN_comm n _ _
+  · rename_i i j
+    rw [posOpN_comm_momOpN]
+    split_ifs <;> simp [obsN]
+  · rename_i j i
+    rw [← neg_sub, posOpN_comm_momOpN]
+    split_ifs <;> simp [obsN]
+  · exact momOpN_comm n ħ _ _
+
+lemma isSymmetric_posOpN (i : Fin n) : IsSymmetric (l2CoreN n) (posOpN n i) := fun f g => by
+  simp only [l2CoreN_inner, posOpN_apply, map_mul, conj_ofReal]
+  congr 1
+  funext x
+  ring
+
+lemma isSymmetric_momOpN (i : Fin n) : IsSymmetric (l2CoreN n) (momOpN n ħ i) := fun f g => by
+  let L : ℂ →L[ℝ] ℂ →L[ℝ] ℂ :=
+    (ContinuousLinearMap.mul ℝ ℂ).comp Complex.conjCLE.toContinuousLinearMap
+  have hL : ∀ u v, L u v = conj u * v := fun _ _ => by simp [L]
+  have hibp := integral_bilinear_lineDerivOp_right_eq_neg_left (μ := volume) f g L (unitVec n i)
+  simp only [hL] at hibp
+  simp only [l2CoreN_inner, momOpN_eq, LinearMap.smul_apply, derivN_apply, smul_apply,
+    smul_eq_mul, map_mul, map_neg, conj_I, conj_ofReal]
+  have h1 : (fun x => -(-I) * (ħ : ℂ) * conj ((∂_{unitVec n i} f) x) * g x) =
+      fun x => (I * ħ) * (conj ((∂_{unitVec n i} f) x) * g x) := by funext x; ring
+  have h2 : (fun x => conj (f x) * (-I * ħ * (∂_{unitVec n i} g) x)) =
+      fun x => (-I * ħ) * (conj (f x) * (∂_{unitVec n i} g) x) := by funext x; ring
+  rw [h1, h2, integral_const_mul, integral_const_mul, hibp]
+  ring
+
+/-- Example 3 in `n` dimensions: `Xⁱ`, `Pᵢ`, `I` are symmetric for the `L²` inner product. -/
+theorem isSymmetric_obsN (a : ObsN n) : IsSymmetric (l2CoreN n) (obsN n ħ a) := by
+  cases a with
+  | pos i => exact isSymmetric_posOpN n i
+  | mom i => exact isSymmetric_momOpN n ħ i
+  | one => exact fun f g => rfl
+
+/-- The Schwartz topology of `𝓢(ℝⁿ)` is admissible. -/
+theorem isAdmissible_schwartzN :
+    IsAdmissible (l2CoreN n) (obsN n ħ) (inferInstance : TopologicalSpace 𝓢ₙ) where
+  isTopologicalAddGroup := inferInstance
+  continuousSMul := inferInstance
+  continuous_obs a := by
+    cases a with
+    | pos i => exact (smulLeftCLM ℂ (coord n i)).continuous
+    | mom i => exact ((-I * ħ) • lineDerivOpCLM ℂ 𝓢ₙ (unitVec n i)).continuous
+    | one => exact continuous_id
+  continuous_inner := by
+    have h := (toLpCLM ℂ ℂ 2 (volume : Measure (EuclideanSpace ℝ (Fin n)))).continuous
+    exact (h.comp continuous_fst).inner (h.comp continuous_snd)
+
+/-! The Schwartz seminorms are bounded by the seminorms of Corollary 2. -/
+
+variable {ħ}
+
+lemma derivN_mem (hħ : ħ ≠ 0) (i : Fin n) : derivN n i ∈ algebra (obsN n ħ) := by
+  have h : -I * (ħ : ℂ) ≠ 0 := mul_ne_zero (neg_ne_zero.2 I_ne_zero) (ofReal_ne_zero.2 hħ)
+  have he : derivN n i = (-I * ħ)⁻¹ • obsN n ħ (.mom i) := by
+    rw [obsN, momOpN_eq, smul_smul, inv_mul_cancel₀ h, one_smul]
+  rw [he]
+  exact Subalgebra.smul_mem _
+    (Algebra.subset_adjoin (Set.mem_range_self (f := obsN n ħ) (.mom i))) _
+
+/-- The iterated derivative `∂^r = ∂_{r 0} ⋯ ∂_{r (m-1)}`. -/
+def iterDerivN {m : ℕ} (r : Fin m → Fin n) : Module.End ℂ 𝓢ₙ :=
+  (iteratedLineDerivOpCLM ℂ 𝓢ₙ fun j => unitVec n (r j)).toLinearMap
+
+lemma iterDerivN_mem (hħ : ħ ≠ 0) {m : ℕ} (r : Fin m → Fin n) :
+    iterDerivN n r ∈ algebra (obsN n ħ) := by
+  induction m with
+  | zero =>
+    have : iterDerivN n r = 1 := by ext f : 1; rfl
+    rw [this]
+    exact one_mem _
+  | succ m ih =>
+    have : iterDerivN n r = derivN n (r 0) * iterDerivN n (Fin.tail r) := by ext f : 1; rfl
+    rw [this]
+    exact mul_mem (derivN_mem n hħ _) (ih _)
+
+/-- The weight `(1 + ‖x‖²)ᵏ`, as the polynomial `(1 + ∑ (Xⁱ)²)ᵏ` in the positions. -/
+def weightN (k : ℕ) : Module.End ℂ 𝓢ₙ := (1 + ∑ i, posOpN n i * posOpN n i) ^ k
+
+lemma weightN_mem (k : ℕ) : weightN n k ∈ algebra (obsN n ħ) :=
+  pow_mem (add_mem (one_mem _) (Subalgebra.sum_mem _ fun i _ =>
+    have h := Algebra.subset_adjoin (R := ℂ) (Set.mem_range_self (f := obsN n ħ) (.pos i))
+    mul_mem h h)) _
+
+lemma sum_applyN {ι : Type*} (s : Finset ι) (g : ι → 𝓢ₙ) (x : EuclideanSpace ℝ (Fin n)) :
+    (∑ i ∈ s, g i) x = ∑ i ∈ s, g i x := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp
+  | insert a s ha ih => simp [Finset.sum_insert ha, ih]
+
+lemma weightN_apply (k : ℕ) (f : 𝓢ₙ) (x : EuclideanSpace ℝ (Fin n)) :
+    weightN n k f x = ((1 + ‖x‖ ^ 2 : ℝ) : ℂ) ^ k * f x := by
+  have hn : ((‖x‖ : ℝ) : ℂ) ^ 2 = ∑ i, ((x i : ℝ) : ℂ) ^ 2 := by
+    have h := EuclideanSpace.norm_sq_eq x
+    simp only [Real.norm_eq_abs, sq_abs] at h
+    exact_mod_cast h
+  induction k generalizing f with
+  | zero => simp [weightN]
+  | succ k ih =>
+    have h1 : weightN n (k + 1) f =
+        weightN n k f + ∑ i, posOpN n i (posOpN n i (weightN n k f)) := by
+      rw [weightN, pow_succ', Module.End.mul_apply, ← weightN, LinearMap.add_apply,
+        Module.End.one_apply, LinearMap.sum_apply]
+      rfl
+    have hs : ∑ i, ((x i : ℝ) : ℂ) * (((x i : ℝ) : ℂ) * weightN n k f x) =
+        (∑ i, ((x i : ℝ) : ℂ) ^ 2) * weightN n k f x := by
+      rw [Finset.sum_mul]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    rw [h1, add_apply, sum_applyN]
+    simp only [posOpN_apply]
+    rw [hs, ← hn, ih]
+    push_cast
+    ring
+
+lemma pow_le_one_add_sq_pow (k : ℕ) (t : ℝ) (ht : 0 ≤ t) : t ^ k ≤ (1 + t ^ 2) ^ k := by
+  rcases le_total t 1 with h | h
+  · exact (pow_le_one₀ ht h).trans (one_le_pow₀ (by nlinarith))
+  · exact pow_le_pow_left₀ ht (by nlinarith) k
+
+/-- The seminorms of Corollary 2 that bound the Schwartz seminorm `(k, m)`: `p_A` for
+`A = (1 + ∑ (Xⁱ)²)ᵏ ∂^r` and `A = ∂ᵢ^(n+1) (1 + ∑ (Xⁱ)²)ᵏ ∂^r`. -/
+def boundOp (hħ : ħ ≠ 0) (k m : ℕ) : (Fin m → Fin n) × Option (Fin n) → algebra (obsN n ħ)
+  | (r, none) => ⟨weightN n k * iterDerivN n r,
+      mul_mem (weightN_mem n k) (iterDerivN_mem n hħ r)⟩
+  | (r, some i) => ⟨derivN n i ^ (n + 1) * (weightN n k * iterDerivN n r),
+      mul_mem (pow_mem (derivN_mem n hħ i) _) (mul_mem (weightN_mem n k) (iterDerivN_mem n hħ r))⟩
+
+theorem exists_seminorm_le (hħ : ħ ≠ 0) (k m : ℕ) : ∃ C, 0 ≤ C ∧ ∀ f : 𝓢ₙ,
+    SchwartzMap.seminorm ℂ k m f ≤
+      C * ∑ ρ, seminormFamily (l2CoreN n) (obsN n ħ) (boundOp n hħ k m ρ) f := by
+  let b := EuclideanSpace.basisFun (Fin n) ℝ
+  obtain ⟨C, hC0, hC⟩ := exists_norm_le_toLp_two (H := ℂ) b (N := n + 1)
+    (by rw [finrank_euclideanSpace_fin]; omega)
+  refine ⟨C, hC0, fun f => seminorm_le_bound ℂ k m f
+    (mul_nonneg hC0 (Finset.sum_nonneg fun _ _ => apply_nonneg _ _)) fun x => ?_⟩
+  have hb : ∀ i, b i = unitVec n i := fun i => EuclideanSpace.basisFun_apply _ _ i
+  set g : (Fin m → Fin n) → 𝓢ₙ := fun r => weightN n k (iterDerivN n r f) with hg
+  have h1 : ‖iteratedFDeriv ℝ m (⇑f) x‖ ≤ ∑ r : Fin m → Fin n, ‖iterDerivN n r f x‖ := by
+    refine (ContinuousMultilinearMap.norm_le_sum_orthonormalBasis b _).trans_eq ?_
+    refine Finset.sum_congr rfl fun r _ => ?_
+    simp only [hb]
+    exact congrArg norm iteratedLineDerivOp_eq_iteratedFDeriv.symm
+  have h2 : ∀ r, ‖x‖ ^ k * ‖iterDerivN n r f x‖ ≤ ‖g r x‖ := fun r => by
+    rw [hg, weightN_apply, norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (by positivity)]
+    exact mul_le_mul_of_nonneg_right (pow_le_one_add_sq_pow k ‖x‖ (norm_nonneg x))
+      (norm_nonneg _)
+  have h4 : ∀ r, seminormFamily (l2CoreN n) (obsN n ħ) (boundOp n hħ k m (r, none)) f =
+      ‖(g r).toLp 2‖ := fun r => l2CoreN_toSeminorm n _
+  have h5 : ∀ r i, seminormFamily (l2CoreN n) (obsN n ħ) (boundOp n hħ k m (r, some i)) f =
+      ‖((∂_{b i})^[n + 1] (g r)).toLp 2‖ := fun r i => by
+    rw [hb]
+    change (l2CoreN n).toSeminorm ((derivN n i ^ (n + 1)) (g r)) = _
+    rw [l2CoreN_toSeminorm, Module.End.pow_apply]
+    rfl
+  have hsum : ∑ ρ, seminormFamily (l2CoreN n) (obsN n ħ) (boundOp n hħ k m ρ) f =
+      ∑ r, (‖(g r).toLp 2‖ + ∑ i, ‖((∂_{b i})^[n + 1] (g r)).toLp 2‖) := by
+    rw [Fintype.sum_prod_type]
+    refine Finset.sum_congr rfl fun r _ => ?_
+    rw [Fintype.sum_option, h4]
+    simp only [h5]
+  rw [hsum, Finset.mul_sum]
+  have h3 : ‖x‖ ^ k * ‖iteratedFDeriv ℝ m (⇑f) x‖ ≤ ∑ r, ‖x‖ ^ k * ‖iterDerivN n r f x‖ :=
+    (mul_le_mul_of_nonneg_left h1 (by positivity)).trans_eq (Finset.mul_sum _ _ _)
+  exact h3.trans (Finset.sum_le_sum fun r _ => (h2 r).trans (hC (g r) x))
+
+/-- Example 3 in `n` dimensions, Remark: for `ħ ≠ 0`, the topology of Corollary 2 on `𝓢(ℝⁿ)` is
+the Schwartz topology. -/
+theorem topology_schwartzN (hħ : ħ ≠ 0) :
+    topology (l2CoreN n) (obsN n ħ) = (inferInstance : TopologicalSpace 𝓢ₙ) := by
+  refine le_antisymm ?_ ((isGreatest_topology _ _).2 (isAdmissible_schwartzN n ħ))
+  rw [← continuous_id_iff_le]
+  refine @WithSeminorms.continuous_of_continuous_comp ℂ ℂ 𝓢ₙ 𝓢ₙ _ _ _ _ _ _ _ _ _ _
+    (topology (l2CoreN n) (obsN n ħ))
+    (isAdmissible_topology (l2CoreN n) (obsN n ħ)).isTopologicalAddGroup _
+    (schwartz_withSeminorms ℂ (EuclideanSpace ℝ (Fin n)) ℂ) LinearMap.id fun km => ?_
+  obtain ⟨C, -, hC⟩ := exists_seminorm_le n hħ km.1 km.2
+  exact continuous_of_le_sum (l2CoreN n) (obsN n ħ) _ _ C hC
+
+/-- `𝓢(ℝⁿ)` is second-countable. -/
+theorem secondCountableTopology_schwartzN : SecondCountableTopology 𝓢ₙ := by
+  have : Fact ((2 : ENNReal) ≠ ⊤) := ⟨ENNReal.ofNat_ne_top⟩
+  have h := secondCountableTopology_topology (l2CoreN n) (obsN n 1)
+    (toLpCLM ℂ ℂ 2 (volume : Measure (EuclideanSpace ℝ (Fin n)))).toLinearMap
+    fun f => (l2CoreN_toSeminorm n f).symm
+  rwa [topology_schwartzN n one_ne_zero] at h
+
+/-- Example 3 in `n` dimensions: for `ħ ≠ 0`, `𝓢(ℝⁿ)` with `Xⁱ, Pᵢ, I` is a quantum vector space. -/
+theorem isQuantumVectorSpace_schwartzN (hħ : ħ ≠ 0) :
+    IsQuantumVectorSpace (l2CoreN n) (obsN n ħ) ħ (obsNConst n) where
+  isSymmetric := isSymmetric_obsN n ħ
+  comm := obsN_comm n ħ
+  completeSpace := by
+    rw [uniformSpace_eq (l2CoreN n) (obsN n ħ) (topology_schwartzN n hħ)]
+    infer_instance
+  secondCountableTopology := by
+    rw [topology_schwartzN n hħ]
+    exact secondCountableTopology_schwartzN n
+
+end SchwartzN
 
 end QuantumVectorSpaces
