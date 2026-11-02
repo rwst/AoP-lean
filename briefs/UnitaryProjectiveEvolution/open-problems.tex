@@ -51,22 +51,12 @@ precise first.
 
 \section*{From the formalization}
 \noindent Beyond finite dimension the formalization has a part in any dimension, which covers
-unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ; it leaves open the item ``Resolvent of an
-unbounded generator'' above and the items ``DR-PROJ without \lean{IsEvolution}'', ``Complete
-positivity'', ``The generator of the cutoff family'' and ``General cutoff levels'' below (the
-second is open in finite dimension too).
+unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ and derives the evolution structure
+\lean{IsEvolution} from DR-PROJ up to the item ``Durations with irrational ratio'' below
+(\lean{drUnit_iff_drProj_and_map_zero_and_map_add}). It leaves open the item ``Resolvent of an
+unbounded generator'' above and the items ``Complete positivity'', ``The generator of the cutoff
+family'' and ``General cutoff levels'' below (the first is open in finite dimension too).
 \begin{enumerate}
-\item \blocker{formalization gap; brief issue}
-  \textbf{DR-PROJ without \lean{IsEvolution}.}
-  In infinite dimension Theorem~18 is proved only for families $\Phi_t$ that are already
-  affine on density operators, with $\Phi_0 = I$, $\Phi_{t+s} = \Phi_t\circ\Phi_s$ and
-  continuity at $0^+$. The brief derives these from DR-PROJ (affinity of the limit,
-  eqs.~(28)--(29), common refinements, and ``the continuity used in the proof is not an
-  additional assumption''). In finite dimension they are now derived, with $\Phi_0 = I$
-  assumed, by the corrected argument of the next item (\lean{IsProjectiveLimit.isEvolution},
-  \lean{drUnit_iff_drProj_and_map_zero}); the argument uses a finite basis of density operators
-  and does not carry over. (Log, ``Differences'', item on \lean{IsEvolution}; Sec.~1.1,
-  ``Differences''.)
 \item \blocker{brief issue}
   \textbf{Durations with irrational ratio.}
   DR-PROJ defines $\Phi_t$ only as
@@ -76,8 +66,20 @@ second is open in finite dimension too).
   The remaining interval itself is harmless. A fix: in finite dimension a telescoping estimate
   gives $\Phi_t = e^{tL}$ directly, which is formalized (\lean{IsProjectiveLimit.exists_eq_exp});
   in infinite dimension Chernoff's product formula does, if the closure of $L$ generates a
-  contraction semigroup, which is open. (Brief, Sec.~4, after eq.~(29); Log, ``Problems
-  found''.)
+  contraction semigroup, which is open. In infinite dimension this is the one clause of
+  \lean{IsEvolution} that is assumed; the others, including composition for durations of
+  rational ratio (eq.~(29)), are derived (\lean{IsProjectiveLimit.isEvolution}). $\Phi_0 = I$ is
+  assumed in both dimensions, since the formalization defines $\Phi_t$ only for $t > 0$; the brief
+  obtains it from $\Psi_0 = I$.
+
+  The gap may be real in infinite dimension. A sketch, not checked in Lean: let $H_1 \ne H_2$ be
+  two self-adjoint extensions of a symmetric operator $H_0$ with deficiency indices $(1,1)$, and let
+  $\Psi_\tau$ be the cutoff resolvent of $H_1$ for rational $\tau$ and of $H_2$ for irrational
+  $\tau$. Since $t/n$ is rational exactly when $t$ is, limits, prediction and reconstruction hold
+  for each $t$, and $\Phi_t$ is conjugation by $e^{-itH_1}$ or $e^{-itH_2}$. If both families have
+  the derivative $[H_0,\rho]/(i\hbar)$ on the density operators built from vectors of
+  $\mathcal{D}(H_0)$, which are dense, then DR-PROJ holds while DR-UNIT would force
+  $H_1 = H_2 + c$. (Brief, Sec.~4, after eq.~(29); Log, ``Problems found''.)
 \item \blocker{brief issue}\textbf{What perfect reconstruction means.}
   DR-PROJ only asks that the probabilities of
   the reconstructed sequences tend to one. The formalization instead assumes a second projective

@@ -249,6 +249,7 @@ directions, with an unbounded generator.
   \lean{UnitaryProjectiveEvolution.*}
 \item Imports:\newline \lean{ForPhyslib.QuantumMechanics.SpectralCutoff},\newline
   \lean{ForPhyslib.QuantumMechanics.VonNeumannResolvent.Laplace},\newline
+  \lean{Mathlib.NumberTheory.Real.Irrational} (for \lean{Irrational}),\newline
   and \lean{SchroedingerEvolution.InfiniteDimensional} (for \lean{IsEvolution}, \lean{DrUnit},
   \lean{DrEv} and \lean{DrEv.drUnit}; it brings \lean{StronglyContinuousUnitaryGroup} and
   \lean{AffineOnDensityOperators})
@@ -267,8 +268,10 @@ directions, with an unbounded generator.
   from pure states to density operators (\lean{traceENorm_apply_le_of_forall_proj}); trace-norm
   convergence of $U_a\rho U_a^\dagger$ when $U_a \to U$ strongly (\lean{tendsto_traceENorm_conj});
   density of the density operators supported in projections $P_a \to 1$
-  (\lean{exists_isDensityOperator_mul_eq}); and closedness of the pure states under trace-norm
-  limits (\lean{isPure_of_tendsto_traceENorm}).
+  (\lean{exists_isDensityOperator_mul_eq}); closedness of the pure states and of the density
+  operators under trace-norm limits (\lean{isPure_of_tendsto_traceENorm} and
+  \lean{isDensityOperator_of_tendsto_traceENorm}); uniqueness of trace-norm limits; and the
+  affinity, contraction and telescoping bounds for iterates of affine maps.
 \item Addition to \lean{ForPhyslib/QuantumMechanics/Stone.lean}:\newline
   \lean{StronglyContinuousUnitaryGroup.exists_expIntegral}, every strongly continuous unitary
   group is $t \mapsto \int e^{itx}\,d\mu_S(x)$ for a projection-valued measure $\mu_S$ on
@@ -354,6 +357,20 @@ Proposition~17 and eq.~(27), phases & from the brief on the Schr\"odinger equati
 \lean{briefs/SchroedingerEvolution/formalization-log.tex}) \\
 DR-PROJ $\Rightarrow$ DR-UNIT & \lean{DrProj.drUnit} \\
 Theorem~18 & \lean{drUnit_iff_drProj} \\
+Every finite repetition is affine; $\Phi_t$ is affine and keeps density operators &
+  \lean{AffineOnDensityOperators.iterate}, \lean{IsProjectiveLimit.affine},
+  \lean{IsProjectiveLimit.isDensityOperator} \\
+$\Psi_\tau$ and $\Phi_t$ contract the trace norm &
+  \lean{AffineOnDensityOperators.traceENorm_sub_le}, \lean{IsProjectiveLimit.traceENorm_sub_le} \\
+Eq.~(28), telescoping & \lean{IsProjectiveLimit.traceENorm_sub_le_mul},
+  \lean{AffineOnDensityOperators.traceENorm_iterate_sub_le} \\
+Continuity at zero, extended by contractivity & \lean{IsProjectiveLimit.tendsto_traceENorm_sub},
+  \lean{IsProjectiveLimit.continuousWithinAt} \\
+Eq.~(29), composition for durations of rational ratio & \lean{IsProjectiveLimit.map_add_mul},
+  \lean{IsProjectiveLimit.map_add_of_not_irrational} \\
+The evolution structure from DR-PROJ & \lean{IsProjectiveLimit.isEvolution}, assuming
+  $\Phi_0 = I$ and composition for durations of irrational ratio \\
+Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero_and_map_add} \\
 \bottomrule
 \end{xltabular}
 
@@ -406,11 +423,22 @@ Theorem~18 & \lean{drUnit_iff_drProj} \\
 \item DR-UNIT $\Rightarrow$ DR-PROJ needs no \lean{IsEvolution}, as in finite dimension.
   Reconstruction uses the cutoff resolvents of the reversed group $t \mapsto U_{-t}$, which has its
   own spectral measure.
-\item DR-PROJ $\Rightarrow$ DR-UNIT assumes \lean{IsEvolution}. In finite dimension it is
-  derived from DR-PROJ (\lean{IsProjectiveLimit.isEvolution}); here it is not, since that
-  argument needs a finite basis of density operators, and eqs.~(28)--(29) are not formalized.
-  The affinity argument is the
-  finite-dimensional one, with traces in $[0,\infty]$: along a branch of probability $w$,
+\item DR-PROJ $\Rightarrow$ DR-UNIT is proved over \lean{IsEvolution} (\lean{DrProj.drUnit}) and
+  over two of its clauses only (\lean{drUnit_iff_drProj_and_map_zero_and_map_add}). The
+  finite-dimensional derivation of \lean{IsEvolution}, through $\Phi_t = e^{tB}$, needs a finite
+  basis of density operators; \lean{IsProjectiveLimit.isEvolution} follows the brief instead.
+  Each $\Phi_t$ is a trace-norm limit of affine maps that keep density operators, so it is one
+  too, and contracts the trace norm (Simon's lemma, the brief's ``extend to positive
+  trace-preserving linear maps''). Eq.~(28) is the telescoping bound
+  $\|\Psi^n\rho - \rho\|_1 \le n\|\Psi\rho - \rho\|_1$ on the dense set of eq.~(26), and
+  contractivity extends continuity at $0^+$ to every density operator. Eq.~(29) is proved as
+  $\Phi_{(p+q)u} = \Phi_{pu}\circ\Phi_{qu}$, along $n = (p+q)m$, which gives composition whenever
+  $s/t$ is rational. Two clauses remain assumptions: $\Phi_0 = I$, since \lean{IsProjectiveLimit}
+  defines $\Phi_t$ only for $t > 0$ (the brief obtains it from $\Psi_0 = I$), and
+  $\Phi_{s+t} = \Phi_s\circ\Phi_t$ for $s/t$ irrational, the gap noted in the finite-dimensional
+  part.
+\item The branch estimate is the finite-dimensional one, with traces in $[0,\infty]$: along a
+  branch of probability $w$,
   $\Psi^nQ_0 - wQ_n$ is positive with trace $1 - w$, so it is $(1-w)R$ for a density operator $R$,
   and $\|\Psi^nQ_0 - Q_n\|_1 \le 2(1-w)$. In finite dimension the pure states are closed because
   they are the image of the compact unit sphere; here they are closed in $\mathcal{S}_1$, as the
@@ -435,6 +463,9 @@ part:
   strongly.
 \item The core of eq.~(26) is asserted to be dense without proof. Density follows from $P_m \to 1$
   strongly and trace-norm continuity of conjugation.
+\item Composition for durations of irrational ratio is the gap noted in the finite-dimensional
+  part. Here no telescoping estimate closes it: $L$ may be unbounded, and eq.~(26) holds only
+  for each $\rho$ of a dense set, not uniformly.
 \item Eq.~(25), ``strong convergence implies convergence of the corresponding conjugations on
   every trace-class operator'', is standard, but not obvious: for density operators it follows from
   the canonical expansion and the rank-one estimate $\|P_x - P_y\|_1 \le 2\|x - y\|$.

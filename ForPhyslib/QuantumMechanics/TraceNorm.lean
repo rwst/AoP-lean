@@ -27,19 +27,24 @@ Three facts about the trace norm `‖·‖₁` that hold in any dimension.
   `t ↦ U t ρ (U t)†` is continuous in the trace norm for every positive trace-class `ρ`. The
   canonical expansion `ρ = ∑ᵢ μᵢ |bᵢ⟩⟨bᵢ|` reduces this to rank-one operators, and
   `‖|x⟩⟨x| - |y⟩⟨y|‖₁ ≤ (‖x‖ + ‖y‖) ‖x - y‖`.
-* **Pure states are closed.** In the trace norm, the pure states are the positive operators of
-  trace norm one that are idempotent; each condition is closed.
+* **Pure states and density operators are closed.** In the trace norm, the density operators are
+  the positive operators of trace norm one, and the pure states are those that are also
+  idempotent; each condition is closed.
 
 ## ii. Key results
 
 - `QuantumMechanics.traceNorm_eq_toReal_posTrace_abs`, `traceNorm_of_nonneg`,
   `traceNorm_eq_posPart_add_negPart`: the trace norm through the trace in `[0, ∞]`.
-- `QuantumMechanics.AffineOnDensityOperators.traceNorm_sub_le`: affine maps contract.
+- `QuantumMechanics.AffineOnDensityOperators.traceNorm_sub_le`: affine maps contract;
+  `AffineOnDensityOperators.iterate`: so do their iterates, and
+  `AffineOnDensityOperators.traceENorm_iterate_sub_le`: `‖Φⁿ ρ - ρ‖₁ ≤ n ‖Φ ρ - ρ‖₁`.
 - `QuantumMechanics.traceNorm_rankOne_le`, `traceNorm_proj_sub_proj_le`: rank-one bounds.
 - `QuantumMechanics.continuous_conj`: conjugation by a strongly continuous family of contractions.
 - `QuantumMechanics.isClosed_setOf_isPure`: the pure states are closed in `𝒮₁(E)`;
   `isPure_of_tendsto_traceENorm`: a trace-norm limit of pure states is pure.
-- `QuantumMechanics.traceENorm`: the trace norm `tr |T| ∈ [0, ∞]` of any operator.
+- `QuantumMechanics.traceENorm`: the trace norm `tr |T| ∈ [0, ∞]` of any operator;
+  `isDensityOperator_of_tendsto_traceENorm`: a trace-norm limit of density operators is a density
+  operator; `eq_of_tendsto_traceENorm`: trace-norm limits are unique.
 
 ## iii. Table of contents
 
@@ -200,6 +205,29 @@ theorem AffineOnDensityOperators.traceNorm_sub_le {Φ : (E →L[ℂ] E) → E �
   calc ‖ofOperator _ hρ'' - ofOperator _ hσ''‖ ≤ ‖ofOperator _ hρ''‖ + ‖ofOperator _ hσ''‖ :=
         norm_sub_le _ _
     _ = 2 := by rw [(hD _ hρ').norm_ofOperator, (hD _ hσ').norm_ofOperator]; norm_num
+
+/-- A map that keeps density operators keeps them under every iterate. -/
+lemma isDensityOperator_iterate {Φ : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hD : ∀ ρ, IsDensityOperator ρ → IsDensityOperator (Φ ρ)) (n : ℕ) {ρ : E →L[ℂ] E}
+    (hρ : IsDensityOperator ρ) : IsDensityOperator (Φ^[n] ρ) := by
+  induction n generalizing ρ with
+  | zero => exact hρ
+  | succ n ih => rw [Function.iterate_succ_apply]; exact ih (hD ρ hρ)
+
+/-- A composition of affine maps is affine, if the inner one keeps density operators. -/
+theorem AffineOnDensityOperators.comp {Φ Ψ : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hΦ : AffineOnDensityOperators Φ) (hΨ : AffineOnDensityOperators Ψ)
+    (hD : ∀ ρ, IsDensityOperator ρ → IsDensityOperator (Ψ ρ)) :
+    AffineOnDensityOperators (Φ ∘ Ψ) := fun ρ σ hρ hσ t ht0 ht1 => by
+  simp only [Function.comp_apply, hΨ ρ σ hρ hσ t ht0 ht1, hΦ _ _ (hD ρ hρ) (hD σ hσ) t ht0 ht1]
+
+/-- The iterates of an affine map that keeps density operators are affine. -/
+theorem AffineOnDensityOperators.iterate {Φ : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hA : AffineOnDensityOperators Φ) (hD : ∀ ρ, IsDensityOperator ρ → IsDensityOperator (Φ ρ))
+    (n : ℕ) : AffineOnDensityOperators Φ^[n] := by
+  induction n with
+  | zero => intro _ _ _ _ _ _ _; rfl
+  | succ n ih => rw [Function.iterate_succ]; exact ih.comp hA hD
 
 /-! ## C. Rank-one operators -/
 
@@ -686,5 +714,79 @@ theorem isPure_of_tendsto_traceENorm {α : Type*} {l : Filter α} [l.NeBot] {f :
     change IsPure (g a)
     rw [ha.2]
     exact ha.1)
+
+lemma isTraceClass_sub {S T : E →L[ℂ] E} (hS : IsTraceClass S) (hT : IsTraceClass T) :
+    IsTraceClass (S - T) := by
+  rw [sub_eq_add_neg]
+  exact isTraceClass_add hS (isTraceClass_neg hT)
+
+/-- A density operator is a positive operator of trace norm one. -/
+theorem isDensityOperator_iff_traceENorm {T : E →L[ℂ] E} :
+    IsDensityOperator T ↔ 0 ≤ T ∧ traceENorm T = 1 := by
+  rw [isDensityOperator_iff]
+  exact and_congr_right fun h => by rw [traceENorm_of_nonneg h]
+
+/-- Trace-norm convergence implies operator-norm convergence. -/
+theorem tendsto_of_tendsto_traceENorm {α : Type*} {l : Filter α} {f : α → E →L[ℂ] E}
+    {T : E →L[ℂ] E} (h : Tendsto (fun a => traceENorm (f a - T)) l (𝓝 0)) :
+    Tendsto f l (𝓝 T) := by
+  rw [tendsto_iff_edist_tendsto_0]
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds h (fun _ => zero_le)
+    fun a => ?_
+  rw [edist_eq_enorm_sub]
+  exact enorm_le_traceENorm _
+
+/-- Trace-norm limits are unique. -/
+theorem eq_of_tendsto_traceENorm {α : Type*} {l : Filter α} [l.NeBot] {f : α → E →L[ℂ] E}
+    {S T : E →L[ℂ] E} (hS : Tendsto (fun a => traceENorm (f a - S)) l (𝓝 0))
+    (hT : Tendsto (fun a => traceENorm (f a - T)) l (𝓝 0)) : S = T :=
+  tendsto_nhds_unique (tendsto_of_tendsto_traceENorm hS) (tendsto_of_tendsto_traceENorm hT)
+
+/-- **A trace-norm limit of density operators is a density operator.** -/
+theorem isDensityOperator_of_tendsto_traceENorm {α : Type*} {l : Filter α} [l.NeBot]
+    {f : α → E →L[ℂ] E} {T : E →L[ℂ] E} (hf : ∀ᶠ a in l, IsDensityOperator (f a))
+    (h : Tendsto (fun a => traceENorm (f a - T)) l (𝓝 0)) : IsDensityOperator T := by
+  refine isDensityOperator_iff_traceENorm.mpr ⟨CStarAlgebra.isClosed_nonneg.mem_of_tendsto
+    (tendsto_of_tendsto_traceENorm h) (hf.mono fun a ha => ha.nonneg), le_antisymm ?_ ?_⟩
+  · have h1 := (tendsto_const_nhds (x := (1 : ℝ≥0∞))).add h
+    rw [add_zero] at h1
+    refine ge_of_tendsto h1 ?_
+    filter_upwards [hf] with a ha
+    calc traceENorm T = traceENorm (f a - (f a - T)) := by rw [sub_sub_cancel]
+      _ ≤ traceENorm (f a) + traceENorm (f a - T) := traceENorm_sub_le_add _ _
+      _ = 1 + traceENorm (f a - T) := by rw [ha.traceENorm_eq_one]
+  · have h1 := (tendsto_const_nhds (x := traceENorm T)).add h
+    rw [add_zero] at h1
+    refine ge_of_tendsto h1 ?_
+    filter_upwards [hf] with a ha
+    calc 1 = traceENorm (T + (f a - T)) := by rw [add_sub_cancel, ha.traceENorm_eq_one]
+      _ ≤ traceENorm T + traceENorm (f a - T) := traceENorm_add_le _ _
+
+/-- Affine maps contract the trace norm, in `[0, ∞]`. -/
+theorem AffineOnDensityOperators.traceENorm_sub_le {Φ : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hA : AffineOnDensityOperators Φ) (hD : ∀ ρ, IsDensityOperator ρ → IsDensityOperator (Φ ρ))
+    {ρ σ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) (hσ : IsDensityOperator σ) :
+    traceENorm (Φ ρ - Φ σ) ≤ traceENorm (ρ - σ) := by
+  have h₁ := isTraceClass_sub (hD ρ hρ).isTraceClass (hD σ hσ).isTraceClass
+  have h₂ := isTraceClass_sub hρ.isTraceClass hσ.isTraceClass
+  rw [traceENorm_eq_ofReal h₁, traceENorm_eq_ofReal h₂]
+  exact ENNReal.ofReal_le_ofReal (hA.traceNorm_sub_le hD hρ hσ h₁ h₂)
+
+/-- Telescoping: `‖Φⁿ ρ - ρ‖₁ ≤ n ‖Φ ρ - ρ‖₁` for an affine map that keeps density operators. -/
+theorem AffineOnDensityOperators.traceENorm_iterate_sub_le {Φ : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hA : AffineOnDensityOperators Φ) (hD : ∀ ρ, IsDensityOperator ρ → IsDensityOperator (Φ ρ))
+    {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) (n : ℕ) :
+    traceENorm (Φ^[n] ρ - ρ) ≤ n * traceENorm (Φ ρ - ρ) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    calc traceENorm (Φ^[n + 1] ρ - ρ)
+        ≤ traceENorm (Φ^[n] (Φ ρ) - Φ^[n] ρ) + traceENorm (Φ^[n] ρ - ρ) := by
+          rw [Function.iterate_succ_apply]
+          exact QuantumMechanics.traceENorm_sub_le _ _ _
+      _ ≤ traceENorm (Φ ρ - ρ) + n * traceENorm (Φ ρ - ρ) :=
+          add_le_add ((hA.iterate hD n).traceENorm_sub_le
+            (fun _ hσ => isDensityOperator_iterate hD n hσ) (hD ρ hρ) hρ) ih
+      _ = (n + 1 : ℕ) * traceENorm (Φ ρ - ρ) := by push_cast; ring
 
 end QuantumMechanics

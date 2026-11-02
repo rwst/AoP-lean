@@ -67,11 +67,24 @@ Theorem 18, DR-PROJ ⇒ DR-UNIT, over `IsEvolution`:
   the brief on the Schrödinger equation (Proposition 1 = Proposition 17, then Bargmann) gives
   DR-UNIT;
 * `drUnit_iff_drProj`  Theorem 18.
+
+The evolution structure from DR-PROJ, by the brief's route:
+* `IsProjectiveLimit.isDensityOperator`, `IsProjectiveLimit.affine`  `Φ t` is a trace-norm limit
+  of the affine repetitions, so it keeps density operators and is affine, hence a contraction;
+* `IsProjectiveLimit.traceENorm_sub_le_mul`  eq. (28), `‖Φ t ρ - ρ‖₁ ≤ t ‖L ρ‖₁`, by telescoping;
+* `IsProjectiveLimit.continuousWithinAt`  continuity at `0⁺`, from eq. (28) on the dense set of
+  eq. (26) and contraction;
+* `IsProjectiveLimit.map_add_mul`, `IsProjectiveLimit.map_add_of_not_irrational`  eq. (29) and
+  common refinements: `Φ (s + t) = Φ s ∘ Φ t` when `s / t` is rational;
+* `IsProjectiveLimit.isEvolution`  so `IsEvolution` holds once `Φ 0 = 1` and `Φ` composes for
+  durations of irrational ratio, the one step that DR-PROJ does not supply;
+* `drUnit_iff_drProj_and_map_zero_and_map_add`  Theorem 18 without assuming `IsEvolution`.
 -/
 
 public import ForPhyslib.QuantumMechanics.SpectralCutoff
 public import ForPhyslib.QuantumMechanics.VonNeumannResolvent.Laplace
 public import SchroedingerEvolution.InfiniteDimensional
+public import Mathlib.NumberTheory.Real.Irrational
 
 @[expose] public noncomputable section
 
@@ -689,5 +702,269 @@ structure of `IsEvolution`, DR-UNIT ⇔ DR-PROJ. -/
 theorem drUnit_iff_drProj {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E} (hΦ : IsEvolution Φ) :
     DrUnit Φ ↔ DrProj Φ :=
   ⟨DrUnit.drProj, DrProj.drUnit hΦ⟩
+
+/-! ## The evolution structure from DR-PROJ -/
+
+section Structure
+
+variable {Φ Ψ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E}
+
+/-- Along `n = k m`, the limit that defines `Φ (k u)` takes steps of duration `u / m`. -/
+lemma IsProjectiveLimit.tendsto_mul (h : IsProjectiveLimit Φ Ψ) {u : ℝ} (hu : 0 < u) {k : ℕ}
+    (hk : 0 < k) {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) :
+    Tendsto (fun m : ℕ => traceENorm ((Ψ (u / m))^[k * m] ρ - Φ (k * u) ρ)) atTop (𝓝 0) := by
+  have hk' : (k : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hk.ne'
+  refine ((h.tendsto (k * u) (by positivity) ρ hρ).comp
+    (tendsto_atTop_mono (fun m => Nat.le_mul_of_pos_left m hk) tendsto_id)).congr fun m => ?_
+  simp only [Function.comp_apply, Nat.cast_mul, mul_div_mul_left u (m : ℝ) hk']
+
+/-- A projective limit keeps density operators: they are closed in the trace norm. -/
+theorem IsProjectiveLimit.isDensityOperator (h : IsProjectiveLimit Φ Ψ) {t : ℝ} (ht : 0 < t)
+    {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) : IsDensityOperator (Φ t ρ) :=
+  isDensityOperator_of_tendsto_traceENorm ((eventually_gt_atTop 0).mono fun n hn =>
+    isDensityOperator_iterate
+      (h.stateAdaptive _ (div_pos ht (Nat.cast_pos.mpr hn))).isDensityOperator n hρ)
+    (h.tendsto t ht ρ hρ)
+
+/-- A projective limit is affine on density operators, as the trace-norm limit of the affine
+repetitions `(Ψ (t / n))ⁿ`. -/
+theorem IsProjectiveLimit.affine (h : IsProjectiveLimit Φ Ψ) {t : ℝ} (ht : 0 < t) :
+    AffineOnDensityOperators (Φ t) := by
+  intro ρ σ hρ hσ c hc0 hc1
+  have hA : ∀ᶠ n : ℕ in atTop,
+      (c : ℂ) • (Ψ (t / n))^[n] ρ + ((1 - c : ℝ) : ℂ) • (Ψ (t / n))^[n] σ =
+        (Ψ (t / n))^[n] ((c : ℂ) • ρ + ((1 - c : ℝ) : ℂ) • σ) :=
+    (eventually_gt_atTop 0).mono fun n hn =>
+      have hΨ := h.stateAdaptive _ (div_pos ht (Nat.cast_pos.mpr hn))
+      (hΨ.affine.iterate hΨ.isDensityOperator n ρ σ hρ hσ c hc0 hc1).symm
+  refine tendsto_nhds_unique
+    (tendsto_of_tendsto_traceENorm (h.tendsto t ht _ (hρ.smul_add_smul hσ hc0 hc1))) ?_
+  exact (((tendsto_of_tendsto_traceENorm (h.tendsto t ht ρ hρ)).const_smul _).add
+    ((tendsto_of_tendsto_traceENorm (h.tendsto t ht σ hσ)).const_smul _)).congr' hA
+
+/-- A projective limit contracts the trace norm. -/
+theorem IsProjectiveLimit.traceENorm_sub_le (h : IsProjectiveLimit Φ Ψ) {t : ℝ} (ht : 0 < t)
+    {ρ σ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) (hσ : IsDensityOperator σ) :
+    traceENorm (Φ t ρ - Φ t σ) ≤ traceENorm (ρ - σ) :=
+  (h.affine ht).traceENorm_sub_le (fun _ => h.isDensityOperator ht) hρ hσ
+
+/-- Where the infinitesimal limit `L ρ` of eq. (26) exists, it is trace class. -/
+lemma IsProjectiveLimit.isTraceClass_generator (h : IsProjectiveLimit Φ Ψ) {ρ Lρ : E →L[ℂ] E}
+    (hρ : IsDensityOperator ρ)
+    (hL : Tendsto (fun τ : ℝ => traceENorm (τ⁻¹ • (Ψ τ ρ - ρ) - Lρ)) (𝓝[>] 0) (𝓝 0)) :
+    ProbabilisticTheory.IsTraceClass Lρ := by
+  obtain ⟨τ, hfin, hτ⟩ :=
+    ((hL.eventually (gt_mem_nhds ENNReal.zero_lt_top)).and eventually_mem_nhdsWithin).exists
+  have hX : ProbabilisticTheory.IsTraceClass (τ⁻¹ • (Ψ τ ρ - ρ)) := by
+    rw [← Complex.coe_smul]
+    exact ProbabilisticTheory.isTraceClass_smul _ (isTraceClass_sub
+      ((h.stateAdaptive τ hτ).isDensityOperator ρ hρ).isTraceClass hρ.isTraceClass)
+  have h1 := isTraceClass_sub hX (traceENorm_ne_top_iff.mp hfin.ne)
+  rwa [sub_sub_cancel] at h1
+
+/-- **Eq. (28)**: where `(Ψ τ ρ - ρ) / τ → L ρ`, telescoping gives `‖Φ t ρ - ρ‖₁ ≤ t ‖L ρ‖₁`. -/
+theorem IsProjectiveLimit.traceENorm_sub_le_mul (h : IsProjectiveLimit Φ Ψ) {t : ℝ}
+    (ht : 0 < t) {ρ Lρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ)
+    (hL : Tendsto (fun τ : ℝ => traceENorm (τ⁻¹ • (Ψ τ ρ - ρ) - Lρ)) (𝓝[>] 0) (𝓝 0)) :
+    traceENorm (Φ t ρ - ρ) ≤ ENNReal.ofReal t * traceENorm Lρ := by
+  have hlim : Tendsto (fun n : ℕ => traceENorm ((Ψ (t / n))^[n] ρ - Φ t ρ) +
+      ENNReal.ofReal t * (traceENorm ((t / n)⁻¹ • (Ψ (t / n) ρ - ρ) - Lρ) + traceENorm Lρ))
+      atTop (𝓝 (ENNReal.ofReal t * traceENorm Lρ)) := by
+    have h1 := (h.tendsto t ht ρ hρ).add (ENNReal.Tendsto.const_mul (a := ENNReal.ofReal t)
+      ((hL.comp (tendsto_div_nhdsGT ht)).add (tendsto_const_nhds (x := traceENorm Lρ)))
+      (Or.inr ENNReal.ofReal_ne_top))
+    rw [zero_add, zero_add] at h1
+    exact h1
+  refine ge_of_tendsto hlim ((eventually_gt_atTop 0).mono fun n hn => ?_)
+  have hn' : (0 : ℝ) < n := Nat.cast_pos.mpr hn
+  have hΨ := h.stateAdaptive _ (div_pos ht hn')
+  have hX : ProbabilisticTheory.IsTraceClass (Ψ (t / n) ρ - ρ) :=
+    isTraceClass_sub (hΨ.isDensityOperator ρ hρ).isTraceClass hρ.isTraceClass
+  have hscale : ENNReal.ofReal t * traceENorm ((t / n)⁻¹ • (Ψ (t / n) ρ - ρ)) =
+      n * traceENorm (Ψ (t / n) ρ - ρ) := by
+    rw [← Complex.coe_smul, traceENorm_smul _ hX, ← ofReal_norm, Complex.norm_real,
+      Real.norm_of_nonneg (by positivity), ← mul_assoc, ← ENNReal.ofReal_mul ht.le,
+      show t * (t / n)⁻¹ = n by field_simp, ENNReal.ofReal_natCast]
+  calc traceENorm (Φ t ρ - ρ)
+      ≤ traceENorm ((Ψ (t / n))^[n] ρ - Φ t ρ) + traceENorm ((Ψ (t / n))^[n] ρ - ρ) := by
+        rw [traceENorm_sub_comm ((Ψ (t / n))^[n] ρ) (Φ t ρ)]
+        exact QuantumMechanics.traceENorm_sub_le _ _ _
+    _ ≤ traceENorm ((Ψ (t / n))^[n] ρ - Φ t ρ) +
+        ENNReal.ofReal t * traceENorm ((t / n)⁻¹ • (Ψ (t / n) ρ - ρ)) := by
+        rw [hscale]
+        gcongr
+        exact hΨ.affine.traceENorm_iterate_sub_le hΨ.isDensityOperator hρ n
+    _ ≤ _ := by
+        gcongr
+        simpa using traceENorm_add_le ((t / n)⁻¹ • (Ψ (t / n) ρ - ρ) - Lρ) Lρ
+
+/-- **Continuity at `0⁺`**: `Φ t ρ → ρ` in trace norm as `t → 0⁺`. By eq. (28) this holds on the
+dense set of eq. (26), and every `Φ t` contracts the trace norm. -/
+theorem IsProjectiveLimit.tendsto_traceENorm_sub (h : IsProjectiveLimit Φ Ψ) {ρ : E →L[ℂ] E}
+    (hρ : IsDensityOperator ρ) :
+    Tendsto (fun t => traceENorm (Φ t ρ - ρ)) (𝓝[>] 0) (𝓝 0) := by
+  obtain ⟨D, hD, hdense, hgen⟩ := h.infinitesimal
+  refine ENNReal.tendsto_nhds_zero.2 fun ε hε => ?_
+  obtain ⟨r, -, hr, hrε⟩ := ENNReal.lt_iff_exists_real_btwn.mp hε
+  have hr0 : 0 < r := ENNReal.ofReal_pos.mp hr
+  obtain ⟨σ, hσD, hρσ⟩ := hdense ρ hρ (r / 3) (by positivity)
+  have hσ := hD σ hσD
+  obtain ⟨Lσ, hL⟩ := hgen σ hσD
+  have hLf : traceENorm Lσ ≠ ⊤ := traceENorm_ne_top_iff.mpr (h.isTraceClass_generator hσ hL)
+  have ht0 : Tendsto (fun t : ℝ => ENNReal.ofReal t * traceENorm Lσ) (𝓝[>] 0) (𝓝 0) := by
+    have h1 := ENNReal.Tendsto.mul_const
+      (ENNReal.tendsto_ofReal
+        (tendsto_id.mono_left (nhdsWithin_le_nhds (a := (0 : ℝ)) (s := Ioi 0))))
+      (Or.inr hLf)
+    simpa using h1
+  filter_upwards [eventually_mem_nhdsWithin,
+    ht0.eventually (gt_mem_nhds (ENNReal.ofReal_pos.mpr (by positivity : 0 < r / 3)))]
+    with t (ht : 0 < t) htL
+  calc traceENorm (Φ t ρ - ρ)
+      ≤ traceENorm (Φ t ρ - Φ t σ) + (traceENorm (Φ t σ - σ) + traceENorm (σ - ρ)) :=
+        (QuantumMechanics.traceENorm_sub_le _ (Φ t σ) _).trans
+          (add_le_add le_rfl (QuantumMechanics.traceENorm_sub_le _ σ _))
+    _ ≤ ENNReal.ofReal (r / 3) + (ENNReal.ofReal (r / 3) + ENNReal.ofReal (r / 3)) := by
+        gcongr
+        · exact (h.traceENorm_sub_le ht hρ hσ).trans hρσ.le
+        · exact (h.traceENorm_sub_le_mul ht hσ hL).trans htL.le
+        · rw [traceENorm_sub_comm]
+          exact hρσ.le
+    _ = ENNReal.ofReal r := by
+        rw [← ENNReal.ofReal_add (p := r / 3) (q := r / 3) (by positivity) (by positivity),
+          ← ENNReal.ofReal_add (p := r / 3) (q := r / 3 + r / 3) (by positivity)
+            (by positivity)]
+        congr 1
+        ring
+    _ ≤ ε := hrε.le
+
+/-- **Continuity at `0⁺`** in operator norm, as `IsEvolution` asks, when `Φ 0 = 1`. -/
+theorem IsProjectiveLimit.continuousWithinAt (h : IsProjectiveLimit Φ Ψ)
+    (h0 : ∀ ρ, IsDensityOperator ρ → Φ 0 ρ = ρ) {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) :
+    ContinuousWithinAt (fun t => Φ t ρ) (Ici 0) 0 := by
+  rw [← continuousWithinAt_Ioi_iff_Ici, ContinuousWithinAt, h0 ρ hρ]
+  exact tendsto_of_tendsto_traceENorm (h.tendsto_traceENorm_sub hρ)
+
+/-- **Eq. (29)**, for durations of rational ratio: `Φ ((p + q) u) = Φ (p u) ∘ Φ (q u)`. Along
+`n = (p + q) m` the steps have duration `u / m`, and the `(p + q) m` steps split into `q m` steps
+followed by `p m` steps, which contract the trace norm. -/
+theorem IsProjectiveLimit.map_add_mul (h : IsProjectiveLimit Φ Ψ) {u : ℝ} (hu : 0 < u)
+    {p q : ℕ} (hp : 0 < p) (hq : 0 < q) {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) :
+    Φ ((p + q) * u) ρ = Φ (p * u) (Φ (q * u) ρ) := by
+  have hσ := h.isDensityOperator (by positivity : (0 : ℝ) < q * u) hρ
+  have hpq := h.tendsto_mul hu (Nat.add_pos_left hp q) hρ
+  rw [Nat.cast_add] at hpq
+  refine eq_of_tendsto_traceENorm hpq ?_
+  have hBC := (h.tendsto_mul hu hq hρ).add (h.tendsto_mul hu hp hσ)
+  rw [add_zero] at hBC
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hBC
+    (Eventually.of_forall fun _ => zero_le) ?_
+  filter_upwards [eventually_gt_atTop 0] with m hm
+  have hΨ := h.stateAdaptive (u / m) (div_pos hu (Nat.cast_pos.mpr hm))
+  rw [add_mul, Function.iterate_add_apply]
+  calc traceENorm ((Ψ (u / m))^[p * m] ((Ψ (u / m))^[q * m] ρ) - Φ (p * u) (Φ (q * u) ρ))
+      ≤ traceENorm ((Ψ (u / m))^[p * m] ((Ψ (u / m))^[q * m] ρ) -
+          (Ψ (u / m))^[p * m] (Φ (q * u) ρ)) +
+        traceENorm ((Ψ (u / m))^[p * m] (Φ (q * u) ρ) - Φ (p * u) (Φ (q * u) ρ)) :=
+        QuantumMechanics.traceENorm_sub_le _ _ _
+    _ ≤ traceENorm ((Ψ (u / m))^[q * m] ρ - Φ (q * u) ρ) +
+        traceENorm ((Ψ (u / m))^[p * m] (Φ (q * u) ρ) - Φ (p * u) (Φ (q * u) ρ)) := by
+        gcongr
+        exact (hΨ.affine.iterate hΨ.isDensityOperator _).traceENorm_sub_le
+          (fun _ hσ' => isDensityOperator_iterate hΨ.isDensityOperator _ hσ')
+          (isDensityOperator_iterate hΨ.isDensityOperator _ hρ) hσ
+
+/-- Composition for durations `s, t > 0` whose ratio is rational. -/
+theorem IsProjectiveLimit.map_add_of_not_irrational (h : IsProjectiveLimit Φ Ψ) {s t : ℝ}
+    (hs : 0 < s) (ht : 0 < t) (hst : ¬ Irrational (s / t)) {ρ : E →L[ℂ] E}
+    (hρ : IsDensityOperator ρ) : Φ (s + t) ρ = Φ s (Φ t ρ) := by
+  simp only [Irrational, not_not, Set.mem_range] at hst
+  obtain ⟨r, hr⟩ := hst
+  have hr0 : 0 < r := Rat.cast_pos.mp (hr ▸ div_pos hs ht)
+  obtain ⟨a, ha⟩ : ∃ a : ℕ, (a : ℤ) = r.num :=
+    ⟨r.num.toNat, Int.toNat_of_nonneg (Rat.num_pos.mpr hr0).le⟩
+  have ha0 : 0 < a := by
+    have := Rat.num_pos.mpr hr0
+    rw [← ha] at this
+    exact_mod_cast this
+  have hb : (r.den : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr r.den_nz
+  have hrab : (r : ℝ) = a / r.den := by rw [Rat.cast_def, ← ha, Int.cast_natCast]
+  have hs' : s = a * (t / r.den) := by
+    calc s = s / t * t := (div_mul_cancel₀ s ht.ne').symm
+      _ = a * (t / r.den) := by rw [← hr, hrab]; ring
+  have ht' : t = r.den * (t / r.den) := by field_simp
+  have hsplit := h.map_add_mul (div_pos ht (Nat.cast_pos.mpr r.den_pos)) ha0 r.den_pos hρ
+  calc Φ (s + t) ρ = Φ ((a + r.den) * (t / r.den)) ρ := by
+        congr 1
+        rw [add_mul, ← hs', ← ht']
+    _ = Φ s (Φ t ρ) := by rw [hsplit, ← hs', ← ht']
+
+/-- **The evolution structure from DR-PROJ**: a projective limit with `Φ 0 = 1` that composes for
+durations of irrational ratio satisfies `IsEvolution`. DR-PROJ supplies everything else: the
+density operators, affinity, continuity at `0⁺` (eq. (28)) and composition for durations of
+rational ratio (eq. (29)). -/
+theorem IsProjectiveLimit.isEvolution (h : IsProjectiveLimit Φ Ψ)
+    (h0 : ∀ ρ, IsDensityOperator ρ → Φ 0 ρ = ρ)
+    (hadd : ∀ s > 0, ∀ t > 0, Irrational (s / t) → ∀ ρ, IsDensityOperator ρ →
+      Φ (s + t) ρ = Φ s (Φ t ρ)) : IsEvolution Φ := by
+  have hD : ∀ t ≥ 0, ∀ ρ, IsDensityOperator ρ → IsDensityOperator (Φ t ρ) := by
+    intro t ht ρ hρ
+    rcases ht.eq_or_lt with rfl | ht
+    · rwa [h0 ρ hρ]
+    · exact h.isDensityOperator ht hρ
+  refine ⟨hD, fun t ht => ?_, h0, fun s hs t ht ρ hρ => ?_,
+    fun ρ hρ => h.continuousWithinAt h0 hρ⟩
+  · rcases ht.eq_or_lt with rfl | ht
+    · intro ρ σ hρ hσ c hc0 hc1
+      rw [h0 _ (hρ.smul_add_smul hσ hc0 hc1), h0 ρ hρ, h0 σ hσ]
+    · exact h.affine ht
+  · rcases hs.eq_or_lt with rfl | hs
+    · rw [zero_add, h0 _ (hD t ht ρ hρ)]
+    rcases ht.eq_or_lt with rfl | ht
+    · rw [add_zero, h0 ρ hρ]
+    by_cases hst : Irrational (s / t)
+    · exact hadd s hs t ht hst ρ hρ
+    · exact h.map_add_of_not_irrational hs ht hst hρ
+
+/-- **Theorem 18**, DR-PROJ ⇒ DR-UNIT, assuming only `Φ 0 = 1` and composition for durations of
+irrational ratio. -/
+theorem DrProj.drUnit_of_map_zero_of_map_add (h : DrProj Φ)
+    (h0 : ∀ ρ, IsDensityOperator ρ → Φ 0 ρ = ρ)
+    (hadd : ∀ s > 0, ∀ t > 0, Irrational (s / t) → ∀ ρ, IsDensityOperator ρ →
+      Φ (s + t) ρ = Φ s (Φ t ρ)) : DrUnit Φ :=
+  let ⟨_, hΨ, _⟩ := h
+  h.drUnit (hΨ.isEvolution h0 hadd)
+
+/-- A unitary evolution is the identity at `t = 0`. -/
+theorem DrUnit.map_zero (h : DrUnit Φ) : ∀ ρ, IsDensityOperator ρ → Φ 0 ρ = ρ := by
+  obtain ⟨U, hU⟩ := h
+  intro ρ hρ
+  rw [hU 0 le_rfl ρ hρ]
+  rw [U.map_zero, star_one, one_mul, mul_one]
+
+/-- A unitary evolution composes. -/
+theorem DrUnit.map_add (h : DrUnit Φ) : ∀ s ≥ 0, ∀ t ≥ 0, ∀ ρ, IsDensityOperator ρ →
+    Φ (s + t) ρ = Φ s (Φ t ρ) := by
+  obtain ⟨U, hU⟩ := h
+  intro s hs t ht ρ hρ
+  have hUt : star (U t) * U t = 1 := Unitary.star_mul_self_of_mem (U.mem_unitary t)
+  rw [hU (s + t) (add_nonneg hs ht) ρ hρ, hU t ht ρ hρ, hU s hs _ (hρ.conj hUt)]
+  change U.toFun (s + t) * ρ * star (U.toFun (s + t)) =
+    U.toFun s * (U.toFun t * ρ * star (U.toFun t)) * star (U.toFun s)
+  rw [U.map_add, star_mul]
+  simp only [mul_assoc]
+
+/-- **Theorem 18** in any dimension, without assuming `IsEvolution`: DR-UNIT ⇔ DR-PROJ with
+`Φ 0 = 1` and composition for durations of irrational ratio, the one step of the brief's argument
+that DR-PROJ does not supply. -/
+theorem drUnit_iff_drProj_and_map_zero_and_map_add :
+    DrUnit Φ ↔ DrProj Φ ∧ (∀ ρ, IsDensityOperator ρ → Φ 0 ρ = ρ) ∧
+      ∀ s > 0, ∀ t > 0, Irrational (s / t) → ∀ ρ, IsDensityOperator ρ →
+        Φ (s + t) ρ = Φ s (Φ t ρ) :=
+  ⟨fun h => ⟨DrUnit.drProj h, DrUnit.map_zero h,
+    fun s hs t ht _ ρ hρ => DrUnit.map_add h s hs.le t ht.le ρ hρ⟩,
+    fun ⟨h, h0, hadd⟩ => h.drUnit_of_map_zero_of_map_add h0 hadd⟩
+
+end Structure
 
 end UnitaryProjectiveEvolution.InfiniteDimensional
