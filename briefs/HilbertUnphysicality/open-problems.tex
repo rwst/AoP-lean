@@ -59,7 +59,9 @@ precise first.
   \textbf{The conditions themselves.}
   [B]COBS, [B]WDQ, [B]STDIST and the inconsistency
   claimed in Theorem~1 are informal; only the mathematics behind each of the three arguments is
-  checked. (Log, ``Setting''.)
+  checked. Precise readings are proposed in the last section; once they are confirmed, each
+  part of Theorem~1 becomes a theorem about QSTO:H that can be checked in Lean.
+  (Log, ``Setting''.)
 \item \textbf{The unitary between the two frames.} The unitary $U$ that implements the frame
   change $y(x) = \tan\bigl(\tfrac{\pi}{2}\operatorname{erf}(x)\bigr)$ on wave functions, and the
   change of variables in the integral, are not formalized; only the densities $|\psi|^2$,
@@ -74,5 +76,92 @@ precise first.
   only on the domain of $H$, since $P\psi$ and $V(x)\psi(x)$ need not be defined, is not
   formalized. (Brief, Sec.~4; Log, ``Differences'', last item.)
 \end{enumerate}
+
+\section*{Proposed precise readings}
+
+The following readings are proposed to resolve the first item of the previous section. They are
+chosen so that the arguments of the brief go through as written, and they need to be confirmed
+against the intent of the brief.
+
+\paragraph{Hypothesis.} $\mathcal{H}$ is infinite-dimensional. QSTO:H allows any separable
+Hilbert space, but in finite dimension every self-adjoint operator is bounded and defined
+everywhere, so [B]COBS and [B]WDQ hold and Theorem~1 is false as stated.
+
+\paragraph{Inconsistency.} ``QSTO:H is inconsistent with C'' means: for every separable,
+infinite-dimensional complex Hilbert space $\mathcal{H}$, the model that QSTO:H builds on
+$\mathcal{H}$ fails condition C. For [B]STDIST, $\mathcal{H}$ is replaced by the family of
+state spaces of different systems.
+
+\paragraph{[B]COBS.}
+\begin{itemize}
+\item \emph{States} are the nonzero vectors of $\mathcal{H}$, with the norm topology; this is
+  equivalent to the quotient topology on $P(\mathcal{H})$, since everything below is invariant
+  under $\psi \mapsto c\psi$.
+\item An \emph{observable} is a self-adjoint operator $O$ with domain $\mathcal{D}(O)$.
+\item The \emph{expectation} of $O$ is
+  $\langle O\rangle_\psi = \braket{\psi|O\psi}/\braket{\psi|\psi}$, defined for
+  $\psi \in \mathcal{D}(O)\setminus\{0\}$.
+\item [B]COBS: for every observable $O$, $\psi \mapsto \langle O\rangle_\psi$ is continuous
+  on $\mathcal{D}(O)\setminus\{0\}$ with the subspace topology.
+\item Claim to be proved: if $O$ is densely defined, symmetric and unbounded (for every $C$
+  there is $\psi \in \mathcal{D}(O)$ with $\|O\psi\| > C\|\psi\|$), then
+  $\psi \mapsto \langle O\rangle_\psi$ is discontinuous at \emph{every} point of
+  $\mathcal{D}(O)\setminus\{0\}$; and every infinite-dimensional separable $\mathcal{H}$
+  carries an unbounded self-adjoint operator. The oscillator example of the brief is a special
+  case. This also settles the third item of ``From the brief''.
+\item Alternative: define $\langle O\rangle_\psi$ on all of $\mathcal{H}\setminus\{0\}$
+  through the spectral measure of $O$, with values in $(-\infty,+\infty]$ for $O$ bounded
+  below. For the number operator this is $\sum_n n\,|c_n|^2/\sum_n |c_n|^2$, which is lower
+  semicontinuous but not continuous, so [B]COBS fails under this reading too.
+\end{itemize}
+
+\paragraph{[B]WDQ.}
+\begin{itemize}
+\item A \emph{frame} is a coordinate on the configuration space $\mathbb{R}$; a \emph{change of
+  frame} is a $C^1$ bijection $y = f(x)$ of $\mathbb{R}$ with $f' > 0$.
+\item A change of frame acts on states by the unitary
+  $U_f\colon L^2(\mathbb{R}, dx) \to L^2(\mathbb{R}, dy)$,
+  $(U_f\psi)(y) = \psi(f^{-1}(y))\,\bigl((f^{-1})'(y)\bigr)^{1/2}$, so that $|\psi|^2$
+  transforms as a density (eq.~(2)).
+\item The \emph{corresponding quantity} in the new frame is the quantity of the same kind in
+  the new coordinate: each observer measures position with the multiplication operator by
+  their own coordinate, on its maximal domain. So $X$ and $Y$ are the same operator on
+  $L^2(\mathbb{R})$, multiplication by the variable, applied to $\psi$ and to $U_f\psi$.
+  It is \emph{not} $U_f X U_f^{-1}$: that operator has domain $U_f\,\mathcal{D}(X)$, and with
+  it [B]WDQ would hold automatically.
+\item A quantity $Q$ is \emph{well defined} in a state $\psi$ if $\psi \in \mathcal{D}(Q)$.
+\item [B]WDQ: for every change of frame $f$ and every state $\psi$,
+  $\psi \in \mathcal{D}(X)$ implies $U_f\psi \in \mathcal{D}(X)$.
+\item Claim to be proved: for $f(x) = \tan(\tfrac{\pi}{2}\operatorname{erf}(x))$ and
+  $\psi = (e^{-x^2}/\sqrt\pi)^{1/2}$, $\psi \in \mathcal{D}(X)$ but
+  $U_f\psi = (1/(\pi(1+y^2)))^{1/2} \notin \mathcal{D}(X)$. This also settles the second
+  item of ``From the formalization''.
+\item Abstract form, for the sentence ``we can find a unitary $U$ that connects operators with
+  different domains'': if frames may be related by any unitary $U$, [B]WDQ says
+  $U\,\mathcal{D}(O) \subseteq \mathcal{D}(O)$ for every observable $O$ and every unitary $U$.
+  By Hellinger--Toeplitz $\mathcal{D}(O) \ne \mathcal{H}$ for unbounded $O$, and a unitary
+  that maps a unit vector of $\mathcal{D}(O)$ to one outside it violates this.
+\end{itemize}
+
+\paragraph{[B]STDIST.}
+\begin{itemize}
+\item The \emph{systems} are those with $n \ge 1$ degrees of freedom. For $n = 0$,
+  $L^2(\mathbb{R}^0) = \mathbb{C}$ is finite-dimensional and the argument does not apply.
+\item The \emph{mathematical representation} of a system is its state space
+  $\mathcal{H}_n = L^2(\mathbb{R}^n)$, together with what QSTO:H builds from it alone:
+  $P(\mathcal{H}_n)$, $D(\mathcal{H}_n)$, the self-adjoint operators, the Born rule and the
+  von Neumann entropy.
+\item Two representations \emph{tell systems apart} unless they are unitarily equivalent.
+  Every part of the QSTO:H structure is carried along by a unitary
+  $\mathcal{H}_n \to \mathcal{H}_m$, so unitary equivalence of the Hilbert spaces suffices.
+\item [B]STDIST: for $n \ne m$ there is no unitary $\mathcal{H}_n \to \mathcal{H}_m$.
+\item Claim to be proved: for all $n, m \ge 1$ there is one
+  (\lean{L2_euclidean_iso}, already checked).
+\item Caveat for the brief: if the representation also includes the positions
+  $X_1, \dots, X_n$ and the momenta $P_1, \dots, P_n$, then $n$ is part of the data and
+  [B]STDIST holds trivially. The argument needs the observables to be left out, and the brief
+  should say so. Under the proposed reading, [B]STDIST fails even in finite dimension: the spin
+  of an electron and the polarization of a photon are both represented on $\mathbb{C}^2$.
+\end{itemize}
 
 \end{document}

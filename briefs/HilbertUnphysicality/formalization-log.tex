@@ -117,6 +117,16 @@ $L^2(\mathbb{R}^{n+1}) \cong L^2(\mathbb{R}^{m+1})$ & \lean{L2_euclidean_iso} \\
   $y\,\phi(y) \not\in L^2$.
 \item ``$L^2(\mathbb{R}^n)$ is a separable Hilbert space for any $n$'' is true, but the
   isomorphism argument also needs infinite dimension, which fails for $n = 0$.
+\item QSTO:H allows any separable Hilbert space, finite-dimensional ones included. In finite
+  dimension every self-adjoint operator is bounded and defined everywhere, so [B]COBS and
+  [B]WDQ hold, and Theorem~1 is false as stated. It needs $\mathcal{H}$ to be
+  infinite-dimensional, or equivalently some observable to be unbounded.
+\item The [B]STDIST argument holds only if the representation of a system is the Hilbert space,
+  with what QSTO:H builds from it alone, up to unitary equivalence. If the representation also
+  includes the positions $X_1, \dots, X_n$ and the momenta $P_1, \dots, P_n$, then $n$ is part
+  of the data and [B]STDIST holds trivially. The brief does not say which is meant. Under the
+  first reading [B]STDIST fails even in finite dimension: the spin of an electron and the
+  polarization of a photon are both represented on $\mathbb{C}^2$.
 \end{itemize}
 
 \end{document}
