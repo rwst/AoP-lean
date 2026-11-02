@@ -1,0 +1,11 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+QuantumVectorSpaces.isGreatest_topology  # Corollary 2: the coarsest admissible topology
+QuantumVectorSpaces.locallyConvexSpace  # Corollary 2: locally convex
+QuantumVectorSpaces.topology_schwartzN  # Example 3, Remark: the topology of S(R^n)
+QuantumVectorSpaces.isQuantumVectorSpace_schwartzN  # Example 3: S(R^n) is a quantum vector space
+QuantumVectorSpaces.isQuantumVectorSpace_qubit  # Example 4: the qubit is a quantum vector space
+QuantumVectorSpaces.IsAdmissible.continuous_expectation  # Theorem 5, [B]COBS

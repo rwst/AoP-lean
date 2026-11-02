@@ -119,6 +119,15 @@ srcDir = "briefs/SchwartzNorms"
 name = "QuantumVectorSpaces"
 srcDir = "briefs/QuantumVectorSpaces"
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeQuantumVectorSpaces"
+srcDir = "briefs/QuantumVectorSpaces/comparator"
+
+[[lean_lib]]
+name = "SolutionQuantumVectorSpaces"
+srcDir = "briefs/QuantumVectorSpaces/comparator"
+
 # Technical brief: Schrödinger equation is equivalent to information conservation.
 [[lean_lib]]
 name = "UnitaryEntropy"

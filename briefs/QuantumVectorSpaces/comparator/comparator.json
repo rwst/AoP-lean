@@ -1,0 +1,17 @@
+{
+  "challenge_module": "ChallengeQuantumVectorSpaces",
+  "solution_module": "SolutionQuantumVectorSpaces",
+  "theorem_names": [
+    "QuantumVectorSpaces.isGreatest_topology",
+    "QuantumVectorSpaces.locallyConvexSpace",
+    "QuantumVectorSpaces.topology_schwartzN",
+    "QuantumVectorSpaces.isQuantumVectorSpace_schwartzN",
+    "QuantumVectorSpaces.isQuantumVectorSpace_qubit",
+    "QuantumVectorSpaces.IsAdmissible.continuous_expectation"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

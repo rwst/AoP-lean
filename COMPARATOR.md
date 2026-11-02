@@ -39,6 +39,7 @@ be unique across the project.
 | --- | --- | --- | --- |
 | The Born rule is equivalent to the von Neumann entropy | Theorem 9 | `BornRuleEntropy.two_conditions_imply_third` | 117 lines, 6 KiB |
 | Classical uncertainty principle | Corollary 1, Theorem 2 (eqs. 3 and 5), the final remark | 7 theorems, see `theorems.txt` | 101 lines, 5 KiB |
+| Physical vector spaces for quantum mechanics | Corollary 2, Example 3 (in `n` dimensions) and its Remark, Example 4, Theorem 5 ([B]COBS) | 6 theorems, see `theorems.txt` | 163 lines, 7 KiB |
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
@@ -76,13 +77,14 @@ rejected.
 ## What the challenge trusts
 
 The challenge imports Mathlib, physlib and TauCeti at the commits `lake-manifest.json` pins; their
-definitions are trusted as they stand. Everything this project defines (`ForMathlib`,
-`ForPhyslib`, the brief libraries) is copied into the challenge instead. `scripts/make-challenge.py`
-runs a metaprogram over the solution's environment that collects the compared closure: every
-declaration of the project reached from a certified theorem's type, following the types and values
-of definitions and the proofs of theorems, as comparator walks it. It then copies each of them from
-its source file, docstrings and comments dropped, and cuts the certified theorems at their `:=`
-with a `sorry` proof. Each copied part keeps the `namespace`, `section`, `open` and `variable`
+definitions are trusted as they stand. Everything this project defines (`ForMathlib`, `ForPhyslib`,
+the brief libraries) is copied into the challenge instead. `scripts/make-challenge.py` runs a
+metaprogram over the solution's environment that collects the compared closure: every declaration of
+the project reached from a certified theorem's type, following the types and values of definitions
+and the proofs of theorems, as comparator walks it. It then copies each of them from its source
+file, docstrings and comments dropped, and cuts the certified theorems at their `:=` with a `sorry`
+proof (a theorem stated with `where` is cut there, and the `:=` of a `letI` inside a statement is
+skipped). Each copied part keeps the `namespace`, `section`, `open`, `variable` and notation
 commands of its source that some copied declaration follows. An `open` naming project declarations
 that are not copied keeps only the names the copy has. The generator refuses a theorem whose closure
 reaches a `private` constant, because a private name embeds its module's name and no challenge can
@@ -117,5 +119,12 @@ rejected with `Const does not match between challenge and target
 'ClassicalUncertaintyPrinciple.hbar'`, and dropping the hypothesis `hpos` of `entropy_uniform`
 with `Challenge and solution theorem statement do not match:
 'ClassicalUncertaintyPrinciple.entropy_uniform'`.
+
+On the QuantumVectorSpaces lane, changing `-I * ħ` to `I * ħ` in `momOpN` is rejected with
+`Const does not match between challenge and target 'QuantumVectorSpaces.momOpN'`, changing the
+structure constant of `[Xⁱ, Pᵢ]` from `1` to `2` in `obsNConst` with `Const does not match between
+challenge and target 'QuantumVectorSpaces.obsNConst'`, and dropping the hypothesis `hħ` of
+`topology_schwartzN` with `Challenge and solution theorem statement do not match:
+'QuantumVectorSpaces.topology_schwartzN'`.
 
 Re-run a control after any change to the generator.

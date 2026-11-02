@@ -313,6 +313,10 @@ CONTEXT_RE = re.compile(
     r"^(namespace|section|end|open|variable|universe|" + SECTION + r"|local notation|notation|"
     r"scoped|local infix|attribute \[local)")
 OPEN_RE = re.compile(r"^(namespace|section|" + SECTION + r")\b\s*(\S*)")
+# Notation commands: they declare constants of their own, but are copied as context.
+NOTATION_RE = re.compile(r"^(local notation|notation|scoped|local infix)\b")
+# The `:=` of a `letI x := …;` (or `haveI`, `let`, `have`) inside a statement.
+LET_RE = re.compile(r"\b(letI|haveI|let|have)\b[^;]*$")
 OPENERS = "([{⟨⦃"
 CLOSERS = ")]}⟩⦄"
 
@@ -336,14 +340,16 @@ def strip_doc(text):
 
 
 def statement(text):
-    """Cut a theorem at its top-level `:=` and give it a `sorry` proof."""
+    """Cut a theorem at its top-level `:=` or `where` and give it a `sorry` proof."""
     depth = 0
     for i, c in enumerate(text):
         if c in OPENERS:
             depth += 1
         elif c in CLOSERS:
             depth -= 1
-        elif depth == 0 and text.startswith(":=", i):
+        elif depth == 0 and text.startswith(":=", i) and not LET_RE.search(text[:i]):
+            return text[:i].rstrip() + " := by\n  sorry"
+        elif depth == 0 and i > 0 and text[i - 1].isspace() and re.match(r"where\s", text[i:]):
             return text[:i].rstrip() + " := by\n  sorry"
     raise SystemExit("make-challenge: no top-level := in\n" + text)
 
@@ -365,10 +371,24 @@ def body(mod, needed, decls):
             text = strip_doc("\n".join(lines[l - 1:e]))
             out.append(("decl", "\n".join(pending + [statement(text) if tgt else text])))
             pending, l = [], e + 1
-        elif covered[l]:
+        elif NOTATION_RE.match(line):
+            block = [line]
+            l += 1
+            while l <= n and lines[l - 1].startswith((" ", "\t")):
+                block.append(lines[l - 1])
+                l += 1
+            out.append(("ctx", "\n".join(pending + block)))
             pending = []
+        elif covered[l]:
+            start = l
             while l <= n and covered[l] and l not in keep:
                 l += 1
+            run = "\n".join(lines[start - 1:l - 1])
+            if any(NOTATION_RE.match(x) for x in run.split("\n")):
+                # a notation command, with its `… in` prefixes: context, without its doc comment
+                out.append(("ctx", "\n".join(pending + [re.sub(r"/--.*?-/\n?", "", run,
+                                                               flags=re.DOTALL)])))
+            pending = []
         elif CONTEXT_RE.match(line):
             block = [line]
             l += 1
