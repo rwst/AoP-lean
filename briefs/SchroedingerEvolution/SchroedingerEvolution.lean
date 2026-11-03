@@ -24,6 +24,8 @@ Proposition 1 (Affine pure-state correspondence):
 * `bijOnPure_of_injOn`  the brief's remark after Proposition 1: in finite dimension, injective
   on pure states (and mapping them to pure states) already gives bijective on them. The brief
   argues by compactness of the pure states; the proof here is algebraic.
+* `affine_pure_state_correspondence_of_map_mix`  Proposition 1 for maps that only preserve equal
+  mixtures: such maps are affine, with no continuity needed.
 
 Conditions:
 * `IsEvolution`  QST:H + [B]EVMIX + EVTI: `Φ t` maps density operators affinely to density
@@ -47,6 +49,7 @@ Theorem 3:
   conservation").
 -/
 
+public import ForPhyslib.QuantumMechanics.Wigner.EqualMixtures
 public import ForPhyslib.QuantumMechanics.Wigner.Injective
 public import ForPhyslib.QuantumMechanics.Wigner.OneParameter
 public import UnitaryEntropy
@@ -82,6 +85,17 @@ theorem bijOnPure_of_injOn [FiniteDimensional ℂ E] {T : (E →L[ℂ] E) → E 
     (hP : ∀ ψ : E, ‖ψ‖ = 1 → ∃ ψ' : E, ‖ψ'‖ = 1 ∧ T (proj ψ) = proj ψ')
     (hinj : Set.InjOn T {ρ | IsPure ρ}) : BijOnPure T :=
   hT.bijOnPure_of_injOn hD hP hinj
+
+/-- **Proposition 1 for equal mixtures**: the equivalences of `affine_pure_state_correspondence`
+hold for a map that only preserves equal mixtures, `T (½ ρ + ½ σ) = ½ T ρ + ½ T σ`. Such a map is
+affine: it is bounded on the density operators, and a bounded map that preserves midpoints
+preserves all convex combinations (`Wigner.affineOnDensities_of_map_mix`). -/
+theorem affine_pure_state_correspondence_of_map_mix [FiniteDimensional ℂ E]
+    {T : (E →L[ℂ] E) → E →L[ℂ] E} (hD : ∀ ρ, IsDensity ρ → IsDensity (T ρ))
+    (hmix : ∀ ρ σ, IsDensity ρ → IsDensity σ → T (mix ρ σ) = mix (T ρ) (T σ)) :
+    [BijOnPure T, Set.BijOn T {ρ | IsDensity ρ} {ρ | IsDensity ρ},
+      ImplementedByUnitaryOrAntiunitary T].TFAE :=
+  affine_pure_state_correspondence hD (affineOnDensities_of_map_mix hD hmix)
 
 /-! ## Conditions -/
 

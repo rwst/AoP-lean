@@ -6,6 +6,7 @@
 # Finite dimension:
 SchroedingerEvolution.affine_pure_state_correspondence  # Proposition 1
 SchroedingerEvolution.bijOnPure_of_injOn  # Proposition 1, the remark: injective suffices
+SchroedingerEvolution.affine_pure_state_correspondence_of_map_mix  # Proposition 1, equal mixtures
 SchroedingerEvolution.drUnit_iff_drSceq  # Theorem 3, DR-UNIT iff DR-SCEQ
 SchroedingerEvolution.DrUnit.drEv  # Theorem 3, DR-UNIT => DR-EV
 SchroedingerEvolution.DrUnit.drProb  # Theorem 3, DR-UNIT => DR-PROB
@@ -20,6 +21,8 @@ SchroedingerEvolution.TwoParameter.drSceq_iff  # Theorem 3, DR-SCEQ with H(t) if
 SchroedingerEvolution.TwoParameter.schrodinger_tfae  # Theorem 3, as stated
 # Any dimension:
 SchroedingerEvolution.InfiniteDimensional.affine_pure_state_correspondence  # Proposition 1
+# Proposition 1, equal mixtures:
+SchroedingerEvolution.InfiniteDimensional.affine_pure_state_correspondence_of_map_mix
 SchroedingerEvolution.InfiniteDimensional.drUnit_iff_drSceq  # Theorem 3, DR-UNIT iff DR-SCEQ
 SchroedingerEvolution.InfiniteDimensional.DrUnit.drEv  # Theorem 3, DR-UNIT => DR-EV
 SchroedingerEvolution.InfiniteDimensional.DrUnit.drProb  # Theorem 3, DR-UNIT => DR-PROB

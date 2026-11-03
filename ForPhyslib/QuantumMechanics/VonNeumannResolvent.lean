@@ -5,8 +5,8 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import ForMathlib.Analysis.InnerProductSpace.Trace
 public import ForPhyslib.QuantumMechanics.Pinching
+public import ForPhyslib.QuantumMechanics.Wigner.EqualMixtures
 public import Physlib.Mathematics.ForMathlib.OneParameterSubgroups.Unitary
 
 /-!
@@ -210,11 +210,6 @@ lemma pinching_sub_smul_vonNeumannGenerator {σ : E →L[ℂ] E} (hσ : IsSelfAd
 omit [FiniteDimensional ℂ E] in
 lemma Wigner.IsDensity.isSelfAdjoint {ρ : E →L[ℂ] E} (hρ : IsDensity ρ) : IsSelfAdjoint ρ :=
   ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mpr hρ.isPositive.isSymmetric
-
-omit [CompleteSpace E] in
-/-- A density operator has operator norm at most one. -/
-lemma Wigner.IsDensity.norm_le_one {ρ : E →L[ℂ] E} (hρ : IsDensity ρ) : ‖ρ‖ ≤ 1 := by
-  simpa [hρ.trace_eq_one] using ContinuousLinearMap.norm_le_re_trace hρ.isPositive
 
 /-!
 ## D. The resolvent

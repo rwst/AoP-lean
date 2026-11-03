@@ -5,7 +5,9 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.LinearMap
+public import Mathlib.Analysis.Convex.Basic
+public import Mathlib.Analysis.Normed.Module.Basic
+public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Analysis.InnerProductSpace.Positive
 public import Mathlib.Analysis.InnerProductSpace.Trace
 public import Mathlib.Analysis.InnerProductSpace.l2Space
@@ -291,6 +293,12 @@ theorem bijOnPure_of_injOn [FiniteDimensional ℂ E] {T : (E →L[ℂ] E) → E 
     (hP : ∀ ψ : E, ‖ψ‖ = 1 → ∃ ψ' : E, ‖ψ'‖ = 1 ∧ T (proj ψ) = proj ψ')
     (hinj : Set.InjOn T {ρ | IsPure ρ}) : BijOnPure T := by
   sorry
+theorem affine_pure_state_correspondence_of_map_mix [FiniteDimensional ℂ E]
+    {T : (E →L[ℂ] E) → E →L[ℂ] E} (hD : ∀ ρ, IsDensity ρ → IsDensity (T ρ))
+    (hmix : ∀ ρ σ, IsDensity ρ → IsDensity σ → T (mix ρ σ) = mix (T ρ) (T σ)) :
+    [BijOnPure T, Set.BijOn T {ρ | IsDensity ρ} {ρ | IsDensity ρ},
+      ImplementedByUnitaryOrAntiunitary T].TFAE := by
+  sorry
 structure IsEvolution (Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E) : Prop where
   isDensity : ∀ t ≥ 0, ∀ ρ, IsDensity ρ → IsDensity (Φ t ρ)
   affine : ∀ t ≥ 0, AffineOnDensities (Φ t)
@@ -349,6 +357,12 @@ open InnerProductSpace QuantumMechanics QuantumMechanics.Wigner UnitaryEntropy
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
 theorem affine_pure_state_correspondence {T : (E →L[ℂ] E) → E →L[ℂ] E}
     (hD : ∀ ρ, IsDensityOperator ρ → IsDensityOperator (T ρ)) (hT : AffineOnDensityOperators T) :
+    [BijOnPure T, Set.BijOn T {ρ | IsDensityOperator ρ} {ρ | IsDensityOperator ρ},
+      ImplementedOnDensityOperators T].TFAE := by
+  sorry
+theorem affine_pure_state_correspondence_of_map_mix {T : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hD : ∀ ρ, IsDensityOperator ρ → IsDensityOperator (T ρ))
+    (hmix : ∀ ρ σ, IsDensityOperator ρ → IsDensityOperator σ → T (mix ρ σ) = mix (T ρ) (T σ)) :
     [BijOnPure T, Set.BijOn T {ρ | IsDensityOperator ρ} {ρ | IsDensityOperator ρ},
       ImplementedOnDensityOperators T].TFAE := by
   sorry

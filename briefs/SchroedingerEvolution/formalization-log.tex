@@ -67,7 +67,13 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   spectral decomposition. \lean{OneParameter} imports physlib's
   \lean{Physlib.Mathematics.ForMathlib.OneParameterSubgroups.Unitary} (bounded Stone theorem,
   \lean{UnitaryOneParameterGroup}).
+\item New file \lean{ForPhyslib/QuantumMechanics/Wigner/EqualMixtures.lean}: a map that
+  preserves equal mixtures of density operators is affine on them; \lean{IsDensity.norm_le_one}
+  moved here from \lean{VonNeumannResolvent}.
 \item New \lean{ForMathlib} material:\newline
+  \lean{ForMathlib/Analysis/Convex/Midpoint.lean} (a bounded solution of Jensen's functional
+  equation on $[0,1]$ is affine, so a bounded map preserving midpoints on a convex set preserves
+  convex combinations),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Positive.lean} (a positive operator kills every
   vector on which its quadratic form vanishes),\newline
   \lean{ForMathlib/Analysis/Calculus/Deriv/ContinuousLinearMapApply.lean} (derivative of
@@ -119,6 +125,11 @@ Remark after Proposition 1, injective suffices & \lean{bijOnPure_of_injOn} (from
   \lean{Wigner.AffineOnDensities.bijOnPure_of_injOn}) \\
 Remark, orthogonal pure states stay orthogonal &
   \lean{Wigner.AffineOnDensities.inner_eq_zero_of_injOn} \\
+Proposition 1 for maps preserving equal mixtures &
+  \lean{affine_pure_state_correspondence_of_map_mix} (from
+  \lean{Wigner.affineOnDensities_of_map_mix}) \\
+Equal mixtures preserved $\Rightarrow$ affine & \lean{Wigner.affineOnDensities_of_map_mix}, from
+  \lean{Convex.map_add_of_map_midpoint} and \lean{eq_sub_smul_add_smul_of_map_midpoint} \\
 Theorem 3, DR-EV $\Rightarrow$ DR-UNIT & \lean{DrEv.drUnit} \\
 Theorem 3, anti-unitary case excluded by $\Phi_t = \Phi_{t/2}^2$ &
   \lean{Wigner.exists_unitary_of_map_add} \\
@@ -305,6 +316,8 @@ Theorem 3, as stated & \lean{TwoParameter.schrodinger_tfae} (for $\hbar \ne 0$) 
   continuous, and that the pure states are closed. Only the definition is used here.
 \item New file \lean{ForPhyslib/QuantumMechanics/Kadison.lean}: Kadison's theorem in any
   dimension, without continuity.
+\item New file \lean{ForPhyslib/QuantumMechanics/EqualMixtures.lean}: a map that preserves equal
+  mixtures of density operators is \lean{AffineOnDensityOperators}.
 \item New file \lean{ForPhyslib/QuantumMechanics/Bargmann.lean}: strongly continuous unitary
   groups, and Bargmann's theorem for $\mathbb{R}$, the lift of a continuous evolution by unitary or
   anti-unitary conjugations to a strongly continuous unitary group.
@@ -351,6 +364,9 @@ Brief & Lean \\
 \midrule
 Proposition 1, complete & \lean{affine_pure_state_correspondence} (from
   \lean{AffineOnDensityOperators.tfae}) \\
+Proposition 1 for maps preserving equal mixtures &
+  \lean{affine_pure_state_correspondence_of_map_mix} (from
+  \lean{affineOnDensityOperators_of_map_mix}) \\
 Proposition 1, orthogonal pure states stay orthogonal & \lean{AffineOnDensityOperators.inner_eq_zero} \\
 Proposition 1, overlaps preserved & \lean{AffineOnDensityOperators.norm_inner_eq} \\
 Proposition 1, (i) $\Rightarrow$ (iii) on pure states &
@@ -381,9 +397,15 @@ Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
   (\lean{AffineOnDensityOperators}); the proof uses weights other than $\tfrac12$, namely
   $(1 + |\braket{\psi|\phi}|)/2$ in the two-state decomposition and the eigenvalues of the
   canonical expansion. A hypothesis for equal mixtures only, like the one of the brief
-  ``Schr\"odinger equation is equivalent to information conservation'', would need continuity
-  first, to pass from dyadic weights to all weights. The trace-norm contraction of affine maps
-  (in \lean{TraceNorm}) is not used: mixed states follow from pure states without continuity.
+  ``Schr\"odinger equation is equivalent to information conservation'', is enough
+  (\lean{affine_pure_state_correspondence_of_map_mix}), and needs no continuity: density
+  operators have operator norm at most one, so the map is bounded on them, and a bounded map
+  that preserves midpoints preserves all convex combinations. On a segment, subtracting the
+  affine interpolation leaves a bounded $g$ on $[0,1]$ with $g(0) = g(1) = 0$ and
+  $g(t) = \tfrac12 g(2t)$ on $[0,\tfrac12]$, $g(t) = \tfrac12 g(2t-1)$ on $[\tfrac12,1]$, so
+  $\sup\|g\|$ halves and is zero. The same holds in finite dimension. The trace-norm
+  contraction of affine maps (in \lean{TraceNorm}) is not used: mixed states follow from pure
+  states without continuity.
 \item Proposition~1, (i) $\Rightarrow$ (iii), replaces the finite-dimensional Parseval averaging,
   which needs the trace of the identity, by a two-dimensional argument. Let $r \perp s$ with
   images $a, b$ and suppose $\braket{a|b} = \delta \in (0,1)$. For the normalized $f_\pm$ of

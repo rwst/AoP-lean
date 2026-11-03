@@ -4,6 +4,7 @@
   "theorem_names": [
     "SchroedingerEvolution.affine_pure_state_correspondence",
     "SchroedingerEvolution.bijOnPure_of_injOn",
+    "SchroedingerEvolution.affine_pure_state_correspondence_of_map_mix",
     "SchroedingerEvolution.drUnit_iff_drSceq",
     "SchroedingerEvolution.DrUnit.drEv",
     "SchroedingerEvolution.DrUnit.drProb",
@@ -16,6 +17,7 @@
     "SchroedingerEvolution.TwoParameter.drSceq_iff",
     "SchroedingerEvolution.TwoParameter.schrodinger_tfae",
     "SchroedingerEvolution.InfiniteDimensional.affine_pure_state_correspondence",
+    "SchroedingerEvolution.InfiniteDimensional.affine_pure_state_correspondence_of_map_mix",
     "SchroedingerEvolution.InfiniteDimensional.drUnit_iff_drSceq",
     "SchroedingerEvolution.InfiniteDimensional.DrUnit.drEv",
     "SchroedingerEvolution.InfiniteDimensional.DrUnit.drProb",

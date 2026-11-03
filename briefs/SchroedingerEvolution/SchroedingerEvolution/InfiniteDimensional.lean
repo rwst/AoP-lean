@@ -23,6 +23,8 @@ Proposition 1 (Affine pure-state correspondence):
   convex combinations, bijective on pure states ⇔ bijective on density operators ⇔ conjugation by
   a unitary or an anti-unitary (`QuantumMechanics.AffineOnDensityOperators.tfae`). No continuity
   is needed.
+* `affine_pure_state_correspondence_of_map_mix`  Proposition 1 for maps that only preserve equal
+  mixtures (`QuantumMechanics.affineOnDensityOperators_of_map_mix`); no continuity is needed.
 
 Conditions:
 * `IsEvolution`  QST:H + [B]EVMIX + EVTI: `Φ t` maps density operators affinely to density
@@ -49,6 +51,7 @@ Theorem 3:
   entropy of an equal mixture of two pure states determines their transition probability.
 -/
 
+public import ForPhyslib.QuantumMechanics.EqualMixtures
 public import ForPhyslib.QuantumMechanics.Stone
 public import SchroedingerEvolution
 public import UnitaryEntropy.InfiniteDimensional
@@ -71,6 +74,16 @@ theorem affine_pure_state_correspondence {T : (E →L[ℂ] E) → E →L[ℂ] E}
     [BijOnPure T, Set.BijOn T {ρ | IsDensityOperator ρ} {ρ | IsDensityOperator ρ},
       ImplementedOnDensityOperators T].TFAE :=
   hT.tfae hD
+
+/-- **Proposition 1 for equal mixtures**, in any dimension: the equivalences of
+`affine_pure_state_correspondence` hold for a map that only preserves equal mixtures. Such a map
+is affine, since it is bounded on the density operators. -/
+theorem affine_pure_state_correspondence_of_map_mix {T : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hD : ∀ ρ, IsDensityOperator ρ → IsDensityOperator (T ρ))
+    (hmix : ∀ ρ σ, IsDensityOperator ρ → IsDensityOperator σ → T (mix ρ σ) = mix (T ρ) (T σ)) :
+    [BijOnPure T, Set.BijOn T {ρ | IsDensityOperator ρ} {ρ | IsDensityOperator ρ},
+      ImplementedOnDensityOperators T].TFAE :=
+  affine_pure_state_correspondence hD (affineOnDensityOperators_of_map_mix hD hmix)
 
 /-! ## Conditions -/
 
