@@ -45,6 +45,15 @@ globs = ["ForPhyslib.+"]
 name = "SuperpositionAndLinearity"
 srcDir = "briefs/SuperpositionAndLinearity"
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeSuperpositionAndLinearity"
+srcDir = "briefs/SuperpositionAndLinearity/comparator"
+
+[[lean_lib]]
+name = "SolutionSuperpositionAndLinearity"
+srcDir = "briefs/SuperpositionAndLinearity/comparator"
+
 # Technical brief: superpositions correspond to multiple decompositions.
 [[lean_lib]]
 name = "SuperpositionAndMultipleMixtures"

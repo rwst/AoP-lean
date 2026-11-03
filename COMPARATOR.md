@@ -40,6 +40,7 @@ be unique across the project.
 | The Born rule is equivalent to the von Neumann entropy | Theorem 9 | `BornRuleEntropy.two_conditions_imply_third` | 117 lines, 6 KiB |
 | Classical uncertainty principle | Corollary 1, Theorem 2 (eqs. 3 and 5), the final remark | 7 theorems, see `theorems.txt` | 101 lines, 5 KiB |
 | Physical vector spaces for quantum mechanics | Corollary 2, Example 3 (in `n` dimensions) and its Remark, Example 4, Theorem 5 ([B]COBS) | 6 theorems, see `theorems.txt` | 163 lines, 7 KiB |
+| Directional vectors vs quantum state vectors | eqs. (1)–(3), linearity in terms of probability, half a turn, states as rays, the outcomes as opposite directions, completeness of the forms (1) and (3) | 13 theorems, see `theorems.txt` | 83 lines, 4 KiB |
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
@@ -126,5 +127,13 @@ structure constant of `[Xⁱ, Pᵢ]` from `1` to `2` in `obsNConst` with `Const 
 challenge and target 'QuantumVectorSpaces.obsNConst'`, and dropping the hypothesis `hħ` of
 `topology_schwartzN` with `Challenge and solution theorem statement do not match:
 'QuantumVectorSpaces.topology_schwartzN'`.
+
+On the SuperpositionAndLinearity lane, swapping the terms of `‖ψ 0‖ ^ 2 - ‖ψ 1‖ ^ 2` in the
+challenge's `blochVector` is rejected with `Const does not match between challenge and target
+'QuantumMechanics.Qubit.blochVector'`, dropping the minus sign of the phase `e^{-iφ/2}` in
+`stateVector` with `Const does not match between challenge and target
+'SuperpositionAndLinearity.stateVector'`, and dropping the hypothesis `hψ` of
+`exists_eq_smul_stateVector` with `Challenge and solution theorem statement do not match:
+'SuperpositionAndLinearity.exists_eq_smul_stateVector'`.
 
 Re-run a control after any change to the generator.

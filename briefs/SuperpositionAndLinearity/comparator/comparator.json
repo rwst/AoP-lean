@@ -1,0 +1,24 @@
+{
+  "challenge_module": "ChallengeSuperpositionAndLinearity",
+  "solution_module": "SolutionSuperpositionAndLinearity",
+  "theorem_names": [
+    "SuperpositionAndLinearity.direction_dotProduct_self",
+    "SuperpositionAndLinearity.prob_zp",
+    "SuperpositionAndLinearity.prob_zm",
+    "SuperpositionAndLinearity.norm_stateVector",
+    "SuperpositionAndLinearity.blochVector_stateVector",
+    "SuperpositionAndLinearity.born_stateVector",
+    "SuperpositionAndLinearity.stateVector_zero_zero",
+    "SuperpositionAndLinearity.stateVector_add_two_pi",
+    "SuperpositionAndLinearity.direction_add_two_pi",
+    "SuperpositionAndLinearity.exists_eq_smul_stateVector_iff",
+    "SuperpositionAndLinearity.inner_stateVector_eq_zero_iff",
+    "SuperpositionAndLinearity.exists_eq_smul_stateVector",
+    "SuperpositionAndLinearity.exists_direction_eq"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

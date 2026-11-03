@@ -1,0 +1,18 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+SuperpositionAndLinearity.direction_dotProduct_self  # eq. (1): the direction is a unit vector
+SuperpositionAndLinearity.prob_zp  # eqs. (2), (3): p(z+) = cos^2 (θ/2) = (1 + cos θ) / 2
+SuperpositionAndLinearity.prob_zm  # eqs. (2), (3): p(z-) = sin^2 (θ/2) = (1 - cos θ) / 2
+SuperpositionAndLinearity.norm_stateVector  # eq. (3): the state vector is normalized
+SuperpositionAndLinearity.blochVector_stateVector  # the Bloch vector is the direction
+SuperpositionAndLinearity.born_stateVector  # linearity in terms of probability, p = (1 + v·w)/2
+SuperpositionAndLinearity.stateVector_zero_zero  # |z+> is the state vector of e_z
+SuperpositionAndLinearity.stateVector_add_two_pi  # θ + 2π: the vector -ψ
+SuperpositionAndLinearity.direction_add_two_pi  # θ + 2π: the same direction
+SuperpositionAndLinearity.exists_eq_smul_stateVector_iff  # same ray iff same direction
+SuperpositionAndLinearity.inner_stateVector_eq_zero_iff  # orthogonal iff opposite directions
+SuperpositionAndLinearity.exists_eq_smul_stateVector  # every qubit state is of the form (3)
+SuperpositionAndLinearity.exists_direction_eq  # every unit vector of R^3 is of the form (1)
