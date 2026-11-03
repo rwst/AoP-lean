@@ -54,16 +54,23 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/NonLinearQuantum/NonLinearQuantum.lean}
 \item Library: \lean{NonLinearQuantum}
-\item Imports: \lean{Mathlib.Analysis.InnerProductSpace.Calculus},\newline
-  \lean{Mathlib.Analysis.SpecialFunctions.ExpDeriv}
+\item Imports: \lean{Mathlib.Analysis.InnerProductSpace.Adjoint},\newline
+  \lean{Mathlib.Analysis.InnerProductSpace.Calculus},\newline
+  \lean{Mathlib.Analysis.SpecialFunctions.ExpDeriv},\newline
+  \lean{Mathlib.LinearAlgebra.Projectivization.Basic}
 \end{itemize}
 
-\paragraph{Setting.} $H = \mathbb{C}^2$ (\texttt{EuclideanSpace} $\mathbb{C}$ \texttt{(Fin 2)}), with
-$\ket{z^+} = e_0$, $\ket{z^-} = e_1$, and
+\paragraph{Setting.} $E$ is any complex inner product space, $v, w \in E$ are orthonormal
+(\texttt{Orthonormal}~$\mathbb{C}$~\texttt{![v, w]}), and
 \[
-  m(v) = e^{i\theta\, p(z^+\mid v)}\, v, \qquad p(z^+\mid v) = \frac{|v_0|^2}{\|v\|^2}.
+  m(x) = e^{\imath\theta\, r(x)}\, x, \qquad r(x) = p(v\mid x) =
+  \frac{|\braket{v|x}|^2}{\|v\|^2\|x\|^2}
 \]
-In Lean $m(0) = 0$ holds without a case split, since $0/0 = 0$.
+(\lean{nlMap}~$v$~$\theta$). For $x = av + bw$ this is the brief's eq.~(2)
+(\lean{nlMap_smul_add_smul}), and in Lean $m(0) = 0$ holds without a case split, since
+$0/0 = 0$. The brief's $H$ is the case $\dim E = 2$. The Fubini--Study distance is
+$d(x, y) = \arccos\bigl(|\braket{x|y}| / (\|x\|\,\|y\|)\bigr)$ (\lean{fsDist}), and the ray
+$[x]$ of $x \ne 0$ is its point \lean{Projectivization.mk}~$\mathbb{C}$~$x$~\texttt{hx} of the projective space.
 
 \paragraph{Results.}
 \begin{center}
@@ -71,62 +78,93 @@ In Lean $m(0) = 0$ holds without a case split, since $0/0 = 0$.
 \toprule
 Brief & Lean \\
 \midrule
-eq.~(3), rays to rays & \lean{nlMap_smul}: $m(kv) = k\,m(v)$ for every $k\in\mathbb{C}$ \\
-each ray is mapped to itself & \lean{nlMap_mem_ray} \\
-eq.~(4), $m$ not linear & \lean{nlMap_not_add}, \lean{not_isLinearMap_nlMap}, for $\theta\in(0,2\pi)$ \\
-eq.~(5), inner product & \lean{inner_nlMap} \\
-eq.~(6), Born rule preserved & \lean{born_nlMap} \\
-Remark: $m$ bijective & \lean{nlHomeomorph}: a homeomorphism of $\mathbb{C}^2$, inverse $m_{-\theta}$ \\
-Remark: $m$ a diffeomorphism & \lean{contDiffAt_nlMap}: smooth at every $v \ne 0$ \\
-(correction) & \lean{not_differentiableAt_nlMap_zero}: not differentiable at $0$ \\
-Theorem~1, mathematical content & \lean{exists_nonlinear_born_preserving} \\
-Born rule depends only on rays & \lean{born_smul}: $p(cv\mid dw) = p(v\mid w)$ for $c, d \ne 0$ \\
-$m(H)$, structure carried along $m$ & \lean{Twisted}, \lean{toTwisted} (identity of the carrier) \\
-same scalars, hence same rays & \lean{toTwisted_smul} \\
-same Born rule & \lean{born_toTwisted} \\
-different addition & \lean{not_map_add_toTwisted} \\
-(correction) $H \cong m(H)$ & \lean{twistedIsometry}: $m$ is a linear isometry onto $m(H)$ \\
-Theorem~1, precise form & \lean{exists_second_linear_structure} \\
-(caveat) dimension one & \lean{map_add_of_map_smul}: maps commuting with scalars are additive \\
+Prop.~1, eq.~(2) & \lean{nlMap_smul_add_smul}; in dimension two it determines $m$:
+  \lean{eq_nlMap} \\
+Prop.~1, $m$ bijective, inverse for $-\theta$ & \lean{nlHomeomorph} (a homeomorphism),
+  \lean{nlMap_neg_nlMap}, \lean{nlMap_nlMap_neg} \\
+Prop.~1, $[m(x)] = [x]$ & \lean{mk_nlMap}; \lean{nlMap_mem_ray}: $m(x) = c\,x$ with $|c| = 1$ \\
+Prop.~1, Fubini--Study distance preserved & \lean{fsDist_nlMap}, from \lean{inner_nlMap} \\
+Prop.~1, $m(v + w) \ne m(v) + m(w)$ & \lean{nlMap_not_add}, \lean{not_isLinearMap_nlMap}, for
+  $\theta \in (0, 2\pi)$ \\
+Prop.~1, all together & \lean{nlMap_spec} \\
+Cor.~3, $A$ self-adjoint and unitary & \lean{swapOp}, \lean{isSelfAdjoint_swapOp},
+  \lean{swapOp_mem_unitary} (dimension two) \\
+Cor.~3, the values of $\tilde A$ & \lean{transport_swapOp_left}, \lean{transport_swapOp_right},
+  \lean{transport_swapOp_add} \\
+Cor.~3, $\tilde A$ not additive & \lean{not_map_add_transport_swapOp} \\
+Thm.~4, proof: Born rule $= \cos^2 d$ & \lean{born_eq_cos_sq_fsDist} \\
+Thm.~4, proof: Born rule preserved & \lean{born_nlMap} \\
+(correction) density operators & \lean{not_map_add_transport_projOp}: $m \ket{v}\bra{v} m^{-1}$
+  is not additive \\
+Thm.~4, proof: $m(H)$ & \lean{Twisted}, \lean{toTwisted} (identity of the carrier) \\
+\quad same scalars, hence same rays & \lean{toTwisted_smul} \\
+\quad same Born rule & \lean{born_toTwisted} \\
+\quad different addition & \lean{not_map_add_toTwisted} \\
+\quad $m$ a linear isometry onto $m(H)$ & \lean{twistedIsometry} \\
+\quad all together & \lean{exists_second_linear_structure} \\
+Conclusion, inner product not conserved & \lean{inner_nlMap_ne} \\
+(extra) smoothness & \lean{contDiffAt_nlMap}: smooth at every $x \ne 0$;
+  \lean{not_differentiableAt_nlMap_zero}: not differentiable at $0$ \\
+(extra) Born rule depends only on rays & \lean{born_smul}: $p(cx\mid dy) = p(x\mid y)$ for
+  $c, d \ne 0$ \\
+(extra) dimension one & \lean{map_add_of_map_smul}: maps commuting with scalars are additive \\
 \bottomrule
 \end{tabularx}
 \end{center}
 
-\paragraph{Differences from the brief.} Theorem~1 (``REP-VSLIN is independent of QST'') is a
-statement about the logical independence of two conditions, which the brief does not make
-precise. Two things are checked.
+\paragraph{Differences from the brief.}
 \begin{itemize}
-\item The existence of a homeomorphism of $H$ that maps every ray to itself, preserves the Born
-  rule and is not additive.
-\item A precise form of $\neg$REP-VSLIN under which the brief's proof is a proof: the linear
-  structure of $H$ is not fixed by the rays and the Born rule. The type \lean{Twisted}~$\theta$
-  is the carrier of $H$ with addition $v \oplus w = m(m^{-1}v + m^{-1}w)$, scalar multiplication
-  $k \odot v = m(k\,m^{-1}v)$ and inner product $\langle m^{-1}v, m^{-1}w\rangle$; it is a complex
-  inner product space. By eq.~(3) its scalar multiplication is that of $H$, so it has the same
-  rays; by eq.~(6) it has the same Born rule; by eq.~(4) its addition differs from that of $H$.
+\item \emph{Dimension.} The brief states Proposition~1 and Corollary~3 for a two-dimensional
+  $H$. In Lean $E$ is any complex inner product space with an orthonormal pair, so any
+  dimension $\ge 2$, finite or not. Dimension two is used only where it is needed: that
+  eq.~(2) determines $m$ (\lean{eq_nlMap}), and that $A$ is unitary
+  (\lean{swapOp_mem_unitary}). Completeness is assumed only for self-adjointness and
+  unitarity, which are stated in the C$^*$-algebra $E \to_L E$.
+\item \emph{Corollary~3.} The brief's $A(av + bw) = bv + aw$ is written as
+  $A x = \braket{w|x}\,v + \braket{v|x}\,w$ (\lean{swapOp}); in dimension two the two agree.
+\item \emph{Fubini--Study distance.} \lean{fsDist} is defined for all $x, y$; for $x = 0$ or
+  $y = 0$ it is $\arccos 0$. Preservation holds for all $x, y$, so the brief's restriction to
+  $x, y \ne 0$ is not needed.
+\item \emph{Theorem~4.} The brief now separates mathematical prerequisites (Sec.~2) from the
+  physical conditions and Theorem~4. Following that split, Theorem~4 is not stated in Lean; it
+  is checked by reading, against the Lean results above. The argument is valid under the
+  premise, stated in the abstract, that a map which preserves the Born rule preserves ``all
+  the physics'', so that moving every physical object over through $m$ gives a valid
+  representation. Each step that is mathematical is checked: the states (\lean{mk_nlMap}),
+  the Born rule as $\cos^2$ of the Fubini--Study distance (\lean{born_eq_cos_sq_fsDist},
+  \lean{fsDist_nlMap}), that superposition does not move over to vector addition
+  (\lean{nlMap_not_add}), and that self-adjoint and unitary operators move over to non-linear
+  maps (Corollary~3). See the problems below for the two places where the wording needs a
+  correction.
 \end{itemize}
-See the open problems for why the brief has to choose this reading.
 
 \paragraph{Problems found in the brief.}
 \begin{itemize}
-\item The closing remark says that $m$ is a diffeomorphism. It is not differentiable at $0$:
-  along every real line $m(tv) = t\,m(v)$, so a derivative at $0$ would have to equal $m$
-  itself, and $m$ is not additive. The correct statement is that $m$ is a homeomorphism of
-  $\mathbb{C}^2$ and a diffeomorphism of $\mathbb{C}^2\setminus\{0\}$. Theorem~1 only needs a
-  bijection, so it is not affected.
-\item The proof says that ``since the map is non-linear, $H \not\equiv m(H)$ in the category of
-  vector spaces''. This is false. As a set $m(H) = H$, since $m$ is a bijection. With the vector
-  space structure of $H$, $m(H)$ is $H$. With the structure carried over along $m$, $m$ is by
-  construction a linear isometry $H \to m(H)$ (\lean{twistedIsometry}). What is true is that
-  the identity of the carrier is not linear from one structure to the other.
-\item Eq.~(6) holds for every map that sends each vector into its own ray, since the Born rule
-  only sees rays (\lean{born_smul}). Any $v \mapsto \varphi([v])\,v$ with
-  $\varphi \colon P(H) \to \mathbb{C}\setminus\{0\}$ would do. What matters for the proof is
-  that $m$ commutes with scalars (eq.~(3)) and is not additive (eq.~(4)).
-\item QST allows $\dim H \le 1$. There every map that commutes with scalars is additive
-  (\lean{map_add_of_map_smul}), so there is no second linear structure. Theorem~1 claims only
-  consistency, so the two-state example suffices; ``for every system'' would need
-  $\dim H \ge 2$.
+\item The proof of Theorem~4 says that density operators ``will be left unchanged together
+  with their entropy''. As operators they are not: moving $\ket{v}\bra{v}$ over through $m$
+  gives $\tilde\rho = m\ket{v}\bra{v}m^{-1}$ with $\tilde\rho(v) = v$, $\tilde\rho(w) = 0$ and
+  $\tilde\rho(v + w) = e^{\imath\theta/2}v$, which is not additive
+  (\lean{not_map_add_transport_projOp}). Keeping the original $\rho$ instead would not fit
+  with the moved-over observables, since $\operatorname{tr}(\rho\tilde A)$ is not defined for a
+  non-linear $\tilde A$. What is true is that pure states, as rays, are unchanged, and that
+  $\rho \mapsto m\rho m^{-1}$ keeps spectra, hence entropy. QMLIN does not mention density
+  operators, so the conclusion is not affected; only the step ``QST:H remains valid on
+  $m(H)$'' needs rewording.
+\item QMLIN asks that superpositions, observables and evolution use ``the ordinary linear
+  structure of that Hilbert space''. The ordinary structure of $H$ and the structure carried
+  over along $m$ have exactly the same rays and Born rule (\lean{toTwisted_smul},
+  \lean{born_toTwisted}), and with the carried-over structure QMLIN holds: superposition is
+  its addition, and $\tilde A$ is linear for it (\lean{twistedIsometry}). So Theorem~4 needs
+  ``that Hilbert space'' to mean $H$ with its given operations. The proof reads it so, but a
+  sentence saying it would answer the objection that $m(H)$ is a linear representation in
+  disguise.
+\item Numbering: the results are Proposition~1, Corollary~3 and Theorem~4, and the only
+  numbered equation is~(2). The proof of Theorem~4 refers to ``$m$ as defined by 1'' and ``by 1
+  and 3''.
+\item The Fubini--Study distance, and so the Born rule, is preserved by every map that sends
+  each vector into its own ray (\lean{born_smul}); any $x \mapsto \varphi([x])\,x$ with
+  $\varphi \colon P(H) \to \mathbb{C}\setminus\{0\}$ would do. What the proof needs from the
+  particular $m$ is that it is not additive.
 \end{itemize}
 
 \end{document}
