@@ -1,0 +1,22 @@
+{
+  "challenge_module": "ChallengeNonLinearQuantum",
+  "solution_module": "SolutionNonLinearQuantum",
+  "theorem_names": [
+    "NonLinearQuantum.nlMap_smul_add_smul",
+    "NonLinearQuantum.eq_nlMap",
+    "NonLinearQuantum.nlMap_spec",
+    "NonLinearQuantum.isSelfAdjoint_swapOp",
+    "NonLinearQuantum.swapOp_mem_unitary",
+    "NonLinearQuantum.not_map_add_transport_swapOp",
+    "NonLinearQuantum.born_eq_cos_sq_fsDist",
+    "NonLinearQuantum.born_nlMap",
+    "NonLinearQuantum.not_map_add_transport_projOp",
+    "NonLinearQuantum.exists_second_linear_structure",
+    "NonLinearQuantum.inner_nlMap_ne"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

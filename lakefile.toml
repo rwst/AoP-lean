@@ -107,6 +107,15 @@ srcDir = "briefs/PureStatesNotEnough"
 name = "NonLinearQuantum"
 srcDir = "briefs/NonLinearQuantum"
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeNonLinearQuantum"
+srcDir = "briefs/NonLinearQuantum/comparator"
+
+[[lean_lib]]
+name = "SolutionNonLinearQuantum"
+srcDir = "briefs/NonLinearQuantum/comparator"
+
 # Technical brief: inconsistent convergence in Hilbert space.
 [[lean_lib]]
 name = "InconsistentConvergence"

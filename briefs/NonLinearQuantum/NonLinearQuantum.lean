@@ -143,10 +143,11 @@ theorem born_nlMap (θ : ℝ) (x y : E) : born (nlMap v θ x) (nlMap v θ y) = b
 
 /-- The map for `-θ` undoes the map for `θ`. -/
 lemma nlMap_neg_nlMap (θ : ℝ) (x : E) : nlMap v (-θ) (nlMap v θ x) = x := by
-  rw [nlMap, nlMap, phase_phase_smul]
-  simp only [smul_smul, phase, ← Complex.exp_add]
-  push_cast
-  simp
+  rw [nlMap, nlMap, phase_phase_smul, smul_smul, phase, phase, ← Complex.exp_add]
+  have h : ((-θ * born v x : ℝ) : ℂ) * I + ((θ * born v x : ℝ) : ℂ) * I = 0 := by
+    push_cast
+    ring
+  rw [h, Complex.exp_zero, one_smul]
 
 lemma nlMap_nlMap_neg (θ : ℝ) (x : E) : nlMap v θ (nlMap v (-θ) x) = x := by
   simpa using nlMap_neg_nlMap v (-θ) x

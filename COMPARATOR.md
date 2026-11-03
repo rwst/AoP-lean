@@ -47,12 +47,13 @@ be unique across the project.
 | Multiple equivalent characterizations of the Schrödinger equation | Proposition 1, also for maps preserving only equal mixtures, and the remark after it (injective suffices in finite dimension), Theorem 3 with each of its implications, in finite dimension and in any dimension, and in finite dimension as the brief states it (two-parameter evolution, DR-SCEQ with H(t)) | 25 theorems, see `theorems.txt` | 454 lines, 24 KiB |
 | Equivalence of sup-norm, L¹, and L² seminorms on the Schwartz space | Steps 1–3 (eqs. 6, 7 and 9, with the hypothesis eq. 9 needs), Theorem 5 (the finiteness conditions, the space (4) and its sup seminorms as Mathlib's, the three seminorm families generate one topology), eq. (10) | 12 theorems, see `theorems.txt` | 269 lines, 14 KiB |
 | Non-uniqueness of the moment problem for Schwartz functions | eq. (3), the states `ψ_θ` as distinct rays, the bumps of Fig. 1, Theorem 1 | 6 theorems, see `theorems.txt` | 58 lines, 3 KiB |
+| Non-linear representations in quantum mechanics | eq. (2), Proposition 1, Corollary 3, the mathematical steps of the proof of Theorem 4 (Born rule as cos² of the Fubini–Study distance, `m(H)` with the same rays and Born rule, the moved-over `\|v⟩⟨v\|` not additive), the Conclusion's `m` not preserving the inner product | 11 theorems, see `theorems.txt` | 179 lines, 9 KiB |
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
-InconsistentConvergence, ProjectiveMeasurement, QuantumVectorSpaces, SchroedingerEvolution,
-SchwartzMomentProblem, SchwartzNorms, SuperpositionAndLinearity, SuperpositionAndMultipleMixtures
-and UnitaryEntropy.
+InconsistentConvergence, NonLinearQuantum, ProjectiveMeasurement, QuantumVectorSpaces,
+SchroedingerEvolution, SchwartzMomentProblem, SchwartzNorms, SuperpositionAndLinearity,
+SuperpositionAndMultipleMixtures and UnitaryEntropy.
 
 ## Running it
 
@@ -135,8 +136,9 @@ development elaborates:
   proof term, so they are never copied. `abel`, `decide +kernel` (which closes the index side goals
   of `List.TFAE.out`), and `simp` given an `iff` lemma or a reversed one (`← h`) mint private
   auxiliary constants. Proofs in the closure avoid them (see `dephasingGenerator`,
-  `IsTraceClass.exists_hasSum_rankOne`, and `SchwartzNorms.l2Norm_lt_top`, which passes the side
-  goals explicitly).
+  `IsTraceClass.exists_hasSum_rankOne`, `NonLinearQuantum.nlMap_neg_nlMap`, which rewrites with
+  `← Complex.exp_add` instead of simplifying with it, and `SchwartzNorms.l2Norm_lt_top`, which
+  passes the side goals explicitly).
 
 ## Negative controls
 
@@ -222,5 +224,15 @@ and solution theorem statement do not match: 'SchwartzMomentProblem.moment_psi'`
 inner radius of `realBump` from `1 / 2` to `1 / 3` with `Const does not match between challenge
 and target 'SchwartzMomentProblem.realBump'`. Each control ran with a configuration naming only
 the theorem it touches.
+
+On the NonLinearQuantum lane, changing `‖x‖ * ‖y‖` to `‖x‖ + ‖y‖` in the challenge's `fsDist` is
+rejected with `Const does not match between challenge and target 'NonLinearQuantum.fsDist'`,
+turning `swapOp` into the identity `⟨v, x⟩ v + ⟨w, x⟩ w` (still self-adjoint and unitary) with
+`Const does not match between challenge and target 'NonLinearQuantum.swapOp'`, changing the
+projector `x ↦ ⟨v, x⟩ v` of `projOp` to `x ↦ ⟨v, x⟩ (2 • v)` with `Const does not match between
+challenge and target 'NonLinearQuantum.projOp'`, and dropping the hypothesis `hE` of
+`swapOp_mem_unitary` with `Challenge and solution theorem statement do not match:
+'NonLinearQuantum.swapOp_mem_unitary'`. Each control ran with a configuration naming only the
+theorem it touches.
 
 Re-run a control after any change to the generator.

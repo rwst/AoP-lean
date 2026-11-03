@@ -1,0 +1,16 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+NonLinearQuantum.nlMap_smul_add_smul  # eq. (2)
+NonLinearQuantum.eq_nlMap  # in dimension two, eq. (2) determines m
+NonLinearQuantum.nlMap_spec  # Proposition 1
+NonLinearQuantum.isSelfAdjoint_swapOp  # Corollary 3: A is self-adjoint
+NonLinearQuantum.swapOp_mem_unitary  # Corollary 3: A is unitary
+NonLinearQuantum.not_map_add_transport_swapOp  # Corollary 3: m ∘ A ∘ m⁻¹ is not additive
+NonLinearQuantum.born_eq_cos_sq_fsDist  # Theorem 4, proof: the Born rule is cos² of the distance
+NonLinearQuantum.born_nlMap  # Theorem 4, proof: m preserves the Born rule
+NonLinearQuantum.not_map_add_transport_projOp  # Theorem 4, proof: |v⟩⟨v| moved over is not additive
+NonLinearQuantum.exists_second_linear_structure  # Theorem 4, proof: m(H), same rays and Born rule
+NonLinearQuantum.inner_nlMap_ne  # Conclusion: m does not preserve the inner product
