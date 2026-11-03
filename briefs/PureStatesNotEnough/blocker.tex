@@ -1,0 +1,226 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+% Extra stretch for paragraphs with long, unbreakable Lean names
+\emergencystretch=6em
+
+\title{Blocker:\\ Quantum pure states are not enough}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This file collects everything about the brief issue of \lean{open-problems.tex} that blocks
+verification of Theorem~1, together with a proposed resolution and the changes it needs in the
+brief. Sections~\ref{sec:blocker} and~\ref{sec:related} are copied from
+\lean{open-problems.tex} and \lean{formalization-log.tex}; the rest is new.
+
+\section{The blocker}\label{sec:blocker}
+\begin{enumerate}
+\item \blocker{brief issue}\textbf{The range of Theorem~1.} The theorem claims consistency for
+  $1 \le \dim V < \infty$, while its proof uses $2 \le \dim X$. Making it precise needs four
+  choices.
+  \begin{itemize}
+  \item \emph{Dimension $0$.} The range starts at $1$ if a $0$-dimensional symplectic manifold
+    ($n = 0$ degrees of freedom) is allowed, and at $2$ if not. For $\dim V = 1$ the state space
+    is a single point, and $P(V)$ has two points exactly when $2 \le \dim V$
+    (\lean{subsingleton_projectivization}, \lean{nontrivial_projectivization_iff}).
+  \item \emph{Theorem~3 depends on it.} If a point is allowed, Theorem~3 is false for
+    $\dim\mathcal H = 1$: the CST ensembles of a point and the density operators of
+    $\mathbb C$ are both a single point, and the constant map identifies them
+    (\lean{cst_qeDens_consistent_of_finrank_one}). So the brief cannot keep both
+    $1 \le \dim V$ in Theorem~1 and Theorem~3 for every $\mathcal H$.
+  \item \emph{The empty space.} For $\dim V = 0$, $P(V)$ is empty
+    (\lean{isEmpty_projectivization}), which is a symplectic manifold of every dimension. Either
+    lower bound, $1$ or $2$, needs CST to exclude it, for instance by requiring an ensemble.
+  \item \emph{What ``represented by'' keeps.} If $X$ and $P(V)$ need only be in bijection, the
+    ``only if'' is false: $P(\ell^2)$ and the sphere $P(\mathbb C^2)$ both have $\mathfrak c$
+    points (\lean{nonempty_projectivization_equiv}), and the sphere's symplectic structure can be
+    carried over. The theorem needs $V$ Hausdorff and $X$ to carry the quotient topology of
+    $P(V)$; finiteness then comes from CST's Liouville measure $\omega^n$ with finite $n$, not
+    from $X$ being symplectic (Log, ``Problems found'').
+  \end{itemize}
+  Proposed: exclude dimension $0$ and the empty space, so that Theorem~1 reads
+  $2 \le \dim V < \infty$ for a Hausdorff $V$ with $X = P(V)$ as topological spaces. Theorem~3
+  and its Lean proof then stand as they are. The alternative keeps $1 \le \dim V$, also
+  excludes the empty space and restricts Theorem~3 to $\dim\mathcal H \ge 2$. (Log, ``Problems
+  found'', first three items.)
+\end{enumerate}
+
+\section{Related items}\label{sec:related}
+From \lean{open-problems.tex}, ``From the formalization'' (the other blocker, a formalization
+gap, which the choices above affect):
+\begin{enumerate}
+\item \blocker{formalization gap}\textbf{Theorem~1.} Mathlib has no symplectic manifolds and no
+  manifold structure on projective space, so neither direction of Theorem~1 is formalized: that
+  $P(V)$ with the Fubini--Study form is symplectic for $\dim V < \infty$, and that a symplectic
+  $P(V)$ forces $\dim V < \infty$. Theorem~3 for $\dim\mathcal H = \infty$ rests on the second
+  direction, so it is formalized only for $\dim\mathcal H < \infty$. The second direction
+  needs the topology of $P(V)$; as sets it is false (\lean{nonempty_projectivization_equiv}).
+  (Log, ``Results''.)
+\end{enumerate}
+From \lean{open-problems.tex}, ``From the brief'':
+\begin{enumerate}
+\setcounter{enumi}{1}
+\item \textbf{Ensembles supported on a subspace.} The proof of Theorem~3 compares the ensembles
+  with support in a two-dimensional subspace $A$. For $\dim\mathcal H \ge 3$ no CST ensemble has
+  support in $P(A)$, which has Liouville measure zero. Whether the brief means the classical
+  ensembles of the subsystem $P(A)$, with its own Liouville measure, is open. The formalization
+  compares the whole ensemble spaces instead. (Log, ``Problems found'', second item.)
+\end{enumerate}
+From \lean{formalization-log.tex}, ``Problems found in the brief'':
+\begin{itemize}
+\item Theorem~1 states $1 \le \dim V$, while its proof uses $2 \le \dim X$. For $\dim V = 1$ the
+  state space $P(V)$ is a single point (\lean{subsingleton_projectivization}), a manifold of
+  dimension $0$. So either $0$-dimensional symplectic manifolds count, and the proof's bound
+  should be $0 \le \dim X$, or they do not, and the theorem should say $2 \le \dim V < \infty$.
+  The choice also decides Theorem~3. If a point counts, then for $\dim\mathcal H = 1$, which
+  QE-DENS allows, the CST ensembles of the point are $\{\delta\}$ and the density operators are
+  $\{1\}$, and the constant map identifies the two (\lean{cst_qeDens_consistent_of_finrank_one}):
+  Theorem~3 fails. The Lean proof of Theorem~3 avoids this through \lean{HasManyDisjointSets},
+  which fails for a point (\lean{not_hasManyDisjointSets_dirac}). So either Theorem~1 says
+  $2 \le \dim V$, or Theorem~3 needs $\dim\mathcal H \ge 2$.
+\item For $\dim V = 0$, $P(V)$ is empty (\lean{isEmpty_projectivization}), and the empty set is a
+  symplectic manifold of every dimension. Either lower bound, $1$ or $2$, needs CST to exclude it,
+  for instance by requiring an ensemble: there is no probability measure on the empty set.
+\item The ``only if'' of Theorem~1 needs the identification of $X$ with $P(V)$ to respect the
+  topology. As sets, $P(\ell^2)$ and $P(\mathbb C^2)$, the sphere, are in bijection: both have
+  $\mathfrak c$ points (\lean{nonempty_projectivization_equiv}). Carrying the symplectic structure
+  of the sphere over along such a bijection would make $P(\ell^2)$ a symplectic manifold. The
+  theorem holds when $V$ is Hausdorff and $X$ has the quotient topology of $P(V)$; for a
+  non-Hausdorff $V$, $P(V)$ need not be Hausdorff even in finite dimension, and the ``if'' fails.
+  ``Since $X$ is a symplectic manifold, $\dim X < \infty$'' holds only for finite-dimensional
+  symplectic manifolds, and the projective space of an infinite-dimensional Hilbert space is an
+  infinite-dimensional one. The finiteness comes from CST itself: the Liouville measure $\omega^n$
+  needs a finite $n$.
+\item CST says $p(\xi_1\mid\xi_2) = 0$ ``for all $\xi_1, \xi_2 \in X$'', which includes
+  $p(\xi\mid\xi) = 0$. It should say $\xi_1 \ne \xi_2$, as the Remark after Example~2
+  ($p(\psi\mid\phi) = \delta_{\psi\phi}$) has it.
+\end{itemize}
+
+\section{The author's proposal (2026-11-02)}
+Paraphrased, from a reply on another brief that the author means for all briefs: the briefs get
+a section of \emph{mathematical prerequisites}, which states what Lean should prove and is fully
+formalized. The relations between physical conditions, such as Theorems~1 and~3, are argued
+informally from these prerequisites and are checked by reading, not by Lean. The author will
+rewrite the briefs accordingly.
+
+Here the four choices are not about how to read a physical condition: each one decides which
+mathematical statement is true. So they belong in the prerequisites, with their hypotheses
+explicit, and in the conditions, which must exclude the degenerate cases.
+
+\section{Proposed resolution}
+\paragraph{Guess.} The proposal of Section~\ref{sec:blocker}, with one refinement:
+\begin{itemize}
+\item CST requires at least one degree of freedom ($n \ge 1$) and a non-empty $X$;
+\item QP-RAY takes $V$ to be a complex normed space, for instance a Hilbert space, and
+  ``represented by'' to mean that $X$ is homeomorphic to $P(V)$ with the quotient topology;
+\item Theorem~1 reads: QP-RAY and CST are consistent if and only if $2 \le \dim V < \infty$;
+\item Theorem~3 stands for every $\mathcal H$, including $\dim\mathcal H = 1$, where it holds
+  because a point is not a CST state space.
+\end{itemize}
+The refinement is ``normed'' in place of ``Hausdorff''. For a normed $V$ the infinite-dimensional
+case has the short proof of prerequisite P3 below, which uses continuous linear functionals. A
+Hausdorff topological vector space may have none (for instance $L^p$ with $0 < p < 1$), and then
+that proof does not apply; whether the claim of the log still holds there is not checked.
+
+\paragraph{Why.}
+\begin{itemize}
+\item \emph{A system with no degrees of freedom is not a physical system.} A phase space that
+  is a single point has nothing to prepare, measure or evolve, and neither has a quantum system
+  with one state. Physicists do not count either. Excluding them costs nothing.
+\item \emph{Theorem~3 is the point of the brief.} With $n \ge 1$, Theorem~3 holds for every
+  QE-DENS system without exception, and its Lean proof stands as it is. Keeping
+  $1 \le \dim V$ would only buy a trivial exception to the brief's main result.
+\item \emph{Every system has a state.} The empty space has no states and no ensembles, so it
+  is not a physical system either. Requiring $X \ne \emptyset$, or an ensemble, is a
+  condition no one would dispute.
+\item \emph{Topology is physical.} In this programme the topology of a state space comes from
+  what can be verified experimentally: states that are close cannot be told apart by finite
+  measurements. A bare bijection can scramble arbitrarily close states, so it is not a
+  physical notion of ``represented by''. The natural topology on $P(V)$ is the quotient
+  topology, which for a Hilbert space agrees with the Fubini--Study metric.
+\item \emph{Normed spaces suffice.} QE-DENS uses Hilbert spaces, and every space used in
+  quantum mechanics is at least normed. Restricting QP-RAY to normed spaces loses no physics.
+\end{itemize}
+
+\paragraph{Confidence.}
+\begin{itemize}
+\item High: $2 \le \dim V < \infty$, excluding the empty space, and the topological reading of
+  ``represented by''. Each excludes a degenerate case or follows a standard operational
+  principle, and together they keep Theorem~3 without exception.
+\item Medium-high: ``normed'' in place of ``Hausdorff''. It is the safe choice; the author may
+  prefer the general topological vector space of QP-RAY, which then needs its own proof.
+\end{itemize}
+
+\section{Mathematical prerequisites to add to the brief}
+Each item is a purely mathematical statement for Lean.
+\begin{enumerate}
+\item[P1.] \emph{Size of $P(V)$.} For a complex vector space $V$: $P(V)$ is empty if and only if
+  $\dim V = 0$, is a single point if $\dim V = 1$, and has at least two points if and only if
+  $\dim V \ge 2$.\par{\raggedright
+  Lean: \lean{isEmpty_projectivization}, \lean{nonempty_projectivization_iff},
+  \lean{subsingleton_projectivization}, \lean{nontrivial_projectivization_iff}.\par}
+\item[P2.] \emph{Finite dimension.} If $\dim V = k + 1$ with $1 \le k < \infty$, then $P(V)$
+  with the Fubini--Study form is a compact symplectic manifold of real dimension $2k$.\\
+  Lean: not formalized; Mathlib has no symplectic manifolds and no manifold structure on
+  $P(V)$.
+\item[P3.] \emph{Infinite dimension.} If $V$ is a complex normed space of infinite dimension,
+  then $P(V)$ with the quotient topology is not locally compact, hence not homeomorphic to a
+  finite-dimensional manifold. Proof: for $[v] \in P(V)$ choose a continuous linear functional
+  $f$ with $f(v) = 1$. The set $\{[w] : f(w) \ne 0\}$ is open in $P(V)$ and homeomorphic to the
+  affine hyperplane $f^{-1}(1)$, an infinite-dimensional normed affine space, which is not
+  locally compact by Riesz's lemma.\\
+  Lean: not formalized. It needs no symplectic geometry; Mathlib has the Hahn--Banach and Riesz
+  results.
+\item[P4.] \emph{Theorem~3, the mathematical core.} Let $\mu$ be a measure with, for every $N$,
+  $N$ disjoint sets of positive finite measure (for instance the Lebesgue measure on a non-empty
+  open set of $\mathbb R^{2n}$, $n \ge 1$, the Liouville measure of a Darboux chart), and let
+  $\mathcal H$ be a finite-dimensional Hilbert space. No injective map from the probability
+  measures absolutely continuous with respect to $\mu$ to the density operators of
+  $\mathcal H$ preserves mixtures.\\
+  Lean: \lean{cst_qeDens_inconsistent}, \lean{hasManyDisjointSets_restrict}. Not formalized:
+  the passage from a Darboux chart to the whole manifold.
+\end{enumerate}
+Theorem~3 for $\dim\mathcal H = \infty$ then follows informally: by P3, $P(\mathcal H)$ is not a
+finite-dimensional manifold, so it is not a CST state space.
+
+\section{Other changes to the brief}
+\begin{enumerate}
+\item \emph{CST.} Require $n \ge 1$ and $X \ne \emptyset$. Replace ``for all
+  $\xi_1, \xi_2 \in X$'' by ``for all $\xi_1 \ne \xi_2$ in $X$''.
+\item \emph{QP-RAY.} Take $V$ to be a complex normed space, or say which topological vector
+  spaces are meant, and say that $X$ is homeomorphic to $P(V)$ with the quotient topology.
+\item \emph{Theorem~1.} Change ``$1 \le \dim(V) < \infty$'' to ``$2 \le \dim(V) < \infty$''.
+\item \emph{Proof of Theorem~1.} Replace ``Since $X$ is a symplectic manifold, then
+  $2 \le \dim(X) < \infty$'' by: CST's Liouville measure $\omega^n$ needs a finite $n \ge 1$,
+  so $X$ is a manifold of finite dimension $2n \ge 2$; then $\dim V < \infty$ by P3 and
+  $\dim V \ge 2$ by P1, and conversely P2 gives the ``if''.
+\item \emph{Proof of Theorem~3.} Compare the whole ensemble spaces, as in P4, instead of the
+  ensembles with support in a two-dimensional subspace $A$, which do not exist for
+  $\dim\mathcal H \ge 3$ (item~2 of \lean{open-problems.tex}). Cite P3 for
+  $\dim\mathcal H = \infty$.
+\end{enumerate}
+
+\paragraph{When the blocker closes.} The brief issue closes once the brief makes these choices.
+The formalization gap of Section~\ref{sec:related} remains until P2 is formalized; P3 can be
+formalized now and would close the infinite-dimensional case of Theorem~3.
+
+\end{document}

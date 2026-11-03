@@ -1,0 +1,224 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+% Extra stretch for paragraphs with long, unbreakable Lean names
+\emergencystretch=6em
+
+\title{Blocker:\\ Non-linear representations in quantum mechanics}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This file collects everything about the one item of \lean{open-problems.tex} that blocks
+verification, together with the author's replies, a proposed resolution and the changes it needs
+in the brief. Sections~\ref{sec:blocker} and~\ref{sec:related} are copied from
+\lean{open-problems.tex} and \lean{formalization-log.tex}; the rest is new.
+
+\section{The blocker}\label{sec:blocker}
+\begin{enumerate}
+\item \blocker{brief issue}\textbf{Theorem~1 as an independence statement.}
+  ``REP-VSLIN is independent of QST'' is a statement about logical independence, but
+  $\neg$REP-VSLIN is not made precise, and its truth depends on the reading.
+  \begin{itemize}
+  \item \emph{Literal independence over models.} If a system is only its state space and
+    probability, REP-VSLIN follows from QST (take the $H$ that QST provides), so
+    $\neg$REP-VSLIN is inconsistent with QST. If a system also carries vector-level data that
+    may be arbitrary, any data that is not an inner product space gives a model of
+    $\neg$REP-VSLIN, and $m$ is not needed.
+  \item \emph{No vector space is fixed, even up to isomorphism.} This is false: by Wigner's
+    theorem the Born rule on $P(H)$ fixes $H$ up to a unitary or anti-unitary map (not checked
+    in Lean for two different spaces; the Wigner theorem in \lean{ForPhyslib} is for maps of
+    one space to itself). For $m(H)$ in particular, $m(H) \cong H$ by construction
+    (\lean{twistedIsometry}).
+  \item \emph{The linear structure is not fixed by the rays and the Born rule.} This is
+    proved (\lean{exists_second_linear_structure}): the carrier of $H$ has a second complex
+    inner product space structure, carried over along $m$, with the same scalar
+    multiplication, hence the same rays, and the same Born rule, but a different addition. It
+    uses eqs.~(3), (4) and (6), and needs $\dim H \ge 2$ (\lean{map_add_of_map_smul}).
+  \end{itemize}
+  The step of the proof that breaks under the first two readings is ``since the map is
+  non-linear, $H \not\equiv m(H)$ in the category of vector spaces'', which is false (Log,
+  ``Problems found''). The third reading is proposed as the precise statement. The item stays
+  open until the brief adopts it, or another one, and corrects that sentence. (Log,
+  ``Differences from the brief''.)
+\end{enumerate}
+
+\section{Related items}\label{sec:related}
+From \lean{open-problems.tex}, ``From the brief'':
+\begin{enumerate}
+\setcounter{enumi}{3}
+\item \textbf{Any dimension.} The proof needs a non-linear, Born-rule-preserving, ray-preserving
+  map on the $\mathcal{H}$ of the system, but constructs $m$ only for a two-state system. The
+  same formula $m(\psi) = e^{\imath\theta\,p(z^+|\psi)}\psi$ for a unit vector $\ket{z^+}$
+  should work whenever $\dim\mathcal{H} \ge 2$, including infinite dimension; this is not
+  formalized ($\mathcal{H} = \mathbb{C}^2$ only). (Brief, Sec.~3, eq.~(2); Log, ``Setting''.)
+\end{enumerate}
+From \lean{formalization-log.tex}, ``Problems found in the brief'':
+\begin{itemize}
+\item The closing remark says that $m$ is a diffeomorphism. It is not differentiable at $0$:
+  along every real line $m(tv) = t\,m(v)$, so a derivative at $0$ would have to equal $m$
+  itself, and $m$ is not additive. The correct statement is that $m$ is a homeomorphism of
+  $\mathbb{C}^2$ and a diffeomorphism of $\mathbb{C}^2\setminus\{0\}$. Theorem~1 only needs a
+  bijection, so it is not affected.
+\item The proof says that ``since the map is non-linear, $H \not\equiv m(H)$ in the category of
+  vector spaces''. This is false. As a set $m(H) = H$, since $m$ is a bijection. With the vector
+  space structure of $H$, $m(H)$ is $H$. With the structure carried over along $m$, $m$ is by
+  construction a linear isometry $H \to m(H)$ (\lean{twistedIsometry}). What is true is that
+  the identity of the carrier is not linear from one structure to the other.
+\item Eq.~(6) holds for every map that sends each vector into its own ray, since the Born rule
+  only sees rays (\lean{born_smul}). Any $v \mapsto \varphi([v])\,v$ with
+  $\varphi \colon P(H) \to \mathbb{C}\setminus\{0\}$ would do. What matters for the proof is
+  that $m$ commutes with scalars (eq.~(3)) and is not additive (eq.~(4)).
+\item QST allows $\dim H \le 1$. There every map that commutes with scalars is additive
+  (\lean{map_add_of_map_smul}), so there is no second linear structure. Theorem~1 claims only
+  consistency, so the two-state example suffices; ``for every system'' would need
+  $\dim H \ge 2$.
+\end{itemize}
+
+\section{The author's replies (2026-11-02)}
+Paraphrased.
+\begin{enumerate}
+\item The point is that $H$ and $m(H)$ are still isomorphic, since an isomorphism exists, but
+  $m$ is not an isomorphism. --- This is correct when $m(H)$ keeps the operations of $H$: then
+  $m$ is not linear. It is equivalent to the third reading above: $m$ is linear from $H$ to
+  $H$ exactly when the identity is linear from $H$ to $H$ with the carried-over structure.
+\item The formal statement of Theorem~1 is precise but not what matters physically; the
+  counterexample is the content. What it means for a physical system to have a mathematical
+  characterization cannot be expressed formally.
+\item Proposal: the briefs get a section of \emph{mathematical prerequisites}, which states
+  what Lean should prove and is fully formalized. The relations between physical conditions
+  are argued informally from these prerequisites and are checked by reading, not by Lean. The
+  author will rewrite the briefs accordingly.
+\end{enumerate}
+Under this proposal the blocker is no longer a question of which formal reading of
+$\neg$REP-VSLIN is right. It becomes: which mathematical statements go into the prerequisites,
+and which premise links them to Theorem~1.
+
+\section{Proposed resolution}
+\paragraph{Guess.} The prerequisites state the construction for every complex inner product
+space with $\dim H \ge 2$, finite or infinite, and add that it is impossible for
+$\dim H = 1$. The informal argument uses the premise:
+\begin{quote}
+  A mathematical structure of a representation is a physical requirement only if it is fixed
+  by the states and their conditional probabilities (the rays and the Born rule).
+\end{quote}
+Theorem~1 then says, informally: for every system with $\dim H \ge 2$, QST does not fix the
+linear structure of $H$, so the linearity in REP-VSLIN is a choice of representation. This is
+the third reading of Section~\ref{sec:blocker}, with the premise made explicit.
+
+\paragraph{Why.}
+\begin{itemize}
+\item \emph{The premise is the brief's own.} The abstract says that $m$ ``preserves the Born
+  rule, and therefore all the physics''. This is operational equivalence: two descriptions
+  that give the same probabilities for every measurement are the same physics. It is also the
+  premise of Wigner's theorem.
+\item \emph{$m$ changes only unobservable phases.} $m$ multiplies each vector by a phase that
+  depends only on its ray. The overall phase of a vector cannot be measured, so on states $m$
+  is the identity: a relabelling, not a new theory.
+\item \emph{Wigner's theorem leaves exactly this gap.} A bijection of $P(H)$ that preserves the
+  Born rule comes from a unitary or anti-unitary map, but this concerns rays. Nothing forces the
+  map on vectors to be linear, and $m$ induces the identity on rays while being non-linear on
+  vectors. The gap exists in every dimension $\ge 2$, so the prerequisite should be general.
+\item \emph{The conclusion is meant for every system.} ``Linearity is not part of the
+  physics'' is a claim about quantum systems in general, not about qubits. One example
+  suffices for logical consistency, but not for the intended claim.
+\item \emph{Dimension $1$ is not a physical system.} It has one state, its only observables are
+  multiples of the identity, and every probability is $1$. Excluding it costs nothing, and it
+  is exactly where the construction fails (\lean{map_add_of_map_smul}).
+\item \emph{Superposition is not lost.} Interference lies in the probabilities between rays,
+  which $m$ preserves. Superposition in $m(H)$ is the carried-over addition, and every
+  linear operator $U$ on $H$ becomes the operator $mUm^{-1}$, linear for it. Unlike non-linear
+  dynamics in the style of Weinberg, which allows signalling, this predicts nothing new.
+\end{itemize}
+
+\paragraph{Confidence.}
+\begin{itemize}
+\item High: the premise above is what the author means; the prerequisites should hold for
+  $\dim H \ge 2$ in general, with $\dim H = 1$ excluded.
+\item Medium: the scope is a single system. For composite systems, applying $m$ to each
+  factor while keeping the usual tensor product need not be consistent; the tensor product
+  would have to be carried over along $m$ as well. The brief does not discuss composite
+  systems, so it should either say ``a single system'' or treat them.
+\end{itemize}
+
+\section{Mathematical prerequisites to add to the brief}
+Each item is a purely mathematical statement for Lean. Let $H$ be a complex inner product space,
+$z \in H$ a unit vector and $\theta \in \mathbb R$. Write
+$p(z\mid v) = |\braket{z|v}|^2/\|v\|^2$ for $v \ne 0$, and define $m_\theta(0) = 0$ and
+$m_\theta(v) = e^{\imath\theta\,p(z\mid v)}\,v$ for $v \neq 0$.
+\begin{enumerate}
+\item[P1.] \emph{Properties of $m_\theta$.} $m_\theta$ is a homeomorphism of $H$ with inverse
+  $m_{-\theta}$, and a diffeomorphism of $H\setminus\{0\}$. It commutes with every complex
+  scalar, sends each vector into its own ray with a factor of modulus $1$, and preserves norms
+  and the Born rule. It is not differentiable at $0$ when $\dim H \ge 2$ and
+  $\theta \in (0,2\pi)$.\par{\raggedright
+  Lean, for $H = \mathbb C^2$ only: \lean{nlMap_smul}, \lean{nlMap_mem_ray},
+  \lean{norm_nlMap}, \lean{born_nlMap}, \lean{nlHomeomorph}, \lean{contDiffAt_nlMap},
+  \lean{not_differentiableAt_nlMap_zero}.\par}
+\item[P2.] \emph{Non-linearity.} If $\dim H \ge 2$ and $\theta \in (0, 2\pi)$, then $m_\theta$
+  is not additive.\\
+  Lean, for $H = \mathbb C^2$ only: \lean{nlMap_not_add}, \lean{not_isLinearMap_nlMap}.
+\item[P3.] \emph{A second linear structure.} If $\dim H \ge 2$ and $\theta \in (0, 2\pi)$, the
+  set $H$ carries a second complex inner product space structure, carried over along
+  $m_\theta$, with the same scalar multiplication (hence the same rays) and the same Born rule,
+  but a different addition. $m_\theta$ is a linear isometry from $H$ onto it.\\
+  Lean, for $H = \mathbb C^2$ only: \lean{exists_second_linear_structure},
+  \lean{twistedIsometry}.
+\item[P4.] \emph{Dimension one.} If $\dim H = 1$, every map $H \to H$ that commutes with complex
+  scalars is additive, so no second linear structure with the same scalar multiplication
+  exists.\\
+  Lean, for every $1$-dimensional space: \lean{map_add_of_map_smul}.
+\end{enumerate}
+Lean work needed: P1--P3 for a general $H$ with $\dim H \ge 2$ (item~4 of
+Section~\ref{sec:related}). The formula is the same; the two-state proofs should generalize
+with $z^+$ replaced by $z$ and $z^-$ by a unit vector orthogonal to $z$.
+
+\section{Other changes to the brief}
+\begin{enumerate}
+\item \emph{State the premise.} Add the premise of the previous section, for instance after
+  Condition REP-VSLIN, as the link between the prerequisites and Theorem~1.
+\item \emph{Theorem~1.} Restate it as the informal consequence of P3 and the premise: for a
+  system with $\dim H \ge 2$, the states and the Born rule do not fix the linear structure of
+  $H$. If ``independent'' stays, say what $\neg$REP-VSLIN means in these terms.
+\item \emph{The sentence $H \not\equiv m(H)$.} Replace ``Since the map is non-linear,
+  $H \not\equiv m(H)$ in the category of vector spaces'' by, for example: ``With the operations
+  carried over along $m$, the set $H$ is again an inner product space, isomorphic to $H$ via
+  $m$; but $m$ is not linear for the operations of $H$, so the same states and Born rule are
+  represented by two different linear structures.''
+\item \emph{Dimension.} Replace ``Consider a two-state system'' by a general $H$ with
+  $\dim H \ge 2$ and a unit vector $\ket{z^+}$, keeping the two-state case and Fig.~1 as the
+  illustration. Note that for $\dim H = 1$ no such map exists (P4).
+\item \emph{Diffeomorphism.} In the Remark, ``$m$ is \ldots\ a diffeomorphism'' should read:
+  a homeomorphism of $H$ and a diffeomorphism of $H \setminus \{0\}$ (P1).
+\item \emph{The Remark on transport.} It can cite P3: since $m$ is a linear isometry onto the
+  carried-over structure, superpositions, observables and time evolution transfer along $m$.
+  This settles item~1 of \lean{open-problems.tex} for everything defined from the linear and
+  inner product structure.
+\item \emph{Scope.} Say ``a single system'', or treat composite systems (see Confidence).
+\item \emph{Optional.} Note that eq.~(6) holds for any map that rescales within rays; what the
+  proof needs is eq.~(3) and eq.~(4).
+\end{enumerate}
+
+\paragraph{When the blocker closes.} Once the brief has the prerequisites P1--P4 and the
+premise, Lean verifies P1--P4, and Theorem~1 is recorded in the log as argued informally from
+them and checked by reading.
+
+\end{document}
