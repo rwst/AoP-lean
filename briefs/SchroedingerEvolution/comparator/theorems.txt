@@ -5,6 +5,7 @@
 # The certified theorems of the brief, one per line; `#` starts a comment.
 # Finite dimension:
 SchroedingerEvolution.affine_pure_state_correspondence  # Proposition 1
+SchroedingerEvolution.bijOnPure_of_injOn  # Proposition 1, the remark: injective suffices
 SchroedingerEvolution.drUnit_iff_drSceq  # Theorem 3, DR-UNIT iff DR-SCEQ
 SchroedingerEvolution.DrUnit.drEv  # Theorem 3, DR-UNIT => DR-EV
 SchroedingerEvolution.DrUnit.drProb  # Theorem 3, DR-UNIT => DR-PROB

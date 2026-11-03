@@ -3,6 +3,7 @@
   "solution_module": "SolutionSchroedingerEvolution",
   "theorem_names": [
     "SchroedingerEvolution.affine_pure_state_correspondence",
+    "SchroedingerEvolution.bijOnPure_of_injOn",
     "SchroedingerEvolution.drUnit_iff_drSceq",
     "SchroedingerEvolution.DrUnit.drEv",
     "SchroedingerEvolution.DrUnit.drProb",

@@ -5,13 +5,13 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import Mathlib.Analysis.Calculus.Deriv.Comp
-public import Mathlib.Analysis.Calculus.FDeriv.Linear
 public import Mathlib.Analysis.InnerProductSpace.LinearMap
 public import Mathlib.Analysis.InnerProductSpace.Positive
 public import Mathlib.Analysis.InnerProductSpace.Trace
 public import Mathlib.Analysis.InnerProductSpace.l2Space
 public import Mathlib.LinearAlgebra.Center
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.FDeriv.Linear
 public import Physlib.Mathematics.ForMathlib.OneParameterSubgroups.Unitary
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
@@ -285,6 +285,11 @@ theorem affine_pure_state_correspondence [FiniteDimensional ℂ E]
     (hT : AffineOnDensities T) :
     [BijOnPure T, Set.BijOn T {ρ | IsDensity ρ} {ρ | IsDensity ρ},
       ImplementedByUnitaryOrAntiunitary T].TFAE := by
+  sorry
+theorem bijOnPure_of_injOn [FiniteDimensional ℂ E] {T : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hD : ∀ ρ, IsDensity ρ → IsDensity (T ρ)) (hT : AffineOnDensities T)
+    (hP : ∀ ψ : E, ‖ψ‖ = 1 → ∃ ψ' : E, ‖ψ'‖ = 1 ∧ T (proj ψ) = proj ψ')
+    (hinj : Set.InjOn T {ρ | IsPure ρ}) : BijOnPure T := by
   sorry
 structure IsEvolution (Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E) : Prop where
   isDensity : ∀ t ≥ 0, ∀ ρ, IsDensity ρ → IsDensity (Φ t ρ)

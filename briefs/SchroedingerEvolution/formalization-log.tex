@@ -115,6 +115,10 @@ Proposition 1, mixed states from pure states & \lean{Wigner.AffineOnDensities.eq
 Proposition 1, (iii) $\Rightarrow$ (ii) & \lean{Wigner.bijOn_of_eq_conjOp} \\
 Proposition 1, extreme points are the pure states & \lean{Wigner.isPure_iff_isExtremeDensity} \\
 Proposition 1, (ii) $\Rightarrow$ (i) & \lean{Wigner.AffineOnDensities.bijOnPure} \\
+Remark after Proposition 1, injective suffices & \lean{bijOnPure_of_injOn} (from
+  \lean{Wigner.AffineOnDensities.bijOnPure_of_injOn}) \\
+Remark, orthogonal pure states stay orthogonal &
+  \lean{Wigner.AffineOnDensities.inner_eq_zero_of_injOn} \\
 Theorem 3, DR-EV $\Rightarrow$ DR-UNIT & \lean{DrEv.drUnit} \\
 Theorem 3, anti-unitary case excluded by $\Phi_t = \Phi_{t/2}^2$ &
   \lean{Wigner.exists_unitary_of_map_add} \\
@@ -179,9 +183,20 @@ Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
   not needed, and surjectivity cannot be dropped (the constant map $\rho \mapsto P_e$ is affine
   and maps pure states to pure states).
 \item The Remark claims that injectivity on the pure states suffices in finite dimension ``as the
-  compactness of $P(H)$ will force $T$ to be bijective''. Compactness alone does not give this;
-  an injective continuous self-map of the manifold $P(\mathbb{C}^n)$ is onto by invariance of
-  domain. This weakening is not formalized; the surjective one above is.
+  compactness of $P(H)$ will force $T$ to be bijective''. The claim is true (for $T$ mapping pure
+  states to pure states), but compactness alone does not give it: $x \mapsto x/2$ is a continuous
+  injective, not surjective self-map of $[0,1]$. Invariance of domain on the manifold
+  $P(\mathbb{C}^n)$ would, but it is not in any Lean library. The formalization
+  (\lean{bijOnPure_of_injOn}) uses no topology. For orthogonal unit $\psi$, $\phi$ with images
+  $P_a$, $P_b$, let $L$ be the linear extension of $T$ and $N = L(\ket{\phi}\bra{\psi})$. Then
+  $A(z) = L(P_{\psi + z\phi}) = P_a + |z|^2P_b + zN + \bar z N^\dagger$ satisfies
+  $A(z)^2 = (1 + |z|^2)A(z)$, and comparing coefficients of $z$ gives $P_aN + NP_a = N$,
+  $P_bN + NP_b = N$ and $N^2 = 0$. Such an $N$ is $\ket{Na}\bra{a}$ or $\ket{a}\bra{N^\dagger a}$,
+  and likewise for $b$, which forces $N = 0$ unless $a \perp b$ or $|\braket{a|b}| = 1$; and
+  $N = 0$ makes $A(1) = P_a + P_b$, which is twice a pure state only if $|\braket{a|b}| = 1$.
+  Injectivity excludes $|\braket{a|b}| = 1$, so orthogonality is preserved. The images of an
+  orthonormal basis are then orthonormal, Bessel's inequality replaces surjectivity in the
+  Parseval averaging above, and Wigner's theorem finishes.
 \item ``The phases can be chosen so that $U_0 = I$ and $U_{t+s} = U_tU_s$'' is a lifting theorem
   (Bargmann's theorem for $\mathbb{R}$) that the brief does not prove. In finite dimension it is
   avoided by working with the phase-free maps $A_t = U_t(\cdot)U_t^\dagger$ on

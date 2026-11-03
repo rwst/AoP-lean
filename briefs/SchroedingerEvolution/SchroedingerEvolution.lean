@@ -21,6 +21,9 @@ Proposition 1 (Affine pure-state correspondence):
 * `affine_pure_state_correspondence`  for an affine map `T` of the density operators, bijective
   on pure states ⇔ bijective on density operators ⇔ conjugation by a unitary or an anti-unitary.
   No continuity is needed in finite dimension.
+* `bijOnPure_of_injOn`  the brief's remark after Proposition 1: in finite dimension, injective
+  on pure states (and mapping them to pure states) already gives bijective on them. The brief
+  argues by compactness of the pure states; the proof here is algebraic.
 
 Conditions:
 * `IsEvolution`  QST:H + [B]EVMIX + EVTI: `Φ t` maps density operators affinely to density
@@ -44,6 +47,7 @@ Theorem 3:
   conservation").
 -/
 
+public import ForPhyslib.QuantumMechanics.Wigner.Injective
 public import ForPhyslib.QuantumMechanics.Wigner.OneParameter
 public import UnitaryEntropy
 
@@ -66,6 +70,18 @@ theorem affine_pure_state_correspondence [FiniteDimensional ℂ E]
     [BijOnPure T, Set.BijOn T {ρ | IsDensity ρ} {ρ | IsDensity ρ},
       ImplementedByUnitaryOrAntiunitary T].TFAE :=
   kadison_tfae hD hT
+
+/-- **Proposition 1, the remark**: in finite dimension, an affine map of the density operators
+that maps pure states to pure states and is injective on them is a bijection of the pure states,
+so the conditions of `affine_pure_state_correspondence` hold. Compactness of the pure states is
+not what makes this work: orthogonal pure states have orthogonal images, by comparing
+coefficients in the purity of the images along `ψ + z φ`, and then overlaps are preserved
+(`AffineOnDensities.bijOnPure_of_injOn`). -/
+theorem bijOnPure_of_injOn [FiniteDimensional ℂ E] {T : (E →L[ℂ] E) → E →L[ℂ] E}
+    (hD : ∀ ρ, IsDensity ρ → IsDensity (T ρ)) (hT : AffineOnDensities T)
+    (hP : ∀ ψ : E, ‖ψ‖ = 1 → ∃ ψ' : E, ‖ψ'‖ = 1 ∧ T (proj ψ) = proj ψ')
+    (hinj : Set.InjOn T {ρ | IsPure ρ}) : BijOnPure T :=
+  hT.bijOnPure_of_injOn hD hP hinj
 
 /-! ## Conditions -/
 
