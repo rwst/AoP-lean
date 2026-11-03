@@ -1,0 +1,18 @@
+{
+  "challenge_module": "ChallengeInconsistentConvergence",
+  "solution_module": "SolutionInconsistentConvergence",
+  "theorem_names": [
+    "InconsistentConvergence.norm_sub_ground_sq",
+    "InconsistentConvergence.tendsto_e",
+    "InconsistentConvergence.secondMoment_e",
+    "InconsistentConvergence.tendsto_secondMoment_e",
+    "InconsistentConvergence.not_cauchySeq_level",
+    "InconsistentConvergence.numberExp_e",
+    "InconsistentConvergence.not_continuousAt_numberExp"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

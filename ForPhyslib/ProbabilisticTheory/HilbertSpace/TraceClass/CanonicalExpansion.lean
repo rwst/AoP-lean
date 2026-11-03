@@ -96,7 +96,7 @@ theorem IsTraceClass.exists_hasSum_rankOne {T : H →L[ℂ] H} (hT : IsTraceClas
       rw [hc, inner_smul_right, inner_self_eq_norm_sq_to_K, hnorm]; simp
     have him : c.im = 0 := by
       rw [← hc']; exact (Complex.nonneg_iff.1 (hpos.inner_nonneg_right (b i))).2.symm
-    rw [hc, show (μ i : ℂ) = c by simp [μ, hc', Complex.ext_iff, him]]
+    rw [hc, show (μ i : ℂ) = c from Complex.ext (by simp [μ, hc']) (by simp [him])]
   have hμ0 : ∀ i, 0 ≤ μ i := fun i => hpos.re_inner_nonneg_right (b i)
   have hsum : Summable μ := by
     simpa [CFC.abs_of_nonneg T h0] using isTraceClass_iff.mp hT w b
@@ -107,7 +107,8 @@ theorem IsTraceClass.exists_hasSum_rankOne {T : H →L[ℂ] H} (hT : IsTraceClas
     rw [trace_eq_of_hilbertBasis_of_nonneg h0 hT b]
     convert (Complex.hasSum_ofReal.mpr hsum.hasSum) using 1
     rw [Complex.ofReal_tsum]
-    exact tsum_congr fun i => by rw [hμ i, inner_smul_right, inner_self_eq_norm_sq_to_K, hnorm]; simp
+    exact tsum_congr fun i => by
+      rw [hμ i, inner_smul_right, inner_self_eq_norm_sq_to_K, hnorm]; simp
   refine ⟨w, b, μ, hb, hμ, hμ0, hnormSum, htrace, ?_⟩
   -- The series is absolutely summable in the Banach space `𝒮₁(H)`.
   set a : w → TraceClass H := fun i => ofOperator ((μ i : ℂ) • rankOne ℂ (b i) (b i))
@@ -121,9 +122,9 @@ theorem IsTraceClass.exists_hasSum_rankOne {T : H →L[ℂ] H} (hT : IsTraceClas
   -- Its sum agrees with `T` on the basis, hence everywhere.
   have hSb : ∀ j, S.1 (b j) = T (b j) := fun j => by
     classical
-    have h := (hS.mapL toOperator).mapL (ContinuousLinearMap.apply ℂ H (b j))
-    have hterm : ∀ i, (ContinuousLinearMap.apply ℂ H (b j)) (toOperator (a i)) =
-        if i = j then (μ j : ℂ) • b j else 0 := fun i => by
+    have h : HasSum (fun i => (a i).1 (b j)) (S.1 (b j)) :=
+      (hS.mapL toOperator).mapL (ContinuousLinearMap.apply ℂ H (b j))
+    have hterm : ∀ i, (a i).1 (b j) = if i = j then (μ j : ℂ) • b j else 0 := fun i => by
       by_cases hij : i = j
       · subst hij; simp [a, rankOne_apply, inner_self_eq_norm_sq_to_K, hnorm]
       · simp [a, rankOne_apply, hij, orthonormal_iff_ite.mp b.orthonormal i j]

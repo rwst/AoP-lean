@@ -310,8 +310,8 @@ def reduce_imports(mods, roots):
 SECTION = (r"@\[expose\] public noncomputable section|@\[expose\] public section|"
            r"public noncomputable section|public section|noncomputable section")
 CONTEXT_RE = re.compile(
-    r"^(namespace|section|end|open|variable|universe|" + SECTION + r"|local notation|notation|"
-    r"scoped|local infix|attribute \[local)")
+    r"^(namespace|section|end|open|variable|include|omit|universe|" + SECTION +
+    r"|local notation|notation|scoped|local infix|attribute \[local)")
 OPEN_RE = re.compile(r"^(namespace|section|" + SECTION + r")\b\s*(\S*)")
 # Notation commands: they declare constants of their own, but are copied as context.
 NOTATION_RE = re.compile(r"^(local notation|notation|scoped|local infix)\b")
@@ -537,10 +537,25 @@ def render_text(items, close):
 TIES = []
 
 # Instances that some modules of the development never load, but the flat file does, and that
-# outrank what those modules choose. In the part copied from a module that does not load the
-# instance, it goes to priority 0. Each entry lists one that comparator has rejected, with its
-# module. See `COMPARATOR.md`.
-ABSENT = []
+# change what those modules choose: by outranking it, or by opening a path where the module's
+# search fails and falls back. In the part copied from a module that does not load the instance,
+# it is erased, which the end of the part's section undoes. Each entry lists one that comparator
+# has rejected, with its module. See `COMPARATOR.md`.
+ABSENT = [
+    # ProjectiveMeasurement: `ForMathlib.Analysis.InnerProductSpace.Spectrum` reaches `T0Space` of
+    # a Hilbert space through `T4Space` of a uniform space, the flat file through the instances
+    # of this module, which open shorter paths.
+    ("instT6SpaceOfMetrizableSpace", "Mathlib.Topology.GDelta.MetrizableSpace"),
+    ("instT4SpaceOfMetrizableSpace", "Mathlib.Topology.GDelta.MetrizableSpace"),
+    ("instPerfectlyNormalSpaceOfPseudoMetrizableSpace", "Mathlib.Topology.GDelta.MetrizableSpace"),
+    ("instNormalSpaceOfPseudoMetrizableSpace", "Mathlib.Topology.GDelta.MetrizableSpace"),
+    # ProjectiveMeasurement: `ForPhyslib.QuantumMechanics.VonNeumannEntropy` takes `cfc` on
+    # operators from `IsSelfAdjoint.instContinuousFunctionalCalculus`, the flat file from these.
+    ("ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint",
+     "TauCeti.Analysis.InnerProductSpace.ContinuousFunctionalCalculus"),
+    ("ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint",
+     "TauCeti.Analysis.InnerProductSpace.ContinuousFunctionalCalculus"),
+]
 
 
 def post_order(roots, edges):
@@ -572,7 +587,7 @@ def pins(mod, flat_imports, edges):
                 out.append(f"attribute [local instance {prio - k}] {x}")
     for x, mx in ABSENT:
         if mx in flat and mx not in dev:
-            out.append(f"attribute [local instance 0] {x}")
+            out.append(f"attribute [-instance] {x}")
     return out
 
 

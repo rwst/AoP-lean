@@ -70,7 +70,7 @@ def dephasingGenerator (X : E →L[ℂ] E) : (E →L[ℂ] E) →ₗ[ℝ] E →L[
   toFun ρ := X * ρ * X - (2⁻¹ : ℝ) • (X * X * ρ + ρ * (X * X))
   map_add' _ _ := by
     simp only [mul_add, add_mul, smul_add]
-    abel
+    rw [sub_add_sub_comm, add_add_add_comm]
   map_smul' _ _ := by
     simp only [mul_smul_comm, smul_mul_assoc, smul_add, smul_sub, RingHom.id_apply,
       smul_comm (2⁻¹ : ℝ)]

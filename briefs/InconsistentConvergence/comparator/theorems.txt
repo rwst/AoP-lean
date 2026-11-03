@@ -1,0 +1,12 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+InconsistentConvergence.norm_sub_ground_sq  # eq. (2): the distance of e^j from the ground state
+InconsistentConvergence.tendsto_e  # e^j converges to the ground state in l^2
+InconsistentConvergence.secondMoment_e  # eq. (3): the second moment of e^j is j
+InconsistentConvergence.tendsto_secondMoment_e  # eq. (3): it diverges
+InconsistentConvergence.not_cauchySeq_level  # the eigenstates |j> alone have no limit
+InconsistentConvergence.numberExp_e  # eq. (4): <e^j|N|e^j> = 1
+InconsistentConvergence.not_continuousAt_numberExp  # eq. (5): <N> is not continuous at |0>

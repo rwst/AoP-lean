@@ -41,6 +41,9 @@ be unique across the project.
 | Classical uncertainty principle | Corollary 1, Theorem 2 (eqs. 3 and 5), the final remark | 7 theorems, see `theorems.txt` | 101 lines, 5 KiB |
 | Physical vector spaces for quantum mechanics | Corollary 2, Example 3 (in `n` dimensions) and its Remark, Example 4, Theorem 5 ([B]COBS) | 6 theorems, see `theorems.txt` | 163 lines, 7 KiB |
 | Directional vectors vs quantum state vectors | eqs. (1)–(3), linearity in terms of probability, half a turn, states as rays, the outcomes as opposite directions, completeness of the forms (1) and (3) | 13 theorems, see `theorems.txt` | 83 lines, 4 KiB |
+| Superpositions correspond to multiple decompositions | Theorem 1 and its two directions (eqs. 3 and 4), eq. (2), the support argument, mixtures of independent states are not pure | 6 theorems, see `theorems.txt` | 73 lines, 4 KiB |
+| Inconsistent convergence in Hilbert space | eqs. (2)–(5), the convergence of `eʲ` in `ℓ²`, the eigenstates `\|j⟩` alone have no limit | 7 theorems, see `theorems.txt` | 51 lines, 2 KiB |
+| Projective measurements are equilibration processes | Theorem 1 (EQ-LIND, EQ-HS, EQ-KL ⇔ EQ-MEAS, eqs. 2–12) and eq. (13), in finite dimension and in any dimension | 10 theorems, see `theorems.txt` | 653 lines, 34 KiB |
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
@@ -85,11 +88,11 @@ the project reached from a certified theorem's type, following the types and val
 and the proofs of theorems, as comparator walks it. It then copies each of them from its source
 file, docstrings and comments dropped, and cuts the certified theorems at their `:=` with a `sorry`
 proof (a theorem stated with `where` is cut there, and the `:=` of a `letI` inside a statement is
-skipped). Each copied part keeps the `namespace`, `section`, `open`, `variable` and notation
-commands of its source that some copied declaration follows. An `open` naming project declarations
-that are not copied keeps only the names the copy has. The generator refuses a theorem whose closure
-reaches a `private` constant, because a private name embeds its module's name and no challenge can
-reproduce it.
+skipped). Each copied part keeps the `namespace`, `section`, `open`, `variable`, `include`,
+`omit` and notation commands of its source that some copied declaration follows. An `open` naming
+project declarations that are not copied keeps only the names the copy has. The generator refuses a
+theorem whose closure reaches a `private` constant, because a private name embeds its module's
+name and no challenge can reproduce it.
 
 So reading a lane's `Challenge<Brief>.lean` is enough to know what has been proved, on top of the
 three libraries.
@@ -103,12 +106,24 @@ development elaborates:
 - **Load order.** Lean tries instances of equal priority latest-loaded first. The challenge imports
   its external modules in the order the development loads them, and drops an import only when an
   earlier one already loads it and makes it visible. Where the development's modules disagree on
-  such a tie, the generator's `TIES` and `ABSENT` tables restore each module's choice locally. No
-  lane has needed them yet; they are empty.
+  such a tie, the generator's `TIES` table restores each module's choice locally; no lane has
+  needed it yet. An instance that a module never loads but the flat file does can change that
+  module's choice too, by outranking it or by opening a path where the module's search fails and
+  falls back. The `ABSENT` table lists such instances; the part copied from a module that does not
+  load one erases it with `attribute [-instance]`, which the end of the part's section undoes. The
+  ProjectiveMeasurement lane needs it for the instances of `Mathlib.Topology.GDelta.MetrizableSpace`
+  (the path to `T0Space` of a Hilbert space) and of TauCeti's
+  `Analysis.InnerProductSpace.ContinuousFunctionalCalculus` (the `cfc` of operators).
 - **The auxiliary-proof cache is module-local.** Lean lifts some proofs inside a definition into
   `<owner>._proof_<n>` constants and caches them for the rest of the module. Each copied part opens
   with `run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})`, which clears that cache as a
   module boundary does.
+- **Copied proofs must elaborate to the same term.** Comparator compares the theorems of the
+  closure by their proofs as well: a dependency with a `sorry` proof is rejected. A copied proof
+  therefore cannot use what the copy lacks. `simp` lemmas proved by `rfl` leave no trace in the
+  proof term, so they are never copied; and `abel`, or `simp` given an `iff` lemma, mint private
+  auxiliary constants. Proofs in the closure avoid both (see `dephasingGenerator` and
+  `IsTraceClass.exists_hasSum_rankOne`).
 
 ## Negative controls
 
@@ -135,5 +150,27 @@ challenge's `blochVector` is rejected with `Const does not match between challen
 'SuperpositionAndLinearity.stateVector'`, and dropping the hypothesis `hψ` of
 `exists_eq_smul_stateVector` with `Challenge and solution theorem statement do not match:
 'SuperpositionAndLinearity.exists_eq_smul_stateVector'`.
+
+On the SuperpositionAndMultipleMixtures lane, dropping the inverse in `(‖ψ‖ ^ 2)⁻¹` in the
+challenge's `pureState` is rejected with `Const does not match between challenge and target
+'SuperpositionAndMultipleMixtures.pureState'`, dropping `c₂ ≠ 0` from `QSupPur` with `Const does
+not match between challenge and target 'SuperpositionAndMultipleMixtures.QSupPur'`, and dropping
+the hypothesis `hϕ` of `qSupPur_iff_qSupMix` with `Challenge and solution theorem statement do
+not match: 'SuperpositionAndMultipleMixtures.qSupPur_iff_qSupMix'`.
+
+On the InconsistentConvergence lane, changing the amplitude `√(1 / j)` to `√(2 / j)` in the
+challenge's `ampⱼ` is rejected with `Const does not match between challenge and target
+'InconsistentConvergence.ampⱼ'`, dropping the square of `‖x n‖ ^ 2` in `numberExp` with `Const
+does not match between challenge and target 'InconsistentConvergence.numberExp'`, and dropping the
+hypothesis `hj` of `numberExp_e` with `Challenge and solution theorem statement do not match:
+'InconsistentConvergence.numberExp_e'`.
+
+On the ProjectiveMeasurement lane, changing `f a < f b` to `f a ≤ f b` in the challenge's
+`IsUniqueMinOn` is rejected with `Const does not match between challenge and target
+'ProjectiveMeasurement.IsUniqueMinOn'`, swapping the arguments of `relEntropy ρ σ` in `EqKL` with
+`Const does not match between challenge and target 'ProjectiveMeasurement.EqKL'`, and dropping the
+hypothesis `hS` of `InfiniteDimensional.relativeEntropy_pinching_eq` with `Challenge and solution
+theorem statement do not match:
+'ProjectiveMeasurement.InfiniteDimensional.relativeEntropy_pinching_eq'`.
 
 Re-run a control after any change to the generator.

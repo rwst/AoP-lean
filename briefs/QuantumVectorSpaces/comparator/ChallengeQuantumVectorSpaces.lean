@@ -27,6 +27,10 @@ See `COMPARATOR.md`.
 -- ForMathlib.Analysis.InnerProductSpace.Defs
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 open RCLike Filter Topology
 @[expose] public noncomputable section
 namespace PreInnerProductSpace.Core

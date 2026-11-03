@@ -1,0 +1,21 @@
+{
+  "challenge_module": "ChallengeProjectiveMeasurement",
+  "solution_module": "SolutionProjectiveMeasurement",
+  "theorem_names": [
+    "ProjectiveMeasurement.eqMeas_iff_eqLind",
+    "ProjectiveMeasurement.eqMeas_iff_eqHS",
+    "ProjectiveMeasurement.eqMeas_iff_eqKL",
+    "ProjectiveMeasurement.relEntropy_pinching_eq",
+    "ProjectiveMeasurement.projective_measurement_tfae",
+    "ProjectiveMeasurement.InfiniteDimensional.eqMeas_iff_eqLind",
+    "ProjectiveMeasurement.InfiniteDimensional.eqMeas_iff_eqHS",
+    "ProjectiveMeasurement.InfiniteDimensional.eqKL_iff_eqMeasFinEnt",
+    "ProjectiveMeasurement.InfiniteDimensional.relativeEntropy_pinching_eq",
+    "ProjectiveMeasurement.InfiniteDimensional.projective_measurement_tfae"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

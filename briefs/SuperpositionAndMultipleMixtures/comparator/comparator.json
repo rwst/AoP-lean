@@ -1,0 +1,17 @@
+{
+  "challenge_module": "ChallengeSuperpositionAndMultipleMixtures",
+  "solution_module": "SolutionSuperpositionAndMultipleMixtures",
+  "theorem_names": [
+    "SuperpositionAndMultipleMixtures.qSupPur_iff_qSupMix",
+    "SuperpositionAndMultipleMixtures.QSupPur.qSupMix",
+    "SuperpositionAndMultipleMixtures.QSupMix.qSupPur",
+    "SuperpositionAndMultipleMixtures.proj_add_proj_hat",
+    "SuperpositionAndMultipleMixtures.mem_span_of_mixture_eq",
+    "SuperpositionAndMultipleMixtures.isMixed_mixture"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

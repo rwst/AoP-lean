@@ -1,0 +1,17 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+# Finite dimension:
+ProjectiveMeasurement.eqMeas_iff_eqLind  # Theorem 1, EQ-LIND iff EQ-MEAS, eqs. (2)-(10)
+ProjectiveMeasurement.eqMeas_iff_eqHS  # Theorem 1, EQ-HS iff EQ-MEAS, eq. (11)
+ProjectiveMeasurement.eqMeas_iff_eqKL  # Theorem 1, EQ-KL iff EQ-MEAS, eq. (12)
+ProjectiveMeasurement.relEntropy_pinching_eq  # eq. (13)
+ProjectiveMeasurement.projective_measurement_tfae  # Theorem 1: all four conditions
+# Any dimension:
+ProjectiveMeasurement.InfiniteDimensional.eqMeas_iff_eqLind  # Theorem 1, EQ-LIND iff EQ-MEAS
+ProjectiveMeasurement.InfiniteDimensional.eqMeas_iff_eqHS  # Theorem 1, EQ-HS iff EQ-MEAS
+ProjectiveMeasurement.InfiniteDimensional.eqKL_iff_eqMeasFinEnt  # Theorem 1, EQ-KL, [B]FINENT
+ProjectiveMeasurement.InfiniteDimensional.relativeEntropy_pinching_eq  # eq. (13)
+ProjectiveMeasurement.InfiniteDimensional.projective_measurement_tfae  # Theorem 1

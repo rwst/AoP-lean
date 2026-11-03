@@ -59,6 +59,15 @@ srcDir = "briefs/SuperpositionAndLinearity/comparator"
 name = "SuperpositionAndMultipleMixtures"
 srcDir = "briefs/SuperpositionAndMultipleMixtures"
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeSuperpositionAndMultipleMixtures"
+srcDir = "briefs/SuperpositionAndMultipleMixtures/comparator"
+
+[[lean_lib]]
+name = "SolutionSuperpositionAndMultipleMixtures"
+srcDir = "briefs/SuperpositionAndMultipleMixtures/comparator"
+
 # Technical brief: the Born rule is equivalent to the von Neumann entropy.
 [[lean_lib]]
 name = "BornRuleEntropy"
@@ -102,6 +111,15 @@ srcDir = "briefs/NonLinearQuantum"
 [[lean_lib]]
 name = "InconsistentConvergence"
 srcDir = "briefs/InconsistentConvergence"
+
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeInconsistentConvergence"
+srcDir = "briefs/InconsistentConvergence/comparator"
+
+[[lean_lib]]
+name = "SolutionInconsistentConvergence"
+srcDir = "briefs/InconsistentConvergence/comparator"
 
 # Technical brief: non-uniqueness of the moment problem for Schwartz functions.
 [[lean_lib]]
@@ -154,6 +172,15 @@ globs = ["SchroedingerEvolution.*"]
 name = "ProjectiveMeasurement"
 srcDir = "briefs/ProjectiveMeasurement"
 globs = ["ProjectiveMeasurement.*"]
+
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeProjectiveMeasurement"
+srcDir = "briefs/ProjectiveMeasurement/comparator"
+
+[[lean_lib]]
+name = "SolutionProjectiveMeasurement"
+srcDir = "briefs/ProjectiveMeasurement/comparator"
 
 # Technical brief: unitary evolution as infinitesimal projective processes.
 [[lean_lib]]

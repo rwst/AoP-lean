@@ -49,6 +49,11 @@ end ContinuousLinearMap
 end
 -- ForPhyslib.QuantumMechanics.Wigner.Density
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 @[expose] public noncomputable section
 open scoped InnerProductSpace ComplexOrder
 open InnerProductSpace
@@ -56,6 +61,7 @@ namespace QuantumMechanics.Wigner
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
 abbrev proj (ψ : E) : E →L[ℂ] E := rankOne ℂ ψ ψ
 end QuantumMechanics.Wigner
+end
 end
 -- ForPhyslib.QuantumMechanics.DensityOperator
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
