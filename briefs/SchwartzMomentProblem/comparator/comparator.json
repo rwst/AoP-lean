@@ -1,0 +1,17 @@
+{
+  "challenge_module": "ChallengeSchwartzMomentProblem",
+  "solution_module": "SolutionSchwartzMomentProblem",
+  "theorem_names": [
+    "SchwartzMomentProblem.moment_psi",
+    "SchwartzMomentProblem.linearIndependent_psi",
+    "SchwartzMomentProblem.hasCompactSupport_bump",
+    "SchwartzMomentProblem.tsupport_bump_subset",
+    "SchwartzMomentProblem.bump_ne_zero",
+    "SchwartzMomentProblem.exists_same_moments"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

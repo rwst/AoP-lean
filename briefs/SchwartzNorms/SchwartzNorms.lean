@@ -89,7 +89,7 @@ lemma lintegral_compl_Icc_inv_sq :
     ∫⁻ x in (Icc (-1 : ℝ) 1)ᶜ, ENNReal.ofReal (x ^ 2)⁻¹ = 2 := by
   have hc : (Icc (-1 : ℝ) 1)ᶜ = Iio (-1) ∪ Ioi 1 := by
     ext x
-    simp only [mem_compl_iff, mem_Icc, mem_union, mem_Iio, mem_Ioi, not_and_or, not_le]
+    rw [mem_compl_iff, mem_Icc, mem_union, mem_Iio, mem_Ioi, not_and_or, not_le, not_le]
   rw [hc, lintegral_union measurableSet_Ioi
       (disjoint_left.mpr fun x (h1 : x < -1) (h2 : 1 < x) => by linarith),
     ← ofReal_integral_eq_lintegral_ofReal integrableOn_Iio_neg_one_inv_sq
@@ -187,7 +187,8 @@ theorem l1Norm_le (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
     _ = ENNReal.ofReal √(π / 2) *
           (l2Norm α β f ^ 2 + 2 * l2Norm (α + 1) β f ^ 2 + l2Norm (α + 2) β f ^ 2) ^
             (1 / 2 : ℝ) := by
-        simp only [ENNReal.rpow_two, ← ENNReal.inv_pow, key, ρ]
+        have hinv (a : ℝ≥0∞) (n : ℕ) : a⁻¹ ^ n = (a ^ n)⁻¹ := ENNReal.inv_pow.symm
+        simp only [ENNReal.rpow_two, hinv, key, ρ]
         rw [lintegral_inv_one_add_sq_sq, lintegral_add_right _ ((hw _).pow_const 2),
           lintegral_add_left ((hw _).pow_const 2), lintegral_const_mul _ ((hw _).pow_const 2),
           l2Norm_sq hf, l2Norm_sq hf, l2Norm_sq hf, Real.sqrt_eq_rpow,
@@ -306,11 +307,11 @@ lemma supNorm_lt_top (F : 𝓢(ℝ, ℂ)) (α β : ℕ) : supNorm α β F < ⊤ 
   (exists_schwartzMap_iff (F.smooth ⊤)).mp ⟨F, rfl⟩ α β
 
 lemma l1Norm_lt_top (F : 𝓢(ℝ, ℂ)) (α β : ℕ) : l1Norm α β F < ⊤ := by
-  have h := (tfae_finite (F.smooth ⊤)).out 1 2
+  have h := (tfae_finite (F.smooth ⊤)).out 1 2 rfl rfl one_ne_zero two_ne_zero
   exact h.mp (supNorm_lt_top F) α β
 
 lemma l2Norm_lt_top (F : 𝓢(ℝ, ℂ)) (α β : ℕ) : l2Norm α β F < ⊤ := by
-  have h := (tfae_finite (F.smooth ⊤)).out 1 3
+  have h := (tfae_finite (F.smooth ⊤)).out 1 3 rfl rfl one_ne_zero three_ne_zero
   exact h.mp (supNorm_lt_top F) α β
 
 /-! ### The `L¹` and `L²` seminorm families -/

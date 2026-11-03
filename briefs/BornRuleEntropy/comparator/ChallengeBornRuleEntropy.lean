@@ -34,6 +34,11 @@ See `COMPARATOR.md`.
 
 -- ForMathlib.Analysis.InnerProductSpace.PositiveTrace
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 @[expose] public noncomputable section
 open scoped InnerProductSpace ENNReal ComplexOrder
 open InnerProductSpace
@@ -47,6 +52,7 @@ def posTrace (T : E →L[ℂ] E) : ℝ≥0∞ :=
   ∑' i, ENNReal.ofReal (⟪posTraceBasis E i, T (posTraceBasis E i)⟫_ℂ).re
 end ContinuousLinearMap
 end
+end
 -- ForPhyslib.QuantumMechanics.Wigner.Density
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
@@ -54,6 +60,7 @@ attribute [-instance] instT6SpaceOfMetrizableSpace
 attribute [-instance] instT4SpaceOfMetrizableSpace
 attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instCommCStarAlgebraComplex
 @[expose] public noncomputable section
 open scoped InnerProductSpace ComplexOrder
 open InnerProductSpace
@@ -65,6 +72,11 @@ end
 end
 -- ForPhyslib.QuantumMechanics.DensityOperator
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 @[expose] public noncomputable section
 open scoped InnerProductSpace ENNReal ComplexOrder
 open InnerProductSpace ProbabilisticTheory QuantumMechanics.Wigner
@@ -77,8 +89,14 @@ structure IsDensityOperator (ρ : E →L[ℂ] E) : Prop where
   trace_eq_one : trace ρ isTraceClass = 1
 end QuantumMechanics
 end
+end
 -- ForPhyslib.QuantumMechanics.VonNeumannEntropy
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 @[expose] public noncomputable section
 open scoped InnerProductSpace ENNReal ComplexOrder
 open InnerProductSpace Real QuantumMechanics.Wigner
@@ -88,6 +106,7 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteS
   {ρ : E →L[ℂ] E}
 def vonNeumannEntropy (ρ : E →L[ℂ] E) : ℝ≥0∞ := posTrace (cfc negMulLog ρ)
 end QuantumMechanics
+end
 end
 -- BornRuleEntropy
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})

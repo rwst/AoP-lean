@@ -1,0 +1,17 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+SchwartzNorms.l2Norm_sq_le  # Step 1, eq. (6): sup controls L²
+SchwartzNorms.l1Norm_le  # Step 2, eq. (7): L² controls L¹
+SchwartzNorms.supNorm_le  # Step 3, eq. (9): L¹ controls sup
+SchwartzNorms.not_supNorm_le_const  # eq. (9) needs its finiteness hypothesis
+SchwartzNorms.tfae_finite  # Theorem 5, (i) ⇔ (ii) ⇔ (iii)
+SchwartzNorms.supNorm_eq_seminorm  # the sup seminorms (1) are Mathlib's
+SchwartzNorms.exists_schwartzMap_iff  # the space (4) is Mathlib's Schwartz space
+SchwartzNorms.isBounded_sup_l2  # Step 1 between the seminorm families
+SchwartzNorms.isBounded_l2_l1  # Step 2 between the seminorm families
+SchwartzNorms.isBounded_l1_sup  # Step 3 between the seminorm families
+SchwartzNorms.withSeminorms_l1_l2  # Theorem 5, Step 4: same topology
+SchwartzNorms.enorm_moment_le  # Remark, eq. (10)

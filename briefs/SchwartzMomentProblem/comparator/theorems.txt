@@ -1,0 +1,11 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+SchwartzMomentProblem.moment_psi  # eq. (3): the moments of ψ_θ do not depend on θ
+SchwartzMomentProblem.linearIndependent_psi  # different phases give different rays
+SchwartzMomentProblem.hasCompactSupport_bump  # Fig. 1: the bumps have compact support
+SchwartzMomentProblem.tsupport_bump_subset  # Fig. 1: the bump at c lives in [c - 1, c + 1]
+SchwartzMomentProblem.bump_ne_zero  # Fig. 1: the bumps are not zero
+SchwartzMomentProblem.exists_same_moments  # Theorem 1

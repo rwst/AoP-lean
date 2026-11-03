@@ -126,6 +126,15 @@ srcDir = "briefs/InconsistentConvergence/comparator"
 name = "SchwartzMomentProblem"
 srcDir = "briefs/SchwartzMomentProblem"
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeSchwartzMomentProblem"
+srcDir = "briefs/SchwartzMomentProblem/comparator"
+
+[[lean_lib]]
+name = "SolutionSchwartzMomentProblem"
+srcDir = "briefs/SchwartzMomentProblem/comparator"
+
 # Technical brief: entropy is not continuous in standard probability spaces.
 [[lean_lib]]
 name = "EntropyTopology"
@@ -140,6 +149,15 @@ srcDir = "briefs/HilbertUnphysicality"
 [[lean_lib]]
 name = "SchwartzNorms"
 srcDir = "briefs/SchwartzNorms"
+
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeSchwartzNorms"
+srcDir = "briefs/SchwartzNorms/comparator"
+
+[[lean_lib]]
+name = "SolutionSchwartzNorms"
+srcDir = "briefs/SchwartzNorms/comparator"
 
 # Technical brief: physical vector spaces for quantum mechanics.
 [[lean_lib]]
@@ -166,6 +184,15 @@ globs = ["UnitaryEntropy.*"]
 name = "SchroedingerEvolution"
 srcDir = "briefs/SchroedingerEvolution"
 globs = ["SchroedingerEvolution.*"]
+
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeSchroedingerEvolution"
+srcDir = "briefs/SchroedingerEvolution/comparator"
+
+[[lean_lib]]
+name = "SolutionSchroedingerEvolution"
+srcDir = "briefs/SchroedingerEvolution/comparator"
 
 # Technical brief: projective measurements are equilibration processes.
 [[lean_lib]]

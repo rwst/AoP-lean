@@ -1,0 +1,26 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+# Finite dimension:
+SchroedingerEvolution.affine_pure_state_correspondence  # Proposition 1
+SchroedingerEvolution.drUnit_iff_drSceq  # Theorem 3, DR-UNIT iff DR-SCEQ
+SchroedingerEvolution.DrUnit.drEv  # Theorem 3, DR-UNIT => DR-EV
+SchroedingerEvolution.DrUnit.drProb  # Theorem 3, DR-UNIT => DR-PROB
+SchroedingerEvolution.DrUnit.drInfo  # Theorem 3, DR-UNIT => DR-INFO
+SchroedingerEvolution.DrEv.drUnit  # Theorem 3, DR-EV => DR-UNIT
+SchroedingerEvolution.DrProb.drUnit  # Theorem 3, DR-PROB => DR-UNIT
+SchroedingerEvolution.DrInfo.drProb  # Theorem 3, DR-INFO => DR-PROB
+SchroedingerEvolution.schrodinger_tfae  # Theorem 3
+# Any dimension:
+SchroedingerEvolution.InfiniteDimensional.affine_pure_state_correspondence  # Proposition 1
+SchroedingerEvolution.InfiniteDimensional.drUnit_iff_drSceq  # Theorem 3, DR-UNIT iff DR-SCEQ
+SchroedingerEvolution.InfiniteDimensional.DrUnit.drEv  # Theorem 3, DR-UNIT => DR-EV
+SchroedingerEvolution.InfiniteDimensional.DrUnit.drProb  # Theorem 3, DR-UNIT => DR-PROB
+SchroedingerEvolution.InfiniteDimensional.DrUnit.drInfo  # Theorem 3, DR-UNIT => DR-INFO
+SchroedingerEvolution.InfiniteDimensional.DrEv.drUnit  # Theorem 3, DR-EV => DR-UNIT
+SchroedingerEvolution.InfiniteDimensional.DrProb.drEv  # Theorem 3, DR-PROB => DR-EV
+SchroedingerEvolution.InfiniteDimensional.DrProb.drUnit  # Theorem 3, DR-PROB => DR-UNIT
+SchroedingerEvolution.InfiniteDimensional.DrInfo.drProb  # Theorem 3, DR-INFO => DR-PROB
+SchroedingerEvolution.InfiniteDimensional.schrodinger_tfae  # Theorem 3

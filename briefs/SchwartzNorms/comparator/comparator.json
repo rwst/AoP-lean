@@ -1,0 +1,23 @@
+{
+  "challenge_module": "ChallengeSchwartzNorms",
+  "solution_module": "SolutionSchwartzNorms",
+  "theorem_names": [
+    "SchwartzNorms.l2Norm_sq_le",
+    "SchwartzNorms.l1Norm_le",
+    "SchwartzNorms.supNorm_le",
+    "SchwartzNorms.not_supNorm_le_const",
+    "SchwartzNorms.tfae_finite",
+    "SchwartzNorms.supNorm_eq_seminorm",
+    "SchwartzNorms.exists_schwartzMap_iff",
+    "SchwartzNorms.isBounded_sup_l2",
+    "SchwartzNorms.isBounded_l2_l1",
+    "SchwartzNorms.isBounded_l1_sup",
+    "SchwartzNorms.withSeminorms_l1_l2",
+    "SchwartzNorms.enorm_moment_le"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

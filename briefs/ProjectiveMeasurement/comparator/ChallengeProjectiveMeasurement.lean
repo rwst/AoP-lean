@@ -43,6 +43,10 @@ boundary does. See `COMPARATOR.md`.
 -- ForMathlib.Analysis.InnerProductSpace.PositiveTrace
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public noncomputable section
@@ -68,6 +72,7 @@ attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
+attribute [-instance] instCommCStarAlgebraComplex
 @[expose] public section
 open scoped InnerProductSpace
 open Module End
@@ -110,6 +115,10 @@ end
 -- ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.Compact
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public section
@@ -192,6 +201,10 @@ end
 -- ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.CanonicalExpansion
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public section
@@ -275,6 +288,7 @@ attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
+attribute [-instance] instCommCStarAlgebraComplex
 @[expose] public noncomputable section
 open scoped InnerProductSpace ComplexOrder
 open InnerProductSpace
@@ -289,6 +303,10 @@ end
 -- ForPhyslib.QuantumMechanics.DensityOperator
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public noncomputable section
@@ -307,6 +325,10 @@ end
 -- ForPhyslib.QuantumMechanics.Pinching
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public noncomputable section
@@ -326,6 +348,10 @@ end
 -- ForPhyslib.QuantumMechanics.Dephasing
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public noncomputable section
@@ -348,6 +374,10 @@ end
 -- ForPhyslib.QuantumMechanics.DiscreteObservable
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public noncomputable section
@@ -448,6 +478,11 @@ end
 end
 -- ForPhyslib.QuantumMechanics.RelativeEntropy
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 @[expose] public noncomputable section
 open scoped InnerProductSpace ComplexOrder ENNReal
 open InnerProductSpace QuantumMechanics.Wigner
@@ -462,9 +497,14 @@ def relEntropy (ρ σ : E →L[ℂ] E) : ℝ≥0∞ :=
   else ⊤
 end QuantumMechanics
 end
+end
 -- ForPhyslib.QuantumMechanics.TraceNorm
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public noncomputable section
@@ -484,6 +524,10 @@ end
 -- ForPhyslib.QuantumMechanics.VonNeumannEntropy
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
 @[expose] public noncomputable section
@@ -547,6 +591,7 @@ attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
 attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
+attribute [-instance] instCommCStarAlgebraComplex
 @[expose] public noncomputable section
 namespace UnitaryEntropy
 open Real InnerProductSpace ComplexConjugate ComplexOrder QuantumMechanics.Wigner
@@ -562,6 +607,11 @@ end
 end
 -- ProjectiveMeasurement
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+attribute [-instance] instT6SpaceOfMetrizableSpace
+attribute [-instance] instT4SpaceOfMetrizableSpace
+attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 @[expose] public noncomputable section
 namespace ProjectiveMeasurement
 open Filter Set QuantumMechanics QuantumMechanics.Wigner
@@ -598,6 +648,7 @@ theorem relEntropy_pinching_eq {X : E →L[ℂ] E} (hX : IsSelfAdjoint X) {ρ : 
 theorem projective_measurement_tfae : [EqMeas Φ, EqLind Φ, EqHS Φ, EqKL Φ].TFAE := by
   sorry
 end ProjectiveMeasurement
+end
 end
 -- ProjectiveMeasurement.InfiniteDimensional
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})

@@ -110,27 +110,49 @@ def challengeClosure (env : Environment) (root : Name) : Array Name := Id.run do
     | _ => pure ()
   return out
 
+def challengeRow (env : Environment) (root c : Name) : CommandElabM (Option String) := do
+  let some m := challengeOwner env c | return none
+  if isPrivateName c then
+    throwError "{root} reaches the private constant {c}; comparator cannot compare it"
+  let kind := if (env.find? c).get!.isThm then "thm" else "def"
+  let tgt := if c == root then "TARGET" else "dep"
+  let range := match ← findDeclarationRanges? c with
+    | some r => s!"{r.range.pos.line}\t{r.range.endPos.line}"
+    | none => "-\t-"
+  return some s!"{m}\t{range}\t{kind}\t{tgt}\t{c}"
+
 elab "#challengeData " dir:str : command => do
   let env ← getEnv
   let dir := dir.getString
   let names := (← IO.FS.lines (dir ++ "/theorems.txt")).filter (· ≠ "")
   let mut rows : Array String := #[]
   let mut done : NameSet := {}
+  let mut roots : NameSet := {}
   for s in names do
     let root := s.toName
     unless env.contains root do throwError "not a declaration: {root}"
+    roots := roots.insert root
     for c in (challengeClosure env root).push root do
       if done.contains c then continue
       done := done.insert c
-      let some m := challengeOwner env c | continue
-      if isPrivateName c then
-        throwError "{root} reaches the private constant {c}; comparator cannot compare it"
-      let kind := if (env.find? c).get!.isThm then "thm" else "def"
-      let tgt := if c == root then "TARGET" else "dep"
-      let range := match ← findDeclarationRanges? c with
-        | some r => s!"{r.range.pos.line}\t{r.range.endPos.line}"
-        | none => "-\t-"
-      rows := rows.push s!"{m}\t{range}\t{kind}\t{tgt}\t{c}"
+      if let some r ← challengeRow env root c then rows := rows.push r
+  -- The development's instances on what is copied. Elaboration uses them without leaving a trace
+  -- in the terms the closure follows (a `CoeFun` is unfolded on the spot), so the copy needs them
+  -- too: every one whose type names only copied declarations, with its own closure, until none is
+  -- left. Each was present wherever the copied declarations elaborated.
+  let mut changed := true
+  while changed do
+    changed := false
+    for (c, ci) in env.constants.map₁.toList do
+      if done.contains c || isPrivateName c || !Lean.Meta.isInstanceCore env c then continue
+      if (challengeOwner env c).isNone then continue
+      let used := ci.type.getUsedConstants.filter fun n => (challengeOwner env n).isSome
+      if used.isEmpty || !used.all done.contains || roots.contains c then continue
+      changed := true
+      for d in (challengeClosure env c).push c do
+        if done.contains d then continue
+        done := done.insert d
+        if let some r ← challengeRow env c d then rows := rows.push (r.replace "TARGET" "dep")
   IO.FS.writeFile (dir ++ "/closure.tsv") (String.intercalate "\n" rows.toList)
   let mut decls : Array String := #[]
   for (c, _) in env.constants.map₁.toList do
@@ -536,11 +558,12 @@ def render_text(items, close):
 # priority. See `COMPARATOR.md`.
 TIES = []
 
-# Instances that some modules of the development never load, but the flat file does, and that
+# Instances that some modules of the development never see, but the flat file does, and that
 # change what those modules choose: by outranking it, or by opening a path where the module's
-# search fails and falls back. In the part copied from a module that does not load the instance,
-# it is erased, which the end of the part's section undoes. Each entry lists one that comparator
-# has rejected, with its module. See `COMPARATOR.md`.
+# search fails and falls back. A file sees a module it imports and, recursively, what that module
+# imports publicly; what is loaded only through a private import stays hidden. In the part copied
+# from a module that does not see the instance, it is erased, which the end of the part's section
+# undoes. Each entry lists one that comparator has rejected, with its module. See `COMPARATOR.md`.
 ABSENT = [
     # ProjectiveMeasurement: `ForMathlib.Analysis.InnerProductSpace.Spectrum` reaches `T0Space` of
     # a Hilbert space through `T4Space` of a uniform space, the flat file through the instances
@@ -555,6 +578,9 @@ ABSENT = [
      "TauCeti.Analysis.InnerProductSpace.ContinuousFunctionalCalculus"),
     ("ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint",
      "TauCeti.Analysis.InnerProductSpace.ContinuousFunctionalCalculus"),
+    # SchroedingerEvolution: the brief's module takes `NormedCommRing ℂ` from its normed field,
+    # the flat file through the commutative C⋆-algebra `ℂ`.
+    ("instCommCStarAlgebraComplex", "Mathlib.Analysis.CStarAlgebra.Classes"),
 ]
 
 
@@ -573,7 +599,19 @@ def post_order(roots, edges):
     return {m: i for i, m in enumerate(out)}
 
 
-def pins(mod, flat_imports, edges):
+def visible(roots, pedges):
+    """The modules whose declarations a file importing `roots` sees: the roots and what they
+    import publicly, recursively."""
+    seen, todo = set(roots), list(roots)
+    while todo:
+        for y in pedges[todo.pop()]:
+            if y not in seen:
+                seen.add(y)
+                todo.append(y)
+    return seen
+
+
+def pins(mod, flat_imports, edges, pedges):
     """The `attribute [local instance …]` lines the flat file needs for `mod`'s part."""
     dev = post_order(edges[mod], edges)
     flat = post_order(["Init"] + flat_imports, edges)
@@ -585,8 +623,9 @@ def pins(mod, flat_imports, edges):
         if want != have:
             for k, (x, _) in enumerate(want[1:], 1):
                 out.append(f"attribute [local instance {prio - k}] {x}")
+    seen_dev, seen_flat = visible(edges[mod], pedges), visible(flat_imports, pedges)
     for x, mx in ABSENT:
-        if mx in flat and mx not in dev:
+        if mx in seen_flat and mx not in seen_dev:
             out.append(f"attribute [-instance] {x}")
     return out
 
@@ -655,15 +694,17 @@ def main():
             if not i.startswith("Challenge."):
                 flat_imps[i] = flat_imps.get(i, False) or p
     flat_list = reduce_imports(flat_imps, solution_roots())
-    edges = collections.defaultdict(list)
+    edges, pedges = collections.defaultdict(list), collections.defaultdict(set)
     for row in open(os.path.join(DATA, "graph.tsv")):
-        x, y, _ = row.rstrip("\n").split("\t")
+        x, y, pub = row.rstrip("\n").split("\t")
         if y not in edges[x]:
             edges[x].append(y)
+        if pub == "true":
+            pedges[x].add(y)
     parts = []
     for m in order:
         text = render_text(items[m], True)
-        pinned = pins(m, [i for i, _ in flat_list], edges)
+        pinned = pins(m, [i for i, _ in flat_list], edges, pedges)
         if pinned:
             text = "\n".join(pinned) + "\n" + text
         loose = pinned or any(n[0] == "ctx" for n in tree(items[m]))

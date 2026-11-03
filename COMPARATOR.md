@@ -37,13 +37,16 @@ be unique across the project.
 
 | brief | certified | Lean | challenge |
 | --- | --- | --- | --- |
-| The Born rule is equivalent to the von Neumann entropy | Theorem 9 | `BornRuleEntropy.two_conditions_imply_third` | 117 lines, 6 KiB |
+| The Born rule is equivalent to the von Neumann entropy | Theorem 9 | `BornRuleEntropy.two_conditions_imply_third` | 142 lines, 7 KiB |
 | Classical uncertainty principle | Corollary 1, Theorem 2 (eqs. 3 and 5), the final remark | 7 theorems, see `theorems.txt` | 101 lines, 5 KiB |
 | Physical vector spaces for quantum mechanics | Corollary 2, Example 3 (in `n` dimensions) and its Remark, Example 4, Theorem 5 ([B]COBS) | 6 theorems, see `theorems.txt` | 163 lines, 7 KiB |
 | Directional vectors vs quantum state vectors | eqs. (1)–(3), linearity in terms of probability, half a turn, states as rays, the outcomes as opposite directions, completeness of the forms (1) and (3) | 13 theorems, see `theorems.txt` | 83 lines, 4 KiB |
 | Superpositions correspond to multiple decompositions | Theorem 1 and its two directions (eqs. 3 and 4), eq. (2), the support argument, mixtures of independent states are not pure | 6 theorems, see `theorems.txt` | 73 lines, 4 KiB |
 | Inconsistent convergence in Hilbert space | eqs. (2)–(5), the convergence of `eʲ` in `ℓ²`, the eigenstates `\|j⟩` alone have no limit | 7 theorems, see `theorems.txt` | 51 lines, 2 KiB |
-| Projective measurements are equilibration processes | Theorem 1 (EQ-LIND, EQ-HS, EQ-KL ⇔ EQ-MEAS, eqs. 2–12) and eq. (13), in finite dimension and in any dimension | 10 theorems, see `theorems.txt` | 653 lines, 34 KiB |
+| Projective measurements are equilibration processes | Theorem 1 (EQ-LIND, EQ-HS, EQ-KL ⇔ EQ-MEAS, eqs. 2–12) and eq. (13), in finite dimension and in any dimension | 10 theorems, see `theorems.txt` | 704 lines, 37 KiB |
+| Multiple equivalent characterizations of the Schrödinger equation | Proposition 1 and Theorem 3 with each of its implications, in finite dimension and in any dimension | 19 theorems, see `theorems.txt` | 394 lines, 20 KiB |
+| Equivalence of sup-norm, L¹, and L² seminorms on the Schwartz space | Steps 1–3 (eqs. 6, 7 and 9, with the hypothesis eq. 9 needs), Theorem 5 (the finiteness conditions, the space (4) and its sup seminorms as Mathlib's, the three seminorm families generate one topology), eq. (10) | 12 theorems, see `theorems.txt` | 269 lines, 14 KiB |
+| Non-uniqueness of the moment problem for Schwartz functions | eq. (3), the states `ψ_θ` as distinct rays, the bumps of Fig. 1, Theorem 1 | 6 theorems, see `theorems.txt` | 58 lines, 3 KiB |
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
@@ -85,14 +88,16 @@ definitions are trusted as they stand. Everything this project defines (`ForMath
 the brief libraries) is copied into the challenge instead. `scripts/make-challenge.py` runs a
 metaprogram over the solution's environment that collects the compared closure: every declaration of
 the project reached from a certified theorem's type, following the types and values of definitions
-and the proofs of theorems, as comparator walks it. It then copies each of them from its source
-file, docstrings and comments dropped, and cuts the certified theorems at their `:=` with a `sorry`
-proof (a theorem stated with `where` is cut there, and the `:=` of a `letI` inside a statement is
-skipped). Each copied part keeps the `namespace`, `section`, `open`, `variable`, `include`,
-`omit` and notation commands of its source that some copied declaration follows. An `open` naming
-project declarations that are not copied keeps only the names the copy has. The generator refuses a
-theorem whose closure reaches a `private` constant, because a private name embeds its module's
-name and no challenge can reproduce it.
+and the proofs of theorems, as comparator walks it. To these it adds the project's instances whose
+types name only collected declarations, with their own closures: elaboration uses them without
+leaving a trace in the terms (a `CoeFun` is unfolded on the spot). It then copies each of them from
+its source file, docstrings and comments dropped, and cuts the certified theorems at their `:=` with
+a `sorry` proof (a theorem stated with `where` is cut there, and the `:=` of a `letI` inside a
+statement is skipped). Each copied part keeps the `namespace`, `section`, `open`, `variable`,
+`include`, `omit` and notation commands of its source that some copied declaration follows. An
+`open` naming project declarations that are not copied keeps only the names the copy has. The
+generator refuses a theorem whose closure reaches a `private` constant, because a private name
+embeds its module's name and no challenge can reproduce it.
 
 So reading a lane's `Challenge<Brief>.lean` is enough to know what has been proved, on top of the
 three libraries.
@@ -107,13 +112,19 @@ development elaborates:
   its external modules in the order the development loads them, and drops an import only when an
   earlier one already loads it and makes it visible. Where the development's modules disagree on
   such a tie, the generator's `TIES` table restores each module's choice locally; no lane has
-  needed it yet. An instance that a module never loads but the flat file does can change that
+  needed it yet. An instance that a module never sees but the flat file does can change that
   module's choice too, by outranking it or by opening a path where the module's search fails and
-  falls back. The `ABSENT` table lists such instances; the part copied from a module that does not
-  load one erases it with `attribute [-instance]`, which the end of the part's section undoes. The
+  falls back. (A file sees the modules it imports and what they import publicly, recursively; a
+  module loaded only through a private import stays hidden.) The `ABSENT` table lists such
+  instances; the part copied from a module that does not see one erases it with
+  `attribute [-instance]`, which the end of the part's section undoes, and only where the flat
+  file sees it. The
   ProjectiveMeasurement lane needs it for the instances of `Mathlib.Topology.GDelta.MetrizableSpace`
   (the path to `T0Space` of a Hilbert space) and of TauCeti's
-  `Analysis.InnerProductSpace.ContinuousFunctionalCalculus` (the `cfc` of operators).
+  `Analysis.InnerProductSpace.ContinuousFunctionalCalculus` (the `cfc` of operators), the
+  SchroedingerEvolution lane for `instCommCStarAlgebraComplex` (the path to `NormedCommRing ℂ`).
+  Erasing every instance a module does not see would be exact, but adds hundreds of lines to
+  each part, so the table lists only those comparator has rejected.
 - **The auxiliary-proof cache is module-local.** Lean lifts some proofs inside a definition into
   `<owner>._proof_<n>` constants and caches them for the rest of the module. Each copied part opens
   with `run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})`, which clears that cache as a
@@ -121,9 +132,11 @@ development elaborates:
 - **Copied proofs must elaborate to the same term.** Comparator compares the theorems of the
   closure by their proofs as well: a dependency with a `sorry` proof is rejected. A copied proof
   therefore cannot use what the copy lacks. `simp` lemmas proved by `rfl` leave no trace in the
-  proof term, so they are never copied; and `abel`, or `simp` given an `iff` lemma, mint private
-  auxiliary constants. Proofs in the closure avoid both (see `dephasingGenerator` and
-  `IsTraceClass.exists_hasSum_rankOne`).
+  proof term, so they are never copied. `abel`, `decide +kernel` (which closes the index side goals
+  of `List.TFAE.out`), and `simp` given an `iff` lemma or a reversed one (`← h`) mint private
+  auxiliary constants. Proofs in the closure avoid them (see `dephasingGenerator`,
+  `IsTraceClass.exists_hasSum_rankOne`, and `SchwartzNorms.l2Norm_lt_top`, which passes the side
+  goals explicitly).
 
 ## Negative controls
 
@@ -172,5 +185,27 @@ On the ProjectiveMeasurement lane, changing `f a < f b` to `f a ≤ f b` in the 
 hypothesis `hS` of `InfiniteDimensional.relativeEntropy_pinching_eq` with `Challenge and solution
 theorem statement do not match:
 'ProjectiveMeasurement.InfiniteDimensional.relativeEntropy_pinching_eq'`.
+
+On the SchroedingerEvolution lane, changing `(I * ħ)⁻¹` to `I * ħ` in the challenge's `DrSceq` is
+rejected with `Const does not match between challenge and target 'SchroedingerEvolution.DrSceq'`,
+dropping the surjectivity from `InfiniteDimensional.DrInfo` with `Const does not match between
+challenge and target 'SchroedingerEvolution.InfiniteDimensional.DrInfo'`, and dropping the
+hypothesis `hħ` of `drUnit_iff_drSceq` with `Challenge and solution theorem statement do not
+match: 'SchroedingerEvolution.drUnit_iff_drSceq'`.
+
+On the SchwartzNorms lane, swapping `α` and `β` in the challenge's `supNorm` is rejected with
+`Const does not match between challenge and target 'SchwartzNorms.supNorm'`, dropping the
+hypothesis `h` of `supNorm_le` with `Challenge and solution theorem statement do not match:
+'SchwartzNorms.supNorm_le'`, and replacing `√(π / 2)` by `√(π / 4)` in `l1Norm_le` with the same
+message for `'SchwartzNorms.l1Norm_le'`. Each control ran with a configuration naming only the
+theorem it touches.
+
+On the SchwartzMomentProblem lane, changing `-I * ħ` to `I * ħ` in the challenge's `density` is
+rejected with `Const does not match between challenge and target
+'SchwartzMomentProblem.density'`, dropping the hypothesis `hfg` of `moment_psi` with `Challenge
+and solution theorem statement do not match: 'SchwartzMomentProblem.moment_psi'`, and changing the
+inner radius of `realBump` from `1 / 2` to `1 / 3` with `Const does not match between challenge
+and target 'SchwartzMomentProblem.realBump'`. Each control ran with a configuration naming only
+the theorem it touches.
 
 Re-run a control after any change to the generator.

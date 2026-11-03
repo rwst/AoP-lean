@@ -31,6 +31,7 @@ attribute [-instance] instT6SpaceOfMetrizableSpace
 attribute [-instance] instT4SpaceOfMetrizableSpace
 attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
+attribute [-instance] instCommCStarAlgebraComplex
 open RCLike Filter Topology
 @[expose] public noncomputable section
 namespace PreInnerProductSpace.Core
