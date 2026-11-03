@@ -153,17 +153,22 @@ theorem eq_exp_of_schrodinger {ħ : ℝ} {H : E →L[ℂ] E} {U : ℝ → E →L
       ← smul_add, add_neg_cancel, smul_zero, NormedSpace.exp_zero]
   rw [← one_mul (U t), ← he, mul_assoc, h, mul_one]
 
+/-- A norm-continuous unitary one-parameter group solves the Schrödinger equation with the
+Hamiltonian `ħ` times its generator. -/
+lemma hasDerivAt_unitaryOneParameterGroup {ħ : ℝ} (hħ : ħ ≠ 0) (V : UnitaryOneParameterGroup E)
+    (t : ℝ) : HasDerivAt V ((I * ħ)⁻¹ • (((ħ : ℂ) • V.generator) * V t)) t := by
+  convert V.hasDerivAt t using 1
+  rw [smul_mul_assoc, smul_smul, (V.commute_generator t).eq, mul_neg, mul_smul_comm,
+    ← neg_smul, mul_inv, mul_assoc, inv_mul_cancel₀ (ofReal_ne_zero.mpr hħ), mul_one, inv_I]
+
 /-- **Theorem 3**, DR-UNIT ⇔ DR-SCEQ: by the bounded Stone theorem, a norm-continuous unitary
 one-parameter group is `exp (t (iħ)⁻¹ H)` for a self-adjoint `H`, and conversely. -/
 theorem drUnit_iff_drSceq {ħ : ℝ} (hħ : ħ ≠ 0) {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E} :
     DrUnit Φ ↔ DrSceq ħ Φ := by
   constructor
   · rintro ⟨V, hV⟩
-    refine ⟨(ħ : ℂ) • V.generator, V, .smul (conj_ofReal ħ) V.generator_isSelfAdjoint,
-      V.toAddChar.map_zero_eq_one, fun t => ?_, hV⟩
-    convert V.hasDerivAt t using 1
-    rw [smul_mul_assoc, smul_smul, (V.commute_generator t).eq, mul_neg, mul_smul_comm,
-      ← neg_smul, mul_inv, mul_assoc, inv_mul_cancel₀ (ofReal_ne_zero.mpr hħ), mul_one, inv_I]
+    exact ⟨(ħ : ℂ) • V.generator, V, .smul (conj_ofReal ħ) V.generator_isSelfAdjoint,
+      V.toAddChar.map_zero_eq_one, hasDerivAt_unitaryOneParameterGroup hħ V, hV⟩
   · rintro ⟨H, U, hH, hU₀, hU, hΦ⟩
     have hA : IsSelfAdjoint ((ħ⁻¹ : ℂ) • H) :=
       .smul (by rw [IsSelfAdjoint, star_inv₀, star_def, conj_ofReal]) hH

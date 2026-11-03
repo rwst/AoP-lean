@@ -147,9 +147,11 @@ Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
   $\mathbb{R}$, as the brief's $U_{-t} = U_t^\dagger$ does.
 \item Joint continuity of $(\rho, t_0, t_1) \mapsto \Phi_{t_0 \to t_1}(\rho)$ is weakened to
   continuity of $t \mapsto \Phi_t(\rho)$ at $0^+$ for each density operator $\rho$, which joint
-  continuity implies. Proposition~1 needs no continuity at all.
-\item Under EVTI the Hamiltonian of DR-SCEQ is constant, so DR-SCEQ is stated with a constant $H$;
-  the brief writes $H(t)$. It is stated for the propagator $U$, which gives the brief's form
+  continuity implies. Proposition~1 needs no continuity at all. The two-parameter
+  form with joint continuity is in Section~\ref{sec:schroedinger-evolution-two-parameter}.
+\item DR-SCEQ is stated with a constant $H$; the brief writes $H(t)$. The brief's form is in
+  Section~\ref{sec:schroedinger-evolution-two-parameter}, where it is shown to be equivalent
+  under EVTI. It is stated for the propagator $U$, which gives the brief's form
   $\psi(t) = U(t)\psi(0)$ for every initial vector.
 \item The ``reconstructed past'' clauses of DR-PROB and DR-INFO are dropped: a past state $\psi_P$
   is one with $\Phi_t(\psi_P) = \psi_F$, so its equality follows from the future one. In DR-EV
@@ -218,6 +220,66 @@ Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
 \item The overall phase of $U_t$ and the additive constant in $H$ (the brief's last remark) appear
   in the lift as the freedom in $K$: $K + c$ has the same commutator for every scalar $c$.
   Taking the skew part removes the real part of $c$; the imaginary part is that constant.
+\end{itemize}
+
+%======================================================================
+\subsection{The conditions as the brief writes them}\label{sec:schroedinger-evolution-two-parameter}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/SchroedingerEvolution/SchroedingerEvolution/TwoParameter.lean}
+\item Library: \lean{SchroedingerEvolution}
+\item Imports:\newline the finite-dimensional part \lean{SchroedingerEvolution}, which gained
+  \lean{hasDerivAt_unitaryOneParameterGroup} (a unitary group solves the Schr\"odinger equation
+  with $H = \hbar\cdot$generator), split off from \lean{drUnit_iff_drSceq}
+\end{itemize}
+
+\paragraph{Setting.} As in finite dimension above, with the brief's two-parameter evolution in
+place of the one-parameter $\Phi_t$. A family $\Psi_{t_0 t_1} = \Phi_{t_0 \to t_1}$ of maps on
+operators is used for $t_0 \le t_1$ and on density operators only.
+\lean{TwoParameter.IsEvolution}~$\Psi$ (QST:H + [B]EVMIX) says that each $\Psi_{t_0 t_1}$ maps
+density operators to density operators and is affine on them, $\Psi_{tt} = \mathrm{id}$,
+$\Psi_{t_1 t_2} \circ \Psi_{t_0 t_1} = \Psi_{t_0 t_2}$ for $t_0 \le t_1 \le t_2$, and
+$(\rho, t_0, t_1) \mapsto \Psi_{t_0 t_1}(\rho)$ is jointly continuous on the density operators and
+$t_0 \le t_1$. \lean{TwoParameter.Evti}~$\Psi$~$\Phi$ (EVTI) says $\Psi_{t_0 t_1} =
+\Phi_{t_1 - t_0}$ on density operators. \lean{TwoParameter.DrSceq}~$\hbar$~$\Psi$ is DR-SCEQ with a
+time-dependent Hamiltonian: there are self-adjoint $H(t)$ and $U$ with $U(0) = 1$ and $U'(t) =
+(i\hbar)^{-1}H(t)U(t)$ for every $t \in \mathbb{R}$, and $\Psi_{t_0 t_1}(\rho) = V\rho V^\dagger$
+with the propagator $V = U(t_1)U(t_0)^\dagger$. DR-UNIT, DR-EV, DR-PROB and DR-INFO are the
+conditions of the one-parameter section on $\Phi$, since the brief states them for $\Phi_t$.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+{[B]EVMIX} + EVTI give the one-parameter evolution & \lean{TwoParameter.IsEvolution.isEvolution} \\
+DR-SCEQ, the solution is unitary for any self-adjoint $H(t)$ &
+  \lean{TwoParameter.star_mul_self_of_hasDerivAt} \\
+Theorem 3, DR-SCEQ with $H(t)$ $\Leftrightarrow$ DR-SCEQ with constant $H$ &
+  \lean{TwoParameter.drSceq_iff} (for $\hbar \ne 0$) \\
+Theorem 3, as stated & \lean{TwoParameter.schrodinger_tfae} (for $\hbar \ne 0$) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Remarks.}
+\begin{itemize}
+\item Joint continuity is used only at $t_0 = t_1 = 0$, along $t \mapsto (\rho, 0, t)$, to get
+  the continuity of $t \mapsto \Phi_t(\rho)$ at $0^+$ that \lean{IsEvolution} asks for.
+\item DR-SCEQ with $H(t)$ $\Rightarrow$ DR-UNIT: $\frac{d}{dt}(U^\dagger U) = U^\dagger
+  \bigl(\overline{(i\hbar)^{-1}} + (i\hbar)^{-1}\bigr) H(t) U = 0$, so $U(t)^\dagger U(t) =
+  U(0)^\dagger U(0) = 1$. This needs no continuity of $H$, and in finite dimension a left inverse
+  is a right inverse, so every $U(t)$ is unitary. Then $\Phi_t = \Psi_{0t}$ is conjugation by
+  $U(t)$, and \lean{drUnit_of_implemented} gives DR-UNIT.
+\item The converse takes the constant $H(t) = \hbar\cdot$generator of the DR-UNIT group $V$; the
+  propagator is $V_{t_1}V_{t_0}^\dagger = V_{t_1 - t_0}$ by the group law, and EVTI gives
+  $\Psi_{t_0 t_1} = \Phi_{t_1 - t_0}$.
+\item That $H(t)$ is then constant up to a time-dependent real multiple of the identity,
+  $H(t) = H + c(t)$, is not formalized; Theorem~3 does not need it. Under EVTI the propagators
+  equal $e^{(t_1 - t_0)(i\hbar)^{-1}H}$ up to a phase, which is where $c(t)$ comes from (the
+  brief's remark on the phase of the unitary).
 \end{itemize}
 
 %======================================================================

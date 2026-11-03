@@ -397,3 +397,44 @@ theorem schrodinger_tfae (hΦ : IsEvolution Φ) {ħ : ℝ} (hħ : ħ ≠ 0) :
   sorry
 end SchroedingerEvolution.InfiniteDimensional
 end
+-- SchroedingerEvolution.TwoParameter
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRCLikeIsSelfAdjoint
+attribute [-instance] ContinuousLinearMap.instContinuousFunctionalCalculusRealIsSelfAdjoint
+attribute [-instance] instCommCStarAlgebraComplex
+@[expose] public noncomputable section
+namespace SchroedingerEvolution.TwoParameter
+open InnerProductSpace QuantumMechanics.Wigner Complex
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+structure IsEvolution (Ψ : ℝ → ℝ → (E →L[ℂ] E) → E →L[ℂ] E) : Prop where
+  isDensity : ∀ t₀ t₁, t₀ ≤ t₁ → ∀ ρ, IsDensity ρ → IsDensity (Ψ t₀ t₁ ρ)
+  affine : ∀ t₀ t₁, t₀ ≤ t₁ → AffineOnDensities (Ψ t₀ t₁)
+  map_self : ∀ t ρ, IsDensity ρ → Ψ t t ρ = ρ
+  map_comp : ∀ t₀ t₁ t₂, t₀ ≤ t₁ → t₁ ≤ t₂ → ∀ ρ, IsDensity ρ →
+    Ψ t₁ t₂ (Ψ t₀ t₁ ρ) = Ψ t₀ t₂ ρ
+  continuousOn : ContinuousOn (fun p : (E →L[ℂ] E) × ℝ × ℝ => Ψ p.2.1 p.2.2 p.1)
+    {p | IsDensity p.1 ∧ p.2.1 ≤ p.2.2}
+def Evti (Ψ : ℝ → ℝ → (E →L[ℂ] E) → E →L[ℂ] E) (Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E) : Prop :=
+  ∀ t₀ t₁, t₀ ≤ t₁ → ∀ ρ, IsDensity ρ → Ψ t₀ t₁ ρ = Φ (t₁ - t₀) ρ
+variable [CompleteSpace E] in
+def DrSceq (ħ : ℝ) (Ψ : ℝ → ℝ → (E →L[ℂ] E) → E →L[ℂ] E) : Prop :=
+  ∃ (H : ℝ → E →L[ℂ] E) (U : ℝ → E →L[ℂ] E), (∀ t, IsSelfAdjoint (H t)) ∧ U 0 = 1 ∧
+    (∀ t, HasDerivAt U ((I * ħ)⁻¹ • (H t * U t)) t) ∧
+    ∀ t₀ t₁, t₀ ≤ t₁ → ∀ ρ, IsDensity ρ →
+      Ψ t₀ t₁ ρ = U t₁ * star (U t₀) * ρ * star (U t₁ * star (U t₀))
+variable {Ψ : ℝ → ℝ → (E →L[ℂ] E) → E →L[ℂ] E} {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E}
+theorem IsEvolution.isEvolution (hΨ : IsEvolution Ψ) (hΦ : Evti Ψ Φ) :
+    SchroedingerEvolution.IsEvolution Φ := by
+  sorry
+variable [CompleteSpace E]
+variable [FiniteDimensional ℂ E]
+theorem drSceq_iff (hΨ : IsEvolution Ψ) (hΦ : Evti Ψ Φ) {ħ : ℝ} (hħ : ħ ≠ 0) :
+    DrSceq ħ Ψ ↔ SchroedingerEvolution.DrSceq ħ Φ := by
+  sorry
+theorem schrodinger_tfae (hΨ : IsEvolution Ψ) (hΦ : Evti Ψ Φ) {ħ : ℝ} (hħ : ħ ≠ 0) :
+    [DrSceq ħ Ψ, DrUnit Φ, DrEv Φ, DrProb Φ, DrInfo Φ].TFAE := by
+  sorry
+end SchroedingerEvolution.TwoParameter
+end
+end

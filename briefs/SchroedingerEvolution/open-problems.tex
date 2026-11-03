@@ -32,9 +32,12 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 \begin{enumerate}
 \item \textbf{Time-dependent evolution.} The equivalence of DR-SCEQ, DR-UNIT, DR-EV, DR-PROB and
   DR-INFO without EVTI, for two-parameter families $\Phi_{t_0 \to t_1}$ and a time-dependent
-  Hamiltonian $H(t)$, as DR-SCEQ is written. The brief only says ``We are going to restrict the
-  dynamics to the time-independent case''; the formalization uses a constant $H$. (Brief, Sec.~3,
-  before Condition EVTI, and Condition DR-SCEQ; log, ``Differences from the brief''.)
+  Hamiltonian $H(t)$. The brief only says ``We are going to restrict the dynamics to the
+  time-independent case''. That case is formalized as the brief writes it, with the two-parameter
+  [B]EVMIX, EVTI, and DR-SCEQ with $H(t)$ (\lean{TwoParameter.schrodinger_tfae}). Without EVTI
+  there is no one-parameter group, and DR-UNIT, DR-EV, DR-PROB and DR-INFO would have to be
+  restated for the propagators $\Phi_{t_0 \to t_1}$. (Brief, Sec.~3, before Condition EVTI, and
+  Condition DR-SCEQ; log, ``The conditions as the brief writes them''.)
 \item \textbf{Isolation as determinism and reversibility.} ``Conceptually, all these are
   equivalent to saying that the system is isolated, as future and past states are determined,
   and only determined, by the present state of the system.'' Isolation is not defined, so this

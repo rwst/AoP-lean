@@ -14,6 +14,10 @@ SchroedingerEvolution.DrEv.drUnit  # Theorem 3, DR-EV => DR-UNIT
 SchroedingerEvolution.DrProb.drUnit  # Theorem 3, DR-PROB => DR-UNIT
 SchroedingerEvolution.DrInfo.drProb  # Theorem 3, DR-INFO => DR-PROB
 SchroedingerEvolution.schrodinger_tfae  # Theorem 3
+# Two-parameter form and DR-SCEQ with H(t), as the brief writes them:
+SchroedingerEvolution.TwoParameter.IsEvolution.isEvolution  # [B]EVMIX + EVTI
+SchroedingerEvolution.TwoParameter.drSceq_iff  # Theorem 3, DR-SCEQ with H(t) iff constant H
+SchroedingerEvolution.TwoParameter.schrodinger_tfae  # Theorem 3, as stated
 # Any dimension:
 SchroedingerEvolution.InfiniteDimensional.affine_pure_state_correspondence  # Proposition 1
 SchroedingerEvolution.InfiniteDimensional.drUnit_iff_drSceq  # Theorem 3, DR-UNIT iff DR-SCEQ

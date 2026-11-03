@@ -44,7 +44,7 @@ be unique across the project.
 | Superpositions correspond to multiple decompositions | Theorem 1 and its two directions (eqs. 3 and 4), eq. (2), the support argument, mixtures of independent states are not pure | 6 theorems, see `theorems.txt` | 73 lines, 4 KiB |
 | Inconsistent convergence in Hilbert space | eqs. (2)–(5), the convergence of `eʲ` in `ℓ²`, the eigenstates `\|j⟩` alone have no limit | 7 theorems, see `theorems.txt` | 51 lines, 2 KiB |
 | Projective measurements are equilibration processes | Theorem 1 (EQ-LIND, EQ-HS, EQ-KL ⇔ EQ-MEAS, eqs. 2–12) and eq. (13), in finite dimension and in any dimension | 10 theorems, see `theorems.txt` | 704 lines, 37 KiB |
-| Multiple equivalent characterizations of the Schrödinger equation | Proposition 1 and the remark after it (injective suffices in finite dimension), Theorem 3 with each of its implications, in finite dimension and in any dimension | 20 theorems, see `theorems.txt` | 399 lines, 21 KiB |
+| Multiple equivalent characterizations of the Schrödinger equation | Proposition 1 and the remark after it (injective suffices in finite dimension), Theorem 3 with each of its implications, in finite dimension and in any dimension, and in finite dimension as the brief states it (two-parameter evolution, DR-SCEQ with H(t)) | 23 theorems, see `theorems.txt` | 440 lines, 23 KiB |
 | Equivalence of sup-norm, L¹, and L² seminorms on the Schwartz space | Steps 1–3 (eqs. 6, 7 and 9, with the hypothesis eq. 9 needs), Theorem 5 (the finiteness conditions, the space (4) and its sup seminorms as Mathlib's, the three seminorm families generate one topology), eq. (10) | 12 theorems, see `theorems.txt` | 269 lines, 14 KiB |
 | Non-uniqueness of the moment problem for Schwartz functions | eq. (3), the states `ψ_θ` as distinct rays, the bumps of Fig. 1, Theorem 1 | 6 theorems, see `theorems.txt` | 58 lines, 3 KiB |
 
@@ -193,7 +193,13 @@ challenge and target 'SchroedingerEvolution.InfiniteDimensional.DrInfo'`, and dr
 hypothesis `hħ` of `drUnit_iff_drSceq` with `Challenge and solution theorem statement do not
 match: 'SchroedingerEvolution.drUnit_iff_drSceq'`. Dropping the injectivity `hinj` from
 `bijOnPure_of_injOn` is rejected with `Challenge and solution theorem statement do not match:
-'SchroedingerEvolution.bijOnPure_of_injOn'`.
+'SchroedingerEvolution.bijOnPure_of_injOn'`. Changing `Φ (t₁ - t₀)` to `Φ (t₁ + t₀)` in
+`TwoParameter.Evti` is rejected with `Const does not match between challenge and target
+'SchroedingerEvolution.TwoParameter.Evti'`, replacing the propagator `U t₁ U t₀†` of
+`TwoParameter.DrSceq` by `U t₀† U t₁` with `Const does not match between challenge and target
+'SchroedingerEvolution.TwoParameter.DrSceq'`, and dropping `hħ` from `TwoParameter.drSceq_iff`
+with `Challenge and solution theorem statement do not match:
+'SchroedingerEvolution.TwoParameter.drSceq_iff'`.
 
 On the SchwartzNorms lane, swapping `α` and `β` in the challenge's `supNorm` is rejected with
 `Const does not match between challenge and target 'SchwartzNorms.supNorm'`, dropping the

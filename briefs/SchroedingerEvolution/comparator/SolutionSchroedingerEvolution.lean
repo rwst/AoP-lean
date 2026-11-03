@@ -7,6 +7,7 @@ module
 
 public import SchroedingerEvolution
 public import SchroedingerEvolution.InfiniteDimensional
+public import SchroedingerEvolution.TwoParameter
 
 /-!
 # Characterizations of the Schrödinger equation, re-exported for `lake comparator`
