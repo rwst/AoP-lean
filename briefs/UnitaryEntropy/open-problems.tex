@@ -42,20 +42,26 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 \item \textbf{Propagator for time-dependent $H(t)$.} ``The Schr\"odinger equation gives rise to a
   differentiable unitary propagator $U_{t_0\to t_1}$'' is assumed. The formalization proves
   existence for constant $H$ only; for bounded $H(t)$ it is the linear ODE existence theorem,
-  and for unbounded self-adjoint $H(t)$ it needs Kato-type hypotheses. (Brief, Sec.~3, proof of
-  Theorem~2 ($\Rightarrow$); Log, ``Differences from the brief''.)
+  and for unbounded self-adjoint $H(t)$ it needs Kato-type hypotheses. The converse has the same
+  gap: for unbounded $H(t)$, Step~3 gives only a symmetric $H(t_0)$ (next section, first item).
+  (Brief, Sec.~3, proof of Theorem~2 ($\Rightarrow$); Log, ``Differences from the brief''.)
 \end{enumerate}
 
 \section*{From the formalization}
 \noindent Beyond finite dimension the formalization has a part in any dimension; it leaves
-open the items ``Unbounded Hamiltonians'', ``Norm-differentiable $U(t)$ in infinite
+open the items ``Unbounded time-dependent Hamiltonians'', ``Norm-differentiable $U(t)$ in infinite
 dimension'' and ``Isometric semigroup without a past'' below.
 \begin{enumerate}
-\item \textbf{Unbounded Hamiltonians.} Step~3 assumes $U_{t_0\to t_0+dt} = I + A(t_0)dt + o(dt)$,
-  and EVDIFF on every density operator forces a bounded $H$ (Banach--Steinhaus). The right form
-  of EVDIFF for unbounded $H(t)$, differentiable only on a dense set of states, and the
-  corresponding version of Theorem~2 are open here. (Log, ``Problems found in the brief'', Step~3
-  item and last item of the any-dimension part.)
+\item \textbf{Unbounded time-dependent Hamiltonians.} EVDIFF on every density operator forces a
+  bounded $H$ (Banach--Steinhaus). With EVDIFF on a dense set of states, Theorem~2 is formalized
+  for a time-independent evolution, with unbounded self-adjoint $H$
+  (\lean{drSceq_iff_drInfo_and_evDiff}, by Stone's theorem). Without EVTI, Step~3 gives only a
+  skew-symmetric $A(t_0)$, and $H(t_0)$ need not be self-adjoint: the propagator of
+  $H(t) = H_\beta$ for $t < 0$ and $H_\alpha$ for $t \ge 0$, two self-adjoint extensions of the
+  momentum on $L^2(0,1)$, is differentiable at $0$ exactly on the domain of the minimal momentum
+  operator, which is not self-adjoint. Open: the hypotheses (Kato-type, or on the evolution)
+  under which DR-INFO + EVDIFF gives a self-adjoint $H(t)$, and the formalization of the example.
+  (Log, ``Unbounded Hamiltonians''.)
 \item \textbf{Mixed states.} $\Phi_{t_0\to t_1}(\rho) = U_{t_0\to t_1}\rho\,U_{t_0\to t_1}^\dagger$
   for mixed $\rho$ is not formalized. It needs $\Phi$ affine (Kadison); whether preservation of
   equal mixtures alone suffices is not settled. (Log, ``Differences from the brief'', last item

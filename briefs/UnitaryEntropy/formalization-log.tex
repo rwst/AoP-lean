@@ -352,9 +352,81 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   anyway.
 \item EVDIFF for every density operator forces a bounded Hamiltonian, as the Banach--Steinhaus
   step shows. Unbounded Hamiltonians, whose evolution is differentiable only on a dense set of
-  states, are outside the theorem as stated; the brief ``Multiple equivalent characterizations of
-  the Schr\"odinger equation'' treats them with Stone's theorem. Otherwise no problems beyond
-  those of the finite-dimensional part.
+  states, are outside the theorem as stated; see Section~\ref{sec:unitary-entropy-unbounded}.
+  Otherwise no problems beyond those of the finite-dimensional part.
+\end{itemize}
+
+\subsection{Unbounded Hamiltonians}\label{sec:unitary-entropy-unbounded}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/Unbounded.lean}
+\item Imports: \lean{SchroedingerEvolution.InfiniteDimensional}, the any-dimension part of the
+  brief ``Multiple equivalent characterizations of the Schr\"odinger equation'' (for
+  \lean{IsEvolution}, \lean{DrInfo}, \lean{DrSceq} and \lean{schrodinger_tfae}). That module
+  imports \lean{UnitaryEntropy.InfiniteDimensional}, so the module graph stays acyclic, but the
+  library \lean{UnitaryEntropy} now depends on the library \lean{SchroedingerEvolution}.
+\end{itemize}
+
+\paragraph{Setting.} As in Section~\ref{sec:unitary-entropy-any-dim}, restricted to a
+time-independent evolution (EVTI): $\Phi_t$ for $t \ge 0$, with $\Phi_0 = I$,
+$\Phi_{s+t} = \Phi_s \circ \Phi_t$, affine on the density operators and continuous at $0^+$ in
+operator norm on each density operator (\lean{IsEvolution}). DR-INFO is entropy preservation
+together with a reconstructed past for every density operator (\lean{DrInfo}). DR-SCEQ is
+conjugation by a propagator $U$ with $U(0) = I$ that solves
+$\tfrac{d}{dt}U(t)\psi = (i\hbar)^{-1}HU(t)\psi$ for $\psi$ in the domain of a self-adjoint,
+in general unbounded, $H$ (\lean{DrSceq}). EVDIFF is weakened to a dense set of states
+(\lean{EvDiff}): there is a dense subspace $D$ such that $t \mapsto \Phi_t(\ket\psi\bra\psi)$ is
+differentiable on $t \ge 0$, in operator norm, for every unit vector $\psi \in D$.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+EVDIFF on a dense set of states & \lean{EvDiff} \\
+Theorem 2 ($\Rightarrow$), EVDIFF & \lean{evDiff_of_drSceq} (with
+  \lean{differentiableAt_proj_of_hasDerivAt}) \\
+Theorem 2 with EVTI, unbounded $H$ & \lean{drSceq_iff_drInfo_and_evDiff} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Only the time-independent case is formalized. For ($\Leftarrow$), DR-INFO gives DR-SCEQ
+  by \lean{schrodinger_tfae}, through DR-PROB, DR-EV, DR-UNIT and Stone's theorem; EVDIFF is not
+  used, since continuity and the group law already give a self-adjoint generator. For
+  ($\Rightarrow$), DR-INFO is part of \lean{schrodinger_tfae}, and the dense subspace in EVDIFF
+  is the domain of $H$: for $\psi$ there, $t \mapsto U(t)\psi$ is differentiable, hence so is
+  $t \mapsto \ket{U(t)\psi}\bra{U(t)\psi} = \Phi_t(\ket\psi\bra\psi)$, as
+  $(x, y) \mapsto \ket{x}\bra{y}$ is a bounded real-bilinear map.
+\item The time-dependent case of Theorem~2 with unbounded $H(t)$ is not formalized; see the next
+  paragraph.
+\end{itemize}
+
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item For unbounded generators, Step~3 gives only a symmetric $H(t_0)$. If $t \mapsto U(t)\psi$
+  is differentiable at $t_0$ only for $\psi$ in a dense subspace $D$, differentiating
+  $\braket{U(t)\psi|U(t)\phi} = \braket{\psi|\phi}$ gives $\braket{A\psi|\phi} =
+  -\braket{\psi|A\phi}$ on $D$: $A(t_0)$ is skew-symmetric, which is weaker than
+  $A(t_0) = -A(t_0)^\dagger$ for an unbounded $A(t_0)$. Then $H(t_0)$ need not be self-adjoint,
+  even on the largest such $D$. Example (not formalized): on $L^2(0,1)$ let $H_\alpha$ and
+  $H_\beta$ be $-i\,d/dx$ with the boundary conditions $\psi(1) = e^{i\alpha}\psi(0)$ and
+  $\psi(1) = e^{i\beta}\psi(0)$, $\alpha \ne \beta$, both self-adjoint. Take
+  $H(t) = H_\beta$ for $t < 0$ and $H(t) = H_\alpha$ for $t \ge 0$, so the family
+  differentiated at $t_0 = 0$ is $U(t) = U_{0\to t} = e^{-itH_\alpha/\hbar}$ for $t \ge 0$ and
+  $U(t) = U_{t\to 0}^\dagger = e^{-itH_\beta/\hbar}$ for $t \le 0$.
+  The evolution is unitary, so it satisfies [B]EVMIX and DR-INFO. The right derivative of
+  $U(t)\psi$ at $0$ exists exactly for $\psi$ in the domain of $H_\alpha$, the left one for
+  $\psi$ in the domain of $H_\beta$, so $U(t)\psi$ is differentiable at $0$ exactly when
+  $\psi \in H^1(0,1)$ with $\psi(0) = \psi(1) = 0$. This subspace is dense, but $-i\,d/dx$ on it
+  is the minimal momentum operator, closed and symmetric with deficiency indices $(1,1)$, and not
+  self-adjoint. So the self-adjointness of $H(t)$ has to be assumed, as in Kato's theory of
+  time-dependent Hamiltonians, rather than derived from EVDIFF. With EVTI it is derived, by
+  Stone's theorem.
 \end{itemize}
 
 \end{document}

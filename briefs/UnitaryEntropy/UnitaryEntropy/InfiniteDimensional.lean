@@ -54,7 +54,8 @@ Theorem 2, DR-INFO + EVDIFF ⇒ DR-SCEQ:
   Banach–Steinhaus the derivative is a bounded operator (`exists_hasDerivAt_apply`), skew-adjoint
   because the `U t` are unitary, so `ψ'(t₀) = (iħ)⁻¹ H ψ(t₀)` with `H` bounded and self-adjoint.
 EVDIFF on every density operator forces a bounded Hamiltonian; unbounded ones, differentiable
-only on a dense set of states, are not covered.
+only on a dense set of states, are treated for a time-independent evolution in
+`UnitaryEntropy.Unbounded`.
 -/
 
 public import ForMathlib.Analysis.InnerProductSpace.StrongDerivative
