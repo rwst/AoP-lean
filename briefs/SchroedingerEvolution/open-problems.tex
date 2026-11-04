@@ -45,16 +45,9 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 \end{enumerate}
 
 \section*{From the formalization}
-\noindent Beyond finite dimension the formalization has a part in any dimension, which covers
-unbounded $H$; it leaves open the item ``Shift semigroup counterexample'' below.
-\begin{enumerate}
-\item \textbf{Shift semigroup counterexample.} The right shifts $V_t$ on $L^2(0,\infty)$ give an
-  evolution $\Phi_t(\rho) = V_t\rho V_t^\dagger$ that maps pure states to pure states and
-  preserves the Born rule and the entropy, but satisfies neither DR-EV nor DR-UNIT. It shows
-  that the reconstructed past clauses of DR-PROB and DR-INFO are needed in infinite dimension.
-  Formalized only as a single map (\lean{shift_preserves_not_unitary}), not as a semigroup
-  satisfying \lean{IsEvolution}. (Log, ``Hilbert spaces of any dimension'', ``Problems found in
-  the brief''.)
-\end{enumerate}
+\noindent None found. Beyond finite dimension the formalization has a part in any dimension,
+which covers unbounded $H$, and the shift semigroup on $L^2(0,\infty)$, which shows that the
+reconstructed past clauses of DR-PROB and DR-INFO are needed there
+(\lean{shift_semigroup_counterexample}; log, ``Problems found in the brief'').
 
 \end{document}

@@ -299,6 +299,10 @@ Theorem 3, as stated & \lean{TwoParameter.schrodinger_tfae} (for $\hbar \ne 0$) 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
 \item File: \lean{briefs/SchroedingerEvolution/SchroedingerEvolution/InfiniteDimensional.lean}
+\item File: \lean{briefs/SchroedingerEvolution/SchroedingerEvolution/ShiftSemigroup.lean} (the
+  shift semigroup, see ``Problems found in the brief''), importing \lean{InfiniteDimensional}
+  and \lean{Mathlib.MeasureTheory.Function.LpSpace.DomAct.Continuous} (translation is continuous
+  on $L^p$)
 \item Library: \lean{SchroedingerEvolution}, which now builds every module
   \lean{SchroedingerEvolution.*}
 \item Imports:\newline \lean{ForPhyslib.QuantumMechanics.Stone},\newline
@@ -387,6 +391,9 @@ Bargmann, the cocycle lemma & \lean{Real.exists_eq_exp_of_localCocycle},
 Theorem 3, DR-PROB $\Rightarrow$ DR-UNIT & \lean{DrProb.drEv}, then \lean{DrEv.drUnit} \\
 Theorem 3, DR-INFO $\Rightarrow$ DR-UNIT & \lean{DrInfo.drProb}, then \lean{DrProb.drUnit} \\
 Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
+The past clauses of DR-PROB and DR-INFO are needed & \lean{shift_semigroup_counterexample}
+  (from \lean{isEvolution_shiftEvolution}, \lean{not_drEv_shiftEvolution},
+  \lean{not_drUnit_shiftEvolution}) \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -468,7 +475,17 @@ Theorem 3, complete & \lean{schrodinger_tfae} (for $\hbar \ne 0$) \\
   form a strongly continuous semigroup of isometries. $\Phi_t(\rho) = V_t\rho V_t^\dagger$
   satisfies \lean{IsEvolution}, maps pure states to pure states, preserves the Born rule and the
   entropy, but is not a bijection of the pure states and so satisfies neither DR-EV nor DR-UNIT.
-  Not formalized as a semigroup; \lean{shift_preserves_not_unitary} is the single-map version.
+  Formalized as \lean{shift_semigroup_counterexample}. $L^2(0,\infty)$ is the closed subspace
+  of $L^2(\mathbb{R})$ orthogonal to the indicators of the sets of finite measure in
+  $(-\infty,0)$ (\lean{halfLine}, as the type \lean{HalfLine}), and $V_t$ is translation by
+  $t \ge 0$ (\lean{rightShift}), strongly continuous because translation is continuous on
+  $L^2(\mathbb{R})$. Continuity of $t \mapsto V_t\rho V_t^\dagger$ at $0^+$ in operator norm uses
+  that density operators are trace class, hence compact:
+  $\|V_t\rho V_t^\dagger - \rho\| \le 2\|(V_t - 1)\rho\|$, and bounded operators that tend to $0$
+  pointwise tend to $0$ uniformly on the compact closure of the image of the unit ball
+  (\lean{tendsto_mul_of_isCompactOperator}). For $t > 0$ the normalized indicator $e$ of
+  $(0,t)$ is orthogonal to the range of $V_t$, so $\ket{e}\bra{e}$ is $\Phi_t$ of no pure state
+  (\lean{not_bijOnPure_conj}).
   The brief's abstract claims the infinite-dimensional case, and its definitions do contain past
   states, so the theorem holds as stated once the past is read as part of DR-PROB and DR-INFO.
 \item ``The phases can be chosen so that $U_0 = I$ and $U_{t+s} = U_tU_s$'' is Bargmann's lifting
