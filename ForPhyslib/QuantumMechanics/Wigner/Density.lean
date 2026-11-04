@@ -284,6 +284,12 @@ lemma conjOp_proj (ψ : E) : conjOp W (proj ψ) = proj (W ψ) := by
   simp only [LinearIsometryEquiv.coe_toLinearIsometry, W.apply_symm_apply] at h
   rw [conjOp_apply, proj_apply, proj_apply, W.map_smulₛₗ, ← h]
 
+/-- Conjugation by a unitary operator as `conjOp` of the corresponding isometry. -/
+lemma mul_mul_star_eq_conjOp [CompleteSpace E] (u : unitary (E →L[ℂ] E)) (ρ : E →L[ℂ] E) :
+    (u : E →L[ℂ] E) * ρ * star (u : E →L[ℂ] E) = conjOp (Unitary.linearIsometryEquiv u) ρ := by
+  ext x
+  rfl
+
 /-!
 ## E. Finite dimension
 -/

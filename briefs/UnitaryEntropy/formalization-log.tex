@@ -54,8 +54,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy.lean}
 \item Library: \lean{UnitaryEntropy}
-\item Imports: \lean{Mathlib.Analysis.SpecialFunctions.BinaryEntropy}, the Wigner library files \lean{Density.lean} and
-  \lean{Differentiable.lean} (which imports the rest of\newline
+\item Imports: \lean{Mathlib.Analysis.SpecialFunctions.BinaryEntropy}, the Wigner library files \lean{EqualMixtures.lean},
+  \lean{Kadison.lean} and \lean{Differentiable.lean} (which import the rest of\newline
   \lean{ForPhyslib/QuantumMechanics/Wigner}), and two new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/Calculus/Deriv/Star.lean} (in a normed star algebra, the derivative
   of a path of unitaries through $1$ is skew-adjoint, and $U^\dagger U$ is constant when
@@ -117,6 +117,8 @@ Theorem 2 ($\Leftarrow$), anti-unitary case excluded & \lean{Wigner.eventually_e
 Theorem 2 ($\Leftarrow$), differentiable $U(t)$ & \lean{Wigner.exists_unitary_differentiableAt} \\
 Theorem 2 ($\Leftarrow$), Step 3 & \lean{exists_hamiltonian} (from
   \lean{star_eq_neg_of_hasDerivAt_of_mem_unitary}), for $\hbar \ne 0$ \\
+Theorem 2 ($\Leftarrow$), mixed states & \lean{Wigner.affineOnDensities_of_map_mix},
+  \lean{Wigner.AffineOnDensities.eq_conjOp}, \lean{Wigner.mul_mul_star_eq_conjOp} \\
 Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves} \\
 \bottomrule
 \end{tabularx}
@@ -144,15 +146,18 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves} \\
   existence theorem, which the brief also assumes.
 \item \lean{schrodinger_of_preserves} assumes $\Phi_{t_0} = \mathrm{id}$ and differentiability of
   $t \mapsto \Phi_t(\rho)$ at $t_0$ only on density operators, one $\rho$ at a time. It concludes
-  that $\Phi_t(\ket{\psi}\bra{\psi}) = \ket{U(t)\psi}\bra{U(t)\psi}$ for $t$ near $t_0$, with
+  that $\Phi_t(\ket{\psi}\bra{\psi}) = \ket{U(t)\psi}\bra{U(t)\psi}$, and
+  $\Phi_t(\rho) = U(t)\rho U(t)^\dagger$ for every density operator $\rho$, for $t$ near $t_0$, with
   $U(t)$ unitary for every $t$, $U(t_0) = 1$ and $U'(t_0) = (i\hbar)^{-1} H U(t_0)$ for a
   self-adjoint $H$. This is the Schr\"odinger equation at $t_0$, which is what EVDIFF at $t_0$
   gives; the brief's two-time evolution maps give it at every initial time.
 \item Wigner's theorem is used in its non-bijective form (Geh\'er), so the bijectivity of the
   correspondence of pure states via the reconstructed past (Step~1) is not needed.
-\item Not formalized: $\Phi_t(\rho) = U(t)\rho U(t)^\dagger$ for mixed $\rho$. It would need
-  $\Phi_t$ to be affine (Kadison), while the brief assumes only equal mixtures, and the
-  conclusion of the brief concerns $U$ only.
+\item $\Phi_t(\rho) = U(t)\rho U(t)^\dagger$ for mixed $\rho$ follows from the pure states once
+  $\Phi_t$ is affine, by the spectral decomposition of $\rho$
+  (\lean{Wigner.AffineOnDensities.eq_conjOp}). Affinity is not an extra assumption: a map of the
+  density operators that preserves equal mixtures preserves all convex combinations of two of
+  them (\lean{Wigner.affineOnDensities_of_map_mix}), since it is bounded and preserves midpoints.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No errors. Implicit points:
@@ -186,6 +191,8 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves} \\
 \item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/InfiniteDimensional.lean}
 \item Library: \lean{UnitaryEntropy}, which now builds every module \lean{UnitaryEntropy.*}
 \item Imports:\newline \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropy},\newline
+  \lean{ForPhyslib.QuantumMechanics.EqualMixtures} and \lean{ForPhyslib.QuantumMechanics.Kadison}
+  (equal mixtures give affinity, and the mixed-state extension),\newline
   \lean{ForMathlib.Analysis.InnerProductSpace.StrongDerivative},\newline
   \lean{TauCeti.Analysis.InnerProductSpace.FunctionalCalculusComparison} (eigenvector action of
   the functional calculus, for the comparison in finite dimension),\newline
@@ -270,6 +277,8 @@ Theorem 2 ($\Leftarrow$), surjectivity is needed & \lean{shift_preserves_not_uni
 Theorem 2 ($\Leftarrow$), differentiable $U(t)\psi$ & \lean{Wigner.exists_unitary_differentiableAt_apply} \\
 Theorem 2 ($\Leftarrow$), Step 3 & \lean{ContinuousLinearMap.exists_hasDerivAt_apply},
   \lean{star_eq_neg_of_hasDerivAt_apply_of_mem_unitary}, \lean{exists_hamiltonian_of_star_eq_neg} \\
+Theorem 2 ($\Leftarrow$), mixed states & \lean{affineOnDensityOperators_of_map_mix},
+  \lean{AffineOnDensityOperators.eq_conjOp} \\
 Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEntropy} \\
 \bottomrule
 \end{tabularx}
@@ -307,6 +316,12 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   Banach--Steinhaus, applied to the difference quotients, the derivatives $x \mapsto
   (U(\cdot)x)'(t_0)$ form a bounded operator $A$. Differentiating $\braket{U(t)x|U(t)y} =
   \braket{x|y}$ gives $A^\dagger = -A$, and $H = i\hbar A$.
+\item Mixed states follow as in finite dimension, with the spectral sum replaced by the canonical
+  expansion $\rho = \sum_i \mu_i \ket{e_i}\bra{e_i}$, which may be infinite. Write
+  $\rho = m\rho_F + (1-m)\sigma_F$ with $\rho_F$ a finite part of weight $m$; $\Phi_t$ and
+  $U(t)\cdot U(t)^\dagger$ agree on $\rho_F$ by affinity, so they differ on $\rho$ by at most
+  $2(1-m)$ in operator norm, and $m \to 1$ (\lean{AffineOnDensityOperators.eq_conjOp}).
+  Affinity again comes from equal mixtures (\lean{affineOnDensityOperators_of_map_mix}).
 \item No spectral decomposition is used. The entropy is the trace of $\eta(\rho)$, and pure states
   are found through the spectrum: $S(\rho) = 0$ forces $\eta(\rho) = 0$, so $\eta$ vanishes on
   the spectrum, which then lies in $\{0, 1\}$; $\rho$ is idempotent, and an idempotent density

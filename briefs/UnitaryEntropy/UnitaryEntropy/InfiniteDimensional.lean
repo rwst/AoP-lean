@@ -52,13 +52,17 @@ Theorem 2, DR-INFO + EVDIFF ⇒ DR-SCEQ:
   differentiable at `t₀` for every `ψ`;
 * `schrodinger_of_preserves_vonNeumannEntropy`  Step 3 and the whole direction: by
   Banach–Steinhaus the derivative is a bounded operator (`exists_hasDerivAt_apply`), skew-adjoint
-  because the `U t` are unitary, so `ψ'(t₀) = (iħ)⁻¹ H ψ(t₀)` with `H` bounded and self-adjoint.
+  because the `U t` are unitary, so `ψ'(t₀) = (iħ)⁻¹ H ψ(t₀)` with `H` bounded and self-adjoint;
+  mixed states follow as in finite dimension (`affineOnDensityOperators_of_map_mix`,
+  `AffineOnDensityOperators.eq_conjOp`).
 EVDIFF on every density operator forces a bounded Hamiltonian; unbounded ones, differentiable
 only on a dense set of states, are treated for a time-independent evolution in
 `UnitaryEntropy.Unbounded`.
 -/
 
 public import ForMathlib.Analysis.InnerProductSpace.StrongDerivative
+public import ForPhyslib.QuantumMechanics.EqualMixtures
+public import ForPhyslib.QuantumMechanics.Kadison
 public import ForPhyslib.QuantumMechanics.VonNeumannEntropy
 public import TauCeti.Analysis.InnerProductSpace.FunctionalCalculusComparison
 public import UnitaryEntropy
@@ -322,7 +326,8 @@ theorem eventually_exists_unitary_of_preserves {Φ : ℝ → (E →L[ℂ] E) →
 operators to density operators, preserve the entropy and equal mixtures, give every density
 operator a reconstructed past, be the identity at `t₀`, and be differentiable at `t₀` on each
 density operator. Then near `t₀`, `Φ t` acts on pure states through unitaries `U t` with
-`U t₀ = 1`, and each state `ψ(t) = U t ψ` solves the Schrödinger equation
+`U t₀ = 1`, hence on all density operators as `ρ ↦ U t ρ U t†` (it is affine, as it preserves
+equal mixtures), and each state `ψ(t) = U t ψ` solves the Schrödinger equation
 `ψ'(t₀) = (iħ)⁻¹ H ψ(t₀)` for one bounded self-adjoint `H`. -/
 theorem schrodinger_of_preserves_vonNeumannEntropy {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E}
     {t₀ ħ : ℝ}
@@ -336,6 +341,7 @@ theorem schrodinger_of_preserves_vonNeumannEntropy {Φ : ℝ → (E →L[ℂ] E)
     ∃ (U : ℝ → E →L[ℂ] E) (H : E →L[ℂ] E), IsSelfAdjoint H ∧
       (∀ t, U t ∈ unitary (E →L[ℂ] E)) ∧ U t₀ = 1 ∧
       (∀ᶠ t in 𝓝 t₀, ∀ ψ : E, ‖ψ‖ = 1 → Φ t (proj ψ) = proj (U t ψ)) ∧
+      (∀ᶠ t in 𝓝 t₀, ∀ ρ, IsDensityOperator ρ → Φ t ρ = U t * ρ * star (U t)) ∧
       ∀ ψ : E, HasDerivAt (fun t => U t ψ) ((Complex.I * ħ)⁻¹ • H (U t₀ ψ)) t₀ := by
   obtain ⟨U, hU, hU₀, hΦ, hUd⟩ := exists_unitary_differentiableAt_apply
     (eventually_exists_unitary_of_preserves hD hS hpast hmix h₀ fun ρ hρ =>
@@ -345,8 +351,14 @@ theorem schrodinger_of_preserves_vonNeumannEntropy {Φ : ℝ → (E →L[ℂ] E)
   obtain ⟨A, hA⟩ := ContinuousLinearMap.exists_hasDerivAt_apply hUd
   obtain ⟨H, hH, rfl⟩ := exists_hamiltonian_of_star_eq_neg
     (star_eq_neg_of_hasDerivAt_apply_of_mem_unitary hU hU₀ hA) hħ
-  refine ⟨U, H, hH, hU, hU₀, hΦ, fun ψ => ?_⟩
-  simpa [hU₀] using hA ψ
+  refine ⟨U, H, hH, hU, hU₀, hΦ, hΦ.mono fun t ht ρ hρ => ?_, fun ψ => ?_⟩
+  · have hW : ∀ ψ : E, ‖ψ‖ = 1 →
+        Φ t (proj ψ) = proj (Unitary.linearIsometryEquiv ⟨U t, hU t⟩ ψ) := fun ψ hψ => by
+      show _ = proj (U t ψ)
+      exact ht ψ hψ
+    rw [(affineOnDensityOperators_of_map_mix (hD t) (hmix t)).eq_conjOp (hD t) hW hρ]
+    exact (mul_mul_star_eq_conjOp ⟨U t, hU t⟩ ρ).symm
+  · simpa [hU₀] using hA ψ
 
 /-! ## The shift -/
 

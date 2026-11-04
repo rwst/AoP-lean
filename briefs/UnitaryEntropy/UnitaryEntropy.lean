@@ -39,11 +39,14 @@ Theorem 2, DR-INFO + EVDIFF ⇒ DR-SCEQ:
 * `schrodinger_of_preserves`  the whole direction: Wigner's theorem
   (`ForPhyslib/QuantumMechanics/Wigner`) turns Steps 1–2 into unitaries `U(t)`, chosen with
   `U(t₀) = 1` and differentiable at `t₀`, and Step 3 gives the Schrödinger equation at `t₀`.
+  Mixed states follow: preserving equal mixtures makes `Φ t` affine
+  (`affineOnDensities_of_map_mix`), so `Φ t ρ = U t ρ U t†` (`AffineOnDensities.eq_conjOp`).
 -/
 
 public import ForMathlib.Analysis.Calculus.Deriv.Star
 public import ForMathlib.Analysis.InnerProductSpace.Adjoint
-public import ForPhyslib.QuantumMechanics.Wigner.Density
+public import ForPhyslib.QuantumMechanics.Wigner.EqualMixtures
+public import ForPhyslib.QuantumMechanics.Wigner.Kadison
 public import ForPhyslib.QuantumMechanics.Wigner.Differentiable
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 
@@ -372,8 +375,9 @@ theorem schrodinger_conserves_entropy {ħ : ℝ} {H U : ℝ → E →L[ℂ] E} {
 /-- **Theorem 2** (⇐), DR-INFO + EVDIFF ⇒ DR-SCEQ: let `Φ t` map density operators to density
 operators, preserve the entropy and equal mixtures, be the identity at `t₀`, and be differentiable
 at `t₀` on each density operator. Then near `t₀`, `Φ t` acts on pure states through unitaries
-`U t` with `U t₀ = 1`, and `U` solves the Schrödinger equation `U' = (iħ)⁻¹ H U` at `t₀` for a
-self-adjoint `H`. -/
+`U t` with `U t₀ = 1`, hence on all density operators as `ρ ↦ U t ρ U t†` (it is affine, as it
+preserves equal mixtures), and `U` solves the Schrödinger equation `U' = (iħ)⁻¹ H U` at `t₀` for
+a self-adjoint `H`. -/
 theorem schrodinger_of_preserves {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E} {t₀ ħ : ℝ}
     (hD : ∀ t ρ, IsDensity ρ → IsDensity (Φ t ρ))
     (hS : ∀ t ρ, IsDensity ρ → vonNeumann (Φ t ρ) = vonNeumann ρ)
@@ -383,6 +387,7 @@ theorem schrodinger_of_preserves {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E
     ∃ (U : ℝ → E →L[ℂ] E) (H : E →L[ℂ] E), IsSelfAdjoint H ∧
       (∀ t, U t ∈ unitary (E →L[ℂ] E)) ∧ U t₀ = 1 ∧
       (∀ᶠ t in 𝓝 t₀, ∀ ψ : E, ‖ψ‖ = 1 → Φ t (proj ψ) = proj (U t ψ)) ∧
+      (∀ᶠ t in 𝓝 t₀, ∀ ρ, IsDensity ρ → Φ t ρ = U t * ρ * star (U t)) ∧
       HasDerivAt U ((Complex.I * ħ)⁻¹ • (H * U t₀)) t₀ := by
   have hP t := pure_and_born_of_preserves (Φ t) (hD t) (hS t) (hmix t)
   have htr : ∀ t, ∀ ψ ϕ : E, ‖ψ‖ = 1 → ‖ϕ‖ = 1 →
@@ -399,9 +404,15 @@ theorem schrodinger_of_preserves {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E
     (fun t => (hP t).1) htr (fun ψ hψ => h₀ _ (isDensity_proj hψ))
     (fun ψ hψ => hdiff _ (isDensity_proj hψ))
   obtain ⟨H, hH, hA⟩ := exists_hamiltonian hU hU₀ hUd.hasDerivAt hħ
-  refine ⟨U, H, hH, hU, hU₀, hΦ, ?_⟩
-  rw [hU₀, mul_one, ← hA]
-  exact hUd.hasDerivAt
+  refine ⟨U, H, hH, hU, hU₀, hΦ, hΦ.mono fun t ht ρ hρ => ?_, ?_⟩
+  · have hW : ∀ ψ : E, ‖ψ‖ = 1 →
+        Φ t (proj ψ) = proj (Unitary.linearIsometryEquiv ⟨U t, hU t⟩ ψ) := fun ψ hψ => by
+      show _ = proj (U t ψ)
+      exact ht ψ hψ
+    rw [(QuantumMechanics.Wigner.affineOnDensities_of_map_mix (hD t) (hmix t)).eq_conjOp hW hρ]
+    exact (mul_mul_star_eq_conjOp ⟨U t, hU t⟩ ρ).symm
+  · rw [hU₀, mul_one, ← hA]
+    exact hUd.hasDerivAt
 
 end Evolution
 

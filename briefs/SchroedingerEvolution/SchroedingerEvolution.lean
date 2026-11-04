@@ -49,7 +49,6 @@ Theorem 3:
   conservation").
 -/
 
-public import ForPhyslib.QuantumMechanics.Wigner.EqualMixtures
 public import ForPhyslib.QuantumMechanics.Wigner.Injective
 public import ForPhyslib.QuantumMechanics.Wigner.OneParameter
 public import UnitaryEntropy
@@ -192,12 +191,6 @@ theorem drUnit_iff_drSceq {ħ : ℝ} (hħ : ħ ≠ 0) {Φ : ℝ → (E →L[ℂ]
     ring_nf
 
 /-! ## DR-UNIT ⇒ DR-EV, DR-PROB, DR-INFO -/
-
-/-- Conjugation by a unitary operator as `conjOp` of the corresponding isometry. -/
-lemma mul_mul_star_eq_conjOp (u : unitary (E →L[ℂ] E)) (ρ : E →L[ℂ] E) :
-    (u : E →L[ℂ] E) * ρ * star (u : E →L[ℂ] E) = conjOp (Unitary.linearIsometryEquiv u) ρ := by
-  rw [← adL_apply, adL_eq_mul_mul_star]
-  rfl
 
 variable [FiniteDimensional ℂ E]
 

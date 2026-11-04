@@ -63,8 +63,10 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   equivalence), \lean{OneParameter} (exclusion of anti-unitaries by composition, the phase-free
   conjugation group on $\mathbb{R}$, its generator as an inner $*$-derivation, the lift to a
   unitary one-parameter group). \lean{Density} gained finite convex combinations, affine maps
-  of density operators, conjugation \lean{conjOp} by a unitary or an anti-unitary, and the
-  spectral decomposition. \lean{OneParameter} imports physlib's
+  of density operators, conjugation \lean{conjOp} by a unitary or an anti-unitary, its agreement
+  \lean{mul_mul_star_eq_conjOp} with $U\rho U^\dagger$ (moved there from this brief, for the brief
+  ``Schr\"odinger equation is equivalent to information conservation''), and the spectral
+  decomposition. \lean{OneParameter} imports physlib's
   \lean{Physlib.Mathematics.ForMathlib.OneParameterSubgroups.Unitary} (bounded Stone theorem,
   \lean{UnitaryOneParameterGroup}).
 \item New file \lean{ForPhyslib/QuantumMechanics/Wigner/EqualMixtures.lean}: a map that
@@ -308,8 +310,8 @@ Theorem 3, as stated & \lean{TwoParameter.schrodinger_tfae} (for $\hbar \ne 0$) 
 \item Imports:\newline \lean{ForPhyslib.QuantumMechanics.Stone},\newline
   \lean{UnitaryEntropy.InfiniteDimensional} (for \lean{pure_and_born_of_preserves_vonNeumannEntropy}
   and \lean{exists_proj_of_past}),\newline
-  and the finite-dimensional part \lean{SchroedingerEvolution} (for \lean{MapsPure},
-  \lean{PreservesBorn} and \lean{mul_mul_star_eq_conjOp}, none of which assumes finite dimension)
+  and the finite-dimensional part \lean{SchroedingerEvolution} (for \lean{MapsPure} and
+  \lean{PreservesBorn}, neither of which assumes finite dimension)
 \item New files in \lean{ForPhyslib/ProbabilisticTheory/HilbertSpace/TraceClass/}:
   \lean{Compact} (Hilbert--Schmidt and trace-class operators are compact) and
   \lean{CanonicalExpansion} (a positive trace-class operator is $\sum_i \mu_i
