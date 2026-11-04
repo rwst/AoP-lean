@@ -50,7 +50,7 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 \section*{From the formalization}
 \noindent Beyond finite dimension the formalization has a part in any dimension; it leaves
 open the items ``Unbounded time-dependent Hamiltonians'', ``Norm-differentiable $U(t)$ in infinite
-dimension'' and ``Isometric semigroup without a past'' below.
+dimension'' and ``Wold--Cooper reduction'' below.
 \begin{enumerate}
 \item \textbf{Unbounded time-dependent Hamiltonians.} EVDIFF on every density operator forces a
   bounded $H$ (Banach--Steinhaus). With EVDIFF on a dense set of states, Theorem~2 is formalized
@@ -75,9 +75,12 @@ dimension'' and ``Isometric semigroup without a past'' below.
   equation $\psi'(t_0) = (i\hbar)^{-1}H\psi(t_0)$ is proved; the phase-fixing basis sum does not
   converge in operator norm. Whether a phase choice makes $t\mapsto U(t)$ differentiable in
   operator norm is open. (Log, any-dimension part, ``Differences from the brief'', EVDIFF item.)
-\item \textbf{Isometric semigroup without a past.} The right shifts $V_t$ on $L^2(0,\infty)$ give
-  an evolution that satisfies [B]EVMIX and preserves the entropy but is induced by no unitary;
-  this example, and the Wold--Cooper reduction of every such semigroup to it, are not
+\item \textbf{Wold--Cooper reduction.} The right shifts $V_t$ on $L^2(0,\infty)$ give an
+  evolution that satisfies [B]EVMIX, maps pure states to pure states, preserves transition
+  probabilities and the entropy, but is induced by no unitary; this is formalized
+  (\lean{shift_semigroup_counterexample}, in the brief ``Multiple equivalent characterizations of
+  the Schr\"odinger equation''). The Wold--Cooper decomposition, which reduces every strongly
+  continuous semigroup of isometries to a unitary group plus copies of this one, is not
   formalized. (Log, any-dimension part, ``Problems found in the brief'', second item.)
 \end{enumerate}
 

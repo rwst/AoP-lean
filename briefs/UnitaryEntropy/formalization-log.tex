@@ -346,7 +346,9 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   V_{t_1-t_0}\rho V_{t_1-t_0}^\dagger$ satisfies [B]EVMIX, preserves the entropy, and is induced
   by no unitary for $t_1 > t_0$; it has no reconstructed past. (By the Wold--Cooper
   decomposition, every strongly continuous semigroup of isometries is a unitary group plus copies of
-  this one.) Not formalized. A norm-continuous semigroup of isometries is $V_t = e^{tA}$ with
+  this one.) The example is formalized as \lean{shift_semigroup_counterexample} in the brief
+  ``Multiple equivalent characterizations of the Schr\"odinger equation''; the Wold--Cooper
+  decomposition is not. A norm-continuous semigroup of isometries is $V_t = e^{tA}$ with
   bounded $A$, and differentiating $V_t^\dagger V_t = I$ at $0$ gives $A^\dagger = -A$, so it is
   unitary. The example therefore needs an unbounded generator, which Step~3 does not cover
   anyway.
