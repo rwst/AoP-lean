@@ -33,7 +33,8 @@ Theorem 2, DR-SCEQ ⇒ DR-INFO + EVDIFF:
 Theorem 2, DR-INFO + EVDIFF ⇒ DR-SCEQ:
 * `vonNeumann_eq_zero_iff`  Step 1: a density operator is pure iff its entropy is zero;
 * `pure_and_born_of_preserves`  Steps 1–2: an entropy-preserving map that preserves equal
-  mixtures sends pure states to pure states and preserves transition probabilities;
+  mixtures sends pure states to pure states and preserves transition probabilities
+  (`proj_and_trace_of_preserves`: the same in the form of Wigner's theorem);
 * `exists_hamiltonian`  Step 3: the derivative of a differentiable unitary family at
   `U(t₀) = 1` is `(iħ)⁻¹ H` with `H` self-adjoint;
 * `schrodinger_of_preserves`  the whole direction: Wigner's theorem
@@ -297,6 +298,26 @@ theorem pure_and_born_of_preserves (Φ : (E →L[ℂ] E) → E →L[ℂ] E)
     rw [← h₁, ← h₂, ← hmix _ _ (isDensity_proj hψ) (isDensity_proj hϕ),
       hS _ ((isDensity_proj hψ).mix (isDensity_proj hϕ)), vonNeumann_mix_proj hψ hϕ]
 
+/-- **Theorem 2** (⇐), Steps 1 and 2 in the form needed for Wigner's theorem: a map on density
+operators that preserves entropy and equal mixtures sends rank-one projections to rank-one
+projections and preserves `tr (P Q)` between them. -/
+theorem proj_and_trace_of_preserves (Φ : (E →L[ℂ] E) → E →L[ℂ] E)
+    (hD : ∀ ρ, IsDensity ρ → IsDensity (Φ ρ))
+    (hS : ∀ ρ, IsDensity ρ → vonNeumann (Φ ρ) = vonNeumann ρ)
+    (hmix : ∀ ρ σ, IsDensity ρ → IsDensity σ → Φ (mix ρ σ) = mix (Φ ρ) (Φ σ)) :
+    (∀ ψ : E, ‖ψ‖ = 1 → ∃ ψ' : E, ‖ψ'‖ = 1 ∧ Φ (proj ψ) = proj ψ') ∧
+    ∀ ψ ϕ : E, ‖ψ‖ = 1 → ‖ϕ‖ = 1 →
+      LinearMap.trace ℂ E ((Φ (proj ψ) * Φ (proj ϕ) : E →L[ℂ] E) : E →ₗ[ℂ] E) =
+        LinearMap.trace ℂ E ((proj ψ * proj ϕ : E →L[ℂ] E) : E →ₗ[ℂ] E) := by
+  have hP := pure_and_born_of_preserves Φ hD hS hmix
+  refine ⟨hP.1, fun ψ ϕ hψ hϕ => ?_⟩
+  obtain ⟨ψ', hψ', h₁⟩ := hP.1 ψ hψ
+  obtain ⟨ϕ', hϕ', h₂⟩ := hP.1 ϕ hϕ
+  have h := hP.2 ψ ϕ ψ' ϕ' hψ hϕ hψ' hϕ' h₁ h₂
+  rw [born_of_norm hψ' hϕ', born_of_norm hψ hϕ] at h
+  rw [h₁, h₂, QuantumMechanics.Wigner.trace_rankOne_mul_rankOne,
+    QuantumMechanics.Wigner.trace_rankOne_mul_rankOne, h]
+
 end Entropy
 
 section Evolution
@@ -389,19 +410,9 @@ theorem schrodinger_of_preserves {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E
       (∀ᶠ t in 𝓝 t₀, ∀ ψ : E, ‖ψ‖ = 1 → Φ t (proj ψ) = proj (U t ψ)) ∧
       (∀ᶠ t in 𝓝 t₀, ∀ ρ, IsDensity ρ → Φ t ρ = U t * ρ * star (U t)) ∧
       HasDerivAt U ((Complex.I * ħ)⁻¹ • (H * U t₀)) t₀ := by
-  have hP t := pure_and_born_of_preserves (Φ t) (hD t) (hS t) (hmix t)
-  have htr : ∀ t, ∀ ψ ϕ : E, ‖ψ‖ = 1 → ‖ϕ‖ = 1 →
-      LinearMap.trace ℂ E ((Φ t (proj ψ) * Φ t (proj ϕ) : E →L[ℂ] E) : E →ₗ[ℂ] E) =
-        LinearMap.trace ℂ E ((proj ψ * proj ϕ : E →L[ℂ] E) : E →ₗ[ℂ] E) := by
-    intro t ψ ϕ hψ hϕ
-    obtain ⟨ψ', hψ', h₁⟩ := (hP t).1 ψ hψ
-    obtain ⟨ϕ', hϕ', h₂⟩ := (hP t).1 ϕ hϕ
-    have h := (hP t).2 ψ ϕ ψ' ϕ' hψ hϕ hψ' hϕ' h₁ h₂
-    rw [born_of_norm hψ' hϕ', born_of_norm hψ hϕ] at h
-    rw [h₁, h₂, QuantumMechanics.Wigner.trace_rankOne_mul_rankOne,
-      QuantumMechanics.Wigner.trace_rankOne_mul_rankOne, h]
-  obtain ⟨U, hU, hU₀, hΦ, hUd⟩ := QuantumMechanics.Wigner.exists_unitary_differentiableAt
-    (fun t => (hP t).1) htr (fun ψ hψ => h₀ _ (isDensity_proj hψ))
+  have hP t := proj_and_trace_of_preserves (Φ t) (hD t) (hS t) (hmix t)
+  obtain ⟨U, hU, hU₀, hΦ, hUd, -⟩ := QuantumMechanics.Wigner.exists_unitary_differentiableAt
+    (fun t => (hP t).1) (fun t => (hP t).2) (fun ψ hψ => h₀ _ (isDensity_proj hψ))
     (fun ψ hψ => hdiff _ (isDensity_proj hψ))
   obtain ⟨H, hH, hA⟩ := exists_hamiltonian hU hU₀ hUd.hasDerivAt hħ
   refine ⟨U, H, hH, hU, hU₀, hΦ, hΦ.mono fun t ht ρ hρ => ?_, ?_⟩

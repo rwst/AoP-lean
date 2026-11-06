@@ -109,7 +109,8 @@ Theorem 2 ($\Rightarrow$), DR-INFO & \lean{vonNeumann_unitary_conj},
   \lean{IsDensity.unitary_conj}, \lean{schrodinger_conserves_entropy} \\
 Theorem 2 ($\Leftarrow$), Step 1 & \lean{vonNeumann_eq_zero_iff}: $S(\rho) = 0$ iff $\rho$ is
   pure \\
-Theorem 2 ($\Leftarrow$), Steps 1--2 up to Wigner & \lean{pure_and_born_of_preserves} \\
+Theorem 2 ($\Leftarrow$), Steps 1--2 up to Wigner & \lean{pure_and_born_of_preserves},
+  \lean{proj_and_trace_of_preserves} \\
 Theorem 2 ($\Leftarrow$), Step 2, Wigner's theorem & \lean{Wigner.wigner_rankOne} (from
   \lean{Wigner.wigner}) \\
 Theorem 2 ($\Leftarrow$), anti-unitary case excluded & \lean{Wigner.eventually_exists_unitary},
@@ -150,7 +151,8 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves} \\
   $\Phi_t(\rho) = U(t)\rho U(t)^\dagger$ for every density operator $\rho$, for $t$ near $t_0$, with
   $U(t)$ unitary for every $t$, $U(t_0) = 1$ and $U'(t_0) = (i\hbar)^{-1} H U(t_0)$ for a
   self-adjoint $H$. This is the Schr\"odinger equation at $t_0$, which is what EVDIFF at $t_0$
-  gives; the brief's two-time evolution maps give it at every initial time.
+  gives. For a two-parameter evolution, one propagator solves it at every time
+  (Section~\ref{sec:unitary-entropy-every-time}).
 \item Wigner's theorem is used in its non-bijective form (Geh\'er), so the bijectivity of the
   correspondence of pure states via the reconstructed past (Step~1) is not needed.
 \item $\Phi_t(\rho) = U(t)\rho U(t)^\dagger$ for mixed $\rho$ follows from the pure states once
@@ -182,6 +184,91 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves} \\
   at $t_0$ of $t \mapsto \Phi_t(P)$ for three pure states $P$: the imaginary part of Bargmann's
   triple product $\operatorname{tr}(\Phi_t(P_1)\Phi_t(P_2)\Phi_t(P_3))$ is $\tfrac14$ at $t_0$ and
   would be $-\tfrac14$ for an anti-unitary. In dimension $1$ there is nothing to exclude.
+\end{itemize}
+
+\subsection{The equation at every time}\label{sec:unitary-entropy-every-time}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/TwoParameter.lean}
+\item Imports: \lean{SchroedingerEvolution.TwoParameter}, from the brief ``Multiple equivalent
+  characterizations of the Schr\"odinger equation'' (for the two-parameter \lean{IsEvolution} and
+  \lean{DrSceq} with $H(t)$; it imports this brief's main file), and the new
+  \lean{ForPhyslib/QuantumMechanics/Wigner/Propagator.lean} (sections of determinant one, their
+  uniqueness up to a root of unity, and gluing along an interval).
+\item New \lean{ForMathlib} file \lean{ForMathlib/Analysis/Calculus/ContDiff/FiniteDimension.lean}:
+  the determinant is a smooth function of the operator (Mathlib has only its continuity).
+  \lean{ForMathlib/Analysis/Calculus/Deriv/Star.lean} gains
+  \lean{star_mul_star_eq_neg_of_hasDerivAt_of_mem_unitary}: for a path of unitaries,
+  $U'(t)U(t)^\dagger$ is skew-adjoint at every $t$. \lean{Wigner.exists_unitary_differentiableAt}
+  now also gives differentiability at every $t$ near $t_0$ at which the family is differentiable.
+\end{itemize}
+
+\paragraph{Setting.} $E$ is finite-dimensional. A two-parameter evolution $\Phi_{t_0\to t_1}$,
+$t_0 \le t_1$ (\lean{IsEvolution}), maps density operators affinely to density operators, with
+$\Phi_{t\to t} = I$, $\Phi_{t_1\to t_2}\circ\Phi_{t_0\to t_1} = \Phi_{t_0\to t_2}$, and
+$(\rho, t_0, t_1) \mapsto \Phi_{t_0\to t_1}(\rho)$ jointly continuous. There is no EVTI. DR-INFO
+(\lean{DrInfo}) is $S(\Phi_{t_0\to t_1}(\rho)) = S(\rho)$ for all $t_0 \le t_1$. EVDIFF
+(\lean{EvDiff}) is: for every reference time $r$ and density operator $\rho$,
+$t \mapsto \Phi_{r\to t}(\rho)$ is differentiable at every $t > r$. DR-SCEQ (\lean{DrSceq}) is
+conjugation, $\Phi_{t_0\to t_1}(\rho) = U(t_1)U(t_0)^\dagger\,\rho\,(U(t_1)U(t_0)^\dagger)^\dagger$, by
+a $U$ with $U(0) = 1$ and $U'(t) = (i\hbar)^{-1}H(t)U(t)$ at every $t$, for self-adjoint $H(t)$.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+DR-INFO, EVDIFF for $\Phi_{t_0\to t_1}$ & \lean{DrInfo}, \lean{EvDiff} \\
+Each $\Phi_{r\to t}$ is unitary & \lean{exists_unitary} \\
+Local unitaries of determinant one & \lean{Wigner.eventually_isDetOneSection} \\
+Uniqueness up to a constant root of unity & \lean{Wigner.IsDetOneSection.exists_eq_smul},
+  \lean{Wigner.eq_inner_smul_of_proj_eq} \\
+One differentiable $U(t)$ on an interval & \lean{Wigner.exists_isDetOneSection} (gluing:
+  \lean{IsPreconnected.exists_forall_of_eventually}), \lean{exists_section} \\
+One differentiable $U(t)$ for all $t$ & \lean{exists_propagator} \\
+Step 3 at every time & \lean{star_mul_star_eq_neg_of_hasDerivAt_of_mem_unitary},
+  \lean{exists_hamiltonian_of_star_eq_neg} \\
+Theorem 2, at every time & \lean{drSceq_iff_drInfo_and_evDiff} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item Finite dimension only; see the next paragraph for why the argument does not extend.
+\item EVDIFF asks for differentiability of $t \mapsto \Phi_{r\to t}(\rho)$ only at $t > r$,
+  two-sided. There is no differentiability in the initial time and no one-sided derivative at
+  $t = r$; a reference time $r < \tau$ gives the two-sided derivative of $U$ at $\tau$. A jump
+  $H(t) = H_\beta$ for $t < 0$, $H(t) = H_\alpha$ for $t \ge 0$, with $H_\alpha - H_\beta$ not a
+  multiple of $1$, violates EVDIFF at $t = 0$ (the one-sided derivatives
+  $(i\hbar)^{-1}[H_{\alpha,\beta}, \rho(0)]$ differ for some $\rho$), as it must: the $U$ of
+  DR-SCEQ is differentiable at every $t$.
+\item DR-INFO has no reconstructed past; in finite dimension it is not needed.
+\item The proof of ($\Leftarrow$). By Wigner's theorem each $\Phi_{r\to t}$ is induced by a unitary
+  or an anti-unitary. Near any $t'$ the maps $\Phi_{\min(t,t')\to\max(t,t')}$ are close to the
+  identity and so unitary (\lean{Wigner.eventually_exists_unitary}), and by the composition law
+  $\Phi_{r\to t}$ has the type of $\Phi_{r\to t'}$; the type is locally constant, and
+  $\Phi_{r\to r} = I$. Near $\tau > r$, conjugating by a unitary that induces $\Phi_{r\to\tau}$
+  makes the family the identity at $\tau$, and the explicit \lean{Wigner.unitaryOf} is
+  differentiable near $\tau$; multiplying by a branch of $\det(\cdot)^{-1/n}$, $n = \dim E$, gives
+  determinant one. Two such families that induce the same maps differ by
+  $c(t) = \braket{W(t)e|V(t)e}$, which is continuous with $c(t)^n = 1$, hence constant on a
+  connected set. So the local families glue along $(r, \infty)$: the set of times reached from a
+  fixed time is open and closed in $(r, \infty)$. The families for $r = -1, -2, \ldots$,
+  normalized by $V(0)^\dagger$, agree, and give $U$; then $H(t) = i\hbar\,U'(t)U(t)^\dagger$.
+\item The propagator $U_{t_0\to t_1} = U(t_1)U(t_0)^\dagger$ satisfies the composition law
+  exactly; no phase cocycle appears.
+\end{itemize}
+
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item The proof of Theorem~2 differentiates at one time, with phases chosen near that time.
+  Going from ``at each time'' to one differentiable propagator for all times needs the local
+  phase choices to be glued, and locally they are fixed only up to a continuous phase function.
+  Fixing the determinant reduces this freedom to an $n$-th root of unity, which connectedness
+  removes. The determinant needs finite dimension, so the infinite-dimensional case stays open.
 \end{itemize}
 
 \subsection{Hilbert spaces of any dimension}\label{sec:unitary-entropy-any-dim}

@@ -49,8 +49,9 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 
 \section*{From the formalization}
 \noindent Beyond finite dimension the formalization has a part in any dimension; it leaves
-open the items ``Unbounded time-dependent Hamiltonians'', ``Norm-differentiable $U(t)$ in infinite
-dimension'' and ``Wold--Cooper reduction'' below.
+open the items ``Unbounded time-dependent Hamiltonians'', ``Equation at every time in infinite
+dimension'', ``Norm-differentiable $U(t)$ in infinite dimension'' and ``Wold--Cooper reduction''
+below.
 \begin{enumerate}
 \item \textbf{Unbounded time-dependent Hamiltonians.} EVDIFF on every density operator forces a
   bounded $H$ (Banach--Steinhaus). With EVDIFF on a dense set of states, Theorem~2 is formalized
@@ -62,11 +63,13 @@ dimension'' and ``Wold--Cooper reduction'' below.
   operator, which is not self-adjoint. Open: the hypotheses (Kato-type, or on the evolution)
   under which DR-INFO + EVDIFF gives a self-adjoint $H(t)$, and the formalization of the example.
   (Log, ``Unbounded Hamiltonians''.)
-\item \textbf{Equation at every time.} The formalization gives $U(t)$ only for $t$ near $t_0$ and
-  the Schr\"odinger equation only at $t_0$. A global differentiable unitary propagator
-  $U_{t_0\to t_1}$ for all times, with phases chosen consistently with
-  $\Phi_{t_1\to t_2}\circ\Phi_{t_0\to t_1} = \Phi_{t_0\to t_2}$, is not built. (Log,
-  ``Differences from the brief'', item on \lean{schrodinger_of_preserves}.)
+\item \textbf{Equation at every time in infinite dimension.} In finite dimension, one
+  differentiable unitary $U(t)$ for all times solves the Schr\"odinger equation at every time,
+  and $\Phi_{t_0\to t_1}$ is conjugation by $U(t_1)U(t_0)^\dagger$
+  (\lean{TwoParameter.drSceq_iff_drInfo_and_evDiff}). The proof fixes the determinant of the local
+  unitaries, which leaves only a root of unity to match when gluing them. In any dimension the
+  determinant is not defined, and the local unitaries are only strongly differentiable (next
+  item), so the global propagator is not built there. (Log, ``The equation at every time''.)
 \item \textbf{Norm-differentiable $U(t)$ in infinite dimension.} In any dimension only the strong
   equation $\psi'(t_0) = (i\hbar)^{-1}H\psi(t_0)$ is proved; the phase-fixing basis sum does not
   converge in operator norm. Whether a phase choice makes $t\mapsto U(t)$ differentiable in

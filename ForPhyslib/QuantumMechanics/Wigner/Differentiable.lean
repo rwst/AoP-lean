@@ -33,7 +33,7 @@ is the same unitary, and `t ↦ U t x` is differentiable at `t₀` for each `x`.
 - `QuantumMechanics.Wigner.unitaryOf_eq`: the explicit operator is `U` times a phase.
 - `QuantumMechanics.Wigner.exists_unitary_differentiableAt`: a family that is differentiable at
   `t₀` and the identity there is induced near `t₀` by unitaries `U t` with `U t₀ = 1` and
-  `t ↦ U t` differentiable at `t₀`.
+  `t ↦ U t` differentiable at `t₀`, and at every `t` near `t₀` where the family is.
 - `QuantumMechanics.Wigner.exists_unitary_differentiableAt_apply`: in any dimension, the same with
   `t ↦ U t x` differentiable at `t₀` for every `x`.
 
@@ -207,7 +207,8 @@ end Family
 projections and preserve `tr (P Q)` between them, let `Φ t₀` fix every rank-one projection, and let
 `t ↦ Φ t P` be differentiable at `t₀` for every rank-one projection `P`. Then there is a family of
 unitaries `U t`, with `U t₀ = 1` and differentiable at `t₀`, that induces `Φ t` for `t` near
-`t₀`. -/
+`t₀`. It is differentiable at every `t` near `t₀` at which `t ↦ Φ t P` is differentiable for every
+rank-one projection `P`. -/
 theorem exists_unitary_differentiableAt [FiniteDimensional ℂ E] [CompleteSpace E]
     {Φ : ℝ → (E →L[ℂ] E) → E →L[ℂ] E} {t₀ : ℝ}
     (hP : ∀ t, ∀ ψ : E, ‖ψ‖ = 1 → ∃ ψ' : E, ‖ψ'‖ = 1 ∧ Φ t (rankOne ℂ ψ ψ) = rankOne ℂ ψ' ψ')
@@ -218,12 +219,14 @@ theorem exists_unitary_differentiableAt [FiniteDimensional ℂ E] [CompleteSpace
     (hd : ∀ ψ : E, ‖ψ‖ = 1 → DifferentiableAt ℝ (fun t => Φ t (rankOne ℂ ψ ψ)) t₀) :
     ∃ U : ℝ → E →L[ℂ] E, (∀ t, U t ∈ unitary (E →L[ℂ] E)) ∧ U t₀ = 1 ∧
       (∀ᶠ t in 𝓝 t₀, ∀ ψ : E, ‖ψ‖ = 1 → Φ t (rankOne ℂ ψ ψ) = rankOne ℂ (U t ψ) (U t ψ)) ∧
-      DifferentiableAt ℝ U t₀ := by
+      DifferentiableAt ℝ U t₀ ∧
+      ∀ᶠ t in 𝓝 t₀, (∀ ψ : E, ‖ψ‖ = 1 → DifferentiableAt ℝ (fun s => Φ s (rankOne ℂ ψ ψ)) t) →
+        DifferentiableAt ℝ U t := by
   classical
   set b := stdOrthonormalBasis ℂ E
   rcases isEmpty_or_nonempty (Fin (Module.finrank ℂ E)) with hι | ⟨⟨i⟩⟩
   · refine ⟨fun _ => 1, fun _ => one_mem _, rfl, .of_forall fun t ψ hψ => absurd hψ ?_,
-      differentiableAt_const _⟩
+      differentiableAt_const _, .of_forall fun _ _ => differentiableAt_const _⟩
     rw [← b.sum_repr' ψ, Finset.univ_eq_empty, Finset.sum_empty, norm_zero]
     exact zero_ne_one
   -- Where `Φ t` is induced by `V`, the candidate is `V` times a phase.
@@ -250,7 +253,7 @@ theorem exists_unitary_differentiableAt [FiniteDimensional ℂ E] [CompleteSpace
     simp
     rfl
   refine ⟨fun t => if unitaryOf (Φ t) b i ∈ unitary (E →L[ℂ] E) then unitaryOf (Φ t) b i else 1,
-    fun t => ?_, ?_, ?_, ?_⟩
+    fun t => ?_, ?_, ?_, ?_, ?_⟩
   · dsimp only
     split_ifs with h
     exacts [h, one_mem _]
@@ -260,6 +263,10 @@ theorem exists_unitary_differentiableAt [FiniteDimensional ℂ E] [CompleteSpace
   · refine (differentiableAt_unitaryOf hd b i (by rw [h₁]; exact one_pos)).congr_of_eventuallyEq ?_
     filter_upwards [hF] with t ht
     simp only [ht.1, ↓reduceIte]
+  · filter_upwards [hF.eventually_nhds, hpos] with t hFt ht hdt
+    refine (differentiableAt_unitaryOf hdt b i ht).congr_of_eventuallyEq ?_
+    filter_upwards [hFt] with s hs
+    simp only [hs.1, ↓reduceIte]
 
 /-- **Differentiable choice of the phase, in any dimension.** Let `Φ t` be induced by unitaries
 for `t` near `t₀`, let `Φ t₀` fix every rank-one projection, and let `t ↦ Φ t P` be

@@ -36,8 +36,14 @@ Open problems raised by the technical brief in this directory, and by its Lean f
   time-independent case''. That case is formalized as the brief writes it, with the two-parameter
   [B]EVMIX, EVTI, and DR-SCEQ with $H(t)$ (\lean{TwoParameter.schrodinger_tfae}). Without EVTI
   there is no one-parameter group, and DR-UNIT, DR-EV, DR-PROB and DR-INFO would have to be
-  restated for the propagators $\Phi_{t_0 \to t_1}$. (Brief, Sec.~3, before Condition EVTI, and
-  Condition DR-SCEQ; log, ``The conditions as the brief writes them''.)
+  restated for the propagators $\Phi_{t_0 \to t_1}$. One equivalence without EVTI is formalized,
+  in finite dimension, in the brief ``Schr\"odinger equation is equivalent to information
+  conservation'': DR-SCEQ with $H(t)$ is equivalent to DR-INFO (every $\Phi_{t_0\to t_1}$
+  preserves the von Neumann entropy) together with EVDIFF ($t \mapsto \Phi_{r\to t}(\rho)$ is
+  differentiable at every $t > r$) (\lean{UnitaryEntropy.TwoParameter.drSceq_iff_drInfo_and_evDiff},
+  over the same two-parameter \lean{TwoParameter.IsEvolution}). DR-UNIT, DR-EV and DR-PROB without
+  EVTI remain open. (Brief, Sec.~3, before Condition EVTI, and Condition DR-SCEQ; log, ``The
+  conditions as the brief writes them''.)
 \item \textbf{Isolation as determinism and reversibility.} ``Conceptually, all these are
   equivalent to saying that the system is isolated, as future and past states are determined,
   and only determined, by the present state of the system.'' Isolation is not defined, so this
