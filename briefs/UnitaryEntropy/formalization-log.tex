@@ -168,7 +168,9 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves} \\
   decreasing in $\lambda$; for other $\lambda$, $\sqrt\lambda$ and the logarithms are not
   meaningful.
 \item Step~3 assumes a norm-differentiable unitary family, which forces a bounded generator. On
-  an infinite-dimensional Hilbert space it therefore covers bounded Hamiltonians only. The brief ``Multiple
+  an infinite-dimensional Hilbert space it therefore covers bounded Hamiltonians only, and even
+  then EVDIFF does not give such a family
+  (Section~\ref{sec:unitary-entropy-norm}). The brief ``Multiple
   equivalent characterizations of the Schr\"odinger equation'' treats the general case with
   Stone's theorem.
 \item In Step~3, $\hbar \ne 0$ is needed to write $A = H/(i\hbar)$.
@@ -396,7 +398,7 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   equation on vectors, as in DR-SCEQ: $\psi(t) = U(t)\psi$ satisfies $\psi'(t_0) = (i\hbar)^{-1}
   H\psi(t_0)$ for every $\psi$, with one bounded self-adjoint $H$. It is not the equation for
   $t \mapsto U(t)$ in operator norm, which the finite-dimensional \lean{schrodinger_of_preserves}
-  gives. The basis sum that fixes the phase in finite dimension does not converge in operator
+  gives; no choice of phases gives it (Section~\ref{sec:unitary-entropy-norm}). The basis sum that fixes the phase in finite dimension does not converge in operator
   norm; instead, for a fixed unit vector $e$, $\Phi_t$ extended by polarization gives
   $(\ket{U x}\bra{U e})\,e = \braket{U e|e}\,U x$, and dividing by $|\braket{U e|e}|$ fixes the
   phase one vector at a time. So $t \mapsto U(t)x$ is differentiable at $t_0$ for each $x$. By
@@ -458,6 +460,94 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   step shows. Unbounded Hamiltonians, whose evolution is differentiable only on a dense set of
   states, are outside the theorem as stated; see Section~\ref{sec:unitary-entropy-unbounded}.
   Otherwise no problems beyond those of the finite-dimensional part.
+\end{itemize}
+
+\subsection{No norm-differentiable propagator}\label{sec:unitary-entropy-norm}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/NormDifferentiable.lean}
+\item Imports: \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropy} and
+  \lean{ForPhyslib.QuantumMechanics.Kadison} (density operators, entropy, products of rank-one
+  projections) and \lean{ForPhyslib.QuantumMechanics.Wigner.Propagator} (two unitaries with the
+  same action on pure states differ by a phase, \lean{Wigner.eq_inner_smul_of_proj_eq}).
+\end{itemize}
+
+\paragraph{Setting.} In any dimension, \lean{schrodinger_of_preserves_vonNeumannEntropy} chooses
+the phases of the unitaries $U(t)$ so that $t \mapsto U(t)\psi$ is differentiable at $t_0$ for
+every $\psi$ (Section~\ref{sec:unitary-entropy-any-dim}). In finite dimension the same
+hypotheses make $t \mapsto U(t)$ differentiable in operator norm. In infinite dimension no choice
+of phases does. On $\ell^2(\mathbb{N})$ with basis $(e_k)$ let
+\[ U(t) = 1 + (e^{it} - 1)\,\ket{e_{k(t)}}\bra{e_{k(t)}}, \qquad
+  k(t) = \lceil 1/|t| \rceil + 1, \]
+which multiplies the component along $e_{k(t)}$ by $e^{it}$ (\lean{movingPhase}), and
+$\Phi_t(\rho) = U(t)\rho\,U(t)^\dagger$. At $t = 0$ the factor $e^{it} - 1$ vanishes, so
+$U(0) = 1$.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Statement & Lean \\
+\midrule
+$1 + (z-1)\ket{e}\bra{e}$ is unitary for $|z| = 1$ & \lean{phaseOp_mem_unitary} \\
+$\|U\rho U^\dagger - \rho\| \le (2|z-1| + |z-1|^2)\,\|\rho e\|$ for self-adjoint $\rho$ &
+  \lean{norm_phaseOp_mul_mul_star_sub_le} \\
+$\|\rho e_n\| \to 0$ for a density operator $\rho$ & \lean{tendsto_norm_apply_hilbertBasis} \\
+EVDIFF at $0$ in operator norm, with derivative $0$ & \lean{hasDerivAt_movingPhase_conj} \\
+No unitary family inducing $\Phi_t$ near $0$ is norm-differentiable at $0$ &
+  \lean{not_exists_differentiableAt_movingPhase} \\
+All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
+  norm-differentiable $U(t)$ exists & \lean{movingPhase_counterexample} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Proof.}
+\begin{itemize}
+\item $\Phi_t$ is conjugation by a unitary, so it maps density operators to density operators,
+  preserves the entropy and equal mixtures, and $\sigma = U(t)^\dagger\rho\,U(t)$ is a
+  reconstructed past.
+\item EVDIFF at $0$: with $P = \ket{e_k}\bra{e_k}$ and $a = e^{it} - 1$,
+  $\Phi_t(\rho) - \rho = a\,P\rho + \bar a\,\rho P + |a|^2 P\rho P$, and $\|P\rho\| =
+  \|\rho P\| = \|\rho e_k\|$. So $\|\Phi_t(\rho) - \rho\| \le (2|a| + |a|^2)\|\rho e_{k(t)}\|$,
+  where $|a|/|t| \to 1$ and $\|\rho e_{k(t)}\| \to 0$ as $t \to 0$: by
+  $\|\rho e_n\| \le \|\sqrt\rho\|\,\|\sqrt\rho\, e_n\|$ and
+  $\sum_n \|\sqrt\rho\, e_n\|^2 = \operatorname{tr}\rho = 1$. The derivative is $0$ in operator
+  norm, for every density operator.
+\item No phase choice: if unitaries $V(t)$ induce $\Phi_t$ on pure states near $0$, then
+  $V(t) = c(t)U(t)$ with $c(t) = \braket{e_0|V(t)e_0}$ and $|c(t)| = 1$, since
+  $U(t)e_0 = e_0$. If $V$ is norm-differentiable at $0$, so are $c$ and $U = c^{-1}V$. For each
+  $n$, $U(t)e_n = e_n$ near $t = 0$, so the derivative $U'(0)$ vanishes on every $e_n$, hence
+  $U'(0) = 0$. But $\|U(t) - 1\| \ge \|(U(t) - 1)e_{k(t)}\| = |e^{it} - 1|$, and
+  $|e^{it} - 1|/|t| \to 1$, so $U(t) - 1$ is not $o(t)$.
+\end{itemize}
+
+\paragraph{Notes.}
+\begin{itemize}
+\item The equation still holds on vectors: $U(t)\psi$ has derivative $0$ at $0$ for every
+  $\psi$, so $H = 0$ in \lean{schrodinger_of_preserves_vonNeumannEntropy}. What fails is only the
+  operator-norm form $U'(t_0) = (i\hbar)^{-1}HU(t_0)$, which the finite-dimensional
+  \lean{schrodinger_of_preserves} gives.
+\item EVDIFF holds here only at $t_0 = 0$: $k(t)$ jumps at $t = \pm 1/n$, and so does $U(t)$. A
+  smooth variant (not formalized) puts the phase $\theta_k(t) = \varphi(kt)/k$, for a smooth bump
+  $\varphi$ supported in $[1, 2]$ with $\varphi(3/2) \ne 0$, on every $e_k$ at once. Near each $t \ne 0$ only finitely
+  many $\theta_k$ are nonzero, so $U(t)$ is norm-differentiable there; at $0$,
+  $\|\Phi_t(\rho) - \rho\| \le 2\,\|U(t) - 1\|\,\|\rho Q_t\|$ with $Q_t$ the projection onto
+  $\overline{\operatorname{span}}\{e_k : k \ge 1/|t|\}$, and $\|\rho Q_t\| \to 0$ since $\rho$ is
+  compact. So EVDIFF holds at every time, also for the two-parameter family
+  $U(t_1)U(t_0)^\dagger$, while $\|U(t) - 1\| \ge |e^{i\varphi(3/2)/k} - 1|$ at $t = 3/(2k)$, which
+  is again not $o(t)$.
+\item With EVTI the propagator is $e^{t(i\hbar)^{-1}H}$ with bounded $H$, which is
+  norm-differentiable; the example needs a time-dependent evolution.
+\end{itemize}
+
+\paragraph{Problems found in the brief.}
+\begin{itemize}
+\item Step~3 differentiates $U(t)$ as an operator. In infinite dimension EVDIFF, even in
+  operator norm on every density operator, does not give a norm-differentiable $U(t)$, only a
+  strongly differentiable one; Step~3 then goes through on vectors, as in
+  Section~\ref{sec:unitary-entropy-any-dim}.
 \end{itemize}
 
 \subsection{Unbounded Hamiltonians}\label{sec:unitary-entropy-unbounded}

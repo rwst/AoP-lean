@@ -50,8 +50,12 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 \section*{From the formalization}
 \noindent Beyond finite dimension the formalization has a part in any dimension; it leaves
 open the items ``Unbounded time-dependent Hamiltonians'', ``Equation at every time in infinite
-dimension'', ``Norm-differentiable $U(t)$ in infinite dimension'' and ``Wold--Cooper reduction''
-below.
+dimension'' and ``Wold--Cooper reduction'' below. Whether a phase choice makes $t\mapsto U(t)$
+differentiable in operator norm in infinite dimension is settled negatively: on
+$\ell^2(\mathbb{N})$, a phase $e^{it}$ on the basis vector $e_{\lceil 1/|t|\rceil+1}$ satisfies
+all hypotheses, with EVDIFF in operator norm, but no unitary family inducing it is
+norm-differentiable at $0$ (\lean{movingPhase_counterexample}; log, ``No norm-differentiable
+propagator'').
 \begin{enumerate}
 \item \textbf{Unbounded time-dependent Hamiltonians.} EVDIFF on every density operator forces a
   bounded $H$ (Banach--Steinhaus). With EVDIFF on a dense set of states, Theorem~2 is formalized
@@ -68,12 +72,9 @@ below.
   and $\Phi_{t_0\to t_1}$ is conjugation by $U(t_1)U(t_0)^\dagger$
   (\lean{TwoParameter.drSceq_iff_drInfo_and_evDiff}). The proof fixes the determinant of the local
   unitaries, which leaves only a root of unity to match when gluing them. In any dimension the
-  determinant is not defined, and the local unitaries are only strongly differentiable (next
-  item), so the global propagator is not built there. (Log, ``The equation at every time''.)
-\item \textbf{Norm-differentiable $U(t)$ in infinite dimension.} In any dimension only the strong
-  equation $\psi'(t_0) = (i\hbar)^{-1}H\psi(t_0)$ is proved; the phase-fixing basis sum does not
-  converge in operator norm. Whether a phase choice makes $t\mapsto U(t)$ differentiable in
-  operator norm is open. (Log, any-dimension part, ``Differences from the brief'', EVDIFF item.)
+  determinant is not defined, and the local unitaries are only strongly differentiable, and in
+  general cannot be chosen norm-differentiable (\lean{movingPhase_counterexample}), so the global
+  propagator is not built there. (Log, ``The equation at every time''.)
 \item \textbf{Wold--Cooper reduction.} The right shifts $V_t$ on $L^2(0,\infty)$ give an
   evolution that satisfies [B]EVMIX, maps pure states to pure states, preserves transition
   probabilities and the entropy, but is induced by no unitary; this is formalized
