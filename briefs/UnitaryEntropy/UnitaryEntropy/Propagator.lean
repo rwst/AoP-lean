@@ -27,11 +27,18 @@ Banach algebra (`exists_hasDerivAt_mul`, `ForMathlib/Analysis/ODE/Linear`):
   `exists_hasDerivAt_apply`; here `t ↦ U t ψ` is differentiable for every `ψ`, but in general not
   `t ↦ U t` in operator norm. Unitarity: `⟪U t ψ, U t φ⟫` is constant
   (`star_mul_self_of_hasDerivAt_apply`), and `U t` is invertible (`isUnit_of_hasDerivAt_apply`);
+* `hasDerivAt_conj_of_continuous_apply`, `exists_propagator_hasDerivAt_conj_of_continuous_apply`,
+  `TwoParameter.differentiableAt_conjEvolution`  EVDIFF in this case: `U t ρ U t†` is
+  differentiable in operator norm for every density operator `ρ` and solves the von Neumann
+  equation `ρ' = (iħ)⁻¹ [H(t), ρ]`. `U` is Lipschitz in operator norm
+  (`exists_eventually_norm_sub_le`), and `√ρ` is Hilbert–Schmidt, so `t ↦ U t √ρ` is
+  differentiable in operator norm (`ContinuousLinearMap.hasDerivAt_mul_of_hasDerivAt_apply`);
 * `TwoParameter.exists_propagator_isEvolution`  in finite dimension, the two-parameter evolution
   `Ψ t₀ t₁ ρ = U t₁ U t₀† ρ (U t₁ U t₀†)†` (`TwoParameter.conjEvolution`) satisfies QST:H + [B]EVMIX
   and DR-SCEQ, hence DR-INFO and EVDIFF.
 -/
 
+public import ForMathlib.Analysis.InnerProductSpace.HilbertSchmidt
 public import ForMathlib.Analysis.ODE.Linear
 public import UnitaryEntropy.InfiniteDimensional
 public import UnitaryEntropy.TwoParameter
@@ -40,7 +47,7 @@ public import UnitaryEntropy.TwoParameter
 
 namespace UnitaryEntropy
 
-open InnerProductSpace QuantumMechanics QuantumMechanics.Wigner
+open InnerProductSpace QuantumMechanics QuantumMechanics.Wigner Filter Topology
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
 
@@ -155,6 +162,76 @@ theorem exists_propagator_conserves_vonNeumannEntropy_of_continuous_apply
       = (star (U t) * U t) * ρ * (star (U t) * U t) := by noncomm_ring
     _ = ρ := by rw [h, one_mul, mul_one]
 
+/-! ### EVDIFF for strongly continuous Hamiltonians -/
+
+/-- The propagator of a strongly continuous Hamiltonian is Lipschitz in operator norm near every
+time, although in general not differentiable in operator norm. -/
+lemma exists_eventually_norm_sub_le {H U : ℝ → E →L[ℂ] E} (hc : ∀ ψ, Continuous (H · ψ))
+    {ħ : ℝ} (hu : ∀ t, U t ∈ unitary (E →L[ℂ] E))
+    (hU : ∀ ψ t, HasDerivAt (U · ψ) ((Complex.I * ħ)⁻¹ • H t (U t ψ)) t) (t : ℝ) :
+    ∃ C, ∀ᶠ s in 𝓝 t, ‖U s - U t‖ ≤ C * |s - t| := by
+  obtain ⟨M, hM⟩ := exists_norm_le_of_continuous_apply
+    (L := fun s => ((Complex.I * ħ)⁻¹ • H s).restrictScalars ℝ)
+    (fun ψ => (hc ψ).const_smul _) (t - 1) (t + 1)
+  have ht : t ∈ Set.Icc (t - 1) (t + 1) := ⟨by linarith, by linarith⟩
+  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM t ht)
+  refine ⟨M, ?_⟩
+  filter_upwards [Icc_mem_nhds (show t - 1 < t by linarith) (show t < t + 1 by linarith)]
+    with s hs
+  refine ContinuousLinearMap.opNorm_le_bound _ (by positivity) fun ψ => ?_
+  have h := (convex_Icc (t - 1) (t + 1)).norm_image_sub_le_of_norm_hasDerivWithin_le
+    (f := (U · ψ)) (C := M * ‖ψ‖) (fun r _ => (hU ψ r).hasDerivWithinAt) (fun r hr => ?_) ht hs
+  · rw [Real.norm_eq_abs] at h
+    rw [sub_apply]
+    linarith
+  · have h1 := ((((Complex.I * ħ)⁻¹ • H r).restrictScalars ℝ).le_opNorm (U r ψ)).trans
+      (mul_le_mul_of_nonneg_right (hM r hr) (norm_nonneg _))
+    rwa [ContinuousLinearMap.coe_restrictScalars', smul_apply,
+      Unitary.norm_map ⟨U r, hu r⟩ ψ] at h1
+
+/-- **EVDIFF for a strongly continuous Hamiltonian**, in any dimension: for every density
+operator `ρ`, `ρ(t) = U t ρ U t†` is differentiable in operator norm and solves the von Neumann
+equation `ρ' = (iħ)⁻¹ [H(t), ρ]`, although `U` itself is only strongly differentiable. With
+`ρ = √ρ √ρ†` and `√ρ` Hilbert–Schmidt, `t ↦ U t √ρ` is differentiable in operator norm
+(`ContinuousLinearMap.hasDerivAt_mul_of_hasDerivAt_apply`). -/
+theorem hasDerivAt_conj_of_continuous_apply {H U : ℝ → E →L[ℂ] E}
+    (hc : ∀ ψ, Continuous (H · ψ)) (hH : ∀ t, IsSelfAdjoint (H t)) {ħ : ℝ}
+    (hu : ∀ t, U t ∈ unitary (E →L[ℂ] E))
+    (hU : ∀ ψ t, HasDerivAt (U · ψ) ((Complex.I * ħ)⁻¹ • H t (U t ψ)) t) {ρ : E →L[ℂ] E}
+    (hρ : IsDensityOperator ρ) (t : ℝ) :
+    HasDerivAt (fun s => U s * ρ * star (U s))
+      ((Complex.I * ħ)⁻¹ • (H t * (U t * ρ * star (U t)) - U t * ρ * star (U t) * H t)) t := by
+  obtain ⟨S, rfl⟩ : ∃ S, S * star S = ρ :=
+    ⟨_, ContinuousLinearMap.sqrt_mul_star_sqrt hρ.nonneg⟩
+  have hS : ContinuousLinearMap.posTrace (S * star S) ≠ ⊤ := by
+    rw [hρ.posTrace_eq_one]
+    exact ENNReal.one_ne_top
+  obtain ⟨C, hC⟩ := exists_eventually_norm_sub_le hc hu hU t
+  have hG := ContinuousLinearMap.hasDerivAt_mul_of_hasDerivAt_apply
+    (F' := (Complex.I * ħ)⁻¹ • H t * U t) (fun ψ => hU ψ t) hC hS
+  have hX := star_inv_I_mul_smul (ħ := ħ) (hH t)
+  convert hG.mul hG.star using 1
+  · funext s
+    show U s * (S * star S) * star (U s) = U s * S * star (U s * S)
+    rw [star_mul]
+    noncomm_ring
+  · rw [star_mul ((Complex.I * ħ)⁻¹ • H t * U t) S, star_mul ((Complex.I * ħ)⁻¹ • H t) (U t), hX]
+    simp only [star_mul, smul_mul_assoc, mul_smul_comm, mul_neg, mul_assoc, sub_eq_add_neg,
+      smul_add, smul_neg]
+
+/-- **Theorem 2** (⇒) with EVDIFF, for a strongly continuous Hamiltonian, in any dimension: the
+unitary propagator exists, and every `ρ(t) = U t ρ U t†` solves the von Neumann equation in
+operator norm. -/
+theorem exists_propagator_hasDerivAt_conj_of_continuous_apply {H : ℝ → E →L[ℂ] E}
+    (hc : ∀ ψ, Continuous (H · ψ)) (hH : ∀ t, IsSelfAdjoint (H t)) (ħ t₀ : ℝ) :
+    ∃ U : ℝ → E →L[ℂ] E, U t₀ = 1 ∧
+      (∀ ψ t, HasDerivAt (U · ψ) ((Complex.I * ħ)⁻¹ • H t (U t ψ)) t) ∧
+      (∀ t, U t ∈ unitary (E →L[ℂ] E)) ∧
+      ∀ ρ, IsDensityOperator ρ → ∀ t, HasDerivAt (fun s => U s * ρ * star (U s))
+        ((Complex.I * ħ)⁻¹ • (H t * (U t * ρ * star (U t)) - U t * ρ * star (U t) * H t)) t := by
+  obtain ⟨U, hU₀, hU, hu⟩ := exists_propagator_of_continuous_apply hc hH ħ t₀
+  exact ⟨U, hU₀, hU, hu, fun ρ hρ t => hasDerivAt_conj_of_continuous_apply hc hH hu hU hρ t⟩
+
 namespace TwoParameter
 
 open SchroedingerEvolution.TwoParameter (IsEvolution DrSceq)
@@ -184,6 +261,21 @@ lemma isEvolution_conjEvolution {U : ℝ → E →L[ℂ] E} (hU : ∀ t, U t ∈
     refine Continuous.continuousOn ?_
     simp only [conjEvolution]
     fun_prop
+
+/-- **EVDIFF for the two-parameter evolution of a strongly continuous Hamiltonian**, in any
+dimension: `t ↦ Ψ r t ρ = U t U r† ρ (U t U r†)†` is differentiable in operator norm, since it is
+`U t σ U t†` for the density operator `σ = U r† ρ U r`. -/
+theorem differentiableAt_conjEvolution {H U : ℝ → E →L[ℂ] E} (hc : ∀ ψ, Continuous (H · ψ))
+    (hH : ∀ t, IsSelfAdjoint (H t)) {ħ : ℝ} (hu : ∀ t, U t ∈ unitary (E →L[ℂ] E))
+    (hU : ∀ ψ t, HasDerivAt (U · ψ) ((Complex.I * ħ)⁻¹ • H t (U t ψ)) t) (r : ℝ)
+    {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) (t : ℝ) :
+    DifferentiableAt ℝ (fun s => conjEvolution U r s ρ) t := by
+  have hσ : IsDensityOperator (star (U r) * ρ * U r) := by
+    simpa only [star_star] using hρ.conj (U := star (U r))
+      (by rw [star_star, Unitary.mul_star_self_of_mem (hu r)])
+  refine (hasDerivAt_conj_of_continuous_apply hc hH hu hU hσ t).differentiableAt
+    |>.congr_of_eventuallyEq (Eventually.of_forall fun s => ?_)
+  simp only [conjEvolution, star_mul, star_star, mul_assoc]
 
 variable [FiniteDimensional ℂ E]
 

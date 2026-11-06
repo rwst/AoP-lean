@@ -474,7 +474,8 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
 \item Imports: \lean{UnitaryEntropy.InfiniteDimensional} (for
   \lean{schrodinger_conserves_vonNeumannEntropy}), \lean{UnitaryEntropy.TwoParameter} (for the
   two-parameter \lean{IsEvolution}, \lean{DrSceq}, \lean{DrInfo}, \lean{EvDiff} and
-  \lean{drSceq_iff_drInfo_and_evDiff}), and the new \lean{ForMathlib.Analysis.ODE.Linear}.
+  \lean{drSceq_iff_drInfo_and_evDiff}), and the new \lean{ForMathlib.Analysis.ODE.Linear} and
+  \lean{ForMathlib.Analysis.InnerProductSpace.HilbertSchmidt}.
 \item New \lean{ForMathlib} file \lean{ForMathlib/Analysis/ODE/Linear.lean}: global existence and
   uniqueness for $x' = L(t)x$ with $L$ a strongly continuous family of bounded operators on a
   Banach space (\lean{exists_hasDerivAt_clm_apply},
@@ -489,6 +490,15 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   Gr\"onwall), \lean{Mathlib.Analysis.ODE.Gronwall},
   \lean{Mathlib.Analysis.Normed.Operator.BanachSteinhaus} and
   \lean{ForMathlib/Analysis/Calculus/Deriv/Star.lean}.
+\item New \lean{ForMathlib} file \lean{ForMathlib/Analysis/InnerProductSpace/HilbertSchmidt.lean}:
+  composing with a Hilbert--Schmidt operator $S$ ($\operatorname{tr} SS^\dagger < \infty$) turns
+  bounded strong convergence into norm convergence
+  (\lean{ContinuousLinearMap.tendsto_mul_of_tendsto_apply}, from
+  $\|R\|^2 \le \sum_i \|Re_i\|^2$, \lean{ContinuousLinearMap.sq_norm_le_tsum_norm_apply_sq}),
+  so a strongly differentiable, norm-Lipschitz family $F(t)$ gives a norm-differentiable
+  $F(t)S$ (\lean{ContinuousLinearMap.hasDerivAt_mul_of_hasDerivAt_apply}). It imports
+  \lean{ForMathlib/Analysis/InnerProductSpace/PositiveTrace.lean},
+  \lean{Mathlib.Analysis.Calculus.Deriv.Slope} and \lean{Mathlib.Analysis.Normed.Group.Tannery}.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension, and $H : \mathbb{R} \to
@@ -525,6 +535,11 @@ Theorem 2 ($\Rightarrow$), strongly continuous $H(t)$: the propagator exists, is
   \lean{propagator_unique_of_continuous_apply} \\
 Theorem 2 ($\Rightarrow$), strongly continuous $H(t)$: DR-SCEQ $\Rightarrow$ DR-INFO &
   \lean{exists_propagator_conserves_vonNeumannEntropy_of_continuous_apply} \\
+Theorem 2 ($\Rightarrow$), strongly continuous $H(t)$: EVDIFF, $U(t)\rho U(t)^\dagger$ solves the
+  von Neumann equation in operator norm & \lean{hasDerivAt_conj_of_continuous_apply},
+  \lean{exists_propagator_hasDerivAt_conj_of_continuous_apply} \\
+EVDIFF for the two-parameter evolution, any dimension &
+  \lean{TwoParameter.differentiableAt_conjEvolution} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -572,6 +587,18 @@ Theorem 2 ($\Rightarrow$), strongly continuous $H(t)$: DR-SCEQ $\Rightarrow$ DR-
   $A^\dagger = -A$, so $U(t)^\dagger U(t) = 1$
   (\lean{star_mul_self_of_hasDerivAt_apply}). An isometry with a right inverse $V$ is unitary:
   $V = U^\dagger UV = U^\dagger$.
+\item EVDIFF. $U$ is not differentiable in operator norm, but it is Lipschitz: with
+  $\|A(r)\| \le M$ on $[t-1, t+1]$ (Banach--Steinhaus) and $\|U(r)\psi\| = \|\psi\|$, the mean
+  value theorem gives $\|U(s) - U(t)\| \le M|s - t|$ (\lean{exists_eventually_norm_sub_le}).
+  Write $\rho = SS^\dagger$ with $S = \sqrt\rho$, so $\operatorname{tr} SS^\dagger = 1$. The
+  difference quotients $D_s = (U(s) - U(t))/(s - t) - A(t)U(t)$ are bounded and tend to $0$
+  strongly, and $\|D_sS\|^2 \le \sum_i \|D_s S e_i\|^2 \to 0$ by dominated convergence, with
+  dominating sequence $C^2\|Se_i\|^2$. So $G(s) = U(s)S$ has the norm derivative
+  $A(t)U(t)S$, and the product rule for $\rho(s) = G(s)G(s)^\dagger$ gives
+  $\rho' = A\rho + \rho A^\dagger = (i\hbar)^{-1}[H(t), \rho]$
+  (\lean{hasDerivAt_conj_of_continuous_apply}). For the two-parameter evolution,
+  $\Psi_{r\to t}(\rho) = U(t)\sigma U(t)^\dagger$ with the density operator
+  $\sigma = U(r)^\dagger\rho U(r)$ (\lean{TwoParameter.differentiableAt_conjEvolution}).
 \end{itemize}
 
 \paragraph{Differences from the brief.}
@@ -585,7 +612,10 @@ Theorem 2 ($\Rightarrow$), strongly continuous $H(t)$: DR-SCEQ $\Rightarrow$ DR-
   $\|(H(t) - H(s))\psi\|^2 = \int_s^t|\psi|^2 \to 0$ but $\|H(t) - H(s)\| = 1$ for $t \ne s$,
   and $U(t)$ multiplies by $e^{-i(t - x)_+/\hbar}$, whose difference quotient differs from
   $(i\hbar)^{-1}H(t)U(t)$ by about $1/\hbar$ in norm for $x$ just above $t$ (not formalized).
-  The two-parameter evolution and EVDIFF are not redone for this case.
+  EVDIFF holds nevertheless, for the states: $t \mapsto U(t)\rho U(t)^\dagger$ is differentiable in
+  operator norm for every density operator $\rho$ (\lean{hasDerivAt_conj_of_continuous_apply}).
+  The two-parameter structure \lean{IsEvolution} and \lean{drSceq_iff_drInfo_and_evDiff} are
+  finite-dimensional and are not applied in this case.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} None: for bounded continuous $H(t)$ the assumed
