@@ -21,6 +21,12 @@ Banach algebra (`exists_hasDerivAt_mul`, `ForMathlib/Analysis/ODE/Linear`):
 * `propagator_unique`  it is unique;
 * `exists_propagator_conserves_vonNeumannEntropy`  DR-SCEQ ⇒ DR-INFO with this propagator, in
   any dimension;
+* `exists_propagator_of_continuous_apply`, `propagator_unique_of_continuous_apply`,
+  `exists_propagator_conserves_vonNeumannEntropy_of_continuous_apply`  the same for a family of
+  bounded `H(t)` that is only strongly continuous (`t ↦ H(t) ψ` continuous for every `ψ`), from
+  `exists_hasDerivAt_apply`; here `t ↦ U t ψ` is differentiable for every `ψ`, but in general not
+  `t ↦ U t` in operator norm. Unitarity: `⟪U t ψ, U t φ⟫` is constant
+  (`star_mul_self_of_hasDerivAt_apply`), and `U t` is invertible (`isUnit_of_hasDerivAt_apply`);
 * `TwoParameter.exists_propagator_isEvolution`  in finite dimension, the two-parameter evolution
   `Ψ t₀ t₁ ρ = U t₁ U t₀† ρ (U t₁ U t₀†)†` (`TwoParameter.conjEvolution`) satisfies QST:H + [B]EVMIX
   and DR-SCEQ, hence DR-INFO and EVDIFF.
@@ -77,6 +83,77 @@ theorem exists_propagator_conserves_vonNeumannEntropy {H : ℝ → E →L[ℂ] E
         vonNeumannEntropy (U t * ρ * star (U t)) = vonNeumannEntropy ρ := by
   obtain ⟨U, hU₀, hU, -⟩ := exists_propagator_of_continuous hc hH ħ t₀
   exact ⟨U, hU₀, hU, fun ρ hρ t => schrodinger_conserves_vonNeumannEntropy hH hU hU₀ hρ t⟩
+
+/-! ### Strongly continuous Hamiltonians -/
+
+/-- For a strongly continuous family of self-adjoint `H(t)`, a strong solution `U` of
+`U' = (iħ)⁻¹ H(t) U` with `U t₀ = 1` preserves inner products: `⟪U t ψ, U t φ⟫` has derivative
+`0`, since `(iħ)⁻¹ H` is skew-adjoint. -/
+lemma star_mul_self_of_hasDerivAt_apply {H U : ℝ → E →L[ℂ] E} (hH : ∀ t, IsSelfAdjoint (H t))
+    {ħ t₀ : ℝ} (h₀ : U t₀ = 1)
+    (hU : ∀ ψ t, HasDerivAt (U · ψ) ((Complex.I * ħ)⁻¹ • H t (U t ψ)) t) (t : ℝ) :
+    star (U t) * U t = 1 := by
+  have hinner : ∀ ψ φ, ⟪U t ψ, U t φ⟫_ℂ = ⟪ψ, φ⟫_ℂ := fun ψ φ => by
+    have hd : ∀ s, HasDerivAt (fun s => ⟪U s ψ, U s φ⟫_ℂ) 0 s := fun s => by
+      convert (hU ψ s).inner ℂ (hU φ s) using 1
+      set X := (Complex.I * ħ)⁻¹ • H s
+      have key : ⟪X (U s ψ), U s φ⟫_ℂ = -⟪U s ψ, X (U s φ)⟫_ℂ := by
+        rw [← ContinuousLinearMap.adjoint_inner_right X, ← ContinuousLinearMap.star_eq_adjoint,
+          star_inv_I_mul_smul (hH s), neg_apply, inner_neg_right]
+      change 0 = ⟪U s ψ, X (U s φ)⟫_ℂ + ⟪X (U s ψ), U s φ⟫_ℂ
+      rw [key, add_neg_cancel]
+    have := is_const_of_deriv_eq_zero (fun s => (hd s).differentiableAt) (fun s => (hd s).deriv)
+      t t₀
+    rw [this, h₀, one_apply_eq_self, one_apply_eq_self]
+  rw [ContinuousLinearMap.star_eq_adjoint]
+  exact (U t).inner_map_map_iff_adjoint_comp_self.mp hinner
+
+/-- **Theorem 2** (⇒), the propagator of a strongly continuous Hamiltonian, in any dimension: for
+a family of bounded self-adjoint `H(t)` with `t ↦ H(t) ψ` continuous for every `ψ`, there is a
+family of unitaries `U t` with `U t₀ = 1` such that `t ↦ U t ψ` solves the Schrödinger equation
+`ψ' = (iħ)⁻¹ H(t) ψ` for every `ψ`. -/
+theorem exists_propagator_of_continuous_apply {H : ℝ → E →L[ℂ] E}
+    (hc : ∀ ψ, Continuous (H · ψ)) (hH : ∀ t, IsSelfAdjoint (H t)) (ħ t₀ : ℝ) :
+    ∃ U : ℝ → E →L[ℂ] E, U t₀ = 1 ∧
+      (∀ ψ t, HasDerivAt (U · ψ) ((Complex.I * ħ)⁻¹ • H t (U t ψ)) t) ∧
+      ∀ t, U t ∈ unitary (E →L[ℂ] E) := by
+  have hK : ∀ ψ, Continuous (((Complex.I * ħ)⁻¹ • H ·) · ψ) := fun ψ => (hc ψ).const_smul _
+  obtain ⟨U, hU₀, hU⟩ := exists_hasDerivAt_apply hK t₀
+  refine ⟨U, hU₀, hU, fun t => ?_⟩
+  have hu := star_mul_self_of_hasDerivAt_apply hH hU₀ hU t
+  obtain ⟨V, hV⟩ := (isUnit_of_hasDerivAt_apply hK hU₀ hU t).exists_right_inv
+  have hVs : V = star (U t) := by
+    rw [← one_mul V, ← hu, mul_assoc, hV, mul_one]
+  exact Unitary.mem_iff.mpr ⟨hu, hVs ▸ hV⟩
+
+/-- The propagator of a strongly continuous Hamiltonian is unique. -/
+theorem propagator_unique_of_continuous_apply {H : ℝ → E →L[ℂ] E}
+    (hc : ∀ ψ, Continuous (H · ψ)) {ħ t₀ : ℝ} {U V : ℝ → E →L[ℂ] E}
+    (hU : ∀ ψ t, HasDerivAt (U · ψ) ((Complex.I * ħ)⁻¹ • H t (U t ψ)) t)
+    (hV : ∀ ψ t, HasDerivAt (V · ψ) ((Complex.I * ħ)⁻¹ • H t (V t ψ)) t) (h : U t₀ = V t₀) :
+    U = V :=
+  eq_of_hasDerivAt_apply (K := fun t => (Complex.I * ħ)⁻¹ • H t)
+    (fun ψ => (hc ψ).const_smul _) hU hV h
+
+/-- **Theorem 2** (⇒), DR-SCEQ ⇒ DR-INFO, in any dimension, for a strongly continuous
+Hamiltonian: the propagator exists, and for every density operator `ρ` and time `t`,
+`ρF = U t ρ U t†` is a density operator, the reconstructed past `U t† ρF U t` is `ρ`, and
+`S(ρF) = S(ρ)`. -/
+theorem exists_propagator_conserves_vonNeumannEntropy_of_continuous_apply
+    {H : ℝ → E →L[ℂ] E} (hc : ∀ ψ, Continuous (H · ψ)) (hH : ∀ t, IsSelfAdjoint (H t))
+    (ħ t₀ : ℝ) :
+    ∃ U : ℝ → E →L[ℂ] E, U t₀ = 1 ∧
+      (∀ ψ t, HasDerivAt (U · ψ) ((Complex.I * ħ)⁻¹ • H t (U t ψ)) t) ∧
+      ∀ ρ, IsDensityOperator ρ → ∀ t, IsDensityOperator (U t * ρ * star (U t)) ∧
+        star (U t) * (U t * ρ * star (U t)) * U t = ρ ∧
+        vonNeumannEntropy (U t * ρ * star (U t)) = vonNeumannEntropy ρ := by
+  obtain ⟨U, hU₀, hU, hu⟩ := exists_propagator_of_continuous_apply hc hH ħ t₀
+  refine ⟨U, hU₀, hU, fun ρ hρ t => ?_⟩
+  have h := Unitary.star_mul_self_of_mem (hu t)
+  refine ⟨hρ.conj h, ?_, hρ.vonNeumannEntropy_conj h⟩
+  calc star (U t) * (U t * ρ * star (U t)) * U t
+      = (star (U t) * U t) * ρ * (star (U t) * U t) := by noncomm_ring
+    _ = ρ := by rw [h, one_mul, mul_one]
 
 namespace TwoParameter
 

@@ -8,12 +8,15 @@ module
 public import ForMathlib.Analysis.Calculus.Deriv.Star
 public import Mathlib.Analysis.ODE.ExistUnique
 public import Mathlib.Analysis.ODE.Gronwall
+public import Mathlib.Analysis.Normed.Operator.BanachSteinhaus
 
 /-!
 # Linear ordinary differential equations
 
-For a continuous family `L : ℝ → E →L[ℝ] E` of operators on a Banach space, the linear equation
-`x'(t) = L(t) x(t)` has a unique solution on all of `ℝ` with any initial value. The
+For a strongly continuous family `L : ℝ → E →L[ℝ] E` of operators on a Banach space (`t ↦ L t x`
+continuous for every `x`), the linear equation `x'(t) = L(t) x(t)` has a unique solution on all of
+`ℝ` with any initial value. By the Banach-Steinhaus theorem, `‖L t‖` is bounded on compact
+intervals. The
 Picard-Lindelöf theorem of Mathlib gives solutions only on short intervals, since a linear vector
 field is unbounded. On `[t₀ - T, t₀ + T]` we therefore solve the equation for the field
 `L(t) π(x)`, where `π` is the radial retraction onto a large ball, which is bounded and globally
@@ -22,8 +25,12 @@ equation. These interval solutions agree by uniqueness and glue to a global one.
 
 ## Main results
 
-* `exists_hasDerivAt_clm_apply`, `eq_of_hasDerivAt_clm_apply`: global existence and uniqueness
-  for `x' = L(t) x`.
+* `exists_hasDerivAt_clm_apply`, `eq_of_hasDerivAt_clm_apply_of_continuous_apply`: global
+  existence and uniqueness for `x' = L(t) x`; `eq_of_hasDerivAt_clm_apply`: uniqueness for
+  continuous `L` in an incomplete space.
+* `exists_hasDerivAt_apply`, `eq_of_hasDerivAt_apply`, `isUnit_of_hasDerivAt_apply`: the
+  propagator of a strongly continuous family `K t` of `𝕜`-linear operators, a family of
+  invertible operators `U t` with `U t₀ = 1` and `(U t x)' = K(t) U t x`.
 * `exists_hasDerivAt_mul`, `eq_of_hasDerivAt_mul`: the same for `U' = A(t) U` in a Banach
   algebra.
 * `mul_star_self_eq_one_of_hasDerivAt`: if `U' = X U` with `X t` skew-adjoint and
@@ -166,14 +173,22 @@ open LinearODE
 
 /-! ### Linear equations in a Banach space -/
 
-/-- **Linear ODE on an interval**: `x' = L(t) x` has a solution on `[t₀ - T, t₀ + T]` with any
-initial value. -/
-theorem exists_hasDerivWithinAt_clm_apply_Icc [CompleteSpace E] (hL : Continuous L) (t₀ : ℝ)
-    {T : ℝ} (hT : 0 ≤ T) (x₀ : E) :
+/-- A strongly continuous family of operators on a Banach space is bounded on compact intervals
+(Banach-Steinhaus). -/
+lemma exists_norm_le_of_continuous_apply [CompleteSpace E] (hL : ∀ x, Continuous (L · x))
+    (a b : ℝ) : ∃ C, ∀ t ∈ Icc a b, ‖L t‖ ≤ C := by
+  obtain ⟨C, hC⟩ := banach_steinhaus (g := fun t : Icc a b => L t) fun x => by
+    obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn (hL x).continuousOn
+    exact ⟨C, fun t => hC t t.2⟩
+  exact ⟨C, fun t ht => hC ⟨t, ht⟩⟩
+
+/-- **Linear ODE on an interval**: for a strongly continuous family `L t`, `x' = L(t) x` has a
+solution on `[t₀ - T, t₀ + T]` with any initial value. -/
+theorem exists_hasDerivWithinAt_clm_apply_Icc [CompleteSpace E] (hL : ∀ x, Continuous (L · x))
+    (t₀ : ℝ) {T : ℝ} (hT : 0 ≤ T) (x₀ : E) :
     ∃ x : ℝ → E, x t₀ = x₀ ∧ ∀ t ∈ Icc (t₀ - T) (t₀ + T),
       HasDerivWithinAt x (L t (x t)) (Icc (t₀ - T) (t₀ + T)) t := by
-  obtain ⟨C, hC⟩ := (isCompact_Icc (a := t₀ - T) (b := t₀ + T)).exists_bound_of_continuousOn
-    hL.continuousOn
+  obtain ⟨C, hC⟩ := exists_norm_le_of_continuous_apply hL (t₀ - T) (t₀ + T)
   set M : ℝ≥0 := C.toNNReal
   have hM : ∀ t ∈ Icc (t₀ - T) (t₀ + T), ‖L t‖ ≤ M := fun t ht => by
     rw [Real.coe_toNNReal']
@@ -188,8 +203,7 @@ theorem exists_hasDerivWithinAt_clm_apply_Icc [CompleteSpace E] (hL : Continuous
   have hB : (B : ℝ) = M * R := by rw [NNReal.coe_mul, Real.coe_toNNReal _ hR.le]
   have hPL : IsPicardLindelof (fun t y => L t (retraction R y)) (⟨t₀, ht₀⟩ : Icc _ _) 0
       (‖x₀‖₊ + B * T.toNNReal) ‖x₀‖₊ B (M * 2) := by
-    refine ⟨fun t ht => ?_, fun y _ => (hL.clm_apply continuous_const).continuousOn,
-      fun t ht y _ => ?_, ?_⟩
+    refine ⟨fun t ht => ?_, fun y _ => (hL _).continuousOn, fun t ht y _ => ?_, ?_⟩
     · exact (((L t).lipschitzWith.comp (lipschitzWith_retraction hR.le)).weaken
         (by gcongr; exact hMn t ht)).lipschitzOnWith
     · rw [hB]
@@ -212,14 +226,12 @@ theorem exists_hasDerivWithinAt_clm_apply_Icc [CompleteSpace E] (hL : Continuous
     exact this.trans (le_add_of_nonneg_right zero_le_one)
   rwa [retraction_eq_self hle] at h
 
-/-- **Uniqueness for a linear ODE on an interval.** -/
-theorem eqOn_Icc_of_hasDerivWithinAt_clm_apply (hL : Continuous L) {t₀ T : ℝ} (hT : 0 < T)
-    {x y : ℝ → E}
+/-- **Uniqueness for a linear ODE on an interval**, for a family `L t` bounded on it. -/
+theorem eqOn_Icc_of_hasDerivWithinAt_clm_apply {t₀ T C : ℝ} (hC : ∀ t ∈ Icc (t₀ - T) (t₀ + T),
+    ‖L t‖ ≤ C) (hT : 0 < T) {x y : ℝ → E}
     (hx : ∀ t ∈ Icc (t₀ - T) (t₀ + T), HasDerivWithinAt x (L t (x t)) (Icc (t₀ - T) (t₀ + T)) t)
     (hy : ∀ t ∈ Icc (t₀ - T) (t₀ + T), HasDerivWithinAt y (L t (y t)) (Icc (t₀ - T) (t₀ + T)) t)
     (h : x t₀ = y t₀) : EqOn x y (Icc (t₀ - T) (t₀ + T)) := by
-  obtain ⟨C, hC⟩ := (isCompact_Icc (a := t₀ - T) (b := t₀ + T)).exists_bound_of_continuousOn
-    hL.continuousOn
   have hnhds : ∀ t ∈ Ioo (t₀ - T) (t₀ + T), Icc (t₀ - T) (t₀ + T) ∈ 𝓝 t :=
     fun t ht => Icc_mem_nhds ht.1 ht.2
   refine ODE_solution_unique_of_mem_Icc (K := C.toNNReal) (s := fun _ => univ)
@@ -232,17 +244,18 @@ theorem eqOn_Icc_of_hasDerivWithinAt_clm_apply (hL : Continuous L) {t₀ T : ℝ
   rw [← NNReal.coe_le_coe, coe_nnnorm, Real.coe_toNNReal']
   exact le_max_of_le_left (hC t (Ioo_subset_Icc_self ht))
 
-/-- **Linear ODE, global existence**: for a continuous family of operators `L t`, the equation
-`x' = L(t) x` has a solution on all of `ℝ` with any initial value. -/
-theorem exists_hasDerivAt_clm_apply [CompleteSpace E] (hL : Continuous L) (t₀ : ℝ) (x₀ : E) :
-    ∃ x : ℝ → E, x t₀ = x₀ ∧ ∀ t, HasDerivAt x (L t (x t)) t := by
+/-- **Linear ODE, global existence**: for a strongly continuous family of operators `L t`, the
+equation `x' = L(t) x` has a solution on all of `ℝ` with any initial value. -/
+theorem exists_hasDerivAt_clm_apply [CompleteSpace E] (hL : ∀ x, Continuous (L · x)) (t₀ : ℝ)
+    (x₀ : E) : ∃ x : ℝ → E, x t₀ = x₀ ∧ ∀ t, HasDerivAt x (L t (x t)) t := by
   choose! α hα₀ hα using fun T (hT : 0 ≤ T) => exists_hasDerivWithinAt_clm_apply_Icc hL t₀ hT x₀
   have hagree : ∀ T T' : ℝ, 0 < T → 0 < T' → ∀ t, |t - t₀| ≤ min T T' → α T t = α T' t := by
     intro T T' hT hT' t ht
     have hsub : ∀ S, min T T' ≤ S →
         Icc (t₀ - min T T') (t₀ + min T T') ⊆ Icc (t₀ - S) (t₀ + S) := fun S hS =>
       Icc_subset_Icc (by linarith) (by linarith)
-    refine eqOn_Icc_of_hasDerivWithinAt_clm_apply hL (lt_min hT hT')
+    obtain ⟨C, hC⟩ := exists_norm_le_of_continuous_apply hL (t₀ - min T T') (t₀ + min T T')
+    refine eqOn_Icc_of_hasDerivWithinAt_clm_apply hC (lt_min hT hT')
       (fun s hs => (hα T hT.le s (hsub T (min_le_left _ _) hs)).mono
         (hsub T (min_le_left _ _)))
       (fun s hs => (hα T' hT'.le s (hsub T' (min_le_right _ _) hs)).mono
@@ -263,14 +276,106 @@ theorem exists_hasDerivAt_clm_apply [CompleteSpace E] (hL : Continuous L) (t₀ 
   have h2 : |s - t| < 1 / 2 := abs_sub_lt_iff.mpr ⟨by linarith [hs.2], by linarith [hs.1]⟩
   linarith
 
-/-- **Linear ODE, global uniqueness.** -/
-theorem eq_of_hasDerivAt_clm_apply (hL : Continuous L) {x y : ℝ → E} {t₀ : ℝ}
+/-- **Linear ODE, global uniqueness**, for a family `L t` bounded on compact intervals. -/
+theorem eq_of_hasDerivAt_clm_apply_of_norm_le
+    (hb : ∀ a b, ∃ C, ∀ t ∈ Icc a b, ‖L t‖ ≤ C) {x y : ℝ → E} {t₀ : ℝ}
     (hx : ∀ t, HasDerivAt x (L t (x t)) t) (hy : ∀ t, HasDerivAt y (L t (y t)) t)
     (h : x t₀ = y t₀) : x = y := by
   funext t
-  exact eqOn_Icc_of_hasDerivWithinAt_clm_apply hL (T := |t - t₀| + 1) (by positivity)
+  obtain ⟨C, hC⟩ := hb (t₀ - (|t - t₀| + 1)) (t₀ + (|t - t₀| + 1))
+  exact eqOn_Icc_of_hasDerivWithinAt_clm_apply hC (by positivity)
     (fun s _ => (hx s).hasDerivWithinAt) (fun s _ => (hy s).hasDerivWithinAt) h
     ⟨by linarith [neg_abs_le (t - t₀)], by linarith [le_abs_self (t - t₀)]⟩
+
+/-- **Linear ODE, global uniqueness**, for a continuous family `L t`. -/
+theorem eq_of_hasDerivAt_clm_apply (hL : Continuous L) {x y : ℝ → E} {t₀ : ℝ}
+    (hx : ∀ t, HasDerivAt x (L t (x t)) t) (hy : ∀ t, HasDerivAt y (L t (y t)) t)
+    (h : x t₀ = y t₀) : x = y :=
+  eq_of_hasDerivAt_clm_apply_of_norm_le
+    (fun _ _ => isCompact_Icc.exists_bound_of_continuousOn hL.continuousOn) hx hy h
+
+/-- **Linear ODE, global uniqueness**, for a strongly continuous family `L t`. -/
+theorem eq_of_hasDerivAt_clm_apply_of_continuous_apply [CompleteSpace E]
+    (hL : ∀ x, Continuous (L · x)) {x y : ℝ → E} {t₀ : ℝ}
+    (hx : ∀ t, HasDerivAt x (L t (x t)) t) (hy : ∀ t, HasDerivAt y (L t (y t)) t)
+    (h : x t₀ = y t₀) : x = y :=
+  eq_of_hasDerivAt_clm_apply_of_norm_le (exists_norm_le_of_continuous_apply hL) hx hy h
+
+/-- Grönwall's bound for a global solution of `x' = L(t) x`, on an interval where
+`‖L t‖ ≤ M`. -/
+lemma norm_le_of_hasDerivAt_clm_apply {x : ℝ → E} {t₀ T M : ℝ} (hM : 0 ≤ M)
+    (hb : ∀ t ∈ Icc (t₀ - T) (t₀ + T), ‖L t‖ ≤ M) (hx : ∀ t, HasDerivAt x (L t (x t)) t) :
+    ∀ t ∈ Icc (t₀ - T) (t₀ + T), ‖x t‖ ≤ ‖x t₀‖ * Real.exp (M * T) :=
+  norm_le_mul_exp hM (fun t _ => (hx t).hasDerivWithinAt) fun t ht =>
+    ((L t).le_opNorm _).trans (mul_le_mul_of_nonneg_right (hb t ht) (norm_nonneg _))
+
+/-! ### The propagator of a strongly continuous family -/
+
+section Propagator
+
+variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] [NormedAlgebra ℝ 𝕜] [NormedSpace 𝕜 E]
+  [IsScalarTower ℝ 𝕜 E] [CompleteSpace E] {K : ℝ → E →L[𝕜] E}
+
+/-- **Propagator, existence**: for a strongly continuous family `K t` of operators, there is a
+family `U t` of operators with `U t₀ = 1` such that `t ↦ U t x` solves `x' = K(t) x` for every
+`x`. The derivative exists in the strong sense only. -/
+theorem exists_hasDerivAt_apply (hK : ∀ x, Continuous (K · x)) (t₀ : ℝ) :
+    ∃ U : ℝ → E →L[𝕜] E, U t₀ = 1 ∧ ∀ x t, HasDerivAt (U · x) (K t (U t x)) t := by
+  set L : ℝ → E →L[ℝ] E := fun t => (K t).restrictScalars ℝ
+  have hL : ∀ x, Continuous (L · x) := hK
+  choose sol hsol₀ hsol using fun x => exists_hasDerivAt_clm_apply hL t₀ x
+  have hadd : ∀ x y, sol (x + y) = sol x + sol y := fun x y =>
+    eq_of_hasDerivAt_clm_apply_of_continuous_apply hL (hsol _) (fun t => by
+      rw [Pi.add_apply, map_add]
+      exact (hsol x t).add (hsol y t)) (by rw [Pi.add_apply, hsol₀, hsol₀, hsol₀])
+  have hsmul : ∀ (c : 𝕜) x, sol (c • x) = c • sol x := fun c x =>
+    eq_of_hasDerivAt_clm_apply_of_continuous_apply hL (hsol _) (fun t => by
+      change HasDerivAt _ (K t (c • sol x t)) t
+      rw [map_smul]
+      exact (hsol x t).const_smul c) (by rw [Pi.smul_apply, hsol₀, hsol₀])
+  have hbd : ∀ t, ∃ C, ∀ x, ‖sol x t‖ ≤ C * ‖x‖ := fun t => by
+    obtain ⟨M, hM⟩ := exists_norm_le_of_continuous_apply hL (t₀ - |t - t₀|) (t₀ + |t - t₀|)
+    refine ⟨Real.exp (max M 0 * |t - t₀|), fun x => ?_⟩
+    have := norm_le_of_hasDerivAt_clm_apply (le_max_right M 0)
+      (fun s hs => (hM s hs).trans (le_max_left M 0)) (hsol x) t
+      ⟨by linarith [neg_abs_le (t - t₀)], by linarith [le_abs_self (t - t₀)]⟩
+    rwa [hsol₀, mul_comm] at this
+  choose C hC using hbd
+  refine ⟨fun t => LinearMap.mkContinuous
+    { toFun := fun x => sol x t
+      map_add' := fun x y => congrFun (hadd x y) t
+      map_smul' := fun c x => congrFun (hsmul c x) t } (C t) (hC t), ?_, fun x t => hsol x t⟩
+  ext x
+  exact hsol₀ x
+
+/-- **Propagator, uniqueness.** -/
+theorem eq_of_hasDerivAt_apply (hK : ∀ x, Continuous (K · x)) {U V : ℝ → E →L[𝕜] E} {t₀ : ℝ}
+    (hU : ∀ x t, HasDerivAt (U · x) (K t (U t x)) t)
+    (hV : ∀ x t, HasDerivAt (V · x) (K t (V t x)) t) (h : U t₀ = V t₀) : U = V := by
+  funext t
+  ext x
+  exact congrFun (eq_of_hasDerivAt_clm_apply_of_continuous_apply
+    (L := fun t => (K t).restrictScalars ℝ) hK (hU x) (hV x) (by rw [h])) t
+
+/-- The propagator is invertible at all times: `U s` has the inverse `V t₀`, where `V` is the
+propagator with `V s = 1`. -/
+theorem isUnit_of_hasDerivAt_apply (hK : ∀ x, Continuous (K · x)) {U : ℝ → E →L[𝕜] E}
+    {t₀ : ℝ} (h₀ : U t₀ = 1) (hU : ∀ x t, HasDerivAt (U · x) (K t (U t x)) t) (s : ℝ) :
+    IsUnit (U s) := by
+  obtain ⟨V, hV₀, hV⟩ := exists_hasDerivAt_apply hK s
+  have h₁ : ∀ x, V t₀ (U s x) = U t₀ x := fun x => congrFun
+    (eq_of_hasDerivAt_clm_apply_of_continuous_apply (L := fun t => (K t).restrictScalars ℝ) hK
+      (hV (U s x)) (hU x) (by rw [hV₀, one_apply_eq_self])) t₀
+  have h₂ : ∀ x, U s (V t₀ x) = V s x := fun x => congrFun
+    (eq_of_hasDerivAt_clm_apply_of_continuous_apply (L := fun t => (K t).restrictScalars ℝ) hK
+      (hU (V t₀ x)) (hV x) (by rw [h₀, one_apply_eq_self])) s
+  refine ⟨⟨U s, V t₀, ?_, ?_⟩, rfl⟩
+  · ext x
+    rw [mul_apply_eq_comp, h₂, hV₀]
+  · ext x
+    rw [mul_apply_eq_comp, h₁, h₀]
+
+end Propagator
 
 /-! ### Linear equations in a Banach algebra -/
 
@@ -282,7 +387,8 @@ variable {𝔸 : Type*} [NormedRing 𝔸] [NormedAlgebra ℝ 𝔸] {A : ℝ → 
 all of `ℝ` with any initial value. -/
 theorem exists_hasDerivAt_mul [CompleteSpace 𝔸] (hA : Continuous A) (t₀ : ℝ) (U₀ : 𝔸) :
     ∃ U : ℝ → 𝔸, U t₀ = U₀ ∧ ∀ t, HasDerivAt U (A t * U t) t :=
-  exists_hasDerivAt_clm_apply ((ContinuousLinearMap.mul ℝ 𝔸).continuous.comp hA) t₀ U₀
+  exists_hasDerivAt_clm_apply (L := fun t => ContinuousLinearMap.mul ℝ 𝔸 (A t))
+    (fun _ => hA.mul continuous_const) t₀ U₀
 
 /-- **Propagator, uniqueness.** -/
 theorem eq_of_hasDerivAt_mul (hA : Continuous A) {U V : ℝ → 𝔸} {t₀ : ℝ}

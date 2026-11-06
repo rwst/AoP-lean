@@ -46,10 +46,12 @@ Open problems raised by the technical brief in this directory, and by its Lean f
   and is unitary (\lean{exists_propagator_of_continuous}, \lean{propagator_unique}), and in finite
   dimension its two-parameter evolution satisfies [B]EVMIX, DR-SCEQ, DR-INFO and EVDIFF
   (\lean{TwoParameter.exists_propagator_isEvolution}; log, ``The propagator of a time-dependent
-  Hamiltonian''). For unbounded self-adjoint $H(t)$ existence needs Kato-type hypotheses and
-  remains open. The converse has the same gap: for unbounded $H(t)$, Step~3 gives only a
-  symmetric $H(t_0)$ (next section, first item). (Brief, Sec.~3, proof of Theorem~2
-  ($\Rightarrow$); Log, ``Differences from the brief''.)
+  Hamiltonian''). Existence, uniqueness and unitarity also hold for bounded $H(t)$ that are only
+  strongly continuous, with $t \mapsto U(t)\psi$ differentiable for every $\psi$
+  (\lean{exists_propagator_of_continuous_apply}). For unbounded self-adjoint $H(t)$ existence
+  needs Kato-type hypotheses and remains open. The converse has the same gap: for unbounded
+  $H(t)$, Step~3 gives only a symmetric $H(t_0)$ (next section, first item). (Brief, Sec.~3,
+  proof of Theorem~2 ($\Rightarrow$); Log, ``Differences from the brief''.)
 \end{enumerate}
 
 \section*{From the formalization}

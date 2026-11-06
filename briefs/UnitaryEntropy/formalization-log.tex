@@ -106,7 +106,8 @@ Theorem 2 ($\Rightarrow$), unitary propagator & \lean{star_mul_self_of_schroding
 Theorem 2 ($\Rightarrow$), existence for constant $H$ & \lean{hasDerivAt_exp_schrodinger}:
   $U(t) = \exp(t(i\hbar)^{-1}H)$ \\
 Theorem 2 ($\Rightarrow$), existence for continuous $H(t)$ &
-  \lean{exists_propagator_of_continuous} (Section~\ref{sec:unitary-entropy-propagator}) \\
+  \lean{exists_propagator_of_continuous}; strongly continuous $H(t)$:
+  \lean{exists_propagator_of_continuous_apply} (Section~\ref{sec:unitary-entropy-propagator}) \\
 Theorem 2 ($\Rightarrow$), DR-INFO & \lean{vonNeumann_unitary_conj},
   \lean{IsDensity.unitary_conj}, \lean{schrodinger_conserves_entropy} \\
 Theorem 2 ($\Leftarrow$), Step 1 & \lean{vonNeumann_eq_zero_iff}: $S(\rho) = 0$ iff $\rho$ is
@@ -475,19 +476,27 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   two-parameter \lean{IsEvolution}, \lean{DrSceq}, \lean{DrInfo}, \lean{EvDiff} and
   \lean{drSceq_iff_drInfo_and_evDiff}), and the new \lean{ForMathlib.Analysis.ODE.Linear}.
 \item New \lean{ForMathlib} file \lean{ForMathlib/Analysis/ODE/Linear.lean}: global existence and
-  uniqueness for $x' = L(t)x$ with $L$ a continuous family of bounded operators on a Banach
-  space (\lean{exists_hasDerivAt_clm_apply}, \lean{eq_of_hasDerivAt_clm_apply}), the same for
+  uniqueness for $x' = L(t)x$ with $L$ a strongly continuous family of bounded operators on a
+  Banach space (\lean{exists_hasDerivAt_clm_apply},
+  \lean{eq_of_hasDerivAt_clm_apply_of_continuous_apply}; \lean{eq_of_hasDerivAt_clm_apply} for
+  continuous $L$), the strong propagator of such a family, invertible at all times
+  (\lean{exists_hasDerivAt_apply}, \lean{eq_of_hasDerivAt_apply},
+  \lean{isUnit_of_hasDerivAt_apply}), the same for
   $U' = A(t)U$ in a Banach algebra (\lean{exists_hasDerivAt_mul}, \lean{eq_of_hasDerivAt_mul}),
   and unitarity of the solution for skew-adjoint $A(t)$
   (\lean{mul_star_self_eq_one_of_hasDerivAt}, \lean{exists_hasDerivAt_mul_mem_unitary}). It
   imports Mathlib's \lean{Mathlib.Analysis.ODE.ExistUnique} (Picard--Lindel\"of, uniqueness,
-  Gr\"onwall) and \lean{ForMathlib/Analysis/Calculus/Deriv/Star.lean}.
+  Gr\"onwall), \lean{Mathlib.Analysis.ODE.Gronwall},
+  \lean{Mathlib.Analysis.Normed.Operator.BanachSteinhaus} and
+  \lean{ForMathlib/Analysis/Calculus/Deriv/Star.lean}.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension, and $H : \mathbb{R} \to
 \mathcal{B}(E)$ is continuous in operator norm with every $H(t)$ self-adjoint. The brief's
 Theorem~2 ($\Rightarrow$) starts from ``The Schr\"odinger equation gives rise to a differentiable
-unitary propagator $U_{t_0\to t_1}$''. Here the propagator is constructed.
+unitary propagator $U_{t_0\to t_1}$''. Here the propagator is constructed. The second half of
+the section assumes only strong continuity: $t \mapsto H(t)\psi$ is continuous for every
+$\psi$.
 
 \paragraph{Results.}
 \begin{center}
@@ -508,6 +517,14 @@ Two-parameter evolution of a propagator & \lean{TwoParameter.conjEvolution},
   \lean{TwoParameter.isEvolution_conjEvolution} \\
 Theorem 2 ($\Rightarrow$), two-parameter, finite dimension: QST:H + [B]EVMIX, DR-SCEQ, DR-INFO,
   EVDIFF & \lean{TwoParameter.exists_propagator_isEvolution} \\
+Strong propagator of a strongly continuous $L(t)$: existence, uniqueness, invertibility &
+  \lean{exists_hasDerivAt_apply}, \lean{eq_of_hasDerivAt_apply},
+  \lean{isUnit_of_hasDerivAt_apply} \\
+Theorem 2 ($\Rightarrow$), strongly continuous $H(t)$: the propagator exists, is unitary and
+  unique & \lean{exists_propagator_of_continuous_apply},
+  \lean{propagator_unique_of_continuous_apply} \\
+Theorem 2 ($\Rightarrow$), strongly continuous $H(t)$: DR-SCEQ $\Rightarrow$ DR-INFO &
+  \lean{exists_propagator_conserves_vonNeumannEntropy_of_continuous_apply} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -538,14 +555,37 @@ Theorem 2 ($\Rightarrow$), two-parameter, finite dimension: QST:H + [B]EVMIX, DR
   U(t_2)U(t_0)^\dagger$, and joint continuity follows from the continuity of $U$. DR-SCEQ then
   holds by definition, and DR-INFO and EVDIFF follow from
   \lean{TwoParameter.drSceq_iff_drInfo_and_evDiff}.
+\item Strongly continuous $L(t)$. Operator-norm continuity was used only twice: for the
+  continuity of $t \mapsto L(t)x$ at fixed $x$, which is all that Mathlib's Picard--Lindel\"of
+  theorem asks for, and for a bound on $\|L(t)\|$ over a compact interval. That bound now comes
+  from the Banach--Steinhaus theorem (\lean{exists_norm_le_of_continuous_apply}), since
+  $t \mapsto \|L(t)x\|$ is bounded on the interval for each $x$. The rest of the vector-level
+  proof is unchanged.
+\item The operator $U(t)$ is assembled from the vector solutions: $U(t)x = x(t)$ for the
+  solution with $x(t_0) = x$. It is linear (over $\mathbb{C}$, for $\mathbb{C}$-linear $L(t)$)
+  by uniqueness, and bounded by Gr\"onwall, $\|U(t)x\| \le e^{M|t - t_0|}\|x\|$. Only
+  $t \mapsto U(t)x$ is differentiable, for each $x$. $U(s)$ is invertible: if $V$ is the
+  propagator with $V(s) = 1$, uniqueness gives $V(t)U(s) = U(t)$ and $U(t)V(t_0) = V(t)$, so
+  $V(t_0)$ is a two-sided inverse of $U(s)$.
+\item Unitarity for $L(t) = (i\hbar)^{-1}H(t)$: $\langle U(t)\psi, U(t)\phi\rangle$ has
+  derivative $\langle U\psi, AU\phi\rangle + \langle AU\psi, U\phi\rangle = 0$ since
+  $A^\dagger = -A$, so $U(t)^\dagger U(t) = 1$
+  (\lean{star_mul_self_of_hasDerivAt_apply}). An isometry with a right inverse $V$ is unitary:
+  $V = U^\dagger UV = U^\dagger$.
 \end{itemize}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item $H(t)$ is assumed bounded and continuous in operator norm. For unbounded $H(t)$ the
   propagator needs Kato-type hypotheses and is not constructed (open problems). A family of
-  bounded $H(t)$ that is only strongly continuous also has a strongly differentiable propagator;
-  this is not formalized.
+  bounded $H(t)$ that is only strongly continuous has a strongly differentiable unitary
+  propagator (\lean{exists_propagator_of_continuous_apply}). In general it is not differentiable
+  in operator norm, so the Schr\"odinger equation cannot be stated for $U$ itself: on
+  $L^2[0,1]$, let $H(t)$ multiply by the indicator of $[0,t]$. Then
+  $\|(H(t) - H(s))\psi\|^2 = \int_s^t|\psi|^2 \to 0$ but $\|H(t) - H(s)\| = 1$ for $t \ne s$,
+  and $U(t)$ multiplies by $e^{-i(t - x)_+/\hbar}$, whose difference quotient differs from
+  $(i\hbar)^{-1}H(t)U(t)$ by about $1/\hbar$ in norm for $x$ just above $t$ (not formalized).
+  The two-parameter evolution and EVDIFF are not redone for this case.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} None: for bounded continuous $H(t)$ the assumed
