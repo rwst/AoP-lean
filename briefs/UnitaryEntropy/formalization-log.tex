@@ -609,9 +609,11 @@ EVDIFF for the two-parameter evolution, any dimension &
   propagator (\lean{exists_propagator_of_continuous_apply}). In general it is not differentiable
   in operator norm, so the Schr\"odinger equation cannot be stated for $U$ itself: on
   $L^2[0,1]$, let $H(t)$ multiply by the indicator of $[0,t]$. Then
-  $\|(H(t) - H(s))\psi\|^2 = \int_s^t|\psi|^2 \to 0$ but $\|H(t) - H(s)\| = 1$ for $t \ne s$,
-  and $U(t)$ multiplies by $e^{-i(t - x)_+/\hbar}$, whose difference quotient differs from
-  $(i\hbar)^{-1}H(t)U(t)$ by about $1/\hbar$ in norm for $x$ just above $t$ (not formalized).
+  $\|(H(t) - H(s))\psi\|^2 = \int_s^t|\psi|^2 \to 0$ but $\|H(t) - H(s)\| = 1$ for $s \ne t$ in
+  $[0,1]$, and $U(t)$ multiplies by $e^{-i(t - x)_+/\hbar}$, whose difference quotient differs
+  from $(i\hbar)^{-1}H(t)U(t)$ by at least $1/(\pi\hbar)$ in norm, from the values at $x$ just
+  above $t$ (\lean{indicatorHamiltonian_counterexample},
+  Section~\ref{sec:unitary-entropy-indicator}).
   EVDIFF holds nevertheless, for the states: $t \mapsto U(t)\rho U(t)^\dagger$ is differentiable in
   operator norm for every density operator $\rho$ (\lean{hasDerivAt_conj_of_continuous_apply}).
   The two-parameter structure \lean{IsEvolution} and \lean{drSceq_iff_drInfo_and_evDiff} are
@@ -620,6 +622,82 @@ EVDIFF for the two-parameter evolution, any dimension &
 
 \paragraph{Problems found in the brief.} None: for bounded continuous $H(t)$ the assumed
 propagator exists, is unique and is unitary.
+
+\subsection{A strongly continuous Hamiltonian on \texorpdfstring{$L^2[0,1]$}{L2[0,1]}}%
+\label{sec:unitary-entropy-indicator}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/IndicatorHamiltonian.lean}
+\item Imports: \lean{UnitaryEntropy.Propagator} (for
+  \lean{propagator_unique_of_continuous_apply}) and the new
+  \lean{ForMathlib.MeasureTheory.Function.LpSpace.Multiplication}.
+\item New \lean{ForMathlib} file
+  \lean{ForMathlib/MeasureTheory/Function/LpSpace/Multiplication.lean}: the multiplication
+  operator \lean{Lp.mulL}~$g$ on $L^p(\mu)$ for an essentially bounded $g$, built from Mathlib's
+  \lean{ContinuousLinearMap.holderL}, with its pointwise formula (\lean{Lp.coeFn_mulL},
+  \lean{Lp.eq_mulL}); $\|\mathrm{mulL}\,g\| \le C$ if $|g| \le C$ a.e.
+  (\lean{Lp.norm_mulL_le}) and $\ge c$ if $|g| \ge c$ on a set of positive finite measure
+  (\lean{Lp.le_norm_mulL}); strong convergence when the multipliers are uniformly bounded and
+  converge a.e. (\lean{Lp.tendsto_mulL_apply}, from dominated convergence for the $L^p$ norm,
+  \lean{tendsto_eLpNorm_of_dominated}); self-adjointness on $L^2$ for real $g$
+  (\lean{Lp.isSelfAdjoint_mulL}). It imports \lean{Mathlib.Analysis.InnerProductSpace.Adjoint},
+  \lean{Mathlib.MeasureTheory.Function.Holder} and \lean{Mathlib.MeasureTheory.Function.L2Space}.
+\end{itemize}
+
+\paragraph{Setting.} $L^2[0,1]$ is $L^2$ of Lebesgue measure restricted to $[0,1]$, on
+$\mathbb{R}$. $H(t)$ (\lean{indicatorHamiltonian}) multiplies by the indicator of $[0,t]$, and
+$U(t)$ (\lean{indicatorPropagator}) by $e^{-i(t-x)_+/\hbar}$ (\lean{indicatorPhase}). This is the
+example in Section~\ref{sec:unitary-entropy-propagator}, ``Differences from the brief''.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Statement & Lean \\
+\midrule
+$H(t)$ is self-adjoint with $\|H(t)\| \le 1$ & \lean{isSelfAdjoint_indicatorHamiltonian},
+  \lean{norm_indicatorHamiltonian_le} \\
+$t \mapsto H(t)\psi$ is continuous for every $\psi$ &
+  \lean{continuous_indicatorHamiltonian_apply} \\
+$\|H(t) - H(s)\| = 1$ for $s \ne t$ in $[0,1]$; $H$ is norm-continuous at no $t \in (0,1)$ &
+  \lean{norm_indicatorHamiltonian_sub}, \lean{not_continuousAt_indicatorHamiltonian} \\
+$U(0) = 1$, and $\frac{d}{dt}U(t)\psi = (i\hbar)^{-1}H(t)U(t)\psi$ for every $\psi$ &
+  \lean{indicatorPropagator_zero}, \lean{hasDerivAt_indicatorPropagator_apply} \\
+For $\hbar > 0$, $U$ is norm-differentiable at no $t \in (0,1)$ &
+  \lean{not_differentiableAt_indicatorPropagator} \\
+$H$ satisfies the hypotheses of \lean{exists_propagator_of_continuous_apply}, and no propagator
+  $V$ with $V(t_0) = 1$ is norm-differentiable at any $t \in (0,1)$ &
+  \lean{indicatorHamiltonian_counterexample} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Proof.}
+\begin{itemize}
+\item Strong continuity: for $x \ne t$, $\mathbf 1_{x \le s} \to \mathbf 1_{x \le t}$ as
+  $s \to t$, and $\{t\}$ is a null set. The multipliers are bounded by $1$, so dominated
+  convergence gives $H(s)\psi \to H(t)\psi$.
+\item For $s < t$, $H(t) - H(s)$ multiplies by the indicator of $(s,t]$, which is bounded by $1$
+  and equals $1$ on a set of measure $t - s > 0$.
+\item Strong derivative: for $x \ne t$, $s \mapsto e^{-i(s-x)_+/\hbar}$ has derivative
+  $(i\hbar)^{-1}\mathbf 1_{x \le t}\,e^{-i(t-x)_+/\hbar}$ at $t$. Its difference quotients are
+  bounded by $1/|\hbar|$, since $u \mapsto u_+$ and $\theta \mapsto e^{i\theta}$ are
+  $1$-Lipschitz, and dominated convergence applies again. This holds for every real $\hbar$.
+\item No norm derivative: a norm derivative of $U$ at $t$ would also be the strong derivative
+  $(i\hbar)^{-1}H(t)U(t)$, which multiplies by $0$ on $(t,1]$. For $t < s < \min(t+\hbar, 1)$
+  and $x \in (t, (t+s)/2)$, the difference quotient multiplies by
+  $(e^{-i(s-x)/\hbar} - 1)/(s-t)$. Its modulus is $2\sin((s-x)/2\hbar)/(s-t) \ge 1/(\pi\hbar)$,
+  by $\sin z \ge 2z/\pi$ on $[0, \pi/2]$. So the norm of the difference is at least
+  $1/(\pi\hbar)$ as $s \downarrow t$.
+\item Every propagator: if $V(t_0) = 1$, then $s \mapsto U(s)U(t_0)^{-1}$ solves the same
+  equation, where $U(t_0)^{-1}$ multiplies by the inverse phase. So
+  $V(s) = U(s)U(t_0)^{-1}$ by \lean{propagator_unique_of_continuous_apply}. If $V$ were
+  norm-differentiable at $t$, so would be $U(s) = V(s)U(t_0)$.
+\end{itemize}
+
+\paragraph{Notes.} EVDIFF holds for this $H$ (\lean{hasDerivAt_conj_of_continuous_apply}), so
+the states $U(t)\rho U(t)^\dagger$ are norm-differentiable while the propagator is not.
 
 \subsection{No norm-differentiable propagator}\label{sec:unitary-entropy-norm}
 

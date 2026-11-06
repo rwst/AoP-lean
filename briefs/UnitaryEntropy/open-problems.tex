@@ -50,7 +50,10 @@ Open problems raised by the technical brief in this directory, and by its Lean f
   strongly continuous, with $t \mapsto U(t)\psi$ differentiable for every $\psi$
   (\lean{exists_propagator_of_continuous_apply}), and so does EVDIFF: $U(t)\rho U(t)^\dagger$ is
   differentiable in operator norm for every density operator $\rho$
-  (\lean{hasDerivAt_conj_of_continuous_apply}). For unbounded self-adjoint $H(t)$ existence
+  (\lean{hasDerivAt_conj_of_continuous_apply}). The propagator itself need not be
+  norm-differentiable: on $L^2[0,1]$, multiplication by the indicator of $[0,t]$ is such an
+  $H(t)$, and no propagator of it is norm-differentiable on $(0,1)$
+  (\lean{indicatorHamiltonian_counterexample}). For unbounded self-adjoint $H(t)$ existence
   needs Kato-type hypotheses and remains open. The converse has the same gap: for unbounded
   $H(t)$, Step~3 gives only a symmetric $H(t_0)$ (next section, first item). (Brief, Sec.~3,
   proof of Theorem~2 ($\Rightarrow$); Log, ``Differences from the brief''.)
