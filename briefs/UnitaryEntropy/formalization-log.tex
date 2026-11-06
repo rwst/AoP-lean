@@ -105,6 +105,8 @@ Theorem 2 ($\Rightarrow$), unitary propagator & \lean{star_mul_self_of_schroding
   \lean{ContinuousLinearMap.mem_unitary_of_star_mul_self} \\
 Theorem 2 ($\Rightarrow$), existence for constant $H$ & \lean{hasDerivAt_exp_schrodinger}:
   $U(t) = \exp(t(i\hbar)^{-1}H)$ \\
+Theorem 2 ($\Rightarrow$), existence for continuous $H(t)$ &
+  \lean{exists_propagator_of_continuous} (Section~\ref{sec:unitary-entropy-propagator}) \\
 Theorem 2 ($\Rightarrow$), DR-INFO & \lean{vonNeumann_unitary_conj},
   \lean{IsDensity.unitary_conj}, \lean{schrodinger_conserves_entropy} \\
 Theorem 2 ($\Leftarrow$), Step 1 & \lean{vonNeumann_eq_zero_iff}: $S(\rho) = 0$ iff $\rho$ is
@@ -143,8 +145,9 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves} \\
 \item DR-INFO is $S(\rho_I) = S(\rho_F) = S(\rho_P)$. The reconstructed past
   $U^\dagger\rho_F U$ is $\rho_I$ itself, which is also proved.
 \item The ($\Rightarrow$) direction shows that every propagator solving the equation is unitary.
-  Existence is shown for constant $H$ only; for time-dependent $H(t)$ it is the linear ODE
-  existence theorem, which the brief also assumes.
+  Existence is shown for constant $H$ by the exponential, and for a continuous family of bounded
+  $H(t)$ by the global existence theorem for linear ODEs, which the brief assumes
+  (Section~\ref{sec:unitary-entropy-propagator}).
 \item \lean{schrodinger_of_preserves} assumes $\Phi_{t_0} = \mathrm{id}$ and differentiability of
   $t \mapsto \Phi_t(\rho)$ at $t_0$ only on density operators, one $\rho$ at a time. It concludes
   that $\Phi_t(\ket{\psi}\bra{\psi}) = \ket{U(t)\psi}\bra{U(t)\psi}$, and
@@ -461,6 +464,92 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   states, are outside the theorem as stated; see Section~\ref{sec:unitary-entropy-unbounded}.
   Otherwise no problems beyond those of the finite-dimensional part.
 \end{itemize}
+
+\subsection{The propagator of a time-dependent Hamiltonian}\label{sec:unitary-entropy-propagator}
+
+\paragraph{Files.}\leavevmode
+\begin{itemize}
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/Propagator.lean}
+\item Imports: \lean{UnitaryEntropy.InfiniteDimensional} (for
+  \lean{schrodinger_conserves_vonNeumannEntropy}), \lean{UnitaryEntropy.TwoParameter} (for the
+  two-parameter \lean{IsEvolution}, \lean{DrSceq}, \lean{DrInfo}, \lean{EvDiff} and
+  \lean{drSceq_iff_drInfo_and_evDiff}), and the new \lean{ForMathlib.Analysis.ODE.Linear}.
+\item New \lean{ForMathlib} file \lean{ForMathlib/Analysis/ODE/Linear.lean}: global existence and
+  uniqueness for $x' = L(t)x$ with $L$ a continuous family of bounded operators on a Banach
+  space (\lean{exists_hasDerivAt_clm_apply}, \lean{eq_of_hasDerivAt_clm_apply}), the same for
+  $U' = A(t)U$ in a Banach algebra (\lean{exists_hasDerivAt_mul}, \lean{eq_of_hasDerivAt_mul}),
+  and unitarity of the solution for skew-adjoint $A(t)$
+  (\lean{mul_star_self_eq_one_of_hasDerivAt}, \lean{exists_hasDerivAt_mul_mem_unitary}). It
+  imports Mathlib's \lean{Mathlib.Analysis.ODE.ExistUnique} (Picard--Lindel\"of, uniqueness,
+  Gr\"onwall) and \lean{ForMathlib/Analysis/Calculus/Deriv/Star.lean}.
+\end{itemize}
+
+\paragraph{Setting.} $E$ is a complex Hilbert space of any dimension, and $H : \mathbb{R} \to
+\mathcal{B}(E)$ is continuous in operator norm with every $H(t)$ self-adjoint. The brief's
+Theorem~2 ($\Rightarrow$) starts from ``The Schr\"odinger equation gives rise to a differentiable
+unitary propagator $U_{t_0\to t_1}$''. Here the propagator is constructed.
+
+\paragraph{Results.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+Linear ODE, global existence and uniqueness & \lean{exists_hasDerivAt_clm_apply},
+  \lean{eq_of_hasDerivAt_clm_apply} \\
+Propagator in a Banach algebra; unitary for skew-adjoint $A(t)$ &
+  \lean{exists_hasDerivAt_mul}, \lean{exists_hasDerivAt_mul_mem_unitary} \\
+Theorem 2 ($\Rightarrow$), the propagator exists and is unitary &
+  \lean{exists_propagator_of_continuous} \\
+Theorem 2 ($\Rightarrow$), the propagator is unique & \lean{propagator_unique} \\
+Theorem 2 ($\Rightarrow$), DR-SCEQ $\Rightarrow$ DR-INFO with this propagator &
+  \lean{exists_propagator_conserves_vonNeumannEntropy} \\
+Two-parameter evolution of a propagator & \lean{TwoParameter.conjEvolution},
+  \lean{TwoParameter.isEvolution_conjEvolution} \\
+Theorem 2 ($\Rightarrow$), two-parameter, finite dimension: QST:H + [B]EVMIX, DR-SCEQ, DR-INFO,
+  EVDIFF & \lean{TwoParameter.exists_propagator_isEvolution} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\paragraph{Proof.}
+\begin{itemize}
+\item Mathlib's Picard--Lindel\"of theorem solves $x' = f(t, x)$ on $[t_0 - T, t_0 + T]$ only
+  when $\|f\| \le L$ on a ball of radius $a$ with $LT \le a$. For the linear field
+  $f(t,x) = L(t)x$, $L$ grows with $a$, so this gives only $T < 1/\sup\|L(t)\|$. On
+  $[t_0 - T, t_0 + T]$ the equation is therefore solved for the truncated field
+  $L(t)\pi_R(x)$, where $\pi_R(x) = \min(1, R/\|x\|)\,x$ is the radial retraction onto the ball
+  of radius $R$. It is bounded by $MR$, with $M = \sup_{[t_0-T,t_0+T]}\|L(t)\|$, and globally
+  $2$-Lipschitz, so Picard--Lindel\"of applies for every $T$. Since $\|\pi_R(x)\| \le \|x\|$,
+  Gr\"onwall's inequality on both sides of $t_0$ (the left side by reflection
+  $t \mapsto 2t_0 - t$) gives $\|x(t)\| \le \|x_0\|e^{MT} < R$ for
+  $R = \|x_0\|e^{MT} + 1$. So $\pi_R(x(t)) = x(t)$ and $x$ solves the linear equation.
+\item The interval solutions agree on common intervals by Mathlib's uniqueness theorem
+  (\lean{ODE_solution_unique_of_mem_Icc}, Lipschitz constant $M$), and
+  $x(t) = x_{|t - t_0| + 1}(t)$ is a global solution: near each $t$ it agrees with one interval
+  solution, which is differentiable at the interior point $t$.
+\item The propagator is the case $L(t)U = A(t)U$, $A(t) = (i\hbar)^{-1}H(t)$, in the Banach
+  algebra $\mathcal{B}(E)$. $U^\dagger U$ is constant (\lean{star_mul_self_eq_of_hasDerivAt}),
+  hence $1$. For $UU^\dagger$, which has no such conservation law, $D = UU^\dagger - 1$ solves
+  the linear equation $D' = AD - DA$, since $A^\dagger = -A$, with $D(t_0) = 0$; by uniqueness
+  $D = 0$. So $U(t)$ is unitary in any dimension, not only an isometry.
+\item For the two-parameter evolution $\Psi_{t_0\to t_1}(\rho) = W\rho W^\dagger$,
+  $W = U(t_1)U(t_0)^\dagger$, the composition law is $U(t_2)U(t_1)^\dagger U(t_1)U(t_0)^\dagger =
+  U(t_2)U(t_0)^\dagger$, and joint continuity follows from the continuity of $U$. DR-SCEQ then
+  holds by definition, and DR-INFO and EVDIFF follow from
+  \lean{TwoParameter.drSceq_iff_drInfo_and_evDiff}.
+\end{itemize}
+
+\paragraph{Differences from the brief.}
+\begin{itemize}
+\item $H(t)$ is assumed bounded and continuous in operator norm. For unbounded $H(t)$ the
+  propagator needs Kato-type hypotheses and is not constructed (open problems). A family of
+  bounded $H(t)$ that is only strongly continuous also has a strongly differentiable propagator;
+  this is not formalized.
+\end{itemize}
+
+\paragraph{Problems found in the brief.} None: for bounded continuous $H(t)$ the assumed
+propagator exists, is unique and is unitary.
 
 \subsection{No norm-differentiable propagator}\label{sec:unitary-entropy-norm}
 
