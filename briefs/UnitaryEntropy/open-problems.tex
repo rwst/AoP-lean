@@ -136,9 +136,12 @@ propagator'').
   unitary propagator $U(t,s)$ gives the strongly continuous unitary group
   $(W(\sigma)f)(t) = U(t,t-\sigma)f(t-\sigma)$ on $L^2(\mathbb{R};E)$, hence a self-adjoint
   quasi-energy operator $K$ with $W(\sigma) = e^{-i\sigma K/\hbar}$
-  (\lean{UnitaryPropagator.exists_howlandGenerator}). Open: how $K$, formally
-  $-i\hbar\,\partial_t + H(t)$, determines $H(t_0)$ at a single time, and whether that
-  $H(t_0)$ is self-adjoint.
+  (\lean{UnitaryPropagator.exists_howlandGenerator}). On compactly supported $f$ whose moving
+  orbit $U(t,t-\sigma)f(t-\sigma)$ is $C^1$ in $\sigma$, $K f$ is $i\hbar$ times its
+  $\sigma$-derivative at $0$ (\lean{UnitaryPropagator.howlandGenerator_toLp}). For a
+  time-independent evolution this gives $K = H - i\hbar\,\partial_t$ on $\chi x$
+  (\lean{UnitaryPropagator.howlandGenerator_smul_of_group}). Open: how $K$ determines
+  $H(t_0)$ at a single time, and whether that $H(t_0)$ is self-adjoint.
 \item \textbf{Equation at every time in infinite dimension.} In finite dimension, one
   differentiable unitary $U(t)$ for all times solves the Schr\"odinger equation at every time,
   and $\Phi_{t_0\to t_1}$ is conjugation by $U(t_1)U(t_0)^\dagger$

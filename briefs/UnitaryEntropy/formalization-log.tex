@@ -8,7 +8,7 @@
 \usepackage{lmodern}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
-\usepackage{booktabs,tabularx}
+\usepackage{booktabs,tabularx,xltabular}
 \usepackage{braket}
 \usepackage[hidelinks]{hyperref}
 
@@ -848,6 +848,9 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
   \lean{ForMathlib.MeasureTheory.Function.LpSpace.Multiplication} (dominated convergence in $L^p$)
   and TauCeti's \lean{TauCeti.MeasureTheory.Function.Lp.Translation} (strong continuity of
   translation in $L^p$).
+\item New file \lean{ForPhyslib/QuantumMechanics/HowlandGenerator.lean}: the Howland generator
+  computed on compactly supported functions (end of ``Howland's generator'' below). Imports:
+  \lean{ForPhyslib.QuantumMechanics.ForwardHamiltonian}, \lean{ForPhyslib.QuantumMechanics.Howland}.
 \end{itemize}
 
 \paragraph{Setting.} As in Section~\ref{sec:unitary-entropy-any-dim}, restricted to a
@@ -862,11 +865,17 @@ in general unbounded, $H$ (\lean{DrSceq}). EVDIFF is weakened to a dense set of 
 differentiable on $t \ge 0$, in operator norm, for every unit vector $\psi \in D$.
 
 \paragraph{Results.}
-\begin{center}
-\begin{tabularx}{\textwidth}{@{}BL@{}}
+\begin{xltabular}{\textwidth}{@{}BL@{}}
 \toprule
 Brief & Lean \\
 \midrule
+\endfirsthead
+\toprule
+Brief & Lean \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
 EVDIFF on a dense set of states & \lean{EvDiff} \\
 Theorem 2 ($\Rightarrow$), EVDIFF & \lean{evDiff_of_drSceq} (with
   \lean{differentiableAt_proj_of_hasDerivAt}) \\
@@ -924,9 +933,12 @@ Howland: a strongly continuous unitary propagator $U(t,s)$ gives a strongly cont
   group $W$ on $L^2(\mathbb{R};E)$ with self-adjoint generator $K$ &
   \lean{UnitaryPropagator}, \lean{UnitaryPropagator.howlandGroup},
   \lean{UnitaryPropagator.exists_howlandGenerator} \\
-\bottomrule
-\end{tabularx}
-\end{center}
+Howland: $K$ is the forward Hamiltonian of $W$; on a compactly supported continuous $f$ whose
+  moving orbit $\sigma \mapsto U(t,t-\sigma)f(t-\sigma)$ has jointly continuous derivative $G$,
+  $Kf = i\hbar\,G(0,\cdot)$; for $U(t,s) = V(t-s)$, $K(\chi x) = \chi Hx - i\hbar\chi' x$ &
+  \lean{UnitaryPropagator.howlandGenerator}, \lean{isSelfAdjoint_howlandGenerator},
+  \lean{howlandGenerator_toLp}, \lean{howlandGenerator_smul_of_group} \\
+\end{xltabular}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
@@ -1104,9 +1116,30 @@ $W(\sigma) = e^{-i\sigma K/\hbar}$ for a self-adjoint $K$
 \end{itemize}
 The theorem uses only unitarity and strong continuity of the propagator. In finite dimension,
 DR-INFO + EVDIFF provide such a propagator, $U(t,s) = U(t)U(s)^\dagger$
-(\lean{TwoParameter.exists_propagator}); this instance is not formalized. That $K$ acts as
-$-i\hbar\,\partial_t + H(t)$ on a core, for a given family $H(t)$, is not formalized; it needs
-hypotheses on $H(t)$ of Kato type.
+(\lean{TwoParameter.exists_propagator}); this instance is not formalized.
+
+$K$ is made concrete as the forward Hamiltonian of $W$ (\lean{UnitaryPropagator.howlandGenerator}):
+$W$ is tangent to its own group, so by the local Stone theorem $K$ is self-adjoint and
+$W(\sigma) = e^{-i\sigma K/\hbar}$ (\lean{isSelfAdjoint_howlandGenerator},
+\lean{howland_eq_schrodingerPropagator}). It is computed on functions
+(\lean{howlandGenerator_toLp}): let $f$ be continuous with compact support, and let the moving
+orbit $\sigma \mapsto U(t,t-\sigma)f(t-\sigma)$ have derivative $G(\sigma,t)$, jointly continuous.
+Then $f$ is in the domain of $K$ and $Kf = i\hbar\,G(0,\cdot)$.
+\begin{itemize}
+\item $G(0,t) = 0$ off the support of $f$, so $G(0,\cdot)$ has compact support.
+\item For $\sigma \in [0,1]$ the difference quotient $(W(\sigma)f - f)/\sigma - G(0,\cdot)$
+  vanishes outside the compact set $\operatorname{tsupport} f + [0,1]$. On it, by the mean value
+  theorem, it is at most $\sup_{s \le \sigma}\|G(s,t) - G(0,t)\|$, uniformly small by joint
+  continuity and compactness. So it tends to $0$ in $L^2$, and the forward derivative exists.
+\end{itemize}
+When $U$ and $f$ are differentiable, $G(0,t) = (i\hbar)^{-1}H(t)f(t) - f'(t)$ with
+$H(t)x = -i\hbar\,\partial_s U(t,s)x|_{s=t}$, so $K = H(t) - i\hbar\,\partial_t$. Formalized in
+the time-independent case (\lean{howlandGenerator_smul_of_group}): for $U(t,s) = V(t-s)$ with
+$V$ solving the Schr\"odinger equation for $H$, $\chi$ compactly supported $C^1$ and $x$ in the
+domain of $H$, $K(\chi x) = \chi\,Hx - i\hbar\chi' x$. The orbit derivative at every $\sigma$
+comes from the group law, $V(s) = V(\sigma)V(s-\sigma)$. Not formalized: a core of $K$ of such
+functions for a time-dependent family $H(t)$, which needs hypotheses of Kato type, and a
+relation to Nickel's theorem (an invariant core of $K$ iff $U$ solves the Cauchy problem).
 
 \paragraph{A local Stone theorem.} At a single time the forward Hamiltonian is characterized by
 the evolution alone. Let $F(\tau)$, $\tau \ge 0$, be unitaries with $F(0) = I$, for instance
