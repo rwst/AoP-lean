@@ -1,0 +1,25 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+EntropyTopology.kernel_bounds  # Lemma 4: u^2/(2 ln 2) <= f(u) <= |u|
+EntropyTopology.tvDist_prob  # eq. (2), total variation norm: |p_rho - p_sigma|(X) = d_1
+EntropyTopology.isGreatest_abs_prob_sub  # eq. (2), events: sup_A |p_rho(A) - p_sigma(A)| = d_1/2
+EntropyTopology.tendsto_tvDist_iff  # after eq. (2): L^1 and total variation convergence agree
+EntropyTopology.jsd_bounds  # Proposition 10, eq. (11)
+EntropyTopology.tendsto_jsd_iff  # Proposition 10, eq. (12)
+EntropyTopology.tendsto_jsd_iff_tvDist  # remark after Proposition 10: JSD and TV convergence agree
+EntropyTopology.entropy_unif  # eq. (26)
+EntropyTopology.l1dist_mix  # eq. (31)
+EntropyTopology.entropy_mix  # eqs. (32)-(34)
+EntropyTopology.entropy_not_l1_continuous  # Theorem 21
+EntropyTopology.not_tendsto_entropy  # Theorem 21: entropy is not L^1-continuous
+EntropyTopology.tendsto_entropy_mix_atTop  # second remark after Theorem 21, eqs. (40)-(45)
+EntropyTopology.isDensity_mixture  # P_mu is closed under mixing
+EntropyTopology.eventually_jsd_lt  # Theorem 46 from equal mixing, JSD form
+EntropyTopology.eventually_l1dist_lt  # Theorem 46 from equal mixing, L^1 form
+EntropyTopology.eventually_tvDist_lt  # Theorem 46 from equal mixing, total variation form
+EntropyTopology.eventually_jsd_lt_of_mixture  # Theorem 46 as stated, JSD form
+EntropyTopology.eventually_l1dist_lt_of_mixture  # Theorem 46 as stated, L^1 form
+EntropyTopology.eventually_tvDist_lt_of_mixture  # Theorem 46 as stated, total variation form

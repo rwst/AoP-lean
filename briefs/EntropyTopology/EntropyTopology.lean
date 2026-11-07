@@ -11,8 +11,9 @@ Technical brief by G. Carcassi for the Assumptions of Physics collaboration,
 https://assumptionsofphysics.org/resources/briefs
 
 On a measure space `(X, μ)`, consider probability densities `ρ` with finite entropy
-`S(ρ) = -∫ ρ log₂ ρ dμ`. The Jensen–Shannon divergence and the `L¹` distance define the same
-convergence (Prop. 10), but the entropy is not `L¹`-continuous as soon as `X` contains disjoint
+`S(ρ) = -∫ ρ log₂ ρ dμ`. The Jensen–Shannon divergence, the `L¹` distance and the total
+variation distance of the associated measures define the same convergence (eq. (2), Prop. 10),
+but the entropy is not `L¹`-continuous as soon as `X` contains disjoint
 finite-measure sets of arbitrarily large measure (Thm. 21). Conversely, a topology in which
 mixing and entropy are continuous is finer than the `L¹` topology (Thm. 46).
 
@@ -20,10 +21,17 @@ Formalized here:
 * `kernel_bounds`   Lemma 4: `u²/(2 ln 2) ≤ f(u) ≤ |u|` on `[-1, 1]`;
 * `jsd_bounds`      Prop. 10, eq. (11): `‖ρ-σ‖²/(8 ln 2) ≤ JSD(ρ,σ) ≤ ‖ρ-σ‖/2`;
 * `tendsto_jsd_iff` Prop. 10, eq. (12): `JSD → 0 ↔ L¹ → 0`;
+* `tvDist_prob`, `isGreatest_abs_prob_sub`  eq. (2), for the probability measures `p_ρ = prob μ ρ`:
+  the total variation norm `|p_ρ - p_σ|(X)` is `‖ρ - σ‖₁` (Mathlib's `tvDist`), and
+  `sup_A |p_ρ(A) - p_σ(A)|` is `½‖ρ - σ‖₁` (the brief's convention);
+* `tendsto_tvDist_iff`, `tendsto_jsd_iff_tvDist`  `L¹`, total variation and JSD convergence agree;
 * `entropy_unif`, `entropy_mix`  eqs. (26), (32)–(34);
 * `entropy_not_l1_continuous`, `not_tendsto_entropy`  Thm. 21;
 * `tendsto_entropy_mix_atTop`  the second remark after Thm. 21, eqs. (40)–(45);
-* `eventually_jsd_lt`, `eventually_l1dist_lt`  Thm. 46.
+* `isDensity_mixture`  `P_μ` is closed under mixing `λρ + (1-λ)σ`, `λ ∈ [0, 1]`;
+* `eventually_jsd_lt`, `eventually_l1dist_lt`, `eventually_tvDist_lt`  Thm. 46, assuming only
+  that the equal mixture is continuous; `eventually_*_lt_of_mixture` with the brief's
+  hypothesis that `(λ, ρ, σ) ↦ λρ + (1-λ)σ` is continuous.
 
 Densities are functions `X → ℝ`, not `L¹` classes, and are required to be measurable and
 pointwise nonnegative. Logarithms are natural inside proofs; `entropy` and `jsd` are in bits.
@@ -31,6 +39,8 @@ pointwise nonnegative. Logarithms are natural inside proofs; `entropy` and `jsd`
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import ForMathlib.Analysis.SpecialFunctions.Log.NegMulLog
+public import ForMathlib.MeasureTheory.Measure.TotalVariation.Basic
 
 open Real MeasureTheory Filter Topology Set
 
@@ -402,6 +412,97 @@ theorem tendsto_jsd_iff {ι : Type*} {l : Filter ι} {ρs : ι → X → ℝ}
     refine squeeze_zero (fun i => jsd_nonneg (hρs i) hρ) (fun i => (jsd_bounds (hρs i) hρ).2) ?_
     simpa using h.div_const 2
 
+/-! ### Eq. (2): total variation -/
+
+/-- The probability measure `p_ρ` with density `ρ` with respect to `μ`. -/
+def prob (μ : Measure X) (ρ : X → ℝ) : Measure X := μ.withDensity fun x => ENNReal.ofReal (ρ x)
+
+lemma integrable_ofReal (hρ : IsDensity μ ρ) : Integrable (fun x => ENNReal.ofReal (ρ x)) μ :=
+  ⟨hρ.measurable.ennreal_ofReal.aestronglyMeasurable, hρ.integrable.lintegral_lt_top⟩
+
+lemma isProbabilityMeasure_prob (hρ : IsDensity μ ρ) : IsProbabilityMeasure (prob μ ρ) := by
+  constructor
+  rw [prob, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ,
+    ← ofReal_integral_eq_lintegral_ofReal hρ.integrable (ae_of_all _ hρ.nonneg),
+    hρ.integral_eq_one, ENNReal.ofReal_one]
+
+lemma prob_real_apply (hρ : IsDensity μ ρ) {A : Set X} (hA : MeasurableSet A) :
+    (prob μ ρ).real A = ∫ x in A, ρ x ∂μ := by
+  rw [prob, withDensity_real_apply_eq_integral hρ.measurable.ennreal_ofReal.aemeasurable
+    (ae_of_all _ fun _ _ => ENNReal.ofReal_lt_top) hA.nullMeasurableSet]
+  exact setIntegral_congr_fun hA fun x _ => ENNReal.toReal_ofReal (hρ.nonneg x)
+
+lemma prob_real_sub (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ) {A : Set X}
+    (hA : MeasurableSet A) :
+    (prob μ ρ).real A - (prob μ σ).real A = ∫ x in A, (ρ x - σ x) ∂μ := by
+  rw [prob_real_apply hρ hA, prob_real_apply hσ hA,
+    integral_sub hρ.integrable.integrableOn hσ.integrable.integrableOn]
+
+/-- Eq. (2), total variation norm: `|p_ρ - p_σ|(X) = ‖ρ - σ‖₁`. Mathlib's `tvDist` is the
+total variation of `p_ρ - p_σ` on the whole space, with values in `[0, 2]`; with this
+convention there is no factor `½`. -/
+theorem tvDist_prob (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ) :
+    tvDist (prob μ ρ) (prob μ σ) = l1dist μ ρ σ := by
+  rw [prob, prob, tvDist_withDensity_eq_integral (integrable_ofReal hρ) (integrable_ofReal hσ)]
+  simp only [ENNReal.toReal_ofReal (hρ.nonneg _), ENNReal.toReal_ofReal (hσ.nonneg _)]
+  rfl
+
+/-- Eq. (2), event form: `sup_A |p_ρ(A) - p_σ(A)| = ½ ‖ρ - σ‖₁`, attained at `A = {σ < ρ}`.
+This is the convention under which the brief's factor `½` is right. -/
+theorem isGreatest_abs_prob_sub (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ) :
+    IsGreatest {t | ∃ A, MeasurableSet A ∧ t = |(prob μ ρ).real A - (prob μ σ).real A|}
+      (l1dist μ ρ σ / 2) := by
+  have hd : Integrable (fun x => ρ x - σ x) μ := hρ.integrable.sub hσ.integrable
+  have h0 : ∫ x, (ρ x - σ x) ∂μ = 0 := by
+    rw [integral_sub hρ.integrable hσ.integrable, hρ.integral_eq_one, hσ.integral_eq_one,
+      sub_self]
+  have hsplit {A : Set X} (hA : MeasurableSet A) :
+      ∫ x in A, (ρ x - σ x) ∂μ = -∫ x in Aᶜ, (ρ x - σ x) ∂μ := by
+    have := integral_add_compl hA hd
+    rw [h0] at this
+    linarith
+  have hl1 {A : Set X} (hA : MeasurableSet A) :
+      l1dist μ ρ σ = ∫ x in A, |ρ x - σ x| ∂μ + ∫ x in Aᶜ, |ρ x - σ x| ∂μ :=
+    (integral_add_compl hA hd.abs).symm
+  refine ⟨?_, ?_⟩
+  · set A := {x | σ x < ρ x}
+    have hA : MeasurableSet A := measurableSet_lt hσ.measurable hρ.measurable
+    have h1 : ∫ x in A, (ρ x - σ x) ∂μ = ∫ x in A, |ρ x - σ x| ∂μ :=
+      setIntegral_congr_fun hA fun x hx => (abs_of_pos (sub_pos.mpr hx)).symm
+    have h2 : ∫ x in Aᶜ, (ρ x - σ x) ∂μ = -∫ x in Aᶜ, |ρ x - σ x| ∂μ := by
+      rw [← integral_neg]
+      exact setIntegral_congr_fun hA.compl fun x hx => by
+        rw [abs_of_nonpos (sub_nonpos.mpr (not_lt.mp hx)), neg_neg]
+    refine ⟨A, hA, ?_⟩
+    have := hsplit hA
+    rw [h1, h2, neg_neg] at this
+    rw [prob_real_sub hρ hσ hA, h1, abs_of_nonneg (setIntegral_nonneg hA fun x _ => abs_nonneg _),
+      hl1 hA, this]
+    ring
+  · rintro t ⟨A, hA, rfl⟩
+    have e1 := abs_integral_le_integral_abs (μ := μ.restrict A) (f := fun x => ρ x - σ x)
+    have e2 := abs_integral_le_integral_abs (μ := μ.restrict Aᶜ) (f := fun x => ρ x - σ x)
+    have e3 : |∫ x in A, (ρ x - σ x) ∂μ| = |∫ x in Aᶜ, (ρ x - σ x) ∂μ| := by
+      rw [hsplit hA, abs_neg]
+    rw [prob_real_sub hρ hσ hA, le_div_iff₀ two_pos, hl1 hA]
+    linarith
+
+/-- After eq. (2): `L¹` convergence of densities is total-variation convergence of the
+probability measures. -/
+theorem tendsto_tvDist_iff {ι : Type*} {l : Filter ι} {ρs : ι → X → ℝ}
+    (hρs : ∀ i, IsDensity μ (ρs i)) (hρ : IsDensity μ ρ) :
+    Tendsto (fun i => tvDist (prob μ (ρs i)) (prob μ ρ)) l (𝓝 0) ↔
+      Tendsto (fun i => l1dist μ (ρs i) ρ) l (𝓝 0) := by
+  rw [show (fun i => tvDist (prob μ (ρs i)) (prob μ ρ)) = fun i => l1dist μ (ρs i) ρ from
+    funext fun i => tvDist_prob (hρs i) hρ]
+
+/-- The remark after Prop. 10: Jensen–Shannon convergence is total-variation convergence. -/
+theorem tendsto_jsd_iff_tvDist {ι : Type*} {l : Filter ι} {ρs : ι → X → ℝ}
+    (hρs : ∀ i, IsDensity μ (ρs i)) (hρ : IsDensity μ ρ) :
+    Tendsto (fun i => jsd μ (ρs i) ρ) l (𝓝 0) ↔
+      Tendsto (fun i => tvDist (prob μ (ρs i)) (prob μ ρ)) l (𝓝 0) :=
+  (tendsto_jsd_iff hρs hρ).trans (tendsto_tvDist_iff hρs hρ).symm
+
 /-! ### Theorem 21: entropy is not `L¹`-continuous -/
 
 /-- The uniform density `1_U / μ(U)` of eq. (25). -/
@@ -543,7 +644,8 @@ lemma Thm21Hyp.tendsto_logb (h : Thm21Hyp μ As B) :
   (tendsto_logb_atTop one_lt_two).comp h.tendsto_A
 
 /-- For `εₙ ∈ [0, 1]`, `εₙ → 0`: the densities `ρₙ = (1-εₙ) u_B + εₙ u_{Aₙ}` are eventually in
-`P_μ` and tend to `u_B` in `L¹`, and their entropy is `h₂(εₙ) + (1-εₙ) log₂ μ(B) + εₙ log₂ μ(Aₙ)`. -/
+`P_μ` and tend to `u_B` in `L¹`, and their entropy is
+`h₂(εₙ) + (1-εₙ) log₂ μ(B) + εₙ log₂ μ(Aₙ)`. -/
 lemma Thm21Hyp.mix_facts (h : Thm21Hyp μ As B) {ε : ℕ → ℝ} (hε : Tendsto ε atTop (𝓝 0))
     (hε01 : ∀ᶠ n in atTop, ε n ∈ Icc 0 1) :
     (∀ᶠ n in atTop, IsDensity μ (mix μ (ε n) (As n) B)) ∧
@@ -612,14 +714,16 @@ theorem not_tendsto_entropy (h : Thm21Hyp μ As B) :
   obtain ⟨hρ, hd, hl1, hS⟩ := entropy_not_l1_continuous h
   exact ⟨_, hρ, _, hd, hl1, fun h' => by linarith [tendsto_nhds_unique hS h']⟩
 
+/-- The weights `εₙ = 1/√(log₂ μ(Aₙ))` of the second remark after Thm. 21. -/
+def sqrtEpsSeq (μ : Measure X) (As : ℕ → Set X) (n : ℕ) : ℝ := (√(logb 2 (μ.real (As n))))⁻¹
+
 /-- The second remark after Thm. 21, eqs. (40)–(45): with `εₙ = 1/√(log₂ μ(Aₙ))`,
 still `ρₙ → u_B` in `L¹`, but `S(ρₙ) → ∞`. -/
 theorem tendsto_entropy_mix_atTop (h : Thm21Hyp μ As B) :
-    let ε := fun n => (√(logb 2 (μ.real (As n))))⁻¹
-    (∀ᶠ n in atTop, IsDensity μ (mix μ (ε n) (As n) B)) ∧
-      Tendsto (fun n => l1dist μ (mix μ (ε n) (As n) B) (unif μ B)) atTop (𝓝 0) ∧
-      Tendsto (fun n => entropy μ (mix μ (ε n) (As n) B)) atTop atTop := by
-  intro ε
+    (∀ᶠ n in atTop, IsDensity μ (mix μ (sqrtEpsSeq μ As n) (As n) B)) ∧
+      Tendsto (fun n => l1dist μ (mix μ (sqrtEpsSeq μ As n) (As n) B) (unif μ B)) atTop (𝓝 0) ∧
+      Tendsto (fun n => entropy μ (mix μ (sqrtEpsSeq μ As n) (As n) B)) atTop atTop := by
+  set ε := sqrtEpsSeq μ As
   have hsq : Tendsto (fun n => √(logb 2 (μ.real (As n)))) atTop atTop :=
     tendsto_sqrt_atTop.comp h.tendsto_logb
   have hε : Tendsto ε atTop (𝓝 0) := tendsto_inv_atTop_zero.comp hsq
@@ -633,7 +737,7 @@ theorem tendsto_entropy_mix_atTop (h : Thm21Hyp μ As B) :
   rw [hn]
   have hpos : 0 < √(logb 2 (μ.real (As n))) := sqrt_pos.mpr (by linarith)
   have : ε n * logb 2 (μ.real (As n)) = √(logb 2 (μ.real (As n))) := by
-    simp only [ε]
+    simp only [ε, sqrtEpsSeq]
     rw [← sq_sqrt (show 0 ≤ logb 2 (μ.real (As n)) by linarith), sqrt_sq hpos.le]
     field_simp
   rw [this]
@@ -644,7 +748,79 @@ theorem tendsto_entropy_mix_atTop (h : Thm21Hyp μ As B) :
 abbrev Density (μ : Measure X) := {ρ : X → ℝ // IsDensity μ ρ}
 
 /-- Equal mixing on `P_μ`. -/
-def Density.mid (ρ σ : Density μ) : Density μ := ⟨EntropyTopology.mid ρ.1 σ.1, isDensity_mid ρ.2 σ.2⟩
+def Density.mid (ρ σ : Density μ) : Density μ :=
+  ⟨EntropyTopology.mid ρ.1 σ.1, isDensity_mid ρ.2 σ.2⟩
+
+/-- The mixture `λρ + (1-λ)σ`, with `t` for `λ`. -/
+def mixture (t : ℝ) (ρ σ : X → ℝ) : X → ℝ := fun x => t * ρ x + (1 - t) * σ x
+
+/-- Pointwise mixing bounds: `η(λa + (1-λ)b)` lies between `λη(a) + (1-λ)η(b)` and that plus
+`η(λ) a + η(1-λ) b`, where `η = negMulLog`. -/
+lemma negMulLog_mixture_bounds {a b t : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (ht0 : 0 ≤ t)
+    (ht1 : t ≤ 1) :
+    t * negMulLog a + (1 - t) * negMulLog b ≤ negMulLog (t * a + (1 - t) * b) ∧
+      negMulLog (t * a + (1 - t) * b) ≤
+        t * negMulLog a + (1 - t) * negMulLog b + (negMulLog t * a + negMulLog (1 - t) * b) := by
+  constructor
+  · simpa only [smul_eq_mul] using
+      concaveOn_negMulLog.2 (mem_Ici.mpr ha) (mem_Ici.mpr hb) ht0 (by linarith) (by ring)
+  · have h := negMulLog_add_le (mul_nonneg ht0 ha) (mul_nonneg (by linarith : 0 ≤ 1 - t) hb)
+    rw [negMulLog_mul, negMulLog_mul] at h
+    linarith
+
+/-- `P_μ` is convex: mixtures of finite-entropy densities have finite entropy. -/
+lemma isDensity_mixture (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht1 : t ≤ 1) : IsDensity μ (mixture t ρ σ) where
+  measurable := (hρ.measurable.const_mul t).add (hσ.measurable.const_mul (1 - t))
+  nonneg x := add_nonneg (mul_nonneg ht0 (hρ.nonneg x)) (mul_nonneg (by linarith) (hσ.nonneg x))
+  integrable := (hρ.integrable.const_mul t).add (hσ.integrable.const_mul (1 - t))
+  integral_eq_one := by
+    simp only [mixture]
+    rw [integral_add (hρ.integrable.const_mul t) (hσ.integrable.const_mul (1 - t)),
+      integral_const_mul, integral_const_mul, hρ.integral_eq_one, hσ.integral_eq_one]
+    ring
+  integrable_negMulLog := by
+    have hlow : Integrable (fun x => t * negMulLog (ρ x) + (1 - t) * negMulLog (σ x)) μ :=
+      (hρ.integrable_negMulLog.const_mul t).add (hσ.integrable_negMulLog.const_mul (1 - t))
+    have hup : Integrable (fun x => negMulLog t * ρ x + negMulLog (1 - t) * σ x) μ :=
+      (hρ.integrable.const_mul _).add (hσ.integrable.const_mul _)
+    have hm : Measurable fun x => negMulLog (mixture t ρ σ x) :=
+      measurable_negMulLog_comp ((hρ.measurable.const_mul t).add (hσ.measurable.const_mul _))
+    have hml : Measurable fun x => t * negMulLog (ρ x) + (1 - t) * negMulLog (σ x) :=
+      ((measurable_negMulLog_comp hρ.measurable).const_mul t).add
+        ((measurable_negMulLog_comp hσ.measurable).const_mul _)
+    have hd : Integrable (fun x => negMulLog (mixture t ρ σ x) -
+        (t * negMulLog (ρ x) + (1 - t) * negMulLog (σ x))) μ := by
+      refine Integrable.mono' hup (hm.sub hml).aestronglyMeasurable (ae_of_all _ fun x => ?_)
+      have h := negMulLog_mixture_bounds (hρ.nonneg x) (hσ.nonneg x) ht0 ht1
+      simp only [mixture] at h ⊢
+      rw [Real.norm_eq_abs, abs_of_nonneg (by linarith [h.1])]
+      linarith [h.2]
+    refine (hd.add hlow).congr (ae_of_all _ fun x => ?_)
+    simp only [Pi.add_apply]
+    ring
+
+/-- Mixing on `P_μ`, with the mixing parameter in `[0, 1]`. -/
+def Density.mixture (t : unitInterval) (ρ σ : Density μ) : Density μ :=
+  ⟨EntropyTopology.mixture t ρ.1 σ.1, isDensity_mixture ρ.2 σ.2 t.2.1 t.2.2⟩
+
+/-- The parameter `½ ∈ [0, 1]`. -/
+def half : unitInterval := ⟨1 / 2, by norm_num, by norm_num⟩
+
+lemma Density.mixture_half (ρ σ : Density μ) : Density.mixture half ρ σ = Density.mid ρ σ :=
+  Subtype.ext <| funext fun x => by
+    simp only [Density.mixture, Density.mid, EntropyTopology.mixture, EntropyTopology.mid, half]
+    ring
+
+/-- Continuity of mixing `(λ, ρ, σ) ↦ λρ + (1-λ)σ`, the brief's hypothesis in Theorem 46,
+implies continuity of the equal mixture. -/
+lemma continuous_mid_of_continuous_mixture [TopologicalSpace (Density μ)]
+    (hmix : Continuous fun p : unitInterval × Density μ × Density μ =>
+      Density.mixture p.1 p.2.1 p.2.2) :
+    Continuous fun p : Density μ × Density μ => Density.mid p.1 p.2 :=
+  (hmix.comp (continuous_const.prodMk continuous_id :
+    Continuous fun p : Density μ × Density μ => (half, p))).congr fun p =>
+      Density.mixture_half p.1 p.2
 
 omit [MeasurableSpace X] in
 lemma mid_self (ρ : X → ℝ) : mid ρ ρ = ρ := by
@@ -681,5 +857,40 @@ theorem eventually_l1dist_lt [TopologicalSpace (Density μ)]
     have := hb.trans_lt hσ
     rwa [div_lt_div_iff_of_pos_right (by positivity)] at this
   exact lt_of_pow_lt_pow_left₀ 2 hε.le this
+
+/-- Theorem 46, total-variation form: under the same hypotheses, `τ` is finer than the total
+variation topology. -/
+theorem eventually_tvDist_lt [TopologicalSpace (Density μ)]
+    (hmid : Continuous fun p : Density μ × Density μ => Density.mid p.1 p.2)
+    (hS : Continuous fun ρ : Density μ => entropy μ ρ.1) (ρ : Density μ) {ε : ℝ} (hε : 0 < ε) :
+    ∀ᶠ σ in 𝓝 ρ, tvDist (prob μ σ.1) (prob μ ρ.1) < ε := by
+  filter_upwards [eventually_l1dist_lt hmid hS ρ hε] with σ hσ
+  rwa [tvDist_prob σ.2 ρ.2]
+
+/-- Theorem 46 as stated in the brief, Jensen–Shannon form: if mixing
+`(λ, ρ, σ) ↦ λρ + (1-λ)σ` and the entropy are continuous for `τ`, every Jensen–Shannon ball
+around `ρ` is a `τ`-neighbourhood of `ρ`. -/
+theorem eventually_jsd_lt_of_mixture [TopologicalSpace (Density μ)]
+    (hmix : Continuous fun p : unitInterval × Density μ × Density μ =>
+      Density.mixture p.1 p.2.1 p.2.2)
+    (hS : Continuous fun ρ : Density μ => entropy μ ρ.1) (ρ : Density μ) {δ : ℝ} (hδ : 0 < δ) :
+    ∀ᶠ σ in 𝓝 ρ, jsd μ σ.1 ρ.1 < δ :=
+  eventually_jsd_lt (continuous_mid_of_continuous_mixture hmix) hS ρ hδ
+
+/-- Theorem 46 as stated in the brief, `L¹` form. -/
+theorem eventually_l1dist_lt_of_mixture [TopologicalSpace (Density μ)]
+    (hmix : Continuous fun p : unitInterval × Density μ × Density μ =>
+      Density.mixture p.1 p.2.1 p.2.2)
+    (hS : Continuous fun ρ : Density μ => entropy μ ρ.1) (ρ : Density μ) {ε : ℝ} (hε : 0 < ε) :
+    ∀ᶠ σ in 𝓝 ρ, l1dist μ σ.1 ρ.1 < ε :=
+  eventually_l1dist_lt (continuous_mid_of_continuous_mixture hmix) hS ρ hε
+
+/-- Theorem 46 as stated in the brief, total-variation form. -/
+theorem eventually_tvDist_lt_of_mixture [TopologicalSpace (Density μ)]
+    (hmix : Continuous fun p : unitInterval × Density μ × Density μ =>
+      Density.mixture p.1 p.2.1 p.2.2)
+    (hS : Continuous fun ρ : Density μ => entropy μ ρ.1) (ρ : Density μ) {ε : ℝ} (hε : 0 < ε) :
+    ∀ᶠ σ in 𝓝 ρ, tvDist (prob μ σ.1) (prob μ ρ.1) < ε :=
+  eventually_tvDist_lt (continuous_mid_of_continuous_mixture hmix) hS ρ hε
 
 end EntropyTopology

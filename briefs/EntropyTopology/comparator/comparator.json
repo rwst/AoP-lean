@@ -1,0 +1,31 @@
+{
+  "challenge_module": "ChallengeEntropyTopology",
+  "solution_module": "SolutionEntropyTopology",
+  "theorem_names": [
+    "EntropyTopology.kernel_bounds",
+    "EntropyTopology.tvDist_prob",
+    "EntropyTopology.isGreatest_abs_prob_sub",
+    "EntropyTopology.tendsto_tvDist_iff",
+    "EntropyTopology.jsd_bounds",
+    "EntropyTopology.tendsto_jsd_iff",
+    "EntropyTopology.tendsto_jsd_iff_tvDist",
+    "EntropyTopology.entropy_unif",
+    "EntropyTopology.l1dist_mix",
+    "EntropyTopology.entropy_mix",
+    "EntropyTopology.entropy_not_l1_continuous",
+    "EntropyTopology.not_tendsto_entropy",
+    "EntropyTopology.tendsto_entropy_mix_atTop",
+    "EntropyTopology.isDensity_mixture",
+    "EntropyTopology.eventually_jsd_lt",
+    "EntropyTopology.eventually_l1dist_lt",
+    "EntropyTopology.eventually_tvDist_lt",
+    "EntropyTopology.eventually_jsd_lt_of_mixture",
+    "EntropyTopology.eventually_l1dist_lt_of_mixture",
+    "EntropyTopology.eventually_tvDist_lt_of_mixture"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

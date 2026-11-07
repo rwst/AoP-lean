@@ -44,6 +44,7 @@ be unique across the project.
 | Superpositions correspond to multiple decompositions | Theorem 1 and its two directions (eqs. 3 and 4), eq. (2), the support argument, mixtures of independent states are not pure | 6 theorems, see `theorems.txt` | 73 lines, 4 KiB |
 | Inconsistent convergence in Hilbert space | eqs. (2)–(5), the convergence of `eʲ` in `ℓ²`, the eigenstates `\|j⟩` alone have no limit | 7 theorems, see `theorems.txt` | 51 lines, 2 KiB |
 | Unphysicality of Hilbert spaces for quantum mechanics | Propositions 1–4 (an unbounded map is not continuous, Hellinger–Toeplitz, `N` self-adjoint and unbounded with `E_N` discontinuous at `\|0⟩`, the frame change onto `ℝ` and its density identity, both packets normalized, `L²(ℝⁿ⁺¹) ≅ L²(ℝᵐ⁺¹)`), Theorem 5 ([B]COBS, [B]WDQ, [B]STDIST in their minimum forms) | 11 theorems, see `theorems.txt` | 474 lines, 24 KiB |
+| Entropy is not continuous in standard probability spaces | Lemma 4, eq. (2) (total variation norm and the `½` of the event form) and the convergence after it, Proposition 10 (eqs. 11 and 12) and its remark, eqs. (26), (31), (32)–(34), Theorem 21 and its second remark, `P_μ` closed under mixing, Theorem 46 (from equal mixing and as stated, in JSD, `L¹` and total-variation form) | 20 theorems, see `theorems.txt` | 330 lines, 17 KiB |
 | Projective measurements are equilibration processes | Theorem 1 (EQ-LIND, EQ-HS, EQ-KL ⇔ EQ-MEAS, eqs. 2–12) and eq. (13), in finite dimension and in any dimension | 10 theorems, see `theorems.txt` | 704 lines, 37 KiB |
 | Multiple equivalent characterizations of the Schrödinger equation | Proposition 1, also for maps preserving only equal mixtures, and the remark after it (injective suffices in finite dimension), Theorem 3 with each of its implications, in finite dimension and in any dimension, and in finite dimension as the brief states it (two-parameter evolution, DR-SCEQ with H(t)) | 25 theorems, see `theorems.txt` | 454 lines, 24 KiB |
 | Equivalence of sup-norm, L¹, and L² seminorms on the Schwartz space | Steps 1–3 (eqs. 6, 7 and 9, with the hypothesis eq. 9 needs), Theorem 5 (the finiteness conditions, the space (4) and its sup seminorms as Mathlib's, the three seminorm families generate one topology), eq. (10) | 12 theorems, see `theorems.txt` | 269 lines, 14 KiB |
@@ -255,5 +256,15 @@ not match: 'HilbertUnphysicality.theorem5'`. Each control ran with a configurati
 `frameIso`) and `integral_gaussDensity` (through `gaussState`): a certified theorem has a `sorry`
 proof in the challenge, so a configuration that omits it while keeping a theorem whose closure
 reaches it is rejected with `Const does not match` for that theorem, whatever the change.
+
+On the EntropyTopology lane, changing the base of `entropy` from `log 2` to `log 3` in the
+challenge is rejected with `Const does not match between challenge and target
+'EntropyTopology.entropy'`, dropping the `½` from `l1dist μ ρ σ / 2` in `isGreatest_abs_prob_sub`
+with `Challenge and solution theorem statement do not match:
+'EntropyTopology.isGreatest_abs_prob_sub'`, and changing the weight `1 - t` of `mixture` to `t`
+with `Const does not match between challenge and target 'EntropyTopology.Density.mixture'`. Each
+control ran with a configuration naming `entropy_unif`, `isGreatest_abs_prob_sub`,
+`eventually_l1dist_lt_of_mixture` and `isDensity_mixture`, the one certified theorem in their
+closure (through `Density.mixture`).
 
 Re-run a control after any change to the generator.

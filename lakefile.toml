@@ -149,6 +149,15 @@ srcDir = "briefs/SchwartzMomentProblem/comparator"
 name = "EntropyTopology"
 srcDir = "briefs/EntropyTopology"
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeEntropyTopology"
+srcDir = "briefs/EntropyTopology/comparator"
+
+[[lean_lib]]
+name = "SolutionEntropyTopology"
+srcDir = "briefs/EntropyTopology/comparator"
+
 # Technical brief: unphysicality of Hilbert spaces for quantum mechanics.
 [[lean_lib]]
 name = "HilbertUnphysicality"
