@@ -10,27 +10,32 @@ Unphysicality of Hilbert spaces for quantum mechanics.
 Technical brief by G. Carcassi for the Assumptions of Physics collaboration,
 https://assumptionsofphysics.org/resources/briefs
 
-Theorem 1 of the brief says that the Hilbert-space formulation is inconsistent with three
-physical conditions. The conditions are informal; what is checked here is the mathematics
-behind each of the three arguments.
+Theorem 5 of the brief says that the Hilbert-space formulation is inconsistent with three
+physical conditions. The brief proves four mathematical propositions (Sec. 2) and argues each
+part of Theorem 5 from one of them (Sec. 4). The propositions are checked here; Theorem 5 is
+checked by reading, against them.
 
-[B]COBS (continuity of measurable quantities):
-* `not_continuous_of_unbounded`  an unbounded linear map on a normed space is not continuous;
-* `numberExp_not_continuousAt`   the oscillator example (from `InconsistentConvergence`).
+Proposition 1 (unbounded self-adjoint operators):
+* `not_continuous_of_unbounded`  an unbounded linear map on a normed space, such as `D(A)` with
+  the inherited norm, is not continuous;
+* `bounded_of_isSymmetric`, `not_isSymmetric_of_unbounded`  Hellinger–Toeplitz, so `D(A) ≠ H`.
 
-[B]WDQ (quantities well defined in all frames):
-* `bounded_of_isSymmetric`, `not_isSymmetric_of_unbounded`  Hellinger–Toeplitz;
-* `frameChange`, `strictMono_frameChange`  the change of coordinates `y(x) = tan(π/2 · erf x)`,
+Proposition 2, used for [B]COBS (continuity of measurable quantities):
+* `numberExp_not_continuousAt`  the expectation of the number operator is not continuous at
+  the ground state (from `InconsistentConvergence`).
+
+Proposition 3, used for [B]WDQ (quantities well defined in all frames):
+* `frameChange`, `strictMono_frameChange`  the change of coordinates `y = f(x) = tan(π/2 · erf x)`,
   with `Real.erf` from `ForMathlib`;
-* `arctan_frameChange`, `cauchyDensity_frameChange_mul_deriv`  eq. (2), integrated and
-  differential form: the Gaussian density `e^{-x²}/√π` becomes the Cauchy density
-  `1/(π(1+y²))`;
+* `cauchyDensity_frameChange_mul_deriv`, `arctan_frameChange`  `Uψ = ϕ` at the level of
+  densities, differential and integrated form: the Gaussian density `e^{-x²}/√π` becomes the
+  Cauchy density `1/(π(1+y²))`;
 * `integral_gaussDensity`, `integrable_sq_mul_gaussDensity`  `ψ` is normalized and in the
   domain of `X`;
 * `integral_cauchyDensity`, `not_integrable_sq_mul_cauchyDensity`  `ϕ` is normalized and not in
   the domain of `Y`.
 
-[B]STDIST (distinguishability of systems):
+Proposition 4, used for [B]STDIST (distinguishability of systems):
 * `L2_euclidean_iso`  `L²(ℝⁿ⁺¹) ≃ₗᵢ L²(ℝᵐ⁺¹)` for all `n, m`, from the classification of
   separable Hilbert spaces (`nonempty_linearIsometryEquiv_of_separable`, in `ForMathlib`).
 -/
@@ -45,7 +50,7 @@ open Real MeasureTheory Filter Topology Set
 
 namespace HilbertUnphysicality
 
-/-! ### [B]COBS: unbounded observables are not continuous -/
+/-! ### Proposition 1: unbounded self-adjoint operators -/
 
 /-- On normed spaces, a continuous linear map is bounded; so an unbounded one is not
 continuous. -/
@@ -56,14 +61,6 @@ theorem not_continuous_of_unbounded {𝕜 E F : Type*} [NontriviallyNormedField 
   let L : E →L[𝕜] F := ⟨T, hc⟩
   obtain ⟨x, hx⟩ := hT ‖L‖
   exact absurd (L.le_opNorm x) (not_le.mpr hx)
-
-/-- The brief's example: for the oscillator, `√((j-1)/j)|0⟩ + √(1/j)|j⟩ → |0⟩` while `⟨N⟩`
-stays at `1`, so `⟨N⟩` is not continuous at the ground state. -/
-theorem numberExp_not_continuousAt :
-    ¬ ContinuousAt InconsistentConvergence.numberExp InconsistentConvergence.ground :=
-  InconsistentConvergence.not_continuousAt_numberExp
-
-/-! ### [B]WDQ: Hellinger–Toeplitz -/
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
@@ -77,7 +74,15 @@ theorem bounded_of_isSymmetric {T : H →ₗ[ℂ] H} (hT : T.IsSymmetric) :
 theorem not_isSymmetric_of_unbounded {T : H →ₗ[ℂ] H} (hT : ∀ C : ℝ, ∃ x, C * ‖x‖ < ‖T x‖) :
     ¬ T.IsSymmetric := fun h => not_continuous_of_unbounded T hT h.continuous
 
-/-! ### [B]WDQ: the change of frame `y = tan(π/2 · erf x)` -/
+/-! ### Proposition 2 ([B]COBS): the number operator -/
+
+/-- Proposition 2: for the oscillator, `√((j-1)/j)|0⟩ + √(1/j)|j⟩ → |0⟩` while `⟨N⟩`
+stays at `1`, so `⟨N⟩` is not continuous at the ground state. -/
+theorem numberExp_not_continuousAt :
+    ¬ ContinuousAt InconsistentConvergence.numberExp InconsistentConvergence.ground :=
+  InconsistentConvergence.not_continuousAt_numberExp
+
+/-! ### Proposition 3 ([B]WDQ): the change of frame `y = tan(π/2 · erf x)` -/
 
 /-- The change of coordinates `y(x) = tan(π/2 · erf x)` between the two frames. -/
 def frameChange (x : ℝ) : ℝ := tan (π / 2 * erf x)
@@ -95,7 +100,7 @@ theorem strictMono_frameChange : StrictMono frameChange := fun a b hab =>
   strictMonoOn_tan (mem_Ioo_erf a) (mem_Ioo_erf b)
     (mul_lt_mul_of_pos_left (strictMono_erf hab) (by positivity))
 
-/-- Eq. (2), integrated: `arctan(y)/π = erf(x)/2`. The Cauchy distribution function at
+/-- `Uψ = ϕ`, integrated: `arctan(y)/π = erf(x)/2`. The Cauchy distribution function at
 `y(x)` equals the Gaussian distribution function at `x`. -/
 theorem arctan_frameChange (x : ℝ) : arctan (frameChange x) / π = erf x / 2 := by
   rw [frameChange, arctan_tan (mem_Ioo_erf x).1 (mem_Ioo_erf x).2]
@@ -112,7 +117,7 @@ lemma hasDerivAt_frameChange (x : ℝ) :
       (1 / cos (π / 2 * erf x) ^ 2 * (π / 2 * (2 / √π * exp (-x ^ 2)))) x :=
   (hasDerivAt_tan (cos_ne_zero_erf x)).comp x ((hasDerivAt_erf x).const_mul (π / 2))
 
-/-- Eq. (2), differential form: `|ϕ(y(x))|² y'(x) = |ψ(x)|²`, i.e. the square of the wave
+/-- `Uψ = ϕ` at the level of densities: `|ϕ(y(x))|² y'(x) = |ψ(x)|²`, i.e. the square of the wave
 function transforms as a density. -/
 theorem cauchyDensity_frameChange_mul_deriv (x : ℝ) :
     cauchyDensity (frameChange x) * deriv frameChange x = gaussDensity x := by
@@ -162,7 +167,8 @@ theorem not_integrable_sq_mul_cauchyDensity :
   have := (measure_mono hsub).trans_lt hfin
   simp at this
 
-/-! ### [B]STDIST: all separable infinite-dimensional Hilbert spaces are isomorphic -/
+/-! ### Proposition 4 ([B]STDIST): all separable infinite-dimensional Hilbert spaces are
+isomorphic -/
 
 /-- [B]STDIST: the state spaces `L²(ℝⁿ⁺¹)` and `L²(ℝᵐ⁺¹)` are isometrically isomorphic, for
 any numbers of degrees of freedom. -/

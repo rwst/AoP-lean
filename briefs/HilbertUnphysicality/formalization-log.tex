@@ -61,9 +61,10 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForMathlib/MeasureTheory/Function/L2Space.lean} ($L^2$ is infinite-dimensional)
 \end{itemize}
 
-\paragraph{Setting.} Theorem~1 says that the Hilbert-space formulation QSTO:H is inconsistent
-with three physical conditions. The conditions are informal; what is checked is the
-mathematics behind each of the three arguments.
+\paragraph{Setting.} Theorem~5 says that the Hilbert-space formulation QSTO:H is inconsistent
+with three physical conditions. The brief proves four mathematical propositions (Sec.~2) and
+then argues each part of Theorem~5 from one of them (Sec.~4). The propositions are checked in
+Lean; Theorem~5 is checked by reading, against them.
 
 \paragraph{Results.}
 \begin{center}
@@ -71,24 +72,28 @@ mathematics behind each of the three arguments.
 \toprule
 Brief & Lean \\
 \midrule
-\multicolumn{2}{@{}l}{\emph{[B]COBS}} \\
-unbounded $\Rightarrow$ not continuous & \lean{not_continuous_of_unbounded} \\
-oscillator example & \lean{numberExp_not_continuousAt} (from the inconsistent-convergence brief) \\
-\multicolumn{2}{@{}l}{\emph{[B]WDQ}} \\
-Hellinger--Toeplitz & \lean{bounded_of_isSymmetric}, \lean{not_isSymmetric_of_unbounded} \\
-$\operatorname{erf}$, $|\operatorname{erf}| < 1$ & \lean{Real.erf}, \lean{Real.abs_erf_lt_one},
-  \lean{Real.tendsto_erf_atTop} \\
-$y(x) = \tan(\tfrac{\pi}{2}\operatorname{erf} x)$ is a change of coordinates & \lean{frameChange},
+\multicolumn{2}{@{}l}{\emph{Proposition~1}} \\
+$\mathcal{D}(A) \ne \mathcal{H}$ (Hellinger--Toeplitz) & \lean{bounded_of_isSymmetric},
+  \lean{not_isSymmetric_of_unbounded} \\
+$A$ is not continuous on $\mathcal{D}(A)$ & \lean{not_continuous_of_unbounded} \\
+\multicolumn{2}{@{}l}{\emph{Proposition~2}} \\
+$x_j \to e_0$, $E_N(x_j) = 1$, $E_N(e_0) = 0$ & \lean{numberExp_not_continuousAt} (from the
+  inconsistent-convergence brief) \\
+\multicolumn{2}{@{}l}{\emph{Proposition~3}} \\
+$\operatorname{erf}$, $|\operatorname{erf}| < 1$, $\operatorname{erf} \to \pm 1$ & \lean{Real.erf},
+  \lean{Real.abs_erf_lt_one}, \lean{Real.tendsto_erf_atTop} \\
+$f(x) = \tan(\tfrac{\pi}{2}\operatorname{erf} x)$ is increasing & \lean{frameChange},
   \lean{strictMono_frameChange} \\
-eq.~(2), first line, integrated & \lean{arctan_frameChange}: $\arctan(y)/\pi = \operatorname{erf}(x)/2$ \\
-eq.~(2), second line & \lean{cauchyDensity_frameChange_mul_deriv}:
-  $|\phi(y(x))|^2\, y'(x) = |\psi(x)|^2$ \\
-$\psi$ normalized, in the domain of $X$ & \lean{integral_gaussDensity},
+$U\psi = \phi$, at the level of densities & \lean{cauchyDensity_frameChange_mul_deriv}:
+  $|\phi(f(x))|^2\, f'(x) = |\psi(x)|^2$ \\
+the same, integrated & \lean{arctan_frameChange}: $\arctan(f(x))/\pi = \operatorname{erf}(x)/2$ \\
+$\psi$ normalized, $\psi \in \mathcal{D}(X)$ & \lean{integral_gaussDensity},
   \lean{integrable_sq_mul_gaussDensity} \\
-$\phi$ normalized, not in the domain of $Y$ & \lean{integral_cauchyDensity},
+$\phi$ normalized, $\phi \notin \mathcal{D}(Y)$ & \lean{integral_cauchyDensity},
   \lean{not_integrable_sq_mul_cauchyDensity} \\
-\multicolumn{2}{@{}l}{\emph{[B]STDIST}} \\
-separable Hilbert spaces are isomorphic & \lean{nonempty_linearIsometryEquiv_of_separable} \\
+\multicolumn{2}{@{}l}{\emph{Proposition~4}} \\
+separable infinite-dimensional Hilbert spaces are isomorphic &
+  \lean{nonempty_linearIsometryEquiv_of_separable} \\
 $L^2(\mathbb{R}^{n})$ is separable and infinite-dimensional &
   \lean{L2.separableSpace_euclidean}, \lean{L2.not_finiteDimensional_euclidean} \\
 $L^2(\mathbb{R}^{n+1}) \cong L^2(\mathbb{R}^{m+1})$ & \lean{L2_euclidean_iso} \\
@@ -98,35 +103,41 @@ $L^2(\mathbb{R}^{n+1}) \cong L^2(\mathbb{R}^{m+1})$ & \lean{L2_euclidean_iso} \\
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
-\item The wave functions are handled through their densities $|\psi|^2 = e^{-x^2}/\sqrt\pi$ and
-  $|\phi|^2 = 1/(\pi(1+y^2))$. ``In the domain of the position operator'' is read as
-  $\int x^2|\psi|^2 < \infty$, i.e.\ $x\psi \in L^2$.
-\item The frame change is checked as a strictly increasing coordinate change satisfying
-  eq.~(2) in both forms. The unitary $U$ between the two $L^2$ spaces and the change of
-  variables in the integral are not formalized.
-\item Mathlib has no error function; \lean{Real.erf} is defined in \lean{ForMathlib}.
-\item {[B]}STDIST is proved for $n, m \ge 1$ through the classification of separable
-  infinite-dimensional Hilbert spaces, which is also new in \lean{ForMathlib}.
-\item The additional remarks of Section~4 are not formalized.
+\item \emph{Proposition~1.} Both parts are stated for linear maps, without Mathlib's partially
+  defined operators. Discontinuity is proved for an unbounded linear map on any normed
+  space, which includes $\mathcal{D}(A)$ with the norm inherited from $\mathcal{H}$.
+  Hellinger--Toeplitz is proved for an everywhere-defined symmetric map; self-adjointness is
+  not needed.
+\item \emph{Proposition~2.} The number operator is not formalized as an unbounded
+  self-adjoint operator. Its expectation is \lean{numberExp}~$x = \sum_n n\,|x_n|^2$ on all of
+  $\ell^2$ (the sum is $0$ where it diverges), which agrees with $E_N$ on normalized vectors of
+  $\mathcal{D}(N)$. The sequence $x_j$ is the brief's.
+\item \emph{Proposition~3.} The wave functions are handled through their densities
+  $|\psi|^2 = e^{-x^2}/\sqrt\pi$ and $|\phi|^2 = 1/(\pi(1+y^2))$. ``In the domain of the
+  position operator'' is read as $\int x^2|\psi|^2 < \infty$, i.e.\ $x\psi \in L^2$. That $f$ is
+  strictly increasing is proved; that it is smooth and onto $\mathbb{R}$ is not. The unitary
+  $U$, its inverse $V$, the change of variables, and the domain of $UXU^{-1}$ are not
+  formalized. Mathlib has no error function; \lean{Real.erf} is defined in \lean{ForMathlib}.
+\item \emph{Proposition~4.} The classification of separable infinite-dimensional Hilbert spaces
+  is new in \lean{ForMathlib}. The positive integers $n, m$ appear as $n + 1, m + 1$.
+\item \emph{Theorem~5.} Not stated in Lean; checked by reading. Each part is a direct
+  application of a proposition, for one particular system: the oscillator (Proposition~2),
+  one spatial degree of freedom (Proposition~3), and two systems with different numbers of
+  continuous degrees of freedom (Proposition~4). That a unitary carries rays, density
+  operators, self-adjoint operators, the Born rule and the entropy is not formalized. Neither
+  are the closing remarks on classical cutoffs and on Schwartz spaces.
+\item The additional remarks of Section~5 are not formalized.
 \end{itemize}
 
 \paragraph{Problems found in the brief.}
 \begin{itemize}
-\item The brief says that $\phi(y)$ ``goes to zero at infinity like $1/y^2$''. It is $|\phi|^2$
-  that decays like $1/y^2$; $\phi$ itself decays like $1/|y|$. The conclusion is unaffected:
-  $y\,\phi(y) \not\in L^2$.
-\item ``$L^2(\mathbb{R}^n)$ is a separable Hilbert space for any $n$'' is true, but the
-  isomorphism argument also needs infinite dimension, which fails for $n = 0$.
-\item QSTO:H allows any separable Hilbert space, finite-dimensional ones included. In finite
-  dimension every self-adjoint operator is bounded and defined everywhere, so [B]COBS and
-  [B]WDQ hold, and Theorem~1 is false as stated. It needs $\mathcal{H}$ to be
-  infinite-dimensional, or equivalently some observable to be unbounded.
-\item The [B]STDIST argument holds only if the representation of a system is the Hilbert space,
-  with what QSTO:H builds from it alone, up to unitary equivalence. If the representation also
-  includes the positions $X_1, \dots, X_n$ and the momenta $P_1, \dots, P_n$, then $n$ is part
-  of the data and [B]STDIST holds trivially. The brief does not say which is meant. Under the
-  first reading [B]STDIST fails even in finite dimension: the spin of an electron and the
-  polarization of a photon are both represented on $\mathbb{C}^2$.
+\item Cross-references lack their label: the proof of Theorem~5 has ``This satisfies the
+  conditions for 2'', ``As shown in 3'' and ``By 4'' for Propositions~2, 3 and~4.
+\item ``Schwartz spaces present the same problem'' is asserted without proof, and without
+  saying which structure on $\mathcal{S}(\mathbb{R}^n)$ is meant (see the open problems).
+\item QSTO:H still allows any separable Hilbert space, finite-dimensional ones included. This
+  no longer affects Theorem~5, whose proof reads the inconsistency as the failure of a
+  condition for one particular system, but the brief could say so.
 \end{itemize}
 
 \end{document}
