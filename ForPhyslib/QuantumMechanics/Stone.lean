@@ -24,16 +24,20 @@ the candidate generator, which is self-adjoint (`stoneCandidateGenerator_reconst
 orbits `exp (i t T) x` with `x` in the domain of `T` stay in the domain and solve `w' = i T w`.
 Then `H = -ħ T` is self-adjoint and `(iħ)⁻¹ H = i T`.
 
-For the second direction, let `T = -ħ⁻¹ H` and `V t = exp (i t T)` by the spectral theorem. On
-the domain both `t ↦ U t ψ` and `t ↦ V t ψ` solve `w' = i T w` with `w 0 = ψ`, so they agree
-(`hasDerivAt_generator_unique`, which needs only that `T` is symmetric). The domain is dense and
-both are bounded, so `U t = V t`.
+For the second direction, let `T = -ħ⁻¹ H` and `V t = exp (i t T) = e^{-itH/ħ}` by the spectral
+theorem (`schrodingerPropagator`). On the domain both `t ↦ U t ψ` and `t ↦ V t ψ` solve
+`w' = i T w` with `w 0 = ψ`, so they agree (`hasDerivAt_generator_unique`, which needs only that
+`T` is symmetric). The domain is dense and both are bounded, so `U t = V t`.
 
 ## ii. Key results
 
 - `QuantumMechanics.SolvesSchrodinger`: `U` solves the Schrödinger equation for `H`.
 - `QuantumMechanics.StronglyContinuousUnitaryGroup.exists_solvesSchrodinger`: Stone's theorem,
   a strongly continuous unitary group has a self-adjoint Hamiltonian.
+- `QuantumMechanics.schrodingerPropagator`: `e^{-itH/ħ}` for a self-adjoint `H`, by the spectral
+  theorem.
+- `QuantumMechanics.SolvesSchrodinger.eq_schrodingerPropagator`: a solution with `U 0 = 1` is
+  `e^{-itH/ħ}`.
 - `QuantumMechanics.exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger`: a solution with
   `U 0 = 1` is a strongly continuous unitary group.
 
@@ -102,14 +106,24 @@ theorem StronglyContinuousUnitaryGroup.exists_solvesSchrodinger
   rw [hsub, hfun]
   exact hasDerivAt_expUnitaryGroup_apply D x t
 
-/-- **Stone's theorem, converse.** A family of bounded operators with `U 0 = 1` that solves the
-Schrödinger equation for a self-adjoint `H` is a strongly continuous unitary group. -/
-theorem exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger {ħ : ℝ} (hħ : ħ ≠ 0)
-    {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H) {U : ℝ → E →L[ℂ] E} (hU0 : U 0 = 1)
-    (hU : SolvesSchrodinger ħ H U) :
-    ∃ V : StronglyContinuousUnitaryGroup E, V.toFun = U := by
-  have hT : IsSelfAdjoint ((((-ħ⁻¹ : ℝ) : ℂ) • H : E →ₗ.[ℂ] E)) :=
-    isSelfAdjoint_smul_real hH _ (by simpa using hħ)
+/-- `-ħ⁻¹ H` is self-adjoint if `H` is. -/
+lemma isSelfAdjoint_neg_inv_smul {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H) :
+    IsSelfAdjoint ((((-ħ⁻¹ : ℝ) : ℂ) • H : E →ₗ.[ℂ] E)) :=
+  isSelfAdjoint_smul_real hH _ (by simpa using hħ)
+
+/-- The propagator `e^{-itH/ħ}` of a self-adjoint `H`, by the spectral theorem: `∫ e^{itλ} dP(λ)`
+for the spectral measure `P` of `-H/ħ`. -/
+def schrodingerPropagator {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H) (t : ℝ) :
+    E →L[ℂ] E :=
+  (WOTSpectralMeasure.expIntegral (cayleyRealSpectralMeasure _ (isSelfAdjoint_neg_inv_smul hħ hH))
+    t).toCLM
+
+/-- **Uniqueness of the propagator.** A family of bounded operators with `U 0 = 1` that solves the
+Schrödinger equation for a self-adjoint `H` is `e^{-itH/ħ}`. -/
+theorem SolvesSchrodinger.eq_schrodingerPropagator {ħ : ℝ} {H : E →ₗ.[ℂ] E} {U : ℝ → E →L[ℂ] E}
+    (hU : SolvesSchrodinger ħ H U) (hħ : ħ ≠ 0) (hH : IsSelfAdjoint H) (hU0 : U 0 = 1) (t : ℝ) :
+    U t = schrodingerPropagator hħ hH t := by
+  have hT := isSelfAdjoint_neg_inv_smul hħ hH
   set D := unboundedSpectralTheorem _ hT
   -- `(iħ)⁻¹ H = i T` on the domain, for `T = -ħ⁻¹ H`.
   have hHT : ∀ (y : E) (hy : y ∈ H.domain), (Complex.I * ħ)⁻¹ • H ⟨y, hy⟩ =
@@ -127,10 +141,18 @@ theorem exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger {ħ : ℝ} (h
       (fun s => D.expUnitaryGroup_translate_mem x s)
       (fun s => by rw [← hHT _ (hmem s)]; exact hder s)
       (fun s => hasDerivAt_expUnitaryGroup_apply D x s) (by simp [hU0]) t
-  have heq : ∀ t, U t = ContinuousLinearMapWOT.toCLM (D.expUnitaryGroup t) := fun t =>
-    ContinuousLinearMap.ext fun x => congrFun (Continuous.ext_on hT.dense_domain (U t).continuous
-      (ContinuousLinearMapWOT.toCLM (D.expUnitaryGroup t)).continuous
-      fun ξ hξ => heq_dom ⟨ξ, hξ⟩ t) x
+  exact ContinuousLinearMap.ext fun x => congrFun (Continuous.ext_on hT.dense_domain
+    (U t).continuous (schrodingerPropagator hħ hH t).continuous fun ξ hξ => heq_dom ⟨ξ, hξ⟩ t) x
+
+/-- **Stone's theorem, converse.** A family of bounded operators with `U 0 = 1` that solves the
+Schrödinger equation for a self-adjoint `H` is a strongly continuous unitary group. -/
+theorem exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger {ħ : ℝ} (hħ : ħ ≠ 0)
+    {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H) {U : ℝ → E →L[ℂ] E} (hU0 : U 0 = 1)
+    (hU : SolvesSchrodinger ħ H U) :
+    ∃ V : StronglyContinuousUnitaryGroup E, V.toFun = U := by
+  set D := unboundedSpectralTheorem _ (isSelfAdjoint_neg_inv_smul hħ hH)
+  have heq : ∀ t, U t = ContinuousLinearMapWOT.toCLM (D.expUnitaryGroup t) :=
+    hU.eq_schrodingerPropagator hħ hH hU0
   refine ⟨⟨U, fun t => ?_, hU0, fun s t => ?_, fun x => ?_⟩, rfl⟩
   · have h := Unitary.mem_iff.mp (D.expUnitaryGroup.unitary t)
     rw [heq t, Unitary.mem_iff]

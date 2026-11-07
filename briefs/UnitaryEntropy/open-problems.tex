@@ -81,7 +81,9 @@ propagator'').
   on which the propagator is differentiable at $0$ form a dense subspace, on which
   $i\hbar\,U'(0)$ is symmetric but not self-adjoint (\lean{switchedHamiltonian_counterexample}).
   This subspace is $H^1_0(0,1)$, the domain of the minimal momentum, and $i\hbar\,U'(0)$ is
-  $-i\,d/dx$ on it (\lean{switchedDomain_eq}).
+  $-i\,d/dx$ on it (\lean{switchedDomain_eq}). The two pieces of $U$ are
+  $e^{-itH_\alpha/\hbar}$ and $e^{-itH_\beta/\hbar}$
+  (\lean{twistedTranslation_eq_schrodingerPropagator}).
   (Log, ``Unbounded Hamiltonians''.)
 \item \textbf{Equation at every time in infinite dimension.} In finite dimension, one
   differentiable unitary $U(t)$ for all times solves the Schr\"odinger equation at every time,

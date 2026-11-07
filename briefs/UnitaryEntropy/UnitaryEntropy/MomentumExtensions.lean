@@ -31,7 +31,8 @@ derivative `-iβ/ħ c` at `0`, with `c = ⟨e^{iβx}, e^{iαx}⟩ ≠ 0`. So DR-
 dense set of states, at one time `t₀`, do not give a self-adjoint `H(t₀)`.
 
 `D` is in fact `H¹₀(0, 1)` and `H₀` the minimal momentum operator `-i d/dx`, when
-`e^{iα} ≠ e^{iβ}` (`UnitaryEntropy.MomentumDomain`). The counterexample does not need this.
+`e^{iα} ≠ e^{iβ}` (`UnitaryEntropy.MomentumDomain`), and `U_α(t)` is `e^{-itH_α/ħ}`
+(`UnitaryEntropy.MomentumPropagator`). The counterexample does not need either.
 
 ## Main results
 

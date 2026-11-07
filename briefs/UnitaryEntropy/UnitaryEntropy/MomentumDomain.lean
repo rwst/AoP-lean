@@ -404,22 +404,23 @@ lemma mul_inner_twistedBasis_planeWave_zero (γ : ℝ) (n : ℤ) :
   push_cast
   linear_combination ((δ : ℂ) * (Complex.exp (-(Complex.I * δ)) - 1)) * Complex.I_sq
 
+lemma exists_add_two_pi_mul_eq_zero {γ : ℝ} (h1 : Complex.exp (Complex.I * γ) = 1) :
+    ∃ m : ℤ, γ + 2 * π * m = 0 := by
+  obtain ⟨m, hm⟩ := Complex.exp_eq_one_iff.mp h1
+  have h : Complex.I * (γ : ℂ) = Complex.I * ((2 * π * m : ℝ) : ℂ) := by
+    rw [hm]
+    push_cast
+    ring
+  have h' : γ = 2 * π * m := by exact_mod_cast mul_left_cancel₀ Complex.I_ne_zero h
+  exact ⟨-m, by rw [h']; push_cast; ring⟩
+
 /-- If `(γ + 2πn) ⟨eₙ, f⟩ = -i e^{-iγ} c` for all `n` and `e^{iγ} = 1`, then `c = 0`. -/
 lemma eq_zero_of_mul_inner_twistedBasis {γ : ℝ} {f : L²} {c : ℂ}
     (hf : ∀ n : ℤ, ((γ + 2 * π * n : ℝ) : ℂ) * ⟪twistedBasis γ n, f⟫_ℂ =
       -(Complex.I * Complex.exp (-(Complex.I * γ)) * c))
     (h1 : Complex.exp (Complex.I * γ) = 1) : c = 0 := by
-  obtain ⟨m, hm⟩ := Complex.exp_eq_one_iff.mp h1
-  have hγ : γ + 2 * π * ((-m : ℤ) : ℝ) = 0 := by
-    have h : Complex.I * (γ : ℂ) = Complex.I * ((2 * π * m : ℝ) : ℂ) := by
-      rw [hm]
-      push_cast
-      ring
-    have h' : γ = 2 * π * m := by exact_mod_cast mul_left_cancel₀ Complex.I_ne_zero h
-    rw [h']
-    push_cast
-    ring
-  have h := hf (-m)
+  obtain ⟨m, hγ⟩ := exists_add_two_pi_mul_eq_zero h1
+  have h := hf m
   rw [hγ, Complex.ofReal_zero, zero_mul] at h
   have hne : Complex.I * Complex.exp (-(Complex.I * γ)) ≠ 0 :=
     mul_ne_zero Complex.I_ne_zero (Complex.exp_ne_zero _)
@@ -448,6 +449,33 @@ lemma eq_smul_of_mul_inner_twistedBasis {γ : ℝ} {f : L²} {c : ℂ}
   have hE1 : Complex.exp (Complex.I * γ) - 1 ≠ 0 := sub_ne_zero.mpr h1
   field_simp
   ring
+
+/-- If `(γ + 2πn) ⟨eₙ, f⟩ = -i e^{-iγ} c` for all `n`, then `f` is a constant `k` with
+`c = (e^{iγ} - 1) k`. -/
+lemma exists_smul_of_mul_inner_twistedBasis {γ : ℝ} {f : L²} {c : ℂ}
+    (hf : ∀ n : ℤ, ((γ + 2 * π * n : ℝ) : ℂ) * ⟪twistedBasis γ n, f⟫_ℂ =
+      -(Complex.I * Complex.exp (-(Complex.I * γ)) * c)) :
+    ∃ k : ℂ, f = k • planeWave 0 ∧ c = (Complex.exp (Complex.I * γ) - 1) * k := by
+  by_cases h1 : Complex.exp (Complex.I * γ) = 1
+  · have hc := eq_zero_of_mul_inner_twistedBasis hf h1
+    obtain ⟨m, hγ⟩ := exists_add_two_pi_mul_eq_zero h1
+    refine ⟨⟪twistedBasis γ m, f⟫_ℂ, ?_, by rw [hc, h1, sub_self, zero_mul]⟩
+    have he : twistedBasis γ m = planeWave 0 := by rw [twistedBasis_apply, hγ]
+    rw [← he]
+    refine (twistedBasis γ).ext_inner fun n => ?_
+    rw [inner_smul_right, orthonormal_iff_ite.mp (twistedBasis γ).orthonormal]
+    split_ifs with hn
+    · rw [hn, mul_one]
+    · have hδ : ((γ + 2 * π * n : ℝ) : ℂ) ≠ 0 := by
+        have : γ + 2 * π * n = 2 * π * (n - m : ℤ) := by push_cast; linear_combination hγ
+        rw [this]
+        exact_mod_cast mul_ne_zero (by positivity) (Int.cast_ne_zero.mpr (sub_ne_zero.mpr hn))
+      have h := hf n
+      rw [hc, mul_zero, neg_zero] at h
+      rw [mul_zero]
+      exact (mul_eq_zero.mp h).resolve_left hδ
+  · refine ⟨_, eq_smul_of_mul_inner_twistedBasis hf h1, ?_⟩
+    field_simp [sub_ne_zero.mpr h1]
 
 lemma planeWave_zero_ne_zero : planeWave 0 ≠ 0 := by
   intro h

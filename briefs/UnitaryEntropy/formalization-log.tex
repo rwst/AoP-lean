@@ -822,6 +822,17 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
 \item \lean{ForMathlib/Analysis/InnerProductSpace/HilbertBasisMaps.lean} gains
   \lean{HilbertBasis.map}, the image $i \mapsto L(b_i)$ of a Hilbert basis under a linear
   isometric equivalence $L$.
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/MomentumPropagator.lean}, the momenta
+  $H_\alpha$ and $U_\alpha(t) = e^{-itH_\alpha/\hbar}$ in that example. Imports:
+  \lean{UnitaryEntropy.MomentumDomain} and \lean{ForPhyslib.QuantumMechanics.Stone} (for
+  \lean{SolvesSchrodinger}).
+\item \lean{ForPhyslib/QuantumMechanics/Stone.lean} gains \lean{schrodingerPropagator}, the
+  operator $e^{-itH/\hbar}$ of a self-adjoint $H$ given by the spectral theorem, as
+  $\int e^{it\lambda}\,dP(\lambda)$ for the spectral measure $P$ of $-H/\hbar$, and
+  \lean{SolvesSchrodinger.eq_schrodingerPropagator}: a family of bounded operators with
+  $U(0) = I$ that solves the Schr\"odinger equation for $H$ is $e^{-itH/\hbar}$. The converse of
+  Stone's theorem, \lean{exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger}, now follows
+  from it.
 \end{itemize}
 
 \paragraph{Setting.} As in Section~\ref{sec:unitary-entropy-any-dim}, restricted to a
@@ -845,8 +856,13 @@ EVDIFF on a dense set of states & \lean{EvDiff} \\
 Theorem 2 ($\Rightarrow$), EVDIFF & \lean{evDiff_of_drSceq} (with
   \lean{differentiableAt_proj_of_hasDerivAt}) \\
 Theorem 2 with EVTI, unbounded $H$ & \lean{drSceq_iff_drInfo_and_evDiff} \\
-Without EVTI: the twisted translations $U_\alpha(t) = e^{-itH_\alpha/\hbar}$ are unitary &
+Without EVTI: the twisted translations $U_\alpha(t)$ are unitary &
   \lean{twistedTranslation}, \lean{twistedTranslation_mem_unitary} \\
+Without EVTI: $H_\alpha = -i\,d/dx$ with $\psi(1) = e^{i\alpha}\psi(0)$ is self-adjoint &
+  \lean{momentum}, \lean{isMomentumPair_iff}, \lean{isSelfAdjoint_momentum} \\
+Without EVTI: $U_\alpha(t) = e^{-itH_\alpha/\hbar}$ &
+  \lean{solvesSchrodinger_twistedTranslation},
+  \lean{twistedTranslation_eq_schrodingerPropagator} \\
 Without EVTI: $U(t)\psi$ is differentiable at $0$ on a dense $D$ &
   \lean{switchedPropagator}, \lean{switchedDomain}, \lean{dense_switchedDomain} \\
 Without EVTI: $H_0 = i\hbar U'(0)$ on $D$ is symmetric but not self-adjoint &
@@ -856,6 +872,10 @@ Without EVTI: $D = H^1_0(0,1)$ for $e^{i\alpha} \ne e^{i\beta}$ &
   \lean{sobolevZero}, \lean{switchedDomain_eq} \\
 Without EVTI: $H_0 = -i\,d/dx$ on $D$, the minimal momentum &
   \lean{switchedHamiltonian_primitive}, \lean{exists_primitive_of_mem_switchedDomain} \\
+Without EVTI: the right (left) derivative of $U(t)\psi$ at $0$ exists exactly on the domain of
+  $H_\alpha$ ($H_\beta$), and $H_0 \subseteq H_\alpha$, $H_0 \subseteq H_\beta$ &
+  \lean{exists_hasDerivWithinAt_iff}, \lean{switchedHamiltonian_le_momentum_left},
+  \lean{switchedHamiltonian_le_momentum_right} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -901,7 +921,7 @@ Without EVTI: $H_0 = -i\,d/dx$ on $D$, the minimal momentum &
   which is $L^2(0,1)$ through the coordinate $x \in [0,1)$ (\lean{circleRep}). $U_\alpha(t)$ is
   defined directly as the twisted translation $\psi(x) \mapsto e^{i\alpha k}\psi(x - t/\hbar)$,
   with $k$ the number of wrap-arounds (\lean{twistedTranslation}); that it is
-  $e^{-itH_\alpha/\hbar}$ is not formalized. $D$ is the set of $\psi$ for which
+  $e^{-itH_\alpha/\hbar}$ is proved separately (last item below). $D$ is the set of $\psi$ for which
   $t \mapsto U(t)\psi$ is differentiable at $0$ (\lean{switchedDomain}), and
   $H_0\psi = i\hbar\,U'(0)\psi$ on $D$ (\lean{switchedHamiltonian}). What is proved:
   \begin{itemize}
@@ -945,6 +965,26 @@ Without EVTI: $H_0 = -i\,d/dx$ on $D$, the minimal momentum &
     $e^{i\alpha} \ne e^{i\beta}$, both cases give $\Phi(1) = 0$ and $f = 0$. For
     $e^{i\alpha} = e^{i\beta}$ the switch does nothing, and $D$ is the larger domain of
     $H_\alpha$.
+  \item $U_\alpha(t) = e^{-itH_\alpha/\hbar}$
+    (\lean{twistedTranslation_eq_schrodingerPropagator}). $H_\alpha$ is defined by its graph
+    (\lean{momentum}): the pairs $(\psi, -ig)$ with $\psi(x) = c + \int_0^x g$,
+    $g \in L^2(0,1)$ and $c + \int_0^1 g = e^{i\alpha}c$, which is $\psi(1) = e^{i\alpha}\psi(0)$.
+    By the integration by parts above, $(\psi, h)$ is in the graph iff
+    $\braket{e_n|h} = (\alpha + 2\pi n)\braket{e_n|\psi}$ for all $n$, with
+    $e_n = e^{i(\alpha + 2\pi n)x}$ (\lean{isMomentumPair_iff}). So $H_\alpha$ is diagonal in
+    this basis with real eigenvalues, hence self-adjoint (\lean{isSelfAdjoint_momentum}).
+    $U_\alpha(t)$ is diagonal in the same basis, with eigenvalues
+    $e^{-i(\alpha + 2\pi n)t/\hbar}$. So it maps the domain of $H_\alpha$ to itself, and the
+    sufficiency of the coefficient relation gives
+    $\tfrac{d}{dt}U_\alpha(t)\psi = (i\hbar)^{-1}H_\alpha U_\alpha(t)\psi$ there
+    (\lean{solvesSchrodinger_twistedTranslation}). A solution of the Schr\"odinger equation with
+    $U(0) = I$ is the spectral-theorem exponential $e^{-itH/\hbar}$
+    (\lean{SolvesSchrodinger.eq_schrodingerPropagator}). The necessity of the coefficient
+    relation, already for one-sided derivatives, shows that the right derivative of $U(t)\psi$
+    at $0$ exists exactly for $\psi$ in the domain of $H_\alpha$, and the left one exactly for
+    $\psi$ in the domain of $H_\beta$ (\lean{exists_hasDerivWithinAt_iff}); on $D$,
+    $H_0 = H_\alpha = H_\beta$ (\lean{switchedHamiltonian_le_momentum_left},
+    \lean{switchedHamiltonian_le_momentum_right}).
   \end{itemize}
 \end{itemize}
 
