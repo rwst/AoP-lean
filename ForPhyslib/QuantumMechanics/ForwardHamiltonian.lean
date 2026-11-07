@@ -36,6 +36,11 @@ essentially self-adjoint. A vector `y` with `⟨y, ∂F|₀ x⟩ = a ⟨y, x⟩`
 most `‖y‖ ‖ψ‖ / 2`, and by density `y = 0`. After scaling, these are the deficiency vectors at
 `±i`. No self-adjointness at any time is assumed.
 
+If moreover the bound tends to `0` as `t → 0⁺`, the forward Hamiltonian is self-adjoint, not just
+essentially self-adjoint. Duhamel: against `e^{-isA/ħ} z`, `A` the closure, the inner product
+with `F s ψ` moves only through the generator difference, so `‖F τ ψ - e^{-iτA/ħ} ψ‖ ≤ ε τ ‖ψ‖`
+on `D`, and by density on all of `E`. `F` is then tangent to the group of `A`.
+
 ## ii. Key results
 
 - `QuantumMechanics.forwardHamiltonian`: `iħ ∂₊ F τ ψ` at `τ = 0`.
@@ -49,6 +54,10 @@ most `‖y‖ ‖ψ‖ / 2`, and by density `y = 0`. After scaling, these are th
 - `QuantumMechanics.isEssentiallySelfAdjoint_forwardHamiltonian`: an invariant dense subspace
   on which the generator varies by bounded operators is a core, and the forward Hamiltonian is
   essentially self-adjoint.
+- `QuantumMechanics.norm_sub_schrodingerPropagator_le`: Duhamel estimate for an approximate
+  solution of the Schrödinger equation.
+- `QuantumMechanics.isSelfAdjoint_forwardHamiltonian`: if the generator differences also tend to
+  `0`, the forward Hamiltonian is self-adjoint, the closure of its restriction to `D`.
 -/
 
 @[expose] public noncomputable section
@@ -417,5 +426,134 @@ theorem isEssentiallySelfAdjoint_forwardHamiltonian {ħ : ℝ} (hħ : ħ ≠ 0) 
   refine ⟨hHDess, ?_, heq⟩
   rw [LinearPMap.isEssentiallySelfAdjoint_def, heq]
   exact hHDess
+
+/-! ### Self-adjointness -/
+
+/-- **Duhamel estimate.** An approximate solution `η' = (iħ)⁻¹ H η + e` of the Schrödinger
+equation for a self-adjoint `H`, with `‖e‖ ≤ R` on `[0, τ]`, stays within `R τ` of the exact
+solution: `‖η τ - e^{-iτH/ħ} η 0‖ ≤ R τ`. Against `e^{-isH/ħ} z`, `z` in the domain, the inner
+product with `η s` moves only through `e`. -/
+lemma norm_sub_schrodingerPropagator_le {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E}
+    (hH : IsSelfAdjoint H) {η e : ℝ → E} {τ R : ℝ} (hτ : 0 ≤ τ)
+    (hd : ∀ s ∈ Icc 0 τ, ∃ h : η s ∈ H.domain,
+      HasDerivAt η ((Complex.I * ħ)⁻¹ • H ⟨η s, h⟩ + e s) s)
+    (he : ∀ s ∈ Icc 0 τ, ‖e s‖ ≤ R) :
+    ‖η τ - schrodingerPropagator hħ hH τ (η 0)‖ ≤ R * τ := by
+  have hU := schrodingerPropagator_mem_unitary hħ hH
+  have hsym := LinearPMap.IsSelfAdjoint.isSymmetric hH
+  have hR : 0 ≤ R := (norm_nonneg _).trans (he 0 (left_mem_Icc.mpr hτ))
+  have hc : (starRingEnd ℂ) ((Complex.I * ħ)⁻¹) = -(Complex.I * ħ)⁻¹ := by
+    rw [map_inv₀, map_mul, Complex.conj_I, Complex.conj_ofReal, neg_mul, inv_neg]
+  have hz : ∀ z ∈ H.domain, ‖⟪schrodingerPropagator hħ hH τ z,
+      η τ - schrodingerPropagator hħ hH τ (η 0)⟫_ℂ‖ ≤ R * τ * ‖z‖ := by
+    intro z hz
+    have hf : ∀ s ∈ Icc 0 τ, HasDerivWithinAt (fun s => ⟪schrodingerPropagator hħ hH s z, η s⟫_ℂ)
+        ⟪schrodingerPropagator hħ hH s z, e s⟫_ℂ (Icc 0 τ) s := by
+      intro s hs
+      obtain ⟨hmem, hU'⟩ := solvesSchrodinger_schrodingerPropagator hħ hH ⟨z, hz⟩ s
+      obtain ⟨hη, hη'⟩ := hd s hs
+      refine ((hU'.inner ℂ hη').hasDerivWithinAt).congr_deriv ?_
+      have h3 : ⟪H ⟨_, hmem⟩, η s⟫_ℂ = ⟪schrodingerPropagator hħ hH s z, H ⟨η s, hη⟩⟫_ℂ :=
+        hsym ⟨_, hmem⟩ ⟨_, hη⟩
+      rw [inner_add_right, inner_smul_right, inner_smul_left, h3, hc]
+      ring
+    have hbound : ∀ s ∈ Ico 0 τ, ‖⟪schrodingerPropagator hħ hH s z, e s⟫_ℂ‖ ≤ R * ‖z‖ := by
+      intro s hs
+      refine (norm_inner_le_norm _ _).trans ?_
+      rw [ContinuousLinearMap.norm_map_of_mem_unitary (hU s), mul_comm]
+      exact mul_le_mul_of_nonneg_right (he s (Ico_subset_Icc_self hs)) (norm_nonneg _)
+    have hmv := norm_image_sub_le_of_norm_deriv_le_segment' hf hbound τ (right_mem_Icc.mpr hτ)
+    rw [schrodingerPropagator_zero, one_apply_eq_self,
+      ← ContinuousLinearMap.inner_map_map_of_mem_unitary (hU τ) z (η 0), ← inner_sub_right,
+      sub_zero] at hmv
+    linarith
+  -- By density this holds for every `z`, in particular for `z = U τ† w`.
+  set w := η τ - schrodingerPropagator hħ hH τ (η 0)
+  have hall : ∀ z, ‖⟪schrodingerPropagator hħ hH τ z, w⟫_ℂ‖ ≤ R * τ * ‖z‖ := by
+    have hcl : IsClosed {z : E | ‖⟪schrodingerPropagator hħ hH τ z, w⟫_ℂ‖ ≤ R * τ * ‖z‖} :=
+      isClosed_le ((schrodingerPropagator hħ hH τ).continuous.inner continuous_const).norm
+        (continuous_const.mul continuous_norm)
+    intro z
+    have hzc : z ∈ closure (H.domain : Set E) := hH.dense_domain.closure_eq ▸ Set.mem_univ z
+    exact closure_minimal (fun z hz' => hz z hz') hcl hzc
+  have hww := hall (star (schrodingerPropagator hħ hH τ) w)
+  have hnorm : ‖⟪w, w⟫_ℂ‖ = ‖w‖ ^ 2 := by
+    rw [inner_self_eq_norm_sq_to_K]
+    simp
+  rw [← mul_apply_eq_comp, Unitary.mul_star_self_of_mem (hU τ),
+    one_apply_eq_self, ContinuousLinearMap.norm_map_of_mem_unitary (Unitary.star_mem (hU τ)),
+    hnorm] at hww
+  nlinarith [norm_nonneg w, mul_nonneg hR hτ]
+
+/-- **Self-adjointness.** Under the hypotheses of `isEssentiallySelfAdjoint_forwardHamiltonian`,
+suppose moreover that the generators at times `t → 0⁺` approach the one at `0` on `D`:
+`‖∂F(t)ψ - (∂F|₀)(F t ψ)‖ ≤ ε ‖ψ‖` for `t ∈ [0, δ]`. Then `F` is tangent at `0` to the unitary
+group of the closure, by the Duhamel estimate on `D` and density, and the forward Hamiltonian is
+self-adjoint: it is the closure of its restriction to `D`. -/
+theorem isSelfAdjoint_forwardHamiltonian {ħ : ℝ} (hħ : ħ ≠ 0) (hF0 : F 0 = 1)
+    (hF : ∀ t, F t ∈ unitary (E →L[ℂ] E)) {D : Submodule ℂ E} (hD : Dense (D : Set E))
+    (hinv : ∀ t, ∀ x ∈ D, F t x ∈ D) (hdiff : ∀ x ∈ D, Differentiable ℝ fun t => F t x)
+    {C T : ℝ} (hT : 0 < T)
+    (hC : ∀ t ∈ Icc (-T) T, ∀ x ∈ D,
+      ‖deriv (fun s => F s x) t - deriv (fun s => F s (F t x)) 0‖ ≤ C * ‖x‖)
+    (hω : ∀ ε > 0, ∃ δ > 0, ∀ t ∈ Icc 0 δ, ∀ x ∈ D,
+      ‖deriv (fun s => F s x) t - deriv (fun s => F s (F t x)) 0‖ ≤ ε * ‖x‖) :
+    IsSelfAdjoint (forwardHamiltonian F ħ) ∧
+      forwardHamiltonian F ħ = ((forwardHamiltonian F ħ).domRestrict D).closure := by
+  obtain ⟨-, hess, hcl⟩ :=
+    isEssentiallySelfAdjoint_forwardHamiltonian hħ hF0 hF hD hinv hdiff hT hC
+  have hA : IsSelfAdjoint (forwardHamiltonian F ħ).closure :=
+    LinearPMap.isEssentiallySelfAdjoint_def.mp hess
+  have hDle : D ≤ (forwardHamiltonian F ħ).domain := fun x hx =>
+    mem_forwardDomain.mpr ((hdiff x hx) 0).differentiableWithinAt
+  have hF' : ∀ τ, 0 ≤ τ → ∀ x y, ⟪F τ x, F τ y⟫_ℂ = ⟪x, y⟫_ℂ :=
+    fun τ _ => ContinuousLinearMap.inner_map_map_of_mem_unitary (hF τ)
+  -- On `D`, `(iħ)⁻¹` times the closure is `∂F|₀`.
+  have hgen : ∀ x ∈ D, ∃ h : x ∈ (forwardHamiltonian F ħ).closure.domain,
+      (Complex.I * ħ)⁻¹ • (forwardHamiltonian F ħ).closure ⟨x, h⟩ = deriv (fun s => F s x) 0 := by
+    intro x hx
+    have hle := (forwardHamiltonian F ħ).le_closure
+    refine ⟨hle.1 (hDle hx), ?_⟩
+    have hIħ : Complex.I * ħ ≠ 0 := mul_ne_zero Complex.I_ne_zero (by exact_mod_cast hħ)
+    rw [← hle.2 (x := ⟨x, hDle hx⟩) rfl, forwardHamiltonian_apply, smul_smul,
+      inv_mul_cancel₀ hIħ, one_smul]
+    exact ((hdiff x hx) 0).hasDerivAt.hasDerivWithinAt.derivWithin (uniqueDiffWithinAt_Ici 0)
+  -- The Duhamel estimate on `D`, then on all of `E` by density.
+  have hbound : ∀ ε > 0, ∃ δ > 0, ∀ τ ∈ Icc 0 δ, ∀ ψ,
+      ‖F τ ψ - schrodingerPropagator hħ hA τ ψ‖ ≤ ε * τ * ‖ψ‖ := by
+    intro ε hε
+    obtain ⟨δ, hδ, hω'⟩ := hω ε hε
+    refine ⟨δ, hδ, fun τ hτ => ?_⟩
+    have hDτ : ∀ x ∈ D, ‖F τ x - schrodingerPropagator hħ hA τ x‖ ≤ ε * τ * ‖x‖ := by
+      intro x hx
+      have h := norm_sub_schrodingerPropagator_le hħ hA (η := fun s => F s x)
+        (e := fun s => deriv (fun s => F s x) s - deriv (fun s' => F s' (F s x)) 0)
+        (R := ε * ‖x‖) hτ.1
+        (fun s _ => by
+          obtain ⟨h, hh⟩ := hgen (F s x) (hinv s x hx)
+          refine ⟨h, ?_⟩
+          rw [hh]
+          simpa using ((hdiff x hx) s).hasDerivAt)
+        (fun s hs => hω' s ⟨hs.1, hs.2.trans hτ.2⟩ x hx)
+      rw [hF0, one_apply_eq_self] at h
+      linarith
+    have hcl' : IsClosed {ψ : E | ‖F τ ψ - schrodingerPropagator hħ hA τ ψ‖ ≤ ε * τ * ‖ψ‖} :=
+      isClosed_le ((F τ).continuous.sub (schrodingerPropagator hħ hA τ).continuous).norm
+        (continuous_const.mul continuous_norm)
+    intro ψ
+    have hψ : ψ ∈ closure (D : Set E) := hD.closure_eq ▸ Set.mem_univ ψ
+    exact closure_minimal (fun x hx => hDτ x hx) hcl' hψ
+  have ho : ∀ ψ ∈ (forwardHamiltonian F ħ).closure.domain,
+      (fun τ => F τ ψ - schrodingerPropagator hħ hA τ ψ) =o[𝓝[≥] 0] fun τ => τ := by
+    intro ψ _
+    refine Asymptotics.isLittleO_iff.mpr fun c hc => ?_
+    obtain ⟨δ, hδ, hb⟩ := hbound (c / (‖ψ‖ + 1)) (by positivity)
+    filter_upwards [Icc_mem_nhdsGE hδ] with τ hτ
+    refine (hb τ hτ ψ).trans ?_
+    rw [Real.norm_of_nonneg hτ.1, div_mul_eq_mul_div, div_mul_eq_mul_div,
+      div_le_iff₀ (by positivity)]
+    nlinarith [mul_nonneg hc.le hτ.1]
+  exact ⟨(isSelfAdjoint_forwardHamiltonian_iff hħ hF0 hF').mpr ⟨_, hA, ho⟩,
+    (forwardHamiltonian_eq_of_isLittleO hħ hF0 hF' hA ho).trans hcl⟩
 
 end QuantumMechanics

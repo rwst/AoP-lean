@@ -180,6 +180,14 @@ theorem exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger {ħ : ℝ} (h
   · rw [heq, heq, heq, D.expUnitaryGroup.add]; rfl
   · simp_rw [heq]; exact D.expUnitaryGroup.continuous_apply x
 
+/-- `e^{-itH/ħ}` is unitary. -/
+lemma schrodingerPropagator_mem_unitary {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E}
+    (hH : IsSelfAdjoint H) (t : ℝ) : schrodingerPropagator hħ hH t ∈ unitary (E →L[ℂ] E) := by
+  obtain ⟨V, hV⟩ := exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger hħ hH
+    (schrodingerPropagator_zero hħ hH) (solvesSchrodinger_schrodingerPropagator hħ hH)
+  rw [← hV]
+  exact V.mem_unitary t
+
 /-- Every strongly continuous unitary group is `t ↦ ∫ e^{itx} dμS(x)` for a projection-valued
 measure `μS` on `ℝ`, by Stone's theorem. -/
 theorem StronglyContinuousUnitaryGroup.exists_expIntegral (V : StronglyContinuousUnitaryGroup E) :

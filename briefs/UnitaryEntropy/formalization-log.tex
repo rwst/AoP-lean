@@ -840,7 +840,8 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
   Hamiltonian of any unitary evolution, and a local Stone theorem (``A local Stone theorem''
   below). Imports: \lean{ForPhyslib.QuantumMechanics.Stone}, to which
   \lean{solvesSchrodinger_schrodingerPropagator} ($e^{-itH/\hbar}$ solves the Schr\"odinger
-  equation for $H$) and \lean{schrodingerPropagator_zero} were added.
+  equation for $H$), \lean{schrodingerPropagator_zero} and
+  \lean{schrodingerPropagator_mem_unitary} were added.
 \item New file \lean{ForPhyslib/QuantumMechanics/Howland.lean}: Howland's extended space, the
   positive counterpart (``Howland's generator'' below). Imports:
   \lean{ForPhyslib.QuantumMechanics.Stone},
@@ -916,6 +917,9 @@ Forward derivative, invariant core: a dense subspace invariant under the evoluti
   forward Hamiltonian is essentially self-adjoint &
   \lean{isEssentiallySelfAdjoint_forwardHamiltonian}, \lean{exists_eq_zero_of_inner_deriv},
   \lean{norm_inner_le_of_hasDerivAt} \\
+Forward derivative, invariant core with generator differences tending to $0$ as $t \to t_0^+$:
+  the forward Hamiltonian is self-adjoint &
+  \lean{isSelfAdjoint_forwardHamiltonian}, \lean{norm_sub_schrodingerPropagator_le} \\
 Howland: a strongly continuous unitary propagator $U(t,s)$ gives a strongly continuous unitary
   group $W$ on $L^2(\mathbb{R};E)$ with self-adjoint generator $K$ &
   \lean{UnitaryPropagator}, \lean{UnitaryPropagator.howlandGroup},
@@ -1153,9 +1157,26 @@ self-adjoint with the same closure.
 No self-adjointness at any time is assumed, and the evolution need not satisfy a composition
 law. In the example $\alpha_0 + \sqrt t$ no dense subspace of the forward domain at $0$ is
 invariant: $U(t,0)\psi$ takes the value $\psi(1-t)$ at $0$ up to a phase, and the forward domain
-is $H^1_0(0,1)$. Not formalized: that $H_0$ itself is closed, hence self-adjoint, when the bound
-$C$ tends to $0$ as $T \to 0$ (by Duhamel's formula the evolution is then tangent to
-$e^{-i\tau\bar H_0/\hbar}$); and a relative bound $C(\|B\psi\| + \|\psi\|)$ in place of $C\|\psi\|$,
-which time-dependent unbounded potentials need.
+is $H^1_0(0,1)$.
+
+If moreover the bound tends to $0$ forward in time, that is, for every $\varepsilon > 0$ there is
+$\delta > 0$ with $\|\partial_t F(t)\psi - B F(t)\psi\| \le \varepsilon\|\psi\|$ for
+$t \in [0,\delta]$ and $\psi \in D$, then $H_0$ itself is self-adjoint, and equal to the closure of
+its restriction to $D$ (\lean{isSelfAdjoint_forwardHamiltonian}). This is the case
+$H(t) = H + V(t)$ with $V$ bounded and norm-continuous.
+\begin{itemize}
+\item Duhamel estimate (\lean{norm_sub_schrodingerPropagator_le}): if $A$ is self-adjoint and
+  $\eta' = (i\hbar)^{-1}A\eta + e$ with $\|e\| \le R$ on $[0,\tau]$, then
+  $\|\eta(\tau) - e^{-i\tau A/\hbar}\eta(0)\| \le R\tau$. For $z$ in the domain of $A$,
+  $\langle e^{-isA/\hbar}z, \eta(s)\rangle$ has derivative
+  $\langle e^{-isA/\hbar}z, e(s)\rangle$, since $A$ is symmetric; the bound follows by density
+  of the domain and unitarity.
+\item With $A = \bar H_0$ and $\eta(s) = F(s)\psi$, $\psi \in D$, this gives
+  $\|F(\tau)\psi - e^{-i\tau A/\hbar}\psi\| \le \varepsilon\tau\|\psi\|$ for $\tau \le \delta$; by
+  density for every $\psi \in E$. So $F$ is tangent to $e^{-i\tau A/\hbar}$, and by the local
+  Stone theorem $H_0 = A$.
+\end{itemize}
+Not formalized: a relative bound $C(\|B\psi\| + \|\psi\|)$ in place of $C\|\psi\|$, which
+time-dependent unbounded potentials need.
 
 \end{document}
