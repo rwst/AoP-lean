@@ -109,10 +109,22 @@ propagator'').
     \lean{not_isSelfAdjoint_forwardHamiltonian_sqrtPhase}). Hölder exponent $\tfrac12$ is the
     threshold: if $|\alpha(t_0+s) - \alpha(t_0)| = o(\sqrt s)$, the forward generator is
     $H_{\alpha(t_0)}$ (\lean{forwardHamiltonian_eq_momentum}). So what is missing is regularity
-    of the evolution in time. Open: a hypothesis on the evolution itself, without reference to
-    a family $H(t)$, under which DR-INFO + EVDIFF give a self-adjoint forward generator. Kato's
-    theorem gives the $\Leftarrow$ direction under its hypotheses (constant domain,
-    $t\mapsto H(t)\psi$ of class $C^1$); in the example the domain is not constant.
+    of the evolution in time. At a single time a hypothesis on the evolution alone is
+    formalized. The forward generator of any unitary evolution is symmetric, and it is
+    self-adjoint iff at $t_0$ the evolution is tangent to a one-parameter unitary group:
+    $U(t_0+\tau,t_0)\psi - e^{-i\tau H/\hbar}\psi = o(\tau)$ for a self-adjoint $H$ and every
+    $\psi$ in its domain, and then $H = H(t_0)$
+    (\lean{isSelfAdjoint_forwardHamiltonian_iff}). In the example no group is tangent at $0$
+    (\lean{not_exists_tangent_sqrtPhase}). Open: a condition on the regularity of $U$ in time
+    that gives the tangent group, rather than assuming it. The usual meaning of ``$U$ solves the
+    Cauchy problem'' is not enough: dense subspaces $Y_t$ with $U(t,s)Y_s \subseteq Y_t$ on
+    which $t \mapsto U(t,s)\psi$ is $C^1$ (Engel--Nagel, Def.~VI.9.2). In the example
+    $Y_0 = H^1_0(0,1)$ and $Y_t = D(H_{\alpha(t)})$ for $t > 0$ are such subspaces, by direct
+    computation (not formalized): for $\psi \in H^1_0$, $|\psi(1-u)| = o(\sqrt u)$ compensates the
+    derivative $\tfrac1{2\sqrt u}$ of the phase. Engel and Nagel note that no analogue of the
+    generation theorem is known for time-dependent problems (Sec.~VI.9.a). Kato's theorem gives
+    the $\Leftarrow$ direction under its hypotheses (constant domain, $t\mapsto H(t)\psi$ of
+    class $C^1$); in the example the domain is not constant.
   \end{enumerate}
   What holds without hypotheses on $H(t)$ is Howland's construction: a strongly continuous
   unitary propagator $U(t,s)$ gives the strongly continuous unitary group

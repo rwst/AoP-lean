@@ -835,7 +835,12 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
   from it.
 \item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/VaryingPhase.lean}, the example with a
   continuously varying boundary phase (last item below). Imports:
-  \lean{UnitaryEntropy.MomentumPropagator}.
+  \lean{ForPhyslib.QuantumMechanics.ForwardHamiltonian}, \lean{UnitaryEntropy.MomentumPropagator}.
+\item New file \lean{ForPhyslib/QuantumMechanics/ForwardHamiltonian.lean}: the forward
+  Hamiltonian of any unitary evolution, and a local Stone theorem (``A local Stone theorem''
+  below). Imports: \lean{ForPhyslib.QuantumMechanics.Stone}, to which
+  \lean{solvesSchrodinger_schrodingerPropagator} ($e^{-itH/\hbar}$ solves the Schr\"odinger
+  equation for $H$) and \lean{schrodingerPropagator_zero} were added.
 \item New file \lean{ForPhyslib/QuantumMechanics/Howland.lean}: Howland's extended space, the
   positive counterpart (``Howland's generator'' below). Imports:
   \lean{ForPhyslib.QuantumMechanics.Stone},
@@ -899,6 +904,13 @@ Forward derivative, $\alpha(t) = \alpha_0 + \sqrt t$: at $0$ the forward domain 
   and $H_0$ is not self-adjoint; at $t_0 \ne 0$, $H_0 = H_{\alpha(t_0)}$ &
   \lean{forwardDomain_sqrtPhase}, \lean{forwardHamiltonian_sqrtPhase},
   \lean{not_isSelfAdjoint_forwardHamiltonian_sqrtPhase}, \lean{sqrtPhase_counterexample} \\
+Forward derivative, any unitary evolution: the forward Hamiltonian is symmetric, and it is
+  self-adjoint iff the evolution is tangent at $t_0$ to a one-parameter unitary group, which is
+  then $e^{-i\tau H_0/\hbar}$ &
+  \lean{QuantumMechanics.forwardHamiltonian}, \lean{forwardHamiltonian_isSymmetric},
+  \lean{forwardHamiltonian_eq_of_isLittleO}, \lean{isSelfAdjoint_forwardHamiltonian_iff} \\
+Forward derivative, $\alpha(t) = \alpha_0 + \sqrt t$: at $0$ no one-parameter unitary group is
+  tangent to the evolution & \lean{not_exists_tangent_sqrtPhase} \\
 Howland: a strongly continuous unitary propagator $U(t,s)$ gives a strongly continuous unitary
   group $W$ on $L^2(\mathbb{R};E)$ with self-adjoint generator $K$ &
   \lean{UnitaryPropagator}, \lean{UnitaryPropagator.howlandGroup},
@@ -1086,5 +1098,30 @@ DR-INFO + EVDIFF provide such a propagator, $U(t,s) = U(t)U(s)^\dagger$
 (\lean{TwoParameter.exists_propagator}); this instance is not formalized. That $K$ acts as
 $-i\hbar\,\partial_t + H(t)$ on a core, for a given family $H(t)$, is not formalized; it needs
 hypotheses on $H(t)$ of Kato type.
+
+\paragraph{A local Stone theorem.} At a single time the forward Hamiltonian is characterized by
+the evolution alone. Let $F(\tau)$, $\tau \ge 0$, be unitaries with $F(0) = I$, for instance
+$F(\tau) = U(t_0+\tau,t_0)$. Its forward Hamiltonian is $H_0\psi = i\hbar\,\partial_+F(\tau)\psi$
+at $\tau = 0$, on the vectors where the right derivative exists
+(\lean{QuantumMechanics.forwardHamiltonian}; the one of \lean{VaryingPhase.lean} is the case
+$\hbar = 1$, \lean{forwardHamiltonian_eq_quantumMechanics}).
+\begin{itemize}
+\item $H_0$ is symmetric (\lean{forwardHamiltonian_isSymmetric}): the right derivative of
+  $\langle F(\tau)\psi, F(\tau)\varphi\rangle = \langle\psi,\varphi\rangle$ at $0$ is
+  $\langle\psi',\varphi\rangle + \langle\psi,\varphi'\rangle = 0$.
+\item $H_0$ is self-adjoint iff $F$ is tangent at $0$ to a one-parameter unitary group: there is a
+  self-adjoint $H$ with $F(\tau)\psi - e^{-i\tau H/\hbar}\psi = o(\tau)$ as $\tau \to 0^+$ for
+  every $\psi$ in the domain of $H$ (\lean{isSelfAdjoint_forwardHamiltonian_iff}). Then $H = H_0$
+  (\lean{forwardHamiltonian_eq_of_isLittleO}): $e^{-i\tau H/\hbar}\psi$ has the right derivative
+  $(i\hbar)^{-1}H\psi$ on the domain of $H$ (\lean{solvesSchrodinger_schrodingerPropagator}), so
+  $H \subseteq H_0$, and a symmetric extension of a self-adjoint operator is the operator itself,
+  $H \subseteq H_0 \subseteq H_0^\dagger \subseteq H^\dagger = H$
+  (\lean{IsSelfAdjoint.eq_of_le_of_isSymmetric}). Conversely, take $H = H_0$.
+\item For $\alpha(t) = \alpha_0 + \sqrt t$, no one-parameter unitary group is tangent to the
+  evolution at $0$ (\lean{not_exists_tangent_sqrtPhase}), since $H_0$ is not self-adjoint there.
+\end{itemize}
+The criterion is a hypothesis on the evolution, not on a family $H(t)$, but it asks for the
+tangent group to be given; a condition on the regularity of $U$ in time that implies it is not
+known.
 
 \end{document}

@@ -118,6 +118,33 @@ def schrodingerPropagator {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E} (hH
   (WOTSpectralMeasure.expIntegral (cayleyRealSpectralMeasure _ (isSelfAdjoint_neg_inv_smul hħ hH))
     t).toCLM
 
+omit [CompleteSpace E] in
+/-- `(iħ)⁻¹ H = i T` on the domain, for `T = -ħ⁻¹ H`. -/
+lemma inv_I_mul_smul_apply {ħ : ℝ} (hħ : ħ ≠ 0) (H : E →ₗ.[ℂ] E) (y : E) (hy : y ∈ H.domain) :
+    (Complex.I * ħ)⁻¹ • H ⟨y, hy⟩ =
+      Complex.I • ((((-ħ⁻¹ : ℝ) : ℂ) • H : E →ₗ.[ℂ] E)) ⟨y, hy⟩ := by
+  have : (ħ : ℂ) ≠ 0 := by exact_mod_cast hħ
+  rw [LinearPMap.smul_apply, smul_smul]
+  congr 1
+  rw [Complex.ofReal_neg, Complex.ofReal_inv, mul_inv, Complex.inv_I]
+  field_simp
+
+/-- `e^{-itH/ħ}` solves the Schrödinger equation for `H`. -/
+theorem solvesSchrodinger_schrodingerPropagator {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E}
+    (hH : IsSelfAdjoint H) : SolvesSchrodinger ħ H (schrodingerPropagator hħ hH) := by
+  set D := unboundedSpectralTheorem _ (isSelfAdjoint_neg_inv_smul hħ hH)
+  intro ψ t
+  have hmem := D.expUnitaryGroup_translate_mem ψ t
+  refine ⟨hmem, ?_⟩
+  have h := hasDerivAt_expUnitaryGroup_apply D ψ t
+  rw [← inv_I_mul_smul_apply hħ H _ hmem] at h
+  exact h
+
+lemma schrodingerPropagator_zero {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H) :
+    schrodingerPropagator hħ hH 0 = 1 := by
+  rw [schrodingerPropagator, WOTSpectralMeasure.expIntegral_zero]
+  rfl
+
 /-- **Uniqueness of the propagator.** A family of bounded operators with `U 0 = 1` that solves the
 Schrödinger equation for a self-adjoint `H` is `e^{-itH/ħ}`. -/
 theorem SolvesSchrodinger.eq_schrodingerPropagator {ħ : ℝ} {H : E →ₗ.[ℂ] E} {U : ℝ → E →L[ℂ] E}
@@ -125,14 +152,7 @@ theorem SolvesSchrodinger.eq_schrodingerPropagator {ħ : ℝ} {H : E →ₗ.[ℂ
     U t = schrodingerPropagator hħ hH t := by
   have hT := isSelfAdjoint_neg_inv_smul hħ hH
   set D := unboundedSpectralTheorem _ hT
-  -- `(iħ)⁻¹ H = i T` on the domain, for `T = -ħ⁻¹ H`.
-  have hHT : ∀ (y : E) (hy : y ∈ H.domain), (Complex.I * ħ)⁻¹ • H ⟨y, hy⟩ =
-      Complex.I • ((((-ħ⁻¹ : ℝ) : ℂ) • H : E →ₗ.[ℂ] E)) ⟨y, hy⟩ := fun y hy => by
-    have : (ħ : ℂ) ≠ 0 := by exact_mod_cast hħ
-    rw [LinearPMap.smul_apply, smul_smul]
-    congr 1
-    rw [Complex.ofReal_neg, Complex.ofReal_inv, mul_inv, Complex.inv_I]
-    field_simp
+  have hHT := inv_I_mul_smul_apply hħ H
   have hsym := LinearPMap.IsSelfAdjoint.isSymmetric hT
   have heq_dom : ∀ (x : H.domain) (t : ℝ), U t x = D.expUnitaryGroup t (x : E) := by
     intro x t

@@ -5,6 +5,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
+public import ForPhyslib.QuantumMechanics.ForwardHamiltonian
 public import UnitaryEntropy.MomentumPropagator
 
 /-!
@@ -58,6 +59,8 @@ self-adjoint `H(t₀)`, even from the forward derivative alone.
 * `forwardDomain_sqrtPhase`, `forwardHamiltonian_sqrtPhase`,
   `not_isSelfAdjoint_forwardHamiltonian_sqrtPhase`: at `t₀ = 0`, `D = H¹₀` and `H₀` is the minimal
   momentum, not self-adjoint.
+* `not_exists_tangent_sqrtPhase`: so at `t₀ = 0` the evolution is not tangent to any
+  one-parameter unitary group (`QuantumMechanics.isSelfAdjoint_forwardHamiltonian_iff`).
 * `sqrtPhase_counterexample`: everything together.
 -/
 
@@ -1026,6 +1029,33 @@ theorem not_isSelfAdjoint_forwardHamiltonian_sqrtPhase (α₀ : ℝ) :
     ¬ IsSelfAdjoint (forwardHamiltonian (sqrtPhase α₀) 0) := by
   rw [forwardHamiltonian_sqrtPhase]
   exact not_isSelfAdjoint_switchedHamiltonian one_ne_zero (exp_ne_exp_add_pi α₀)
+
+/-- The forward Hamiltonian here is `QuantumMechanics.forwardHamiltonian` of `τ ↦ U(t₀ + τ, t₀)`,
+with `ħ = 1`. -/
+lemma forwardHamiltonian_eq_quantumMechanics (t₀ : ℝ) :
+    forwardHamiltonian α t₀ =
+      QuantumMechanics.forwardHamiltonian (fun τ => V α (t₀ + τ) t₀) 1 := by
+  refine LinearPMap.ext rfl fun ψ _ _ => ?_
+  rw [forwardHamiltonian_apply, QuantumMechanics.forwardHamiltonian_apply, Complex.ofReal_one,
+    mul_one]
+  rfl
+
+/-- **No tangent unitary group at `0`.** No self-adjoint `H` has `U(τ, 0) ψ - e^{-iτH} ψ = o(τ)`
+as `τ → 0⁺` for every `ψ` in its domain: at `0` the evolution is not tangent to a
+time-independent one. -/
+theorem not_exists_tangent_sqrtPhase (α₀ : ℝ) :
+    ¬ ∃ (H : L² →ₗ.[ℂ] L²) (hH : IsSelfAdjoint H), ∀ ψ ∈ H.domain,
+      (fun τ => V (sqrtPhase α₀) τ 0 ψ - QuantumMechanics.schrodingerPropagator one_ne_zero hH τ ψ)
+        =o[𝓝[≥] 0] fun τ => τ := by
+  have hα : Measurable (sqrtPhase α₀) := (continuous_sqrtPhase α₀).measurable
+  have h0 : V (sqrtPhase α₀) (0 + 0) 0 = 1 := by
+    rw [add_zero]
+    exact phasePropagator_self hα 0
+  have h := (QuantumMechanics.isSelfAdjoint_forwardHamiltonian_iff
+    (F := fun τ => V (sqrtPhase α₀) (0 + τ) 0) one_ne_zero h0 fun τ _ =>
+      ContinuousLinearMap.inner_map_map_of_mem_unitary (phasePropagator_mem_unitary hα _ _)).not
+  rw [← forwardHamiltonian_eq_quantumMechanics] at h
+  simpa only [zero_add] using h.mp (not_isSelfAdjoint_forwardHamiltonian_sqrtPhase α₀)
 
 /-- **Unbounded time-dependent Hamiltonians, forward derivative: a continuous `H(t) = H_{α(t)}`
 whose forward Hamiltonian is not self-adjoint.** For `α(t) = α₀ + √t`, the propagator `U(t₁, t₀)`
