@@ -1,0 +1,22 @@
+{
+  "challenge_module": "ChallengeHilbertUnphysicality",
+  "solution_module": "SolutionHilbertUnphysicality",
+  "theorem_names": [
+    "HilbertUnphysicality.not_continuous_of_unbounded",
+    "HilbertUnphysicality.not_isSymmetric_of_unbounded",
+    "HilbertUnphysicality.expN_not_continuousWithinAt",
+    "HilbertUnphysicality.isSelfAdjoint_numberOp",
+    "HilbertUnphysicality.exists_lt_norm_numberOp",
+    "HilbertUnphysicality.surjective_frameChange",
+    "HilbertUnphysicality.cauchyDensity_frameChange_mul_deriv",
+    "HilbertUnphysicality.integral_gaussDensity",
+    "HilbertUnphysicality.integral_cauchyDensity",
+    "HilbertUnphysicality.L2_euclidean_iso",
+    "HilbertUnphysicality.theorem5"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

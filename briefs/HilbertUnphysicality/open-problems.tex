@@ -60,23 +60,12 @@ precise first.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \blocker{formalization gap}
-  \textbf{Theorem~5 itself.} The revised brief makes the conditions precise enough (see the
-  last section), but Theorem~5 is not stated in Lean. Only the mathematics behind its three
-  parts is checked. For [B]STDIST, that the unitary $L^2(\mathbb{R}^n) \to L^2(\mathbb{R}^m)$
-  ``induces bijections between rays, density operators, and self-adjoint operators'' and
-  preserves the Born rule and the entropy is not formalized. (Brief, Sec.~4; Log, ``Setting''.)
-\item \blocker{formalization gap}
-  \textbf{The unitary between the two frames.} Proposition~3 now gives the unitary
-  $(U\psi)(y) = \psi(g(y))\sqrt{g'(y)}$, its inverse $V$, the change of variables, and the
-  domain of $UXU^{-1}$. None of this is formalized. Only the densities $|\psi|^2$, $|\phi|^2$,
-  their relation $|\phi(f(x))|^2 f'(x) = |\psi(x)|^2$, and the strict monotonicity of $f$ are
-  checked. That $f$ is onto $\mathbb{R}$ is not. (Brief, Sec.~2, Proposition~3; Log,
-  ``Differences''.)
-\item \textbf{The number operator.} That $N$ with domain
-  $\{\sum a_n e_n : \sum n^2|a_n|^2 < \infty\}$ is unbounded and self-adjoint is not
-  formalized. Only the discontinuity of its expectation at $e_0$ is checked. (Brief, Sec.~2,
-  Proposition~2; Log, ``Differences''.)
+\item \textbf{The position operators.} The unitary $U$ between the two frames, its inverse,
+  and the common domain $\{\psi : x\psi \in L^2\}$ of $X$ and $Y$ are formalized, and
+  $\psi \in \mathcal{D}(X)$, $U\psi = \phi$, $U\psi \notin \mathcal{D}(Y)$ are checked. The
+  position operators themselves, their self-adjointness, and the operator $UXU^{-1}$ of
+  multiplication by $g(y)$ with domain $U\,\mathcal{D}(X)$ are not formalized. (Brief,
+  Sec.~2, Proposition~3; Log, ``Differences''.)
 \item \textbf{Point-wise values.} That $\psi(x)$, and so $|\psi(x)|^2$, is not defined at each
   point of a vector of $L^2$ is not formalized. (Brief, Sec.~5; Log, ``Differences''.)
 \item \textbf{Commutator relations.} That $[X,P]/(i\hbar) = I$ cannot hold on the whole of
@@ -93,11 +82,14 @@ were informal, is resolved. The revised brief adds a minimum form to each condit
 and reads the inconsistency as the failure of a condition for one particular system
 (Sec.~4). The previous open problem on the expectations of a general unbounded observable is
 no longer raised: the [B]COBS part now rests on the number operator alone (Proposition~2).
+The formalization gap ``Theorem~5 itself'' is closed: Theorem~5 is stated and proved in Lean
+as \lean{theorem5}, in the readings of the next section. No open problem now blocks
+verification.
 
 \section*{Precise readings}
 
 The revised brief confirms the readings proposed for its previous version, with the changes
-below. They are recorded here as the target for stating Theorem~5 in Lean.
+below. They are the readings in which Theorem~5 is stated in Lean (\lean{theorem5}).
 
 \paragraph{Inconsistency.} ``QSTO:H is inconsistent with C'' means: there is a quantum system
 to which QSTO:H applies whose QSTO:H model fails condition C. The systems are the
@@ -116,8 +108,11 @@ for [B]WDQ, and two systems with different numbers of continuous degrees of free
   $x \in \mathcal{D}(N)\setminus\{0\}$.
 \item [B]COBS, minimum form: $E_N$ is continuous on $\mathcal{D}(N)\setminus\{0\}$ with the
   subspace topology.
-\item Claim to be proved: $E_N$ is not continuous at $e_0$ (Proposition~2;
-  \lean{numberExp_not_continuousAt}, already checked).
+\item Claim to be proved: $E_N$ is not continuous at $e_0$ within
+  $\mathcal{D}(N)\setminus\{0\}$ (Proposition~2; \lean{expN_not_continuousWithinAt} and
+  \lean{not_continuousOn_expN}, checked). That $N$ is self-adjoint on $\mathcal{D}(N)$
+  and that $E_N(x) = \braket{x|Nx}/\|x\|^2$ there are checked too
+  (\lean{isSelfAdjoint_numberOp}, \lean{coe_domain_numberOp}, \lean{expN_eq_inner}).
 \item Not claimed by the brief, but true: for every densely defined, symmetric, unbounded $O$,
   $\psi \mapsto \langle O\rangle_\psi$ is discontinuous at every point of
   $\mathcal{D}(O)\setminus\{0\}$.
@@ -138,8 +133,10 @@ for [B]WDQ, and two systems with different numbers of continuous degrees of free
   $\psi \in \mathcal{D}(X)$ implies $U\psi \in \mathcal{D}(Y)$.
 \item Claim to be proved: for $f(x) = \tan(\tfrac{\pi}{2}\operatorname{erf}(x))$ and
   $\psi = (e^{-x^2}/\sqrt\pi)^{1/2}$, $\psi \in \mathcal{D}(X)$ but
-  $U\psi = (1/(\pi(1+y^2)))^{1/2} \notin \mathcal{D}(Y)$ (Proposition~3; open item~2 of the
-  previous section).
+  $U\psi = (1/(\pi(1+y^2)))^{1/2} \notin \mathcal{D}(Y)$ (Proposition~3;
+  \lean{gaussState_mem_positionDomain}, \lean{frameUnitary_gaussState},
+  \lean{frameUnitary_gaussState_not_mem} and \lean{not_forall_frameUnitary_mem_positionDomain},
+  checked).
 \end{itemize}
 
 \paragraph{[B]STDIST.}
@@ -156,8 +153,8 @@ for [B]WDQ, and two systems with different numbers of continuous degrees of free
 \item [B]STDIST, minimum form: for $n \ne m$ there is no unitary
   $\mathcal{H}_n \to \mathcal{H}_m$.
 \item Claim to be proved: for all $n, m \ge 1$ there is one (Proposition~4;
-  \lean{L2_euclidean_iso}, already checked), and it carries the QSTO:H structure (open
-  item~1 of the previous section).
+  \lean{L2_euclidean_iso}), and it carries the QSTO:H structure (\lean{carriesQSTO},
+  \lean{exists_carriesQSTO}). Both are checked.
 \end{itemize}
 
 \end{document}

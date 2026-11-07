@@ -154,6 +154,15 @@ srcDir = "briefs/EntropyTopology"
 name = "HilbertUnphysicality"
 srcDir = "briefs/HilbertUnphysicality"
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeHilbertUnphysicality"
+srcDir = "briefs/HilbertUnphysicality/comparator"
+
+[[lean_lib]]
+name = "SolutionHilbertUnphysicality"
+srcDir = "briefs/HilbertUnphysicality/comparator"
+
 # Technical brief: equivalence of sup-norm, L1, and L2 seminorms on the Schwartz space.
 [[lean_lib]]
 name = "SchwartzNorms"

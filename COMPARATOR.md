@@ -43,6 +43,7 @@ be unique across the project.
 | Directional vectors vs quantum state vectors | eqs. (1)–(3), linearity in terms of probability, half a turn, states as rays, the outcomes as opposite directions, completeness of the forms (1) and (3) | 13 theorems, see `theorems.txt` | 83 lines, 4 KiB |
 | Superpositions correspond to multiple decompositions | Theorem 1 and its two directions (eqs. 3 and 4), eq. (2), the support argument, mixtures of independent states are not pure | 6 theorems, see `theorems.txt` | 73 lines, 4 KiB |
 | Inconsistent convergence in Hilbert space | eqs. (2)–(5), the convergence of `eʲ` in `ℓ²`, the eigenstates `\|j⟩` alone have no limit | 7 theorems, see `theorems.txt` | 51 lines, 2 KiB |
+| Unphysicality of Hilbert spaces for quantum mechanics | Propositions 1–4 (an unbounded map is not continuous, Hellinger–Toeplitz, `N` self-adjoint and unbounded with `E_N` discontinuous at `\|0⟩`, the frame change onto `ℝ` and its density identity, both packets normalized, `L²(ℝⁿ⁺¹) ≅ L²(ℝᵐ⁺¹)`), Theorem 5 ([B]COBS, [B]WDQ, [B]STDIST in their minimum forms) | 11 theorems, see `theorems.txt` | 474 lines, 24 KiB |
 | Projective measurements are equilibration processes | Theorem 1 (EQ-LIND, EQ-HS, EQ-KL ⇔ EQ-MEAS, eqs. 2–12) and eq. (13), in finite dimension and in any dimension | 10 theorems, see `theorems.txt` | 704 lines, 37 KiB |
 | Multiple equivalent characterizations of the Schrödinger equation | Proposition 1, also for maps preserving only equal mixtures, and the remark after it (injective suffices in finite dimension), Theorem 3 with each of its implications, in finite dimension and in any dimension, and in finite dimension as the brief states it (two-parameter evolution, DR-SCEQ with H(t)) | 25 theorems, see `theorems.txt` | 454 lines, 24 KiB |
 | Equivalence of sup-norm, L¹, and L² seminorms on the Schwartz space | Steps 1–3 (eqs. 6, 7 and 9, with the hypothesis eq. 9 needs), Theorem 5 (the finiteness conditions, the space (4) and its sup seminorms as Mathlib's, the three seminorm families generate one topology), eq. (10) | 12 theorems, see `theorems.txt` | 269 lines, 14 KiB |
@@ -52,9 +53,9 @@ be unique across the project.
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
-InconsistentConvergence, NonLinearQuantum, ProjectiveMeasurement, QuantumVectorSpaces,
-SchroedingerEvolution, SchwartzMomentProblem, SchwartzNorms, SuperpositionAndLinearity,
-SuperpositionAndMultipleMixtures and UnitaryEntropy.
+HilbertUnphysicality, InconsistentConvergence, NonLinearQuantum, ProjectiveMeasurement,
+QuantumVectorSpaces, SchroedingerEvolution, SchwartzMomentProblem, SchwartzNorms,
+SuperpositionAndLinearity, SuperpositionAndMultipleMixtures and UnitaryEntropy.
 
 ## Running it
 
@@ -243,5 +244,16 @@ rejected with `Const does not match between challenge and target 'UnitaryEntropy
 dropping the hypothesis `hħ` of the unbounded `drSceq_iff_drInfo_and_evDiff` with `Challenge and
 solution theorem statement do not match: 'UnitaryEntropy.drSceq_iff_drInfo_and_evDiff'`. Each
 control ran with a configuration naming only the theorem it touches.
+
+On the HilbertUnphysicality lane, changing `x ψ` to `x² ψ` in the challenge's `positionDomain` is
+rejected with `Const does not match between challenge and target
+'HilbertUnphysicality.positionDomain'`, changing the entries of `numberOp` from `n` to `n + 1`
+with `Const does not match between challenge and target 'HilbertUnphysicality.numberOp'`, and
+weakening `D(N) ∖ {0}` to `D(N)` in `theorem5` with `Challenge and solution theorem statement do
+not match: 'HilbertUnphysicality.theorem5'`. Each control ran with a configuration naming
+`theorem5` and the certified theorems in its closure, `surjective_frameChange` (through
+`frameIso`) and `integral_gaussDensity` (through `gaussState`): a certified theorem has a `sorry`
+proof in the challenge, so a configuration that omits it while keeping a theorem whose closure
+reaches it is rejected with `Const does not match` for that theorem, whatever the change.
 
 Re-run a control after any change to the generator.

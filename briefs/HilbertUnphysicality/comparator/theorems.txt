@@ -1,0 +1,16 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+HilbertUnphysicality.not_continuous_of_unbounded  # Proposition 1: an unbounded map is not continuous
+HilbertUnphysicality.not_isSymmetric_of_unbounded  # Proposition 1: Hellinger-Toeplitz, D(A) /= H
+HilbertUnphysicality.expN_not_continuousWithinAt  # Proposition 2: E_N is discontinuous at |0>
+HilbertUnphysicality.isSelfAdjoint_numberOp  # Proposition 2: N is self-adjoint
+HilbertUnphysicality.exists_lt_norm_numberOp  # Proposition 2: N is unbounded
+HilbertUnphysicality.surjective_frameChange  # Proposition 3: y = f(x) is onto R
+HilbertUnphysicality.cauchyDensity_frameChange_mul_deriv  # Proposition 3: the density identity
+HilbertUnphysicality.integral_gaussDensity  # Proposition 3: psi is normalized
+HilbertUnphysicality.integral_cauchyDensity  # Proposition 3: phi is normalized
+HilbertUnphysicality.L2_euclidean_iso  # Proposition 4: L^2(R^(n+1)) and L^2(R^(m+1)) are isomorphic
+HilbertUnphysicality.theorem5  # Theorem 5, the three conditions in their minimum forms

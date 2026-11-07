@@ -54,17 +54,25 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/HilbertUnphysicality/HilbertUnphysicality.lean}
 \item Library: \lean{HilbertUnphysicality}
-\item Imports: \lean{InconsistentConvergence} and three new \lean{ForMathlib} files:\newline
+\item Imports: \lean{InconsistentConvergence}, one new \lean{ForPhyslib} file:\newline
+  \lean{ForPhyslib/QuantumMechanics/UnitaryEquivalence.lean} (a unitary carries the quantum
+  model),\newline
+  and five new \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/l2Diagonal.lean} (diagonal operators on
+  $\ell^2$),\newline
   \lean{ForMathlib/Analysis/SpecialFunctions/Gaussian/Erf.lean} (the error function),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2Space.lean} (separable Hilbert spaces are
   $\ell^2(\mathbb{N})$),\newline
-  \lean{ForMathlib/MeasureTheory/Function/L2Space.lean} ($L^2$ is infinite-dimensional)
+  \lean{ForMathlib/MeasureTheory/Function/L2Space.lean} ($L^2$ is infinite-dimensional),\newline
+  \lean{ForMathlib/MeasureTheory/Function/LpSpace/ChangeOfVariables.lean} (the unitary of a
+  change of variables on $L^2(\mathbb{R})$)
 \end{itemize}
 
 \paragraph{Setting.} Theorem~5 says that the Hilbert-space formulation QSTO:H is inconsistent
 with three physical conditions. The brief proves four mathematical propositions (Sec.~2) and
 then argues each part of Theorem~5 from one of them (Sec.~4). The propositions are checked in
-Lean; Theorem~5 is checked by reading, against them.
+Lean, and Theorem~5 is stated and proved as \lean{theorem5}, with each condition in its
+minimum form (see the open problems, ``Precise readings'').
 
 \paragraph{Results.}
 \begin{center}
@@ -77,13 +85,22 @@ $\mathcal{D}(A) \ne \mathcal{H}$ (Hellinger--Toeplitz) & \lean{bounded_of_isSymm
   \lean{not_isSymmetric_of_unbounded} \\
 $A$ is not continuous on $\mathcal{D}(A)$ & \lean{not_continuous_of_unbounded} \\
 \multicolumn{2}{@{}l}{\emph{Proposition~2}} \\
-$x_j \to e_0$, $E_N(x_j) = 1$, $E_N(e_0) = 0$ & \lean{numberExp_not_continuousAt} (from the
+$N$ with domain $\mathcal{D}(N)$ is self-adjoint & \lean{numberOp}, \lean{coe_domain_numberOp},
+  \lean{isSelfAdjoint_numberOp} (from \lean{lp.isSelfAdjoint_diagonal}) \\
+$N$ is unbounded, so not continuous on $\mathcal{D}(N)$ & \lean{exists_lt_norm_numberOp},
+  \lean{not_continuous_numberOp} \\
+$\mathcal{D}(N)$, $E_N(x) = \braket{x|Nx}/\|x\|^2$ & \lean{numberDomain}, \lean{expN},
+  \lean{expN_eq_inner} \\
+$x_j \to e_0$ in $\mathcal{D}(N)\setminus\{0\}$, $E_N(x_j) = 1$, $E_N(e_0) = 0$ &
+  \lean{expN_not_continuousWithinAt}, \lean{not_continuousOn_expN} (sequence from the
   inconsistent-convergence brief) \\
 \multicolumn{2}{@{}l}{\emph{Proposition~3}} \\
 $\operatorname{erf}$, $|\operatorname{erf}| < 1$, $\operatorname{erf} \to \pm 1$ & \lean{Real.erf},
   \lean{Real.abs_erf_lt_one}, \lean{Real.tendsto_erf_atTop} \\
 $f(x) = \tan(\tfrac{\pi}{2}\operatorname{erf} x)$ is increasing & \lean{frameChange},
   \lean{strictMono_frameChange} \\
+$f$ is a bijection of $\mathbb{R}$, $g = f^{-1}$, $g' > 0$ & \lean{surjective_frameChange},
+  \lean{frameIso}, \lean{hasDerivAt_frameIso_symm} \\
 $U\psi = \phi$, at the level of densities & \lean{cauchyDensity_frameChange_mul_deriv}:
   $|\phi(f(x))|^2\, f'(x) = |\psi(x)|^2$ \\
 the same, integrated & \lean{arctan_frameChange}: $\arctan(f(x))/\pi = \operatorname{erf}(x)/2$ \\
@@ -91,12 +108,38 @@ $\psi$ normalized, $\psi \in \mathcal{D}(X)$ & \lean{integral_gaussDensity},
   \lean{integrable_sq_mul_gaussDensity} \\
 $\phi$ normalized, $\phi \notin \mathcal{D}(Y)$ & \lean{integral_cauchyDensity},
   \lean{not_integrable_sq_mul_cauchyDensity} \\
+the unitary $U$, $(U\psi)(y) = \psi(g(y))\sqrt{g'(y)}$ & \lean{frameUnitary}
+  (from \lean{Lp.compDiffeo}), \lean{coeFn_frameUnitary} \\
+$\mathcal{D}(X) = \mathcal{D}(Y) = \{\psi : x\psi \in L^2\}$ & \lean{positionDomain} \\
+$\psi \in \mathcal{D}(X)$, $U\psi = \phi$, $U\psi \notin \mathcal{D}(Y)$ &
+  \lean{gaussState_mem_positionDomain}, \lean{frameUnitary_gaussState},
+  \lean{frameUnitary_gaussState_not_mem} \\
+the minimum form of [B]WDQ fails & \lean{not_forall_frameUnitary_mem_positionDomain} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
 \multicolumn{2}{@{}l}{\emph{Proposition~4}} \\
 separable infinite-dimensional Hilbert spaces are isomorphic &
   \lean{nonempty_linearIsometryEquiv_of_separable} \\
 $L^2(\mathbb{R}^{n})$ is separable and infinite-dimensional &
   \lean{L2.separableSpace_euclidean}, \lean{L2.not_finiteDimensional_euclidean} \\
 $L^2(\mathbb{R}^{n+1}) \cong L^2(\mathbb{R}^{m+1})$ & \lean{L2_euclidean_iso} \\
+\multicolumn{2}{@{}l}{\emph{Theorem~5, [B]STDIST}} \\
+a unitary induces bijections between rays, density operators, self-adjoint operators &
+  \lean{mapRays}, \lean{isDensityOperator_conjStarAlgEquiv_iff},
+  \lean{bijective_conjLinearPMap}, \lean{isSelfAdjoint_conjLinearPMap_iff} \\
+and preserves the Born rule and the entropy & \lean{born_map},
+  \lean{IsDensityOperator.vonNeumannEntropy_conjStarAlgEquiv} \\
+$L^2(\mathbb{R}^{n+1})$ and $L^2(\mathbb{R}^{m+1})$ carry the same QSTO:H model &
+  \lean{carriesQSTO}, \lean{exists_carriesQSTO} \\
+\multicolumn{2}{@{}l}{\emph{Theorem~5}} \\
+QSTO:H is inconsistent with [B]COBS, [B]WDQ and [B]STDIST & \lean{theorem5} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -108,24 +151,47 @@ $L^2(\mathbb{R}^{n+1}) \cong L^2(\mathbb{R}^{m+1})$ & \lean{L2_euclidean_iso} \\
   space, which includes $\mathcal{D}(A)$ with the norm inherited from $\mathcal{H}$.
   Hellinger--Toeplitz is proved for an everywhere-defined symmetric map; self-adjointness is
   not needed.
-\item \emph{Proposition~2.} The number operator is not formalized as an unbounded
-  self-adjoint operator. Its expectation is \lean{numberExp}~$x = \sum_n n\,|x_n|^2$ on all of
-  $\ell^2$ (the sum is $0$ where it diverges), which agrees with $E_N$ on normalized vectors of
-  $\mathcal{D}(N)$. The sequence $x_j$ is the brief's.
-\item \emph{Proposition~3.} The wave functions are handled through their densities
-  $|\psi|^2 = e^{-x^2}/\sqrt\pi$ and $|\phi|^2 = 1/(\pi(1+y^2))$. ``In the domain of the
-  position operator'' is read as $\int x^2|\psi|^2 < \infty$, i.e.\ $x\psi \in L^2$. That $f$ is
-  strictly increasing is proved; that it is smooth and onto $\mathbb{R}$ is not. The unitary
-  $U$, its inverse $V$, the change of variables, and the domain of $UXU^{-1}$ are not
-  formalized. Mathlib has no error function; \lean{Real.erf} is defined in \lean{ForMathlib}.
+\item \emph{Proposition~2.} The number operator \lean{numberOp} is the diagonal operator
+  with entries $n$ on $\ell^2(\mathbb{N})$, on its maximal domain, as a partially defined
+  operator (\lean{LinearPMap}); its domain is \lean{numberDomain}
+  $= \{x : \sum_n n^2|x_n|^2 < \infty\}$. Self-adjointness is proved for every diagonal
+  operator with real entries (\lean{lp.diagonal}, in \lean{ForMathlib}). The expectation
+  \lean{expN}~$x = \sum_n n\,|x_n|^2 / \|x\|^2$ is defined on all of $\ell^2$ and equals
+  $\operatorname{Re}\braket{x|Nx}/\|x\|^2$ on $\mathcal{D}(N)$ (\lean{expN_eq_inner}).
+  Discontinuity is proved within $\mathcal{D}(N)\setminus\{0\}$ with the subspace topology,
+  as in the minimum form of [B]COBS. The sequence $x_j$ is the brief's.
+\item \emph{Proposition~3.} The wave functions are $\psi = (e^{-x^2}/\sqrt\pi)^{1/2}$
+  (\lean{gaussState}) and $\phi = (1/(\pi(1+y^2)))^{1/2}$, as elements of
+  $L^2(\mathbb{R})$. Both frames use the same space $L^2(\mathbb{R})$ with Lebesgue measure.
+  The position operators are represented by their common maximal domain
+  \lean{positionDomain} $= \{\psi : x\psi \in L^2\}$; the operators themselves, and their
+  self-adjointness, are not formalized. That $f$ is strictly increasing and onto
+  $\mathbb{R}$, and that $g = f^{-1}$ has $g' > 0$, are proved; smoothness is not, only
+  differentiability, which is all the unitary needs. The unitary $U$ is
+  \lean{Lp.compDiffeo}, proved unitary for any bijection $g$ of $\mathbb{R}$ that is
+  differentiable with a differentiable inverse, with weight $\sqrt{|g'|}$; its inverse $V$ is
+  the same construction for $g^{-1}$. The operator $UXU^{-1}$ and its domain are not
+  formalized. Mathlib has no error function; \lean{Real.erf} is defined in
+  \lean{ForMathlib}.
 \item \emph{Proposition~4.} The classification of separable infinite-dimensional Hilbert spaces
   is new in \lean{ForMathlib}. The positive integers $n, m$ appear as $n + 1, m + 1$.
-\item \emph{Theorem~5.} Not stated in Lean; checked by reading. Each part is a direct
-  application of a proposition, for one particular system: the oscillator (Proposition~2),
-  one spatial degree of freedom (Proposition~3), and two systems with different numbers of
-  continuous degrees of freedom (Proposition~4). That a unitary carries rays, density
-  operators, self-adjoint operators, the Born rule and the entropy is not formalized. Neither
-  are the closing remarks on classical cutoffs and on Schwartz spaces.
+\item \emph{Theorem~5.} Stated as \lean{theorem5}, a conjunction of three parts, one per
+  condition, each for one particular system: the oscillator (Proposition~2), one spatial
+  degree of freedom (Proposition~3), and any two numbers $n+1$, $m+1$ of continuous degrees
+  of freedom (Proposition~4). ``Inconsistent'' is read as the failure of the minimum form of
+  the condition for that system. The [B]COBS part states that $N$ is self-adjoint on
+  $\mathcal{D}(N)$, that $E_N(x) = \operatorname{Re}\braket{x|Nx}/\|x\|^2$ there, and that
+  $E_N$ is not continuous on $\mathcal{D}(N)\setminus\{0\}$. The [B]WDQ part states
+  $\psi \in \mathcal{D}(X)$, $U\psi = \phi$ a.e.\ and $U\psi \notin \mathcal{D}(Y)$, for the
+  specific unitary $U$ of the change of frame (for an arbitrary unitary the statement would
+  be trivial). The [B]STDIST part states that a unitary $L^2(\mathbb{R}^{n+1}) \to
+  L^2(\mathbb{R}^{m+1})$ exists and carries the QSTO:H model. For [B]STDIST, that a
+  unitary carries rays, density operators, self-adjoint operators, the Born rule and the
+  entropy is proved for any unitary between complex Hilbert spaces (\lean{carriesQSTO}).
+  Rays are elements of \lean{Projectivization}; density operators and the entropy are those
+  of \lean{ForPhyslib} (positive, trace class, trace one; entropy in $[0,\infty]$);
+  self-adjoint operators are partially defined (\lean{LinearPMap}). The closing remarks on
+  classical cutoffs and on Schwartz spaces are not formalized.
 \item The additional remarks of Section~5 are not formalized.
 \end{itemize}
 
