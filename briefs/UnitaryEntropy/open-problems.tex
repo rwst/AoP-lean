@@ -85,6 +85,28 @@ propagator'').
   $e^{-itH_\alpha/\hbar}$ and $e^{-itH_\beta/\hbar}$
   (\lean{twistedTranslation_eq_schrodingerPropagator}).
   (Log, ``Unbounded Hamiltonians''.)
+
+  The example uses the two-sided derivative at $t_0 = 0$, and it splits the problem in two.
+  Each one-sided derivative alone has a self-adjoint generator. The right derivative of
+  $e^{-itH_\alpha/\hbar}\psi$ at $0$ exists exactly for $\psi$ in the domain of $H_\alpha$, and the
+  left derivative of $e^{-itH_\beta/\hbar}\psi$ exactly for $\psi$ in the domain of $H_\beta$
+  (\lean{exists_hasDerivWithinAt_iff}). The domain of the two-sided generator is the
+  intersection of the two, so it is too small; it is a common restriction of $H_\alpha$ and $H_\beta$
+  (\lean{switchedHamiltonian_le_momentum_left}, \lean{switchedHamiltonian_le_momentum_right}).
+  \begin{enumerate}
+  \item[(a)] \emph{Two-sided derivative}, as in Step~3: DR-INFO + EVDIFF do not give a
+    self-adjoint $H(t_0)$. This is settled by the example above.
+  \item[(b)] \emph{Forward derivative only.} The evolution $\Phi_{t_0\to t_1}$ is only given
+    for $t_0 \le t_1$, so one can define $H(t_0)$ by the right derivative of
+    $t \mapsto \Phi_{t_0\to t}$ at $t_0$. The example says nothing here. Its forward generator
+    at $0$ is $H_\alpha$, which is self-adjoint. Open: is the forward generator self-adjoint
+    under DR-INFO + EVDIFF, or under which additional hypotheses? Kato's theorem gives the
+    $\Leftarrow$ direction under its hypotheses (constant domain, $t\mapsto H(t)\psi$ of class
+    $C^1$). An unchecked candidate counterexample uses a continuously varying boundary phase,
+    $H(t) = H_{\alpha(t)}$. A back-of-the-envelope estimate suggests a threshold at Hölder
+    exponent $\tfrac12$ of $\alpha$. Below it, the forward derivative at $0$ would exist only on
+    $H^1_0(0,1)$, where the generator is the non-self-adjoint minimal momentum.
+  \end{enumerate}
 \item \textbf{Equation at every time in infinite dimension.} In finite dimension, one
   differentiable unitary $U(t)$ for all times solves the Schr\"odinger equation at every time,
   and $\Phi_{t_0\to t_1}$ is conjugation by $U(t_1)U(t_0)^\dagger$
