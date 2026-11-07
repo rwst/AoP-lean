@@ -1,0 +1,22 @@
+{
+  "challenge_module": "ChallengeUnitaryEntropy",
+  "solution_module": "SolutionUnitaryEntropy",
+  "theorem_names": [
+    "UnitaryEntropy.vonNeumann_mix_proj",
+    "UnitaryEntropy.mixEntropy_strictAntiOn",
+    "UnitaryEntropy.born_eq_iff",
+    "UnitaryEntropy.schrodinger_conserves_entropy",
+    "UnitaryEntropy.schrodinger_of_preserves",
+    "UnitaryEntropy.TwoParameter.drSceq_iff_drInfo_and_evDiff",
+    "UnitaryEntropy.vonNeumannEntropy_mix_proj",
+    "UnitaryEntropy.born_eq_iff_vonNeumannEntropy",
+    "UnitaryEntropy.schrodinger_conserves_vonNeumannEntropy",
+    "UnitaryEntropy.schrodinger_of_preserves_vonNeumannEntropy",
+    "UnitaryEntropy.drSceq_iff_drInfo_and_evDiff"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}

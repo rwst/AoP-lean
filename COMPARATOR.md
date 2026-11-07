@@ -48,6 +48,7 @@ be unique across the project.
 | Equivalence of sup-norm, L¹, and L² seminorms on the Schwartz space | Steps 1–3 (eqs. 6, 7 and 9, with the hypothesis eq. 9 needs), Theorem 5 (the finiteness conditions, the space (4) and its sup seminorms as Mathlib's, the three seminorm families generate one topology), eq. (10) | 12 theorems, see `theorems.txt` | 269 lines, 14 KiB |
 | Non-uniqueness of the moment problem for Schwartz functions | eq. (3), the states `ψ_θ` as distinct rays, the bumps of Fig. 1, Theorem 1 | 6 theorems, see `theorems.txt` | 58 lines, 3 KiB |
 | Non-linear representations in quantum mechanics | eq. (2), Proposition 1, Corollary 3, the mathematical steps of the proof of Theorem 4 (Born rule as cos² of the Fubini–Study distance, `m(H)` with the same rays and Born rule, the moved-over `\|v⟩⟨v\|` not additive), the Conclusion's `m` not preserving the inner product | 11 theorems, see `theorems.txt` | 179 lines, 9 KiB |
+| Schrödinger equation is equivalent to information conservation | Corollary 1 (the entropy of the equal mixture, strictly decreasing in `p`, the iff), Theorem 2 in both directions, in finite dimension, at every time for a two-parameter evolution, in any dimension, and with an unbounded `H` for a time-independent evolution | 11 theorems, see `theorems.txt` | 357 lines, 19 KiB |
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
 `[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
@@ -234,5 +235,13 @@ challenge and target 'NonLinearQuantum.projOp'`, and dropping the hypothesis `hE
 `swapOp_mem_unitary` with `Challenge and solution theorem statement do not match:
 'NonLinearQuantum.swapOp_mem_unitary'`. Each control ran with a configuration naming only the
 theorem it touches.
+
+On the UnitaryEntropy lane, changing `‖⟪ψ, ϕ⟫_ℂ‖ ^ 2` to `^ 3` in the challenge's `born` is
+rejected with `Const does not match between challenge and target 'UnitaryEntropy.born'`, changing
+`r < t` to `r ≤ t` in `TwoParameter.EvDiff` (differentiability also at the reference time) with
+`Const does not match between challenge and target 'UnitaryEntropy.TwoParameter.EvDiff'`, and
+dropping the hypothesis `hħ` of the unbounded `drSceq_iff_drInfo_and_evDiff` with `Challenge and
+solution theorem statement do not match: 'UnitaryEntropy.drSceq_iff_drInfo_and_evDiff'`. Each
+control ran with a configuration naming only the theorem it touches.
 
 Re-run a control after any change to the generator.

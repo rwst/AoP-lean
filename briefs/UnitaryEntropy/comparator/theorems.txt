@@ -1,0 +1,19 @@
+# (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+# Released under CC0 1.0 Universal (public-domain dedication).
+# See https://creativecommons.org/publicdomain/zero/1.0/
+#
+# The certified theorems of the brief, one per line; `#` starts a comment.
+# Finite dimension:
+UnitaryEntropy.vonNeumann_mix_proj  # Corollary 1, the entropy of the equal mixture
+UnitaryEntropy.mixEntropy_strictAntiOn  # Corollary 1, strictly decreasing in p
+UnitaryEntropy.born_eq_iff  # Corollary 1
+UnitaryEntropy.schrodinger_conserves_entropy  # Theorem 2, DR-SCEQ => DR-INFO
+UnitaryEntropy.schrodinger_of_preserves  # Theorem 2, DR-INFO + EVDIFF => DR-SCEQ at t0
+# Two-parameter evolution, the equation at every time:
+UnitaryEntropy.TwoParameter.drSceq_iff_drInfo_and_evDiff  # Theorem 2
+# Any dimension:
+UnitaryEntropy.vonNeumannEntropy_mix_proj  # Corollary 1, the entropy of the equal mixture
+UnitaryEntropy.born_eq_iff_vonNeumannEntropy  # Corollary 1
+UnitaryEntropy.schrodinger_conserves_vonNeumannEntropy  # Theorem 2, DR-SCEQ => DR-INFO
+UnitaryEntropy.schrodinger_of_preserves_vonNeumannEntropy  # Theorem 2, DR-INFO + EVDIFF => DR-SCEQ
+UnitaryEntropy.drSceq_iff_drInfo_and_evDiff  # Theorem 2, unbounded H, time-independent

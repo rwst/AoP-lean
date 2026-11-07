@@ -188,6 +188,15 @@ name = "UnitaryEntropy"
 srcDir = "briefs/UnitaryEntropy"
 globs = ["UnitaryEntropy.*"]
 
+# Its comparator lane (not default targets; see COMPARATOR.md).
+[[lean_lib]]
+name = "ChallengeUnitaryEntropy"
+srcDir = "briefs/UnitaryEntropy/comparator"
+
+[[lean_lib]]
+name = "SolutionUnitaryEntropy"
+srcDir = "briefs/UnitaryEntropy/comparator"
+
 # Technical brief: multiple equivalent characterizations of the Schrödinger equation.
 [[lean_lib]]
 name = "SchroedingerEvolution"
