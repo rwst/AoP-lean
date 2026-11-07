@@ -114,6 +114,13 @@ propagator'').
     theorem gives the $\Leftarrow$ direction under its hypotheses (constant domain,
     $t\mapsto H(t)\psi$ of class $C^1$); in the example the domain is not constant.
   \end{enumerate}
+  What holds without hypotheses on $H(t)$ is Howland's construction: a strongly continuous
+  unitary propagator $U(t,s)$ gives the strongly continuous unitary group
+  $(W(\sigma)f)(t) = U(t,t-\sigma)f(t-\sigma)$ on $L^2(\mathbb{R};E)$, hence a self-adjoint
+  quasi-energy operator $K$ with $W(\sigma) = e^{-i\sigma K/\hbar}$
+  (\lean{UnitaryPropagator.exists_howlandGenerator}). Open: how $K$, formally
+  $-i\hbar\,\partial_t + H(t)$, determines $H(t_0)$ at a single time, and whether that
+  $H(t_0)$ is self-adjoint.
 \item \textbf{Equation at every time in infinite dimension.} In finite dimension, one
   differentiable unitary $U(t)$ for all times solves the Schr\"odinger equation at every time,
   and $\Phi_{t_0\to t_1}$ is conjugation by $U(t_1)U(t_0)^\dagger$

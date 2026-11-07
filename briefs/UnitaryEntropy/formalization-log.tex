@@ -836,6 +836,12 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
 \item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/VaryingPhase.lean}, the example with a
   continuously varying boundary phase (last item below). Imports:
   \lean{UnitaryEntropy.MomentumPropagator}.
+\item New file \lean{ForPhyslib/QuantumMechanics/Howland.lean}: Howland's extended space, the
+  positive counterpart (``Howland's generator'' below). Imports:
+  \lean{ForPhyslib.QuantumMechanics.Stone},
+  \lean{ForMathlib.MeasureTheory.Function.LpSpace.Multiplication} (dominated convergence in $L^p$)
+  and TauCeti's \lean{TauCeti.MeasureTheory.Function.Lp.Translation} (strong continuity of
+  translation in $L^p$).
 \end{itemize}
 
 \paragraph{Setting.} As in Section~\ref{sec:unitary-entropy-any-dim}, restricted to a
@@ -893,6 +899,10 @@ Forward derivative, $\alpha(t) = \alpha_0 + \sqrt t$: at $0$ the forward domain 
   and $H_0$ is not self-adjoint; at $t_0 \ne 0$, $H_0 = H_{\alpha(t_0)}$ &
   \lean{forwardDomain_sqrtPhase}, \lean{forwardHamiltonian_sqrtPhase},
   \lean{not_isSelfAdjoint_forwardHamiltonian_sqrtPhase}, \lean{sqrtPhase_counterexample} \\
+Howland: a strongly continuous unitary propagator $U(t,s)$ gives a strongly continuous unitary
+  group $W$ on $L^2(\mathbb{R};E)$ with self-adjoint generator $K$ &
+  \lean{UnitaryPropagator}, \lean{UnitaryPropagator.howlandGroup},
+  \lean{UnitaryPropagator.exists_howlandGenerator} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -1047,5 +1057,34 @@ Forward derivative, $\alpha(t) = \alpha_0 + \sqrt t$: at $0$ the forward domain 
   So $\tfrac12$ is the threshold: Hölder continuity of $\alpha$ with exponent above $\tfrac12$
   gives the self-adjoint $H_{\alpha(t_0)}$, exponent $\tfrac12$ does not.
 \end{itemize}
+
+\paragraph{Howland's generator.} What survives without any hypothesis on $H(t)$ is a
+self-adjoint operator on the extended space $L^2(\mathbb{R};E)$, with time as a coordinate
+(Howland 1974; Reed--Simon II, Section X.12). Let $U(t,s)$ be a strongly continuous unitary
+propagator: $U(t,t) = I$, $U(t,r)U(r,s) = U(t,s)$, and $(t,s) \mapsto U(t,s)x$ continuous for
+every $x$ (\lean{UnitaryPropagator}). Then $(W(\sigma)f)(t) = U(t,t-\sigma)f(t-\sigma)$ is a
+strongly continuous unitary group (\lean{UnitaryPropagator.howlandGroup}), so by Stone's theorem
+$W(\sigma) = e^{-i\sigma K/\hbar}$ for a self-adjoint $K$
+(\lean{UnitaryPropagator.exists_howlandGenerator}), formally $K = -i\hbar\,\partial_t + H(t)$.
+\begin{itemize}
+\item $W(\sigma)$ is translation by $\sigma$ (\lean{shiftOp}) followed by the pointwise operator
+  $f(t) \mapsto U(t,t-\sigma)f(t)$ (\lean{UnitaryPropagator.diagOp}). The latter is strongly
+  measurable because $(t,x) \mapsto U(t,t-\sigma)x$ is jointly continuous, being strongly
+  continuous and uniformly bounded (\lean{continuous_uncurry_of_norm_map}). Both are isometries.
+\item The propagator law gives $W(\sigma)W(\rho) = W(\sigma+\rho)$
+  (\lean{UnitaryPropagator.howland_add}), and $W(0) = I$, so each $W(\sigma)$ is unitary.
+\item Strong continuity: $W(\sigma)f - f$ is the translation increment
+  $\mathrm{diagOp}(\sigma)(f(\cdot-\sigma) - f)$, which tends to $0$ by TauCeti's
+  \lean{MeasureTheory.Lp.continuous_compMeasurePreserving_add_right}, plus
+  $U(t,t-\sigma)f(t) - f(t)$, which tends to $0$ by dominated convergence
+  (\lean{UnitaryPropagator.tendsto_howland_zero}).
+\item A time-independent evolution is the special case $U(t,s) = V(t-s)$ for a strongly
+  continuous unitary group $V$ (\lean{StronglyContinuousUnitaryGroup.toUnitaryPropagator}).
+\end{itemize}
+The theorem uses only unitarity and strong continuity of the propagator. In finite dimension,
+DR-INFO + EVDIFF provide such a propagator, $U(t,s) = U(t)U(s)^\dagger$
+(\lean{TwoParameter.exists_propagator}); this instance is not formalized. That $K$ acts as
+$-i\hbar\,\partial_t + H(t)$ on a core, for a given family $H(t)$, is not formalized; it needs
+hypotheses on $H(t)$ of Kato type.
 
 \end{document}
