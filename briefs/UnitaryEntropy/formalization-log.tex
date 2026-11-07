@@ -911,6 +911,11 @@ Forward derivative, any unitary evolution: the forward Hamiltonian is symmetric,
   \lean{forwardHamiltonian_eq_of_isLittleO}, \lean{isSelfAdjoint_forwardHamiltonian_iff} \\
 Forward derivative, $\alpha(t) = \alpha_0 + \sqrt t$: at $0$ no one-parameter unitary group is
   tangent to the evolution & \lean{not_exists_tangent_sqrtPhase} \\
+Forward derivative, invariant core: a dense subspace invariant under the evolution, on which the
+  generators near $t_0$ differ from the one at $t_0$ by bounded operators, is a core, and the
+  forward Hamiltonian is essentially self-adjoint &
+  \lean{isEssentiallySelfAdjoint_forwardHamiltonian}, \lean{exists_eq_zero_of_inner_deriv},
+  \lean{norm_inner_le_of_hasDerivAt} \\
 Howland: a strongly continuous unitary propagator $U(t,s)$ gives a strongly continuous unitary
   group $W$ on $L^2(\mathbb{R};E)$ with self-adjoint generator $K$ &
   \lean{UnitaryPropagator}, \lean{UnitaryPropagator.howlandGroup},
@@ -1121,7 +1126,36 @@ $\hbar = 1$, \lean{forwardHamiltonian_eq_quantumMechanics}).
   evolution at $0$ (\lean{not_exists_tangent_sqrtPhase}), since $H_0$ is not self-adjoint there.
 \end{itemize}
 The criterion is a hypothesis on the evolution, not on a family $H(t)$, but it asks for the
-tangent group to be given; a condition on the regularity of $U$ in time that implies it is not
-known.
+tangent group to be given. A condition on $F$ alone that gives essential self-adjointness is
+also formalized (\lean{isEssentiallySelfAdjoint_forwardHamiltonian}). Let $D$ be a dense
+subspace with $F(t)D \subseteq D$ for all $t \in \mathbb{R}$, on which $t \mapsto F(t)\psi$ is
+differentiable, and let $B\psi = \partial_t F(t)\psi|_{t=0}$. Suppose that for $|t| \le T$ and
+$\psi \in D$,
+\[ \|\partial_t F(t)\psi - B F(t)\psi\| \le C\|\psi\|, \]
+that is, the generators near $t_0$ differ from the one at $t_0$ by bounded operators on $D$. Then
+the restriction of $H_0$ to $D$ is essentially self-adjoint, and $H_0$ is essentially
+self-adjoint with the same closure.
+\begin{itemize}
+\item Let $y$ satisfy $\langle y, B x\rangle = a\langle y, x\rangle$ for $x \in D$, with $a \ge 0$.
+  Along the orbit $\eta(\tau) = F(\tau)\psi$, which stays in $D$, $f(\tau) = \langle y, \eta(\tau)\rangle$
+  has $f' = af + \langle y, e\rangle$ with $\|e\| \le C\|\psi\|$, so $e^{-a\tau}f(\tau)$ changes by at
+  most $C\|\psi\|\|y\|$ per unit time, and $|f| \le \|y\|\|\psi\|$. Hence
+  $|\langle y, \psi\rangle| \le (e^{-aS} + CS)\|y\|\|\psi\|$ for $0 < S \le T$
+  (\lean{norm_inner_le_of_hasDerivAt}). For $a < 0$ the same holds backward in time.
+\item Taking $S$ with $CS \le \tfrac14$ and $|a| \ge 4/S$ gives
+  $|\langle y,\psi\rangle| \le \tfrac12\|y\|\|\psi\|$ on $D$, hence everywhere by density, and
+  $y = 0$ (\lean{exists_eq_zero_of_inner_deriv}).
+\item For $\kappa = 1/(\mu|\hbar|)$, the deficiency vectors of $\kappa H_0|_D$ at $\pm i$ are such
+  $y$ with $a = \pm\mu$, so both defect numbers vanish and $\kappa H_0|_D$ is essentially
+  self-adjoint; so is $H_0|_D$. Its closure is self-adjoint, and the closure of the symmetric
+  extension $H_0$ is a symmetric extension of it, hence equal.
+\end{itemize}
+No self-adjointness at any time is assumed, and the evolution need not satisfy a composition
+law. In the example $\alpha_0 + \sqrt t$ no dense subspace of the forward domain at $0$ is
+invariant: $U(t,0)\psi$ takes the value $\psi(1-t)$ at $0$ up to a phase, and the forward domain
+is $H^1_0(0,1)$. Not formalized: that $H_0$ itself is closed, hence self-adjoint, when the bound
+$C$ tends to $0$ as $T \to 0$ (by Duhamel's formula the evolution is then tangent to
+$e^{-i\tau\bar H_0/\hbar}$); and a relative bound $C(\|B\psi\| + \|\psi\|)$ in place of $C\|\psi\|$,
+which time-dependent unbounded potentials need.
 
 \end{document}

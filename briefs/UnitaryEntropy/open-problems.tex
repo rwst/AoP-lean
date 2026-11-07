@@ -115,8 +115,14 @@ propagator'').
     $U(t_0+\tau,t_0)\psi - e^{-i\tau H/\hbar}\psi = o(\tau)$ for a self-adjoint $H$ and every
     $\psi$ in its domain, and then $H = H(t_0)$
     (\lean{isSelfAdjoint_forwardHamiltonian_iff}). In the example no group is tangent at $0$
-    (\lean{not_exists_tangent_sqrtPhase}). Open: a condition on the regularity of $U$ in time
-    that gives the tangent group, rather than assuming it. The usual meaning of ``$U$ solves the
+    (\lean{not_exists_tangent_sqrtPhase}). A condition on the evolution alone that gives an
+    essentially self-adjoint forward generator is formalized: a dense subspace $D$ invariant
+    under all $U(t,t_0)$, on which the orbits are differentiable and the generators near $t_0$
+    differ from the one at $t_0$ by operators bounded on $D$
+    (\lean{isEssentiallySelfAdjoint_forwardHamiltonian}). The example has no such $D$. Open: a
+    relative bound in place of a bounded difference, as for a time-dependent unbounded
+    potential, and self-adjointness of the forward generator itself rather than of its
+    closure. The usual meaning of ``$U$ solves the
     Cauchy problem'' is not enough: dense subspaces $Y_t$ with $U(t,s)Y_s \subseteq Y_t$ on
     which $t \mapsto U(t,s)\psi$ is $C^1$ (Engel--Nagel, Def.~VI.9.2). In the example
     $Y_0 = H^1_0(0,1)$ and $Y_t = D(H_{\alpha(t)})$ for $t > 0$ are such subspaces, by direct

@@ -28,6 +28,14 @@ agree), and a symmetric extension of a self-adjoint operator is the operator its
 H₀† ≤ H† = H`). Conversely, if `H₀` is self-adjoint, take `H = H₀`. The tangent group is then
 unique: `H = H₀`.
 
+A sufficient condition on `F` alone: a dense subspace `D`, invariant under every `F t`, on which
+the orbits are differentiable, and on which the generators near `0` differ from the one at `0`
+by bounded operators, `‖∂F(t)ψ - (∂F|₀)(F t ψ)‖ ≤ C ‖ψ‖`. Then `H₀` restricted to `D` is
+essentially self-adjoint. A vector `y` with `⟨y, ∂F|₀ x⟩ = a ⟨y, x⟩` on `D` gives
+`f(τ) = ⟨y, F τ ψ⟩` with `f' = a f + O(C)`; `f` is bounded, so for `a` large `|⟨y, ψ⟩|` is at
+most `‖y‖ ‖ψ‖ / 2`, and by density `y = 0`. After scaling, these are the deficiency vectors at
+`±i`. No self-adjointness at any time is assumed.
+
 ## ii. Key results
 
 - `QuantumMechanics.forwardHamiltonian`: `iħ ∂₊ F τ ψ` at `τ = 0`.
@@ -38,6 +46,9 @@ unique: `H = H₀`.
   forward Hamiltonian is `H`.
 - `QuantumMechanics.isSelfAdjoint_forwardHamiltonian_iff`: the forward Hamiltonian is
   self-adjoint iff `F` is tangent to a one-parameter unitary group.
+- `QuantumMechanics.isEssentiallySelfAdjoint_forwardHamiltonian`: an invariant dense subspace
+  on which the generator varies by bounded operators is a core, and the forward Hamiltonian is
+  essentially self-adjoint.
 -/
 
 @[expose] public noncomputable section
@@ -187,5 +198,224 @@ theorem isSelfAdjoint_forwardHamiltonian_iff {ħ : ℝ} (hħ : ħ ≠ 0) (hF0 : 
     simpa [hF0, schrodingerPropagator_zero] using h
   · rw [forwardHamiltonian_eq_of_isLittleO hħ hF0 hF hH ho]
     exact hH
+
+/-! ### An invariant core -/
+
+omit [CompleteSpace E] in
+/-- **A deficiency vector against an orbit.** If `⟨y, B x⟩ = a ⟨y, x⟩` on `D` with `a ≥ 0`, and
+`η' = B η + e` along an orbit in `D`, then `e^{-aτ} ⟨y, η τ⟩` moves only through `e`, so
+`⟨y, η 0⟩` is bounded by `e^{-aT} ‖η T‖ + T sup ‖e‖`. -/
+lemma norm_inner_le_of_hasDerivAt {B : E → E} {D : Submodule ℂ E} {a : ℝ} (ha : 0 ≤ a) {y : E}
+    (hy : ∀ x ∈ D, ⟪y, B x⟫_ℂ = a * ⟪y, x⟫_ℂ) {η e : ℝ → E} {T R K : ℝ} (hT : 0 ≤ T)
+    (hη : ∀ τ ∈ Icc 0 T, η τ ∈ D) (hd : ∀ τ ∈ Icc 0 T, HasDerivAt η (B (η τ) + e τ) τ)
+    (he : ∀ τ ∈ Icc 0 T, ‖e τ‖ ≤ R) (hK : ‖η T‖ ≤ K) :
+    ‖⟪y, η 0⟫_ℂ‖ ≤ (Real.exp (-a * T) * K + R * T) * ‖y‖ := by
+  set g : ℝ → ℂ := fun τ => (Real.exp (-a * τ) : ℂ) * ⟪y, η τ⟫_ℂ
+  have hg : ∀ τ ∈ Icc 0 T,
+      HasDerivWithinAt g ((Real.exp (-a * τ) : ℂ) * ⟪y, e τ⟫_ℂ) (Icc 0 T) τ := by
+    intro τ hτ
+    have h1 : HasDerivAt (fun τ : ℝ => (Real.exp (-a * τ) : ℂ))
+        ((Real.exp (-a * τ) * -a : ℝ) : ℂ) τ := by
+      have h := ((hasDerivAt_id τ).const_mul (-a)).exp.ofReal_comp
+      simpa using h
+    have h2 := (hasDerivAt_const τ y).inner ℂ (hd τ hτ)
+    refine ((h1.mul h2).hasDerivWithinAt).congr_deriv ?_
+    rw [inner_zero_left, add_zero, inner_add_right, hy _ (hη τ hτ)]
+    push_cast
+    ring
+  have hbound : ∀ τ ∈ Ico 0 T, ‖(Real.exp (-a * τ) : ℂ) * ⟪y, e τ⟫_ℂ‖ ≤ R * ‖y‖ := by
+    intro τ hτ
+    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
+    have hexp : Real.exp (-a * τ) ≤ 1 :=
+      Real.exp_le_one_iff.mpr (by nlinarith [hτ.1])
+    calc Real.exp (-a * τ) * ‖⟪y, e τ⟫_ℂ‖ ≤ 1 * (‖y‖ * R) := by
+          refine mul_le_mul hexp ((norm_inner_le_norm _ _).trans ?_) (norm_nonneg _) zero_le_one
+          exact mul_le_mul_of_nonneg_left (he τ (Ico_subset_Icc_self hτ)) (norm_nonneg _)
+      _ = R * ‖y‖ := by ring
+  have hmv := norm_image_sub_le_of_norm_deriv_le_segment' hg hbound T (right_mem_Icc.mpr hT)
+  have hg0 : g 0 = ⟪y, η 0⟫_ℂ := by simp [g]
+  have hgT : ‖g T‖ ≤ Real.exp (-a * T) * K * ‖y‖ := by
+    simp only [g, norm_mul, Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
+    rw [mul_assoc]
+    refine mul_le_mul_of_nonneg_left ?_ (Real.exp_pos _).le
+    calc ‖⟪y, η T⟫_ℂ‖ ≤ ‖y‖ * ‖η T‖ := norm_inner_le_norm _ _
+      _ ≤ ‖y‖ * K := mul_le_mul_of_nonneg_left hK (norm_nonneg _)
+      _ = K * ‖y‖ := mul_comm _ _
+  rw [← hg0]
+  calc ‖g 0‖ ≤ ‖g T‖ + ‖g T - g 0‖ := by
+        simpa using norm_sub_le (g T) (g T - g 0)
+    _ ≤ Real.exp (-a * T) * K * ‖y‖ + R * ‖y‖ * (T - 0) := add_le_add hgT hmv
+    _ = (Real.exp (-a * T) * K + R * T) * ‖y‖ := by ring
+
+omit [CompleteSpace E] in
+/-- **No deficiency vectors for large `|a|`.** Let `F t` be contractions with `F 0 = 1`, `D` a
+dense subspace invariant under every `F t`, on which `t ↦ F t ψ` is differentiable, and suppose
+that near `0` the derivative of the orbit differs from `B = ∂F|₀` at the current point by at most
+`C ‖ψ‖`. Then for `|a|` large no `y ≠ 0` has `⟨y, B x⟩ = a ⟨y, x⟩` on `D`. -/
+lemma exists_eq_zero_of_inner_deriv (hF0 : F 0 = 1) (hF : ∀ t x, ‖F t x‖ ≤ ‖x‖)
+    {D : Submodule ℂ E} (hD : Dense (D : Set E)) (hinv : ∀ t, ∀ x ∈ D, F t x ∈ D)
+    (hdiff : ∀ x ∈ D, Differentiable ℝ fun t => F t x) {C T : ℝ} (hT : 0 < T)
+    (hC : ∀ t ∈ Icc (-T) T, ∀ x ∈ D,
+      ‖deriv (fun s => F s x) t - deriv (fun s => F s (F t x)) 0‖ ≤ C * ‖x‖) :
+    ∃ μ > 0, ∀ a : ℝ, μ ≤ |a| → ∀ y : E,
+      (∀ x ∈ D, ⟪y, deriv (fun s => F s x) 0⟫_ℂ = a * ⟪y, x⟫_ℂ) → y = 0 := by
+  set B : E → E := fun x => deriv (fun s => F s x) 0
+  set S : ℝ := T / (4 * |C| * T + 1)
+  have hden : 0 < 4 * |C| * T + 1 := by positivity
+  have hS : 0 < S := div_pos hT hden
+  have hST : S ≤ T := div_le_self hT.le (by nlinarith [abs_nonneg C])
+  have hCS : |C| * S ≤ 1 / 4 := by
+    rw [show |C| * S = |C| * T / (4 * |C| * T + 1) by simp only [S]; ring, div_le_iff₀ hden]
+    nlinarith [mul_nonneg (abs_nonneg C) hT.le]
+  refine ⟨4 / S, div_pos four_pos hS, fun a ha y hy => ?_⟩
+  have hexp : Real.exp (-|a| * S) ≤ 1 / 4 := by
+    have h4 : 4 ≤ |a| * S := by rwa [div_le_iff₀ hS] at ha
+    rw [neg_mul, Real.exp_neg, inv_eq_one_div]
+    refine one_div_le_one_div_of_le four_pos ?_
+    linarith [Real.add_one_le_exp (|a| * S)]
+  -- `|⟨y, x⟩| ≤ ‖x‖ ‖y‖ / 2` on `D`, from the orbit forward (`a ≥ 0`) or backward (`a < 0`).
+  have hD2 : ∀ x ∈ D, ‖⟪y, x⟫_ℂ‖ ≤ 1 / 2 * ‖x‖ * ‖y‖ := by
+    intro x hx
+    have hR : ∀ τ ∈ Icc (-T) T, ‖deriv (fun s => F s x) τ - B (F τ x)‖ ≤ |C| * ‖x‖ :=
+      fun τ hτ => (hC τ hτ x hx).trans (mul_le_mul_of_nonneg_right (le_abs_self C) (norm_nonneg _))
+    have hfin : (Real.exp (-|a| * S) * ‖x‖ + |C| * ‖x‖ * S) * ‖y‖ ≤ 1 / 2 * ‖x‖ * ‖y‖ := by
+      have : Real.exp (-|a| * S) * ‖x‖ + |C| * ‖x‖ * S ≤ 1 / 2 * ‖x‖ := by
+        nlinarith [norm_nonneg x]
+      exact mul_le_mul_of_nonneg_right this (norm_nonneg _)
+    rcases le_or_gt 0 a with h0 | h0
+    · have h := norm_inner_le_of_hasDerivAt (B := B) (D := D) h0 (y := y) hy
+        (η := fun τ => F τ x) (e := fun τ => deriv (fun s => F s x) τ - B (F τ x))
+        (K := ‖x‖) hS.le (fun τ _ => hinv τ x hx)
+        (fun τ _ => by simpa using ((hdiff x hx) τ).hasDerivAt)
+        (fun τ hτ => hR τ ⟨by linarith [hτ.1], hτ.2.trans hST⟩) (hF S x)
+      rw [abs_of_nonneg h0] at hfin
+      simpa [hF0] using h.trans hfin
+    · have hy' : ∀ x ∈ D, ⟪y, -B x⟫_ℂ = ((-a : ℝ) : ℂ) * ⟪y, x⟫_ℂ := fun x hx => by
+        rw [inner_neg_right, hy x hx]
+        push_cast
+        ring
+      have h := norm_inner_le_of_hasDerivAt (B := fun x => -B x) (D := D)
+        (by linarith : (0 : ℝ) ≤ -a) hy'
+        (η := fun τ => F (-τ) x) (e := fun τ => -(deriv (fun s => F s x) (-τ) - B (F (-τ) x)))
+        (K := ‖x‖) hS.le (fun τ _ => hinv (-τ) x hx)
+        (fun τ _ => by
+          have h := ((hdiff x hx) (-τ)).hasDerivAt.scomp τ (hasDerivAt_neg τ)
+          refine h.congr_deriv ?_
+          simp only [neg_one_smul]
+          abel)
+        (fun τ hτ => by
+          rw [norm_neg]
+          exact hR (-τ) ⟨by linarith [hτ.2, hST], by linarith [hτ.1]⟩) (hF (-S) x)
+      rw [abs_of_neg h0] at hfin
+      simpa [hF0] using h.trans hfin
+  -- By density it holds for `x = y`, so `‖y‖² ≤ ‖y‖² / 2`.
+  have hall : ∀ x, ‖⟪y, x⟫_ℂ‖ ≤ 1 / 2 * ‖x‖ * ‖y‖ := by
+    have hcl : IsClosed {x : E | ‖⟪y, x⟫_ℂ‖ ≤ 1 / 2 * ‖x‖ * ‖y‖} :=
+      isClosed_le (continuous_const.inner continuous_id).norm
+        ((continuous_const.mul continuous_norm).mul continuous_const)
+    intro x
+    have hx : x ∈ closure (D : Set E) := hD.closure_eq ▸ Set.mem_univ x
+    exact closure_minimal (fun x hx => hD2 x hx) hcl hx
+  have hyy := hall y
+  have hnorm : ‖⟪y, y⟫_ℂ‖ = ‖y‖ ^ 2 := by
+    rw [inner_self_eq_norm_sq_to_K]
+    simp
+  rw [hnorm] at hyy
+  have : ‖y‖ = 0 := by nlinarith [norm_nonneg y]
+  exact norm_eq_zero.mp this
+
+omit [CompleteSpace E] in
+lemma domRestrict_forwardHamiltonian_apply {ħ : ℝ} {D : Submodule ℂ E}
+    (hdiff : ∀ x ∈ D, Differentiable ℝ fun t => F t x) {x : E}
+    (hx : x ∈ ((forwardHamiltonian F ħ).domRestrict D).domain) :
+    (forwardHamiltonian F ħ).domRestrict D ⟨x, hx⟩ =
+      (Complex.I * ħ) • deriv (fun s => F s x) 0 := by
+  change (Complex.I * ħ) • derivWithin (fun τ => F τ x) (Ici 0) 0 = _
+  congr 1
+  exact ((hdiff x hx.1) 0).hasDerivAt.hasDerivWithinAt.derivWithin (uniqueDiffWithinAt_Ici 0)
+
+/-- **An invariant core.** Let `F t` be unitaries with `F 0 = 1`, for instance
+`F t = U(t₀ + t, t₀)`, and `D` a dense subspace invariant under every `F t`, on which
+`t ↦ F t ψ` is differentiable. Suppose that near `t = 0` the derivative of the orbit differs from
+`∂F|₀` applied to the current point by at most `C ‖ψ‖`: the generators at nearby times differ
+from the one at `0` by bounded operators. Then the forward Hamiltonian restricted to `D` is
+essentially self-adjoint, and so is the forward Hamiltonian, with the same closure. -/
+theorem isEssentiallySelfAdjoint_forwardHamiltonian {ħ : ℝ} (hħ : ħ ≠ 0) (hF0 : F 0 = 1)
+    (hF : ∀ t, F t ∈ unitary (E →L[ℂ] E)) {D : Submodule ℂ E} (hD : Dense (D : Set E))
+    (hinv : ∀ t, ∀ x ∈ D, F t x ∈ D) (hdiff : ∀ x ∈ D, Differentiable ℝ fun t => F t x)
+    {C T : ℝ} (hT : 0 < T)
+    (hC : ∀ t ∈ Icc (-T) T, ∀ x ∈ D,
+      ‖deriv (fun s => F s x) t - deriv (fun s => F s (F t x)) 0‖ ≤ C * ‖x‖) :
+    ((forwardHamiltonian F ħ).domRestrict D).IsEssentiallySelfAdjoint ∧
+      (forwardHamiltonian F ħ).IsEssentiallySelfAdjoint ∧
+      (forwardHamiltonian F ħ).closure = ((forwardHamiltonian F ħ).domRestrict D).closure := by
+  have hDle : D ≤ (forwardHamiltonian F ħ).domain := fun x hx =>
+    mem_forwardDomain.mpr ((hdiff x hx) 0).differentiableWithinAt
+  have hsym₀ : (forwardHamiltonian F ħ).IsSymmetric := forwardHamiltonian_isSymmetric ħ hF0
+    fun τ _ => ContinuousLinearMap.inner_map_map_of_mem_unitary (hF τ)
+  have hdense₀ : (forwardHamiltonian F ħ).HasDenseDomain := hD.mono hDle
+  have hdenseD : ((forwardHamiltonian F ħ).domRestrict D).HasDenseDomain := by
+    rw [LinearPMap.hasDenseDomain_def, LinearPMap.domRestrict_domain, inf_eq_left.mpr hDle]
+    exact hD
+  have hsymD : ((forwardHamiltonian F ħ).domRestrict D).IsSymmetric :=
+    hsym₀.of_le LinearPMap.domRestrict_le
+  obtain ⟨μ, hμ, hzero⟩ := exists_eq_zero_of_inner_deriv hF0
+    (fun t x => (ContinuousLinearMap.norm_map_of_mem_unitary (hF t) x).le) hD hinv hdiff hT hC
+  -- Scale by `κ = 1 / (μ |ħ|)`: the deficiency vectors of `κ H₀|_D` at `±i` are those of `∂F|₀`
+  -- at `±μ`.
+  set κ : ℝ := 1 / (μ * |ħ|) with hκdef
+  have hκ : 0 < κ := by positivity
+  have hdef : ∀ sgn : ℝ, (sgn = 1 ∨ sgn = -1) →
+      ((κ : ℂ) • (forwardHamiltonian F ħ).domRestrict D).defectNumber (sgn * Complex.I) = 0 := by
+    intro sgn hsgn
+    show Module.rank ℂ ↥(((κ : ℂ) • (forwardHamiltonian F ħ).domRestrict D -
+      (sgn * Complex.I) • 1).toFun.rangeᗮ) = 0
+    refine Submodule.rank_eq_zero.mpr ((Submodule.eq_bot_iff _).mpr fun y hy => ?_)
+    refine hzero (sgn / (κ * ħ)) ?_ y fun x hx => ?_
+    · have h1 : |sgn| = 1 := by rcases hsgn with rfl | rfl <;> simp
+      have habs : |ħ| ≠ 0 := abs_ne_zero.mpr hħ
+      have : |sgn / (κ * ħ)| = μ := by
+        rw [abs_div, abs_mul, h1, abs_of_pos hκ, hκdef]
+        field_simp
+      exact this.ge
+    · have hxD : x ∈ ((forwardHamiltonian F ħ).domRestrict D).domain := by
+        rw [LinearPMap.domRestrict_domain]
+        exact ⟨hx, hDle hx⟩
+      have hxS : x ∈ ((κ : ℂ) • (forwardHamiltonian F ħ).domRestrict D -
+          (sgn * Complex.I) • (1 : E →ₗ.[ℂ] E)).domain := by
+        rw [LinearPMap.sub_domain]
+        exact ⟨hxD, Submodule.mem_top⟩
+      have hz : ⟪y, (κ : ℂ) • ((forwardHamiltonian F ħ).domRestrict D ⟨x, hxD⟩) -
+          (sgn * Complex.I) • x⟫_ℂ = 0 :=
+        (Submodule.mem_orthogonal' _ y).mp hy _ ⟨⟨x, hxS⟩, rfl⟩
+      rw [domRestrict_forwardHamiltonian_apply hdiff, inner_sub_right, inner_smul_right,
+        inner_smul_right, inner_smul_right, sub_eq_zero] at hz
+      have hħ' : (ħ : ℂ) ≠ 0 := by exact_mod_cast hħ
+      have hκ' : (κ : ℂ) ≠ 0 := by exact_mod_cast hκ.ne'
+      push_cast
+      field_simp
+      linear_combination (-Complex.I) * hz + (⟪y, deriv (fun s => F s x) 0⟫_ℂ * κ * ħ -
+        sgn * ⟪y, x⟫_ℂ) * Complex.I_sq
+  have hSess : ((κ : ℂ) • (forwardHamiltonian F ħ).domRestrict D).IsEssentiallySelfAdjoint :=
+    (hsymD.smul (Complex.conj_ofReal κ)).isEssentiallySelfAdjoint_of_defectNumber_eq_zero hdenseD
+      (by simpa using hdef 1 (Or.inl rfl)) (by simpa using hdef (-1) (Or.inr rfl))
+  -- Undo the scaling.
+  have hHDess : ((forwardHamiltonian F ħ).domRestrict D).IsEssentiallySelfAdjoint := by
+    rw [LinearPMap.isEssentiallySelfAdjoint_def] at hSess ⊢
+    have hκ0 : (κ : ℂ) ≠ 0 := by exact_mod_cast hκ.ne'
+    rw [LinearPMap.closure_smul _ hκ0] at hSess
+    have h := ProbabilisticTheory.QuantumMechanics.Essential.isSelfAdjoint_smul_real hSess κ⁻¹
+      (inv_ne_zero hκ.ne')
+    rwa [smul_smul, Complex.ofReal_inv, inv_mul_cancel₀ hκ0, one_smul] at h
+  -- A symmetric extension has the same closure.
+  have hle : ((forwardHamiltonian F ħ).domRestrict D).closure ≤
+      (forwardHamiltonian F ħ).closure :=
+    (hsym₀.isClosable hdense₀).closure_mono LinearPMap.domRestrict_le
+  have heq : (forwardHamiltonian F ħ).closure =
+      ((forwardHamiltonian F ħ).domRestrict D).closure :=
+    IsSelfAdjoint.eq_of_le_of_isSymmetric hHDess (hsym₀.closure hdense₀) hle
+  refine ⟨hHDess, ?_, heq⟩
+  rw [LinearPMap.isEssentiallySelfAdjoint_def, heq]
+  exact hHDess
 
 end QuantumMechanics
