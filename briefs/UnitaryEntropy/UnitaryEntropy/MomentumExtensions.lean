@@ -32,7 +32,9 @@ dense set of states, at one time `t₀`, do not give a self-adjoint `H(t₀)`.
 
 `D` is in fact `H¹₀(0, 1)` and `H₀` the minimal momentum operator `-i d/dx`, when
 `e^{iα} ≠ e^{iβ}` (`UnitaryEntropy.MomentumDomain`), and `U_α(t)` is `e^{-itH_α/ħ}`
-(`UnitaryEntropy.MomentumPropagator`). The counterexample does not need either.
+(`UnitaryEntropy.MomentumPropagator`). The counterexample does not need either. The same `H₀`
+comes from the right derivative alone when the boundary phase varies continuously, as
+`α₀ + √t` (`UnitaryEntropy.VaryingPhase`).
 
 ## Main results
 

@@ -833,6 +833,9 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
   $U(0) = I$ that solves the Schr\"odinger equation for $H$ is $e^{-itH/\hbar}$. The converse of
   Stone's theorem, \lean{exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger}, now follows
   from it.
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/VaryingPhase.lean}, the example with a
+  continuously varying boundary phase (last item below). Imports:
+  \lean{UnitaryEntropy.MomentumPropagator}.
 \end{itemize}
 
 \paragraph{Setting.} As in Section~\ref{sec:unitary-entropy-any-dim}, restricted to a
@@ -876,6 +879,20 @@ Without EVTI: the right (left) derivative of $U(t)\psi$ at $0$ exists exactly on
   $H_\alpha$ ($H_\beta$), and $H_0 \subseteq H_\alpha$, $H_0 \subseteq H_\beta$ &
   \lean{exists_hasDerivWithinAt_iff}, \lean{switchedHamiltonian_le_momentum_left},
   \lean{switchedHamiltonian_le_momentum_right} \\
+Forward derivative: the propagator of $H(t) = H_{\alpha(t)}$ is unitary, with
+  $U(t_2,t_1)U(t_1,t_0) = U(t_2,t_0)$; for constant $\alpha$ it is $e^{-i(t_1-t_0)H_\alpha}$ &
+  \lean{phasePropagator}, \lean{phasePropagator_mem_unitary}, \lean{phasePropagator_comp},
+  \lean{phasePropagator_const} \\
+Forward derivative: $|\alpha(t_0+s) - \alpha(t_0)| = O(\sqrt s)$ gives
+  $H_0 \subseteq H_{\alpha(t_0)}$, and $o(\sqrt s)$ gives $H_0 = H_{\alpha(t_0)}$ &
+  \lean{forwardHamiltonian}, \lean{forwardHamiltonian_le_momentum},
+  \lean{forwardHamiltonian_eq_momentum} \\
+Forward derivative: $H^1_0(0,1)$ is in the forward domain, for every $\alpha$ &
+  \lean{hasDerivWithinAt_phasePropagator_primitive} \\
+Forward derivative, $\alpha(t) = \alpha_0 + \sqrt t$: at $0$ the forward domain is $H^1_0(0,1)$
+  and $H_0$ is not self-adjoint; at $t_0 \ne 0$, $H_0 = H_{\alpha(t_0)}$ &
+  \lean{forwardDomain_sqrtPhase}, \lean{forwardHamiltonian_sqrtPhase},
+  \lean{not_isSelfAdjoint_forwardHamiltonian_sqrtPhase}, \lean{sqrtPhase_counterexample} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -889,9 +906,9 @@ Without EVTI: the right (left) derivative of $U(t)\psi$ at $0$ exists exactly on
   is the domain of $H$: for $\psi$ there, $t \mapsto U(t)\psi$ is differentiable, hence so is
   $t \mapsto \ket{U(t)\psi}\bra{U(t)\psi} = \Phi_t(\ket\psi\bra\psi)$, as
   $(x, y) \mapsto \ket{x}\bra{y}$ is a bounded real-bilinear map.
-\item The time-dependent case of Theorem~2 with unbounded $H(t)$ is not formalized. The example
+\item The time-dependent case of Theorem~2 with unbounded $H(t)$ is not formalized. The examples
   in the next paragraph, showing that its ($\Leftarrow$) direction fails without further
-  hypotheses, is.
+  hypotheses, with the two-sided and with the forward derivative, are.
 \end{itemize}
 
 \paragraph{Problems found in the brief.}
@@ -986,6 +1003,49 @@ Without EVTI: the right (left) derivative of $U(t)\psi$ at $0$ exists exactly on
     $H_0 = H_\alpha = H_\beta$ (\lean{switchedHamiltonian_le_momentum_left},
     \lean{switchedHamiltonian_le_momentum_right}).
   \end{itemize}
+\item The forward derivative does not help. The example above uses the two-sided derivative at
+  $t_0$, and each one-sided derivative alone has a self-adjoint generator. The evolution only
+  runs forward, so $H(t_0)$ can be defined from the right derivative of $t \mapsto U(t,t_0)\psi$
+  alone (\lean{forwardHamiltonian}, with $\hbar = 1$). It still need not be self-adjoint, for a
+  continuous family of self-adjoint $H(t)$ (\lean{sqrtPhase_counterexample}). Take
+  $H(t) = H_{\alpha(t)}$ with $\alpha(t) = \alpha_0 + \sqrt t$ ($\alpha_0$ for $t \le 0$). Its
+  propagator translates by $t_1 - t_0$, and a point that wraps around at the time $s$ picks up
+  the phase $e^{-i\alpha(s)}$ (\lean{phasePropagator}): it is unitary, satisfies
+  $U(t_2,t_1)U(t_1,t_0) = U(t_2,t_0)$, and is $e^{-i(t_1-t_0)H_\gamma}$ for constant
+  $\alpha = \gamma$ (\lean{phasePropagator_const}). What is proved:
+  \begin{itemize}
+  \item For $\tau < 1$, $U(t_0+\tau,t_0)$ differs from $e^{-i\tau H_\gamma}$, $\gamma = \alpha(t_0)$,
+    only on the strip $0 \le x < \tau$ of points that have wrapped around. There the phase is
+    $e^{-i\alpha(t_0+\tau-x)}$ instead of $e^{-i\gamma}$, applied to $\psi(x - \tau + 1)$
+    (\lean{phasePropagator_sub_twistedTranslation_eq}). Against the basis vector $e_n$, the
+    difference is at most $\sup|\alpha - \gamma|\,\sqrt\tau\,\|\psi\|_{L^2(1-\tau,1)}$
+    (\lean{norm_inner_planeWave_mulL_stripPhase_le}).
+  \item If $|\alpha(t_0+s) - \alpha(t_0)| = O(\sqrt s)$ for $s \ge 0$, this is $o(\tau)$. So a
+    right derivative $v$ gives the coefficient relation of $H_\gamma$, and
+    $H_\gamma\psi = iv$: the forward Hamiltonian is a restriction of $H_\gamma$
+    (\lean{forwardHamiltonian_le_momentum}). If it is $o(\sqrt s)$, every $\psi$ in the domain
+    of $H_\gamma$ is bounded, the whole difference is $o(\tau)$, and the forward Hamiltonian is
+    $H_\gamma$ (\lean{forwardHamiltonian_eq_momentum}). For $\alpha_0 + \sqrt t$ this holds at
+    every $t_0 \ne 0$ (\lean{sqrtPhase_littleO}): there the forward Hamiltonian is the
+    self-adjoint $H_{\alpha(t_0)}$.
+  \item For every $\alpha$, $H^1_0(0,1)$ is in the forward domain, with $H_0\psi = -i\psi'$
+    (\lean{hasDerivWithinAt_phasePropagator_primitive}). On $H^1_0$ the tail
+    $\|\psi\|_{L^2(1-\tau,1)}$ is $o(\tau)$: it is half the norm of
+    $e^{-i\tau H_{\gamma+\pi}}\psi - e^{-i\tau H_\gamma}\psi$, and both terms have the derivative
+    $-\psi'$.
+  \item At $t_0 = 0$ the forward domain is $H^1_0(0,1)$ (\lean{forwardDomain_sqrtPhase}). A $\psi$
+    in it is in the domain of $H_{\alpha_0}$, so $\psi(x) = c + \int_0^x g$ is continuous with
+    $\psi(1) = e^{i\alpha_0}\psi(0)$. On the strip $x < \tau/2$,
+    $|e^{-i\sqrt{\tau - x}} - 1| \ge (2/\pi)\sqrt{\tau/2}$ and $|\psi(x - \tau + 1)| \ge |\psi(1)|/2$
+    for small $\tau$, so $\|U(\tau,0)\psi - e^{-i\tau H_{\alpha_0}}\psi\| \ge |\psi(1)|\tau/2\pi$.
+    Both terms have the right derivative $v$, so the difference is $o(\tau)$, and
+    $\psi(1) = \psi(0) = 0$ (\lean{mem_sobolevZero_of_hasDerivWithinAt_sqrtPhase}). The forward
+    Hamiltonian at $0$ is then the minimal momentum $-i\,d/dx$ on $H^1_0(0,1)$, the operator
+    $H_0$ of the switched example (\lean{forwardHamiltonian_sqrtPhase}): dense domain, symmetric,
+    not self-adjoint (\lean{not_isSelfAdjoint_forwardHamiltonian_sqrtPhase}).
+  \end{itemize}
+  So $\tfrac12$ is the threshold: Hölder continuity of $\alpha$ with exponent above $\tfrac12$
+  gives the self-adjoint $H_{\alpha(t_0)}$, exponent $\tfrac12$ does not.
 \end{itemize}
 
 \end{document}
