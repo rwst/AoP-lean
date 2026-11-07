@@ -79,8 +79,9 @@ propagator'').
   operator, which is not self-adjoint. Open: the hypotheses (Kato-type, or on the evolution)
   under which DR-INFO + EVDIFF gives a self-adjoint $H(t)$. The example is formalized: the vectors
   on which the propagator is differentiable at $0$ form a dense subspace, on which
-  $i\hbar\,U'(0)$ is symmetric but not self-adjoint (\lean{switchedHamiltonian_counterexample});
-  the identification of this subspace with the domain of the minimal momentum is not.
+  $i\hbar\,U'(0)$ is symmetric but not self-adjoint (\lean{switchedHamiltonian_counterexample}).
+  This subspace is $H^1_0(0,1)$, the domain of the minimal momentum, and $i\hbar\,U'(0)$ is
+  $-i\,d/dx$ on it (\lean{switchedDomain_eq}).
   (Log, ``Unbounded Hamiltonians''.)
 \item \textbf{Equation at every time in infinite dimension.} In finite dimension, one
   differentiable unitary $U(t)$ for all times solves the Schr\"odinger equation at every time,

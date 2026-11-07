@@ -18,11 +18,14 @@ in any dimension:
 * coordinatewise conjugation, the anti-unitary with `⟪b i, J x⟫ = conj ⟪b i, x⟫`;
 * the isometry `b i ↦ v i` onto the closed span of an orthonormal family `v`.
 
+It also transports a Hilbert basis along a linear isometric equivalence.
+
 It also records Parseval's identity for the moduli of the coordinates, and that an isometry `V`
 fixes `x` after its adjoint as soon as `‖V† x‖ = ‖x‖`.
 
 ## Main definitions
 
+* `HilbertBasis.map`: the Hilbert basis `i ↦ L (b i)`.
 * `HilbertBasis.phaseSMul`: the Hilbert basis `i ↦ δ i • b i`.
 * `HilbertBasis.phaseUnitary`: the unitary `b i ↦ δ i • b i`.
 * `HilbertBasis.conjugation`: coordinatewise conjugation as `E ≃ₗᵢ⋆[𝕜] E`.
@@ -63,6 +66,18 @@ theorem hasSum_norm_inner_sq (x : E) : HasSum (fun i => ‖⟪b i, x⟫_𝕜‖ 
   · rw [inner_self_eq_norm_sq_to_K]
     push_cast
     rfl
+
+/-- The image of a Hilbert basis under a linear isometric equivalence. -/
+protected def map {F : Type*} [NormedAddCommGroup F] [InnerProductSpace 𝕜 F] (L : E ≃ₗᵢ[𝕜] F) :
+    HilbertBasis ι 𝕜 F :=
+  .ofRepr (L.symm.trans b.repr)
+
+@[simp]
+theorem map_apply {F : Type*} [NormedAddCommGroup F] [InnerProductSpace 𝕜 F] (L : E ≃ₗᵢ[𝕜] F)
+    (i : ι) : b.map L i = L (b i) := by
+  classical
+  rw [← (b.map L).repr_symm_single, ← b.repr_symm_single]
+  rfl
 
 /-! ### Coordinatewise conjugation -/
 

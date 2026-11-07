@@ -806,6 +806,22 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
   \lean{Mathlib.Analysis.InnerProductSpace.Calculus},
   \lean{Mathlib.Analysis.SpecialFunctions.Integrals.Basic} and
   \lean{Mathlib.MeasureTheory.Function.Floor}.
+\item File: \lean{briefs/UnitaryEntropy/UnitaryEntropy/MomentumDomain.lean}, the identification
+  of $D$ with $H^1_0(0,1)$ in that example. Imports: \lean{UnitaryEntropy.MomentumExtensions},
+  \lean{ForMathlib.Analysis.InnerProductSpace.HilbertBasisMaps} (coordinates in a Hilbert basis
+  and Parseval), \lean{Mathlib.Analysis.Normed.Group.Tannery} (dominated convergence for sums)
+  and the new \lean{ForMathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts}.
+\item New \lean{ForMathlib} file
+  \lean{ForMathlib/MeasureTheory/Integral/IntervalIntegral/IntegrationByParts.lean}: Fubini on the
+  triangle $a \le v \le u \le b$, $\int_a^b k(u)\int_a^u G\,du = \int_a^b G(v)\int_v^b k\,dv$
+  (\lean{intervalIntegral.integral_mul_primitive}), and from it integration by parts against a
+  primitive, $\int_a^b K'\Phi = K(b)\Phi(b) - \int_a^b KG$ for $\Phi(u) = \int_a^u G$ with $G$
+  only integrable (\lean{intervalIntegral.integral_deriv_mul_primitive}). It imports
+  \lean{Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus} and
+  \lean{Mathlib.MeasureTheory.Integral.Prod}.
+\item \lean{ForMathlib/Analysis/InnerProductSpace/HilbertBasisMaps.lean} gains
+  \lean{HilbertBasis.map}, the image $i \mapsto L(b_i)$ of a Hilbert basis under a linear
+  isometric equivalence $L$.
 \end{itemize}
 
 \paragraph{Setting.} As in Section~\ref{sec:unitary-entropy-any-dim}, restricted to a
@@ -836,6 +852,10 @@ Without EVTI: $U(t)\psi$ is differentiable at $0$ on a dense $D$ &
 Without EVTI: $H_0 = i\hbar U'(0)$ on $D$ is symmetric but not self-adjoint &
   \lean{switchedHamiltonian_symm}, \lean{not_isSelfAdjoint_switchedHamiltonian},
   \lean{switchedHamiltonian_counterexample} \\
+Without EVTI: $D = H^1_0(0,1)$ for $e^{i\alpha} \ne e^{i\beta}$ &
+  \lean{sobolevZero}, \lean{switchedDomain_eq} \\
+Without EVTI: $H_0 = -i\,d/dx$ on $D$, the minimal momentum &
+  \lean{switchedHamiltonian_primitive}, \lean{exists_primitive_of_mem_switchedDomain} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -883,8 +903,7 @@ Without EVTI: $H_0 = i\hbar U'(0)$ on $D$ is symmetric but not self-adjoint &
   with $k$ the number of wrap-arounds (\lean{twistedTranslation}); that it is
   $e^{-itH_\alpha/\hbar}$ is not formalized. $D$ is the set of $\psi$ for which
   $t \mapsto U(t)\psi$ is differentiable at $0$ (\lean{switchedDomain}), and
-  $H_0\psi = i\hbar\,U'(0)\psi$ on $D$ (\lean{switchedHamiltonian}). The identification of $D$
-  with $\{\psi \in H^1(0,1) : \psi(0) = \psi(1) = 0\}$ is not formalized either. What is proved:
+  $H_0\psi = i\hbar\,U'(0)\psi$ on $D$ (\lean{switchedHamiltonian}). What is proved:
   \begin{itemize}
   \item $D$ is dense. It contains $e^{2\pi inx} - 1$ for every $n$
     (\lean{hasDerivAt_twistedTranslation_fourierDiff}): this function vanishes at both ends, so
@@ -902,6 +921,30 @@ Without EVTI: $H_0 = i\hbar U'(0)$ on $D$ is symmetric but not self-adjoint &
     $-i\alpha c/\hbar$ and the left derivative $-i\beta c/\hbar$ at $0$, with
     $c = \int_0^1 e^{i(\alpha-\beta)x}\,dx \ne 0$, so $e^{i\alpha x} \notin D$
     (\lean{planeWave_not_mem_switchedDomain}). Hence $H_0^\dagger \ne H_0$.
+  \item $D = H^1_0(0,1)$ when $e^{i\alpha} \ne e^{i\beta}$ (\lean{switchedDomain_eq}), and
+    $H_0\psi = -i\psi'$ there (\lean{switchedHamiltonian_primitive},
+    \lean{exists_primitive_of_mem_switchedDomain}). Mathlib has no Sobolev spaces, so
+    $H^1_0(0,1)$ is taken in its absolutely continuous form (\lean{sobolevZero}): the
+    $\psi(x) = \int_0^x g$ with $g \in L^2(0,1)$ and $\int_0^1 g = 0$, so that
+    $\psi(0) = \psi(1) = 0$. The proof uses, for each $\gamma$, the Hilbert basis
+    $e_n = e^{i(\gamma + 2\pi n)x}$, $n \in \mathbb{Z}$ (\lean{twistedBasis}). It consists of
+    eigenvectors of $U_\gamma(t)$ with eigenvalues $e^{-i(\gamma+2\pi n)t/\hbar}$. So
+    $t \mapsto U_\gamma(t)\psi$ has derivative $-(i/\hbar)h$ at $0$ iff
+    $\braket{e_n|h} = (\gamma + 2\pi n)\braket{e_n|\psi}$ for all $n$. The coefficient
+    relation is necessary already for a one-sided derivative
+    (\lean{inner_twistedBasis_of_hasDerivWithinAt}). It is sufficient by dominated
+    convergence of the coordinates (\lean{hasDerivAt_twistedTranslation_of_inner}).
+    Integration by parts against the primitive $\Phi(x) = \int_0^x g$ gives
+    $\braket{e^{i\delta x}|-ig} = \delta\braket{e^{i\delta x}|\Phi} - ie^{-i\delta}\Phi(1)$
+    (\lean{inner_planeWave_neg_I_smul}). If $\Phi(1) = 0$, this is the coefficient relation
+    for every $\gamma$, so $H^1_0 \subseteq D$. Conversely, let $\psi \in D$ and
+    $g = iH_0\psi$. Then $f = \psi - \Phi$ satisfies
+    $(\gamma + 2\pi n)\braket{e_n|f} = -ie^{-i\gamma}\Phi(1)$ for $\gamma = \alpha$ and
+    $\gamma = \beta$. If $e^{i\gamma} = 1$, the term $n = -\gamma/2\pi$ gives $\Phi(1) = 0$.
+    Otherwise $f$ is the constant $\Phi(1)/(e^{i\gamma} - 1)$. Since
+    $e^{i\alpha} \ne e^{i\beta}$, both cases give $\Phi(1) = 0$ and $f = 0$. For
+    $e^{i\alpha} = e^{i\beta}$ the switch does nothing, and $D$ is the larger domain of
+    $H_\alpha$.
   \end{itemize}
 \end{itemize}
 

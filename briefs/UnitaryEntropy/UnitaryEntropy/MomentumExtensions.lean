@@ -30,8 +30,8 @@ Then `D` is dense and `H₀` is symmetric, but `H₀` is not self-adjoint: the p
 derivative `-iβ/ħ c` at `0`, with `c = ⟨e^{iβx}, e^{iαx}⟩ ≠ 0`. So DR-INFO and EVDIFF on a
 dense set of states, at one time `t₀`, do not give a self-adjoint `H(t₀)`.
 
-`D` is in fact `H¹₀(0, 1)` and `H₀` the minimal momentum operator; this identification is not
-needed and not formalized.
+`D` is in fact `H¹₀(0, 1)` and `H₀` the minimal momentum operator `-i d/dx`, when
+`e^{iα} ≠ e^{iβ}` (`UnitaryEntropy.MomentumDomain`). The counterexample does not need this.
 
 ## Main results
 
@@ -586,18 +586,24 @@ theorem switchedHamiltonian_symm (ψ φ : (switchedHamiltonian ħ α β).domain)
   rw [hconj]
   linear_combination (-(Complex.I * ħ)) * h0
 
-/-- A derivative within `s` at `0` of `t ↦ e^{-iγt/ħ} c`. -/
-lemma eq_of_hasDerivWithinAt_phase {f : ℝ → ℂ} {f' : ℂ} {s : Set ℝ}
-    (hs : UniqueDiffWithinAt ℝ s 0) (h0 : (0 : ℝ) ∈ s) (hf : HasDerivWithinAt f f' s 0)
-    {γ : ℝ} {c : ℂ} (h : ∀ t ∈ s, f t = Complex.exp (-(Complex.I * ((γ * (t / ħ) : ℝ) : ℂ))) * c) :
-    f' = -(Complex.I * ((γ / ħ : ℝ) : ℂ)) * c := by
+/-- The derivative of `t ↦ e^{-iγt/ħ} c` at `0`. -/
+lemma hasDerivAt_phase (γ : ℝ) (c : ℂ) :
+    HasDerivAt (fun t : ℝ => Complex.exp (-(Complex.I * ((γ * (t / ħ) : ℝ) : ℂ))) * c)
+      (-(Complex.I * ((γ / ħ : ℝ) : ℂ)) * c) 0 := by
   have hd := (((((hasDerivAt_id' (0 : ℝ)).div_const ħ).const_mul γ).ofReal_comp.const_mul
     Complex.I).neg.cexp.mul_const c)
-  refine hs.eq_deriv _ hf ((hd.hasDerivWithinAt.congr (fun t ht => h t ht) (h 0 h0)).congr_deriv ?_)
+  refine hd.congr_deriv ?_
   simp only [Pi.neg_apply, zero_div, mul_zero, Complex.ofReal_zero, neg_zero, Complex.exp_zero,
     one_mul]
   push_cast
   ring
+
+/-- A derivative within `s` at `0` of `t ↦ e^{-iγt/ħ} c`. -/
+lemma eq_of_hasDerivWithinAt_phase {f : ℝ → ℂ} {f' : ℂ} {s : Set ℝ}
+    (hs : UniqueDiffWithinAt ℝ s 0) (h0 : (0 : ℝ) ∈ s) (hf : HasDerivWithinAt f f' s 0)
+    {γ : ℝ} {c : ℂ} (h : ∀ t ∈ s, f t = Complex.exp (-(Complex.I * ((γ * (t / ħ) : ℝ) : ℂ))) * c) :
+    f' = -(Complex.I * ((γ / ħ : ℝ) : ℂ)) * c :=
+  hs.eq_deriv _ hf ((hasDerivAt_phase γ c).hasDerivWithinAt.congr (fun t ht => h t ht) (h 0 h0))
 
 lemma inner_planeWave_switchedHamiltonian (hħ : ħ ≠ 0) (ψ : (switchedHamiltonian ħ α β).domain) :
     ⟪planeWave α, switchedHamiltonian ħ α β ψ⟫_ℂ = α * ⟪planeWave α, (ψ : L²)⟫_ℂ := by
