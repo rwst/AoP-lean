@@ -7,11 +7,12 @@ module
 
 public import ForMathlib.Analysis.Convex.Combination
 public import ForMathlib.Analysis.InnerProductSpace.l2Space
+public import ForMathlib.MeasureTheory.Constructions.HaarToSphere
 public import ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.CanonicalExpansion
 public import ForPhyslib.QuantumMechanics.DensityOperator
+public import ForPhyslib.QuantumMechanics.Qubit.AntisymplecticReflection
+public import ForPhyslib.QuantumMechanics.Qubit.Precession
 public import Mathlib.Analysis.Convex.Integral
-public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
-public import Mathlib.LinearAlgebra.Projectivization.Basic
 
 /-!
 # Quantum pure states are not enough
@@ -47,13 +48,22 @@ barycenter but are told apart by the probability of the state `e₀`.
 **Remark after Example 2.** CST makes distinct states mutually exclusive, the Born rule does not:
 `e₀` and `e₊` are distinct rays with Born probability `½`.
 
+**Example 2** (the classical qubit). The pure states `P(ℂ²)` form a two-sphere, through the Bloch
+vector. In the coordinates `z = x₂` and `θ = θ_xy` the area is `dz dθ`, so the height of a point
+is uniformly distributed (Archimedes' hat-box theorem). The quantum evolutions, the actions of
+unitaries on rays, are exactly the rotations of the Bloch sphere, and every Hamiltonian
+`c + ½ n · σ` makes the Bloch vector precess about `n`, `a' = n × a`. Complex conjugation of the
+Riemann sphere `OnePoint ℂ ≅ P(ℂ²)` preserves the area density of the Fubini–Study form but
+reverses the form, so it is area-preserving and not Hamiltonian: Hamiltonian evolution preserves
+the area form, not only the area.
+
 **Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is not formalized:
-Mathlib has neither symplectic manifolds nor the manifold structure of projective space. Only its
-edges are checked. `P(V)` is empty for `V = 0`, a single point for `dim V = 1`, and has two points
-exactly when `2 ≤ dim V`. If a point counts as a `0`-dimensional symplectic manifold, Theorem 3
-fails for `dim H = 1`: the CST ensembles of a point and the density operators of `ℂ` are both a
-single point. And as sets `P(ℓ²)` and `P(ℂ²)` are in bijection, so the "only if" of Theorem 1
-needs the topology of `P(V)`, not only its points.
+it needs the symplectic geometry of `P(V)` in every dimension. Only its edges are checked. `P(V)`
+is empty for `V = 0`, a single point for `dim V = 1`, and has two points exactly when
+`2 ≤ dim V`. If a point counts as a `0`-dimensional symplectic manifold, Theorem 3 fails for
+`dim H = 1`: the CST ensembles of a point and the density operators of `ℂ` are both a single
+point. And as sets `P(ℓ²)` and `P(ℂ²)` are in bijection, so the "only if" of Theorem 1 needs the
+topology of `P(V)`, not only its points.
 
 ## ii. Key results
 
@@ -79,6 +89,15 @@ needs the topology of `P(V)`, not only its points.
   `r(μ)` is a density operator.
 - `PureStatesNotEnough.toDensity_surjective`, `PureStatesNotEnough.densityEquiv`: Theorem 5.
 - `PureStatesNotEnough.exists_barycenter_eq_and_ne`: distinct preparations of one ensemble.
+- `PureStatesNotEnough.nonempty_homeomorph_sphere`: `P(ℂ²)` is a two-sphere.
+- `PureStatesNotEnough.toSphere_eq_dz_dtheta`: the area of the sphere is `dz dθ`.
+- `PureStatesNotEnough.conjSphere_preserves_area_reverses_form`,
+  `QuantumMechanics.Qubit.globalFlow_ne_conjSphere`: an area-preserving map that is not
+  Hamiltonian.
+- `PureStatesNotEnough.exists_unitaryAction_eq_iff`: the quantum evolutions of a qubit are exactly
+  the rotations of the Bloch sphere.
+- `PureStatesNotEnough.exists_blochVector_precession`: every Hamiltonian makes the Bloch vector
+  precess.
 
 ## iii. Table of contents
 
@@ -86,6 +105,7 @@ needs the topology of `P(V)`, not only its points.
 - B. Theorem 3: CST and QE-DENS are inconsistent
 - C. Theorem 1 and the Remark after Example 2
 - D. Theorem 5: density operators as classes of measures on pure states
+- E. Example 2: the classical qubit
 
 ## iv. References
 
@@ -699,5 +719,63 @@ theorem exists_barycenter_eq_and_ne {e : Fin 2 → H} (he : Orthonormal ℂ e) :
   · simp [Set.indicator, hne1, hnep, hnem, ENNReal.smul_def]
 
 end Theorem5
+
+/-! ## E. Example 2: the classical qubit -/
+
+section Example2
+
+open Complex ComplexConjugate Matrix Qubit
+open OnePoint (fubiniStudyDensity fubiniStudyForm)
+open scoped Manifold ContDiff TauCeti.ComplexManifold
+
+/-- The pure states of a qubit form a two-sphere: `P(ℂ²)` is homeomorphic to the unit sphere of
+`ℝ³`, through the Bloch vector. -/
+theorem nonempty_homeomorph_sphere :
+    Nonempty (ℙ ℂ (Fin 2 → ℂ) ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1) :=
+  ⟨blochSphere⟩
+
+/-- The area of the sphere is `dz dθ` in the coordinates `z = x₂`, `θ = θ_xy`: the surface measure
+is the pushforward of the area measure of `(-1, 1) × (-π, π]` under
+`(z, θ) ↦ (√(1 - z²) cos θ, √(1 - z²) sin θ, z)`, and the height `z` is distributed as `2π dz`. -/
+theorem toSphere_eq_dz_dtheta :
+    ((volume : Measure (EuclideanSpace ℝ (Fin 3))).toSphere).map (↑) =
+        (volume.restrict (Set.Ioo (-1) 1 ×ˢ Set.Ioc (-Real.pi) Real.pi)).map cylinderToSphere ∧
+      ((volume : Measure (EuclideanSpace ℝ (Fin 3))).toSphere).map
+          (fun x : Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1 ↦
+            (x : EuclideanSpace ℝ (Fin 3)) 2) =
+        ENNReal.ofReal (2 * Real.pi) • volume.restrict (Set.Ioo (-1) 1) :=
+  ⟨Measure.map_toSphere_volume_eq_map_cylinderToSphere, Measure.map_toSphere_volume_height⟩
+
+/-- Complex conjugation of the Riemann sphere `OnePoint ℂ ≅ P(ℂ²)` preserves the area density
+of the Fubini–Study form but reverses the form. So it preserves the area and is not the time-`t`
+map of a Hamiltonian flow (`QuantumMechanics.Qubit.globalFlow_ne_conjSphere`). -/
+theorem conjSphere_preserves_area_reverses_form :
+    (∀ z : ℂ, fubiniStudyDensity (conj z) = fubiniStudyDensity z) ∧
+      TauCeti.SmoothForm.mpullback conjSphere contMDiff_conjSphere fubiniStudyForm =
+        -fubiniStudyForm :=
+  ⟨fubiniStudyDensity_conj, mpullback_conjSphere⟩
+
+/-- **The quantum evolutions of a qubit are exactly the rotations of the Bloch sphere**: a map of
+rays is the action of a unitary if and only if it is a rotation on Bloch vectors. -/
+theorem exists_unitaryAction_eq_iff {f : ℙ ℂ (Fin 2 → ℂ) → ℙ ℂ (Fin 2 → ℂ)} :
+    (∃ U : unitaryGroup (Fin 2) ℂ, f = unitaryAction U) ↔
+      ∃ R ∈ specialOrthogonalGroup (Fin 3) ℝ, ∀ p, blochPoint (f p) = R *ᵥ blochPoint p := by
+  constructor
+  · rintro ⟨U, rfl⟩
+    exact ⟨_, TauCeti.pauliRotation_mem_specialOrthogonalGroup U, blochPoint_unitaryAction U⟩
+  · rintro ⟨R, hR, hf⟩
+    obtain ⟨g, hg⟩ := exists_unitaryAction_eq ⟨R, hR⟩
+    exact ⟨_, funext fun p ↦ blochPoint_injective (by rw [hf, hg])⟩
+
+/-- Every Hamiltonian of a qubit rotates the Bloch vector: for a Hermitian `H` there is `n ∈ ℝ³`,
+the vector of the linear Hamiltonian `n · x`, with `a' = n × a` along every solution of
+`i ψ' = H ψ`. -/
+theorem exists_blochVector_precession {H : Matrix (Fin 2) (Fin 2) ℂ} (hH : H.IsHermitian) :
+    ∃ n : Fin 3 → ℝ, ∀ (ψ : ℝ → EuclideanSpace ℂ (Fin 2)) (t : ℝ),
+      HasDerivAt ψ (-I • WithLp.toLp 2 (H *ᵥ (ψ t).ofLp)) t →
+        HasDerivAt (fun s ↦ blochVector (ψ s)) (n ⨯₃ blochVector (ψ t)) t :=
+  exists_hasDerivAt_blochVector hH
+
+end Example2
 
 end PureStatesNotEnough
