@@ -851,6 +851,11 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
 \item New file \lean{ForPhyslib/QuantumMechanics/HowlandGenerator.lean}: the Howland generator
   computed on compactly supported functions (end of ``Howland's generator'' below). Imports:
   \lean{ForPhyslib.QuantumMechanics.ForwardHamiltonian}, \lean{ForPhyslib.QuantumMechanics.Howland}.
+\item New file \lean{briefs/UnitaryEntropy/UnitaryEntropy/HowlandPropagator.lean}: Howland's
+  construction for the propagator of DR-INFO + EVDIFF. Imports: \lean{UnitaryEntropy.TwoParameter},
+  \lean{ForPhyslib.QuantumMechanics.HowlandGenerator}. To \lean{Howland.lean} was added
+  \lean{UnitaryPropagator.ofContinuous}, the propagator $U(t)U(s)^\dagger$ of a norm-continuous
+  family of unitaries.
 \end{itemize}
 
 \paragraph{Setting.} As in Section~\ref{sec:unitary-entropy-any-dim}, restricted to a
@@ -938,6 +943,10 @@ Howland: $K$ is the forward Hamiltonian of $W$; on a compactly supported continu
   $Kf = i\hbar\,G(0,\cdot)$; for $U(t,s) = V(t-s)$, $K(\chi x) = \chi Hx - i\hbar\chi' x$ &
   \lean{UnitaryPropagator.howlandGenerator}, \lean{isSelfAdjoint_howlandGenerator},
   \lean{howlandGenerator_toLp}, \lean{howlandGenerator_smul_of_group} \\
+Howland, finite dimension: DR-INFO + EVDIFF give a strongly continuous unitary propagator
+  $U(t)U(s)^\dagger$ inducing the evolution, and with it a self-adjoint $K$ &
+  \lean{TwoParameter.exists_unitaryPropagator},
+  \lean{TwoParameter.exists_isSelfAdjoint_howlandGenerator} \\
 \end{xltabular}
 
 \paragraph{Differences from the brief.}
@@ -1116,7 +1125,10 @@ $W(\sigma) = e^{-i\sigma K/\hbar}$ for a self-adjoint $K$
 \end{itemize}
 The theorem uses only unitarity and strong continuity of the propagator. In finite dimension,
 DR-INFO + EVDIFF provide such a propagator, $U(t,s) = U(t)U(s)^\dagger$
-(\lean{TwoParameter.exists_propagator}); this instance is not formalized.
+(\lean{TwoParameter.exists_propagator}). It is norm-continuous, being differentiable, so
+\lean{UnitaryPropagator.ofContinuous} makes it a \lean{UnitaryPropagator}
+(\lean{TwoParameter.exists_unitaryPropagator}), and its Howland generator is self-adjoint with
+$W(\sigma) = e^{-i\sigma K/\hbar}$ (\lean{TwoParameter.exists_isSelfAdjoint_howlandGenerator}).
 
 $K$ is made concrete as the forward Hamiltonian of $W$ (\lean{UnitaryPropagator.howlandGenerator}):
 $W$ is tangent to its own group, so by the local Stone theorem $K$ is self-adjoint and

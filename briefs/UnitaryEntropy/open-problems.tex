@@ -142,6 +142,33 @@ propagator'').
   time-independent evolution this gives $K = H - i\hbar\,\partial_t$ on $\chi x$
   (\lean{UnitaryPropagator.howlandGenerator_smul_of_group}). Open: how $K$ determines
   $H(t_0)$ at a single time, and whether that $H(t_0)$ is self-adjoint.
+
+  Remaining for this item. Those marked \emph{research} are open questions; the others are known
+  results, not yet formalized.
+  \begin{enumerate}
+  \item[(i)] \emph{Research.} A relative bound in the invariant-core condition:
+    $\|\partial_t F(t)\psi - BF(t)\psi\| \le C(\|B\psi\| + \|\psi\|)$ in place of
+    $C\|\psi\|$, as for a time-dependent unbounded potential. The deficiency-vector argument
+    then bounds $\langle y,\psi\rangle$ only in the graph norm, and density no longer
+    applies; presumably a Kato-type stability bound on $F(t)$ in the graph norm is needed.
+  \item[(ii)] \emph{Research.} If $U$ solves the Cauchy problem in the sense of Engel--Nagel,
+    is the forward generator self-adjoint for almost every $t_0$? A phase $\alpha$ of
+    Brownian type (exponent $\tfrac12$ and nowhere $o(\sqrt s)$) breaks ``almost every''
+    without that hypothesis, but such evolutions do not solve the Cauchy problem.
+  \item[(iii)] \emph{Research.} Does an invariant dense $D$ with $C^1$ orbits suffice for
+    essential self-adjointness on $D$ without the bounded-difference condition? Heuristic
+    counterexample, not checked: $U(t,s) = G(t)e^{-i(t-s)p^2}G(s)^{-1}$ with
+    $G(t) = e^{it^2x^4}$ and $D$ the Schwartz space; the generator at $t_0$ is like
+    $p^2 - 2t_0x^4$, limit circle at infinity.
+  \item[(iv)] Known. $K = H(t) - i\hbar\,\partial_t$ on a core for a time-dependent family
+    $H(t)$ under Kato-type hypotheses (Howland 1974).
+  \item[(v)] Known. Nickel's characterization: $U$ solves the Cauchy problem iff $K$ has an
+    invariant core of the form $G_0 + A$ (Nickel 1997, Thm.~2.9, cited in Engel--Nagel,
+    Rem.~VI.9.12). The paper could not be obtained.
+  \item[(vi)] Known. Kato's theorem: constant domain and $t \mapsto H(t)\psi$ of class $C^1$
+    give a unitary propagator. Needs Yosida-approximation or product-integral machinery that
+    neither Mathlib nor Physlib has.
+  \end{enumerate}
 \item \textbf{Equation at every time in infinite dimension.} In finite dimension, one
   differentiable unitary $U(t)$ for all times solves the Schr\"odinger equation at every time,
   and $\Phi_{t_0\to t_1}$ is conjugation by $U(t_1)U(t_0)^\dagger$

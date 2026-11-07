@@ -37,7 +37,9 @@ and uniformly bounded.
 ## ii. Key results
 
 - `QuantumMechanics.UnitaryPropagator`: a strongly continuous unitary propagator; a strongly
-  continuous unitary group gives one (`StronglyContinuousUnitaryGroup.toUnitaryPropagator`).
+  continuous unitary group gives one (`StronglyContinuousUnitaryGroup.toUnitaryPropagator`), and
+  so does a norm-continuous family of unitaries `U`, by `U t U s†`
+  (`UnitaryPropagator.ofContinuous`).
 - `QuantumMechanics.UnitaryPropagator.howland`: the group `W σ`.
 - `QuantumMechanics.UnitaryPropagator.howlandGroup`: `W` is a strongly continuous unitary group.
 - `QuantumMechanics.UnitaryPropagator.exists_howlandGenerator`: `W σ = e^{-iσK/ħ}` for a
@@ -140,6 +142,18 @@ def StronglyContinuousUnitaryGroup.toUnitaryPropagator (V : StronglyContinuousUn
 namespace UnitaryPropagator
 
 instance : CoeFun (UnitaryPropagator E) fun _ => ℝ → ℝ → E →L[ℂ] E := ⟨toFun⟩
+
+/-- The propagator `U t s = U(t) U(s)†` of a norm-continuous family of unitaries. -/
+def ofContinuous {U : ℝ → E →L[ℂ] E} (hu : ∀ t, U t ∈ unitary (E →L[ℂ] E)) (hc : Continuous U) :
+    UnitaryPropagator E where
+  toFun t s := U t * star (U s)
+  mem_unitary t s := mul_mem (hu t) (Unitary.star_mem (hu s))
+  map_self t := Unitary.mul_star_self_of_mem (hu t)
+  map_comp t r s := by
+    rw [mul_assoc, ← mul_assoc (star (U r)), Unitary.star_mul_self_of_mem (hu r), one_mul]
+  continuous_apply x :=
+    ((hc.comp continuous_fst).mul ((continuous_star.comp hc).comp continuous_snd)).clm_apply
+      continuous_const
 
 variable (U : UnitaryPropagator E)
 include U
