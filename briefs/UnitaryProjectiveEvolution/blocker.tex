@@ -1,0 +1,394 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+% Extra stretch for paragraphs with long, unbreakable Lean names
+\emergencystretch=6em
+
+\title{Blockers:\\ Unitary evolution as infinitesimal projective processes}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+This file collects everything about the two brief issues of \lean{open-problems.tex} that block
+verification of Theorem~18, together with a proposed resolution of each and the changes it
+needs in the brief. Sections~\ref{sec:blockers} and~\ref{sec:related} are copied from
+\lean{open-problems.tex} and \lean{formalization-log.tex}; the rest is new.
+
+%======================================================================
+\section{The blockers}\label{sec:blockers}
+
+From \lean{open-problems.tex}, ``From the formalization'':
+\begin{enumerate}
+\item \blocker{brief issue}
+  \textbf{Durations with irrational ratio.}
+  DR-PROJ defines $\Phi_t$ only as
+  $\lim_n(\Psi_{t/n})^n$. For $t/s$ irrational a common step $\tau$ gives blocks $\Psi_\tau^k$ that
+  are not of this form, so ``common refinements'' and continuity at zero do not prove
+  $\Phi_{t+s} = \Phi_t\circ\Phi_s$; eq.~(26) would have to hold uniformly along the trajectory.
+  The remaining interval itself is harmless. A fix: in finite dimension a telescoping estimate
+  gives $\Phi_t = e^{tL}$ directly, which is formalized (\lean{IsProjectiveLimit.exists_eq_exp});
+  in infinite dimension Chernoff's product formula does, if the closure of $L$ generates a
+  contraction semigroup, which is open. In infinite dimension this is the one clause of
+  \lean{IsEvolution} that is assumed; the others, including composition for durations of
+  rational ratio (eq.~(29)), are derived (\lean{IsProjectiveLimit.isEvolution}). $\Phi_0 = I$ is
+  assumed in both dimensions, since the formalization defines $\Phi_t$ only for $t > 0$; the brief
+  obtains it from $\Psi_0 = I$.
+
+  The gap may be real in infinite dimension. A sketch, not checked in Lean: let $H_1 \ne H_2$ be
+  two self-adjoint extensions of a symmetric operator $H_0$ with deficiency indices $(1,1)$, and let
+  $\Psi_\tau$ be the cutoff resolvent of $H_1$ for rational $\tau$ and of $H_2$ for irrational
+  $\tau$. Since $t/n$ is rational exactly when $t$ is, limits, prediction and reconstruction hold
+  for each $t$, and $\Phi_t$ is conjugation by $e^{-itH_1}$ or $e^{-itH_2}$. If both families have
+  the derivative $[H_0,\rho]/(i\hbar)$ on the density operators built from vectors of
+  $\mathcal{D}(H_0)$, which are dense, then DR-PROJ holds while DR-UNIT would force
+  $H_1 = H_2 + c$. (Brief, Sec.~4, after eq.~(29); Log, ``Problems found''.)
+\item \blocker{brief issue}\textbf{What perfect reconstruction means.}
+  DR-PROJ only asks that the probabilities of
+  the reconstructed sequences tend to one. The formalization instead assumes a second projective
+  limit $\Phi'_t$ with $\Phi'_t(\Phi_t P) = P$ and $\Phi_t(\Phi'_t P) = P$ on pure states. It is
+  not settled whether the brief's weaker wording already makes $\Phi_t$ a bijection of the pure
+  states, or what the right formulation is. (Brief, Sec.~4: ``Perfect reconstruction gives the
+  converse correspondence''; Log, ``Differences'' and ``Problems found''.)
+\end{enumerate}
+
+%======================================================================
+\section{Related items}\label{sec:related}
+
+From \lean{open-problems.tex}, ``From the formalization'' (the preamble, which places the
+blockers in the any-dimension formalization):
+
+\begin{quote}
+Beyond finite dimension the formalization has a part in any dimension, which covers
+unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ and derives the evolution structure
+\lean{IsEvolution} from DR-PROJ up to the item ``Durations with irrational ratio'' below
+(\lean{drUnit_iff_drProj_and_map_zero_and_map_add}). It leaves open the item ``Resolvent of an
+unbounded generator'' above and the items ``Complete positivity'', ``The generator of the cutoff
+family'' and ``General cutoff levels'' below (the first is open in finite dimension too).
+\end{quote}
+
+\noindent
+From \lean{open-problems.tex}, ``From the formalization'' (needed if the first blocker is resolved
+through the generator, by Chernoff's formula):
+\begin{enumerate}
+\setcounter{enumi}{3}
+\item \textbf{The generator of the cutoff family.} For unbounded $H$ the brief states that the
+  family~(23) is infinitesimal with generator $\mathcal{L}(\rho) = [H,\rho]/(i\hbar)$. The
+  formalization only shows that $(\Psi_\tau(\rho) - \rho)/\tau$ converges on the core; it does
+  not identify the limit. (Brief, Sec.~4, after eq.~(23); Log, Sec.~1.1, ``Differences'', item
+  on eq.~(26).)
+\end{enumerate}
+
+\noindent
+From \lean{open-problems.tex}, ``From the brief'' (likewise):
+\begin{enumerate}
+\setcounter{enumi}{1}
+\item \textbf{Resolvent of an unbounded generator.} The brief states that ``direct use of the
+  resolvent of an unbounded generator still gives a completely positive trace-preserving map
+  and the resolvent exponential formula'', and that the spectral truncations are needed only
+  for states outside the domain of $H$. Neither claim is proved, and whether the untruncated
+  $(I - \tau\mathcal{L})^{-1}$ gives perfect prediction on the domain of $H$ is left open.
+  Not formalized. (Brief, Sec.~5, ``Unbounded generators''; Log, Sec.~1.1, ``Differences'',
+  last item.)
+\end{enumerate}
+
+\noindent
+From \lean{formalization-log.tex}, Section~1, ``Differences from the brief'':
+\begin{itemize}
+\item DR-PROJ is made precise as follows. Outcomes and branches refer to a projective
+  decomposition that realizes $\Psi$ on the current pure state. Perfect prediction asks that the
+  final branch state converges, without naming the limit; DR-PROJ $\Rightarrow$ DR-UNIT shows that
+  it is $\Phi_tP$. Reconstruction is a second projective limit that inverts $\Phi_t$ on pure
+  states. For the resolvents it is the limit of $(1 + \tau L)^{-1}$, as in the remark ``The
+  finite process is not unitary''.
+\item \lean{drUnit_iff_drProj} assumes \lean{IsEvolution} of the brief on the Schr\"odinger
+  equation: $\Phi_t$ is affine and preserves density operators, $\Phi_0 = I$,
+  $\Phi_{s+t} = \Phi_s\Phi_t$, and $t \mapsto \Phi_t\rho$ is continuous at $0^+$. The brief
+  derives these from DR-PROJ (affinity of the limit, eqs.~(28)--(29), common refinements).
+  \lean{IsProjectiveLimit.isEvolution} derives them too, but not by the brief's route. Each
+  $\Psi_\tau$ agrees on density operators with a linear map $T_\tau$, because the density
+  operators contain a basis of the operators; $(T_\tau - I)/\tau \to B$ in operator norm, because
+  convergence on a basis is norm convergence; and $(T_{t/n})^n \to e^{tB}$ by telescoping. So
+  $\Phi_t = e^{tB}$ on density operators for every $t > 0$, which gives affinity, preservation of
+  density operators, continuity at $0^+$ and composition for all durations at once; eq.~(28) and
+  the common refinements are not needed. DR-PROJ says nothing about $\Phi_0$, which is assumed to
+  be the identity: \lean{drUnit_iff_drProj_and_map_zero} is DR-UNIT $\Leftrightarrow$ DR-PROJ
+  with $\Phi_0 = I$.
+\end{itemize}
+
+\noindent
+From \lean{formalization-log.tex}, Section~1, ``Problems found in the brief'':
+\begin{itemize}
+\item Section~3 states DR-PROJ only as ``the probabilities of the predicted and reconstructed
+  state sequences tend to one''. The remark on prediction and reconstruction adds that the
+  predicted states converge. This is not an extra assumption: since the branch is within
+  $2(1-w)$ of $\Psi^nP \to \Phi_tP$, the predicted states converge to $\Phi_tP$ anyway. The
+  finite-dimensional proof still uses the clause; the proof in any dimension does not
+  (Section~1.1).
+\item ``Perfect reconstruction gives the converse correspondence'' does not say how the
+  reconstructed sequence relates to the predicted one. Injectivity and surjectivity of $\Phi_t$ on
+  pure states need the reconstruction to invert $\Phi_t$; this is what DR-PROJ assumes here.
+\item Composition for durations with irrational ratio, ``take common refinements with a
+  remaining interval whose duration tends to zero'', is a gap. The remaining interval is
+  harmless: with a common step $\tau$ the powers of $\Psi_\tau$ commute, so
+  $\|\Psi_\tau^k(\Psi_\tau^j\rho - \rho)\|_1 \le j\|\Psi_\tau\rho - \rho\|_1
+  \approx j\tau\|L\rho\|_1
+  \to 0$ by the telescoping of eq.~(28). The problem is the step size. DR-PROJ defines $\Phi_t$
+  only as $\lim_n (\Psi_{t/n})^n$. With $t/s$ irrational and $\tau = (t+s)/N$, the block of
+  $k = \lfloor t/\tau\rfloor$ steps is $\Psi_\tau^k$, which is not of the form $(\Psi_{t/k})^k$,
+  and DR-PROJ says nothing about its limit. Comparing $(\Psi_a)^k$ with $(\Psi_b)^k$ for nearby
+  $a, b$ needs the $o(\tau)$ in eq.~(26) to be uniform along the states $\Psi_b^j\rho$, while
+  eq.~(26) holds for each $\rho$ separately. Continuity at zero does not supply this. In finite
+  dimension $L$ is bounded, eq.~(26) holds in operator norm, and telescoping gives
+  $\|(\Psi_{t/n})^n - e^{tL}\| \le n\,o(t/n)\,e^{t\|L\|} \to 0$, so $\Phi_t = e^{tL}$ and
+  composition follow at once (formalized, \lean{IsProjectiveLimit.exists_eq_exp}). In infinite
+  dimension Chernoff's product formula gives the same,
+  uniformly on compact $t$-intervals, provided the closure of $L$ generates a contraction
+  semigroup; the brief's ``single, possibly unbounded generator $L$'' must be read to include
+  this, or it must be assumed.
+\end{itemize}
+
+\noindent
+From \lean{formalization-log.tex}, Section~1.1 (any dimension), ``Differences from the brief'':
+\begin{itemize}
+\item DR-PROJ $\Rightarrow$ DR-UNIT is proved over \lean{IsEvolution} (\lean{DrProj.drUnit}) and
+  over two of its clauses only (\lean{drUnit_iff_drProj_and_map_zero_and_map_add}). The
+  finite-dimensional derivation of \lean{IsEvolution}, through $\Phi_t = e^{tB}$, needs a finite
+  basis of density operators; \lean{IsProjectiveLimit.isEvolution} follows the brief instead.
+  Each $\Phi_t$ is a trace-norm limit of affine maps that keep density operators, so it is one
+  too, and contracts the trace norm (Simon's lemma, the brief's ``extend to positive
+  trace-preserving linear maps''). Eq.~(28) is the telescoping bound
+  $\|\Psi^n\rho - \rho\|_1 \le n\|\Psi\rho - \rho\|_1$ on the dense set of eq.~(26), and
+  contractivity extends continuity at $0^+$ to every density operator. Eq.~(29) is proved as
+  $\Phi_{(p+q)u} = \Phi_{pu}\circ\Phi_{qu}$, along $n = (p+q)m$, which gives composition whenever
+  $s/t$ is rational. Two clauses remain assumptions: $\Phi_0 = I$, since \lean{IsProjectiveLimit}
+  defines $\Phi_t$ only for $t > 0$ (the brief obtains it from $\Psi_0 = I$), and
+  $\Phi_{s+t} = \Phi_s\circ\Phi_t$ for $s/t$ irrational, the gap noted in the finite-dimensional
+  part.
+\item The proof of DR-PROJ $\Rightarrow$ DR-UNIT does not use the clause of
+  \lean{PerfectPrediction} that the final branch states converge. The bound
+  $\|\Psi^nP - Q_n\|_1 \le 2(1-w_n)$ and $\Psi^nP \to \Phi_tP$ already give $Q_n \to \Phi_tP$.
+  The clause is kept so that the definitions match those of finite dimension.
+\end{itemize}
+
+\noindent
+From \lean{formalization-log.tex}, Section~1.1, ``Problems found in the brief'':
+\begin{itemize}
+\item Composition for durations of irrational ratio is the gap noted in the finite-dimensional
+  part. Here no telescoping estimate closes it: $L$ may be unbounded, and eq.~(26) holds only
+  for each $\rho$ of a dense set, not uniformly.
+\end{itemize}
+
+%======================================================================
+\section{The author's proposal (2026-11-02)}
+
+Paraphrased, from a reply on another brief that the author means for all briefs: the briefs get a
+section of mathematical prerequisites, which states what Lean should prove and is fully
+formalized. The relations between physical conditions, such as Theorem~18, are argued informally
+from these prerequisites and are checked by reading, not by Lean. The author will rewrite the
+briefs accordingly.
+
+This brief already has such a section (Sec.~2: Definition~1, Propositions~2, 13 and~17), and it
+is formalized. Both blockers sit in Theorem~18, in what DR-PROJ means. Neither is a question of
+reading a physical condition charitably: each decides which mathematical statement the proof of
+Theorem~18 rests on. So DR-PROJ has to be stated so that the proof goes through, and the facts
+the proof then uses belong in the prerequisites.
+
+%======================================================================
+\section{Proposed resolution}
+
+\subsection{Durations with irrational ratio}
+
+\paragraph{Guess.} DR-PROJ means that the evolution does not depend on how the elapsed time is
+subdivided. The limit is taken over \emph{every} subdivision of $[0,t]$ whose longest interval
+tends to zero, not only over the equal subdivisions $t/n$:
+\[
+  \Phi_t\rho = \lim \Psi_{\tau_{k}} \circ \dots \circ \Psi_{\tau_{1}}\,\rho
+  \qquad\text{in trace norm, for } \tau_i > 0,\ \textstyle\sum_i \tau_i = t,\
+  \max_i \tau_i \to 0,
+\]
+and $\Phi_0 = I$, the empty product. Composition is then immediate (prerequisite P1): a
+subdivision of $[0,s]$ followed by one of $[0,t]$ is a subdivision of $[0,s+t]$. DR-UNIT still
+implies the stronger DR-PROJ (P2), by the telescoping argument of the brief, run on the core of
+bounded spectral support. The equal subdivisions are a special case, so every other step of the
+proof stands as it is. The counterexample sketch of Section~\ref{sec:blockers} is excluded: a
+subdivision of a rational $t$ into irrational steps leads to $e^{-itH_2}$, not $e^{-itH_1}$.
+
+\paragraph{Alternative.} Keep the equal subdivisions and assume instead that the closure of the
+generator $L$ of eq.~(26) generates a contraction semigroup. Chernoff's product formula then gives
+$\Phi_t = e^{t\bar L}$, and composition follows. This needs the related items ``The generator of
+the cutoff family'' and, for the direction DR-UNIT $\Rightarrow$ DR-PROJ, the identification of
+$\bar L$ with $[H,\cdot\,]/(i\hbar)$, and Chernoff's formula is not in Mathlib.
+
+\paragraph{Why.}
+\begin{itemize}
+\item It is what the brief already says. ``The use of the same duration-dependent process makes
+  the limiting evolution depend only on elapsed time'' and ``Composition follows by taking common
+  refinements'' make sense only if unequal steps are allowed: a common refinement of $t$ and $s$
+  is not an equal subdivision of $t+s$ when $t/s$ is irrational.
+\item Time is homogeneous. An observer who checks the system at uneven times, say on a clock that
+  ticks irregularly, should see the same evolution as one who checks at even times. A process for
+  which the outcome depends on whether the step lengths are rational is not a physical process.
+\item It costs no physics. The direction DR-UNIT $\Rightarrow$ DR-PROJ survives with the same
+  estimates (P2), so Theorem~18 keeps its full range, including unbounded generators.
+\item It is elementary. P1 is a three-line argument from trace-norm contraction, and P2 reuses
+  the second-order bounds of Proposition~13. The alternative needs semigroup theory that neither
+  the brief nor Mathlib has.
+\end{itemize}
+
+\paragraph{Confidence.}
+\begin{itemize}
+\item High: some strengthening of DR-PROJ is needed. The counterexample sketch is not checked in
+  Lean, but no argument from equal subdivisions alone is known.
+\item Medium-high: the subdivision form is what the author means, given ``common refinements''.
+  The author may prefer the generator form; both resolve the blocker.
+\end{itemize}
+
+\subsection{What perfect reconstruction means}
+
+\paragraph{Guess.} Reconstruction is a second infinitesimal state-adaptive projective process
+$\Psi'_\tau$, with its own limit $\Phi'_t$, that runs the evolution backwards, and prediction and
+reconstruction undo each other on pure states, in both orders. In the language of branches, for
+every $t > 0$ and every pure state $P$:
+\begin{itemize}
+\item a predicted branch of $(\Psi_{t/n})^n$ from $P$ has probability tending to one, and a
+  reconstructed branch of $(\Psi'_{t/n})^n$ from the predicted state $\Phi_tP$ has probability
+  tending to one and ends at $P$;
+\item the same with the roles of $\Psi$ and $\Psi'$ exchanged.
+\end{itemize}
+By P3 this is the same as $\Phi'_t(\Phi_tP) = P$ and $\Phi_t(\Phi'_tP) = P$ for every pure $P$,
+which is what the formalization assumes (\lean{DrProj}). The Lean proof then stands as it is. For
+the resolvents $\Psi'_\tau = (I + \tau L)^{-1}$, which the brief already names; the brief may also
+write it as $\Psi_{-\tau}$, so that DR-PROJ covers both directions of time at once.
+
+\paragraph{Why.}
+\begin{itemize}
+\item It is what the brief already says. The proof needs ``every pure future state reconstructs a
+  unique pure initial state'', and the remark ``The finite process is not unitary'' says that
+  ``in the infinitesimal limit \ldots\ prediction and reconstruction become mutually inverse''.
+  Mutually inverse means both orders.
+\item One order is not enough. $\Phi'_t\circ\Phi_t = I$ on pure states makes $\Phi_t$ injective
+  there, but Proposition~17 needs it onto the pure states as well. That comes from
+  $\Phi_t\circ\Phi'_t = I$: every pure state is the evolution of the state it reconstructs to.
+\item Probabilities alone say nothing about where the reconstruction ends. A branch that is
+  certain but ends at a state other than $P$ does not reconstruct $P$, so the reconstructed
+  branch must start from the predicted state and end at the initial one.
+\item Physically, reconstruction is retrodiction: from the present state one infers the past
+  state with certainty. The two sides of the guess are retrodiction of every prediction and
+  prediction of every retrodiction.
+\end{itemize}
+
+\paragraph{Remark.} In finite dimension reconstruction may not be needed at all. Each $\Psi_\tau$
+fixes the maximally mixed state $I/d$, since $\sum_a P_a(I/d)P_a = I/d$, so $\Phi_t$ is affine,
+unital and maps pure states to pure states. By the classification of linear maps that preserve
+pure states, it is then conjugation by a unitary or an anti-unitary, as the constant maps onto one
+pure state are not unital for $d \ge 2$. This sketch is not checked in Lean. In infinite dimension
+there is no maximally mixed state, and an isometry that is not unitary is not excluded this way,
+so reconstruction is needed there, or at least nothing shown here replaces it.
+
+\paragraph{Confidence.}
+\begin{itemize}
+\item High: the reconstruction inverts the evolution on pure states, in both orders; the brief
+  says ``mutually inverse''.
+\item Medium: the wording through branches. The author may prefer to state reconstruction directly
+  through the limits, $\Phi'_t\Phi_t = \Phi_t\Phi'_t = I$ on pure states.
+\end{itemize}
+
+%======================================================================
+\section{Mathematical prerequisites to add to the brief}
+
+Each item is a purely mathematical statement for Lean.
+
+\begin{enumerate}
+\renewcommand{\labelenumi}{P\arabic{enumi}.}
+\item \textbf{Composition from subdivisions.} Let $(\Psi_\tau)_{\tau > 0}$ be maps of the density
+  operators that are affine, and so contract the trace norm. Suppose that for every $t > 0$ the
+  ordered products $\Psi_{\tau_k}\circ\dots\circ\Psi_{\tau_1}$ over subdivisions of $[0,t]$
+  converge on every density operator in trace norm to $\Phi_t$, as the longest interval tends to
+  zero. Then $\Phi_{s+t} = \Phi_t\circ\Phi_s$ for all $s, t > 0$.
+  Proof: for subdivisions $A_n$ of $[0,t]$ and $B_n$ of $[0,s]$,
+  $\|A_nB_n\rho - \Phi_t\Phi_s\rho\|_1 \le \|B_n\rho - \Phi_s\rho\|_1
+  + \|A_n\Phi_s\rho - \Phi_t\Phi_s\rho\|_1 \to 0$, and $A_nB_n$ runs over subdivisions of
+  $[0,s+t]$.\newline
+  Lean: not formalized. Short, from \lean{AffineOnDensityOperators.traceENorm_sub_le} and
+  \lean{isDensityOperator_of_tendsto_traceENorm}.
+\item \textbf{Subdivisions of the cutoff resolvents.} Let $U_t = e^{tH/(i\hbar)}$ for a
+  self-adjoint, possibly unbounded $H$, with $T_t\rho = U_t\rho U_t^\dagger$, and let $\Psi_\tau$
+  be the cutoff resolvents~(23) with $M_\tau$ decreasing in $\tau$. Then
+  $\Psi_{\tau_k}\circ\dots\circ\Psi_{\tau_1}\rho \to T_t\rho$ in trace norm over every subdivision
+  of $[0,t]$ whose longest interval tends to zero. Proof: if $P_m\rho = \rho$ for the spectral
+  projector $P_m$ of $H$ on $[-m,m]$, the states $T_s\rho$ stay in the range of $P_m$, and once
+  $M_{\tau_i} \ge m$ each step is the resolvent of the bounded group with generator $H P_m$.
+  Telescoping with the bound~(14) gives an error of at most
+  $\sum_i 80\,m^2\tau_i^2/\hbar^2 \le 80\,m^2\,t\max_i\tau_i/\hbar^2$. Such $\rho$ are dense, and
+  contraction extends the limit to every density operator.\newline
+  Lean: not formalized. From \lean{laplaceResolvent_cutoffGroup_eq},
+  \lean{traceENorm_laplaceResolvent_sub_unitaryChannel_le},
+  \lean{exists_isDensityOperator_mul_eq} and the telescoping bound behind
+  \lean{traceENorm_sub_unitaryChannel_le_of_step}.
+\item \textbf{A certain branch ends at the limit.} Let $\Psi$ be state-adaptive projective and
+  $Q_0, \dots, Q_n$ a branch of $n$ steps of $\Psi$ with probability $w$. Then
+  $\|\Psi^nQ_0 - Q_n\|_1 \le 2(1-w)$. Hence, if $(\Psi_{t/n})^n\rho \to \Phi_t\rho$ and branches
+  from a pure $P$ have probability tending to one and end at states that converge to $R$, then
+  $R = \Phi_tP$. With the reconstruction of the guess this gives $\Phi'_t(\Phi_tP) = P$ and
+  $\Phi_t(\Phi'_tP) = P$, so $\Phi_t$ is a bijection of the pure states.\newline
+  Lean: the bound is \lean{traceENorm_iterate_sub_le_of_isBranch}; the bijection is
+  \lean{DrProj.drEv}. The step from branches to limits is not stated, but follows at once.
+\end{enumerate}
+
+\noindent
+The proof of Theorem~18 then uses P1 for composition, P2 for the strengthened DR-UNIT
+$\Rightarrow$ DR-PROJ, and P3 with Proposition~17 for the unitary implementation.
+
+%======================================================================
+\section{Other changes to the brief}
+
+\begin{enumerate}
+\item \textbf{DR-PROJ.} Replace ``applying the same process of duration $t/n$, $n$ times, in the
+  limit $n \to \infty$'' by ``applying the process over any subdivision of $t$, in the limit where
+  the longest interval tends to zero''. Say that $\Phi_0 = I$. Replace ``the probabilities of the
+  predicted and reconstructed state sequences tend to one'' by: there is a reconstruction process,
+  again infinitesimal and state-adaptive projective, such that from every pure state the predicted
+  sequence and the sequence that reconstructs its starting point from its end both have
+  probability tending to one, and the same with prediction and reconstruction exchanged.
+\item \textbf{Proof of DR-UNIT $\Rightarrow$ DR-PROJ.} State eqs.~(20) and~(24) for subdivisions,
+  citing P2; the estimates do not change. For reconstruction, add that the limit of
+  $(I + \tau L_\tau)^{-1}$ is $T_{-t}$, which inverts $T_t$, so both orders hold.
+\item \textbf{Proof of DR-PROJ $\Rightarrow$ DR-UNIT.} Replace ``Perfect reconstruction gives the
+  converse correspondence: every pure future state reconstructs a unique pure initial state'' by a
+  citation of P3. Replace the paragraph on common refinements and the remaining interval, from
+  ``The same argument gives composition'' to ``$\Phi_t\circ\Phi_s$ for all $t, s \ge 0$'', by a
+  citation of P1. Eq.~(29) can stay as an example. Drop ``Therefore $\Phi_0 = I$'', which is now
+  part of DR-PROJ.
+\item \textbf{Remark ``Mathematical meaning of prediction and reconstruction''.} Align it with the
+  new DR-PROJ: the limit is over subdivisions, and the reconstructed branch starts from the
+  predicted state and ends at the initial one. The clause that the predicted states converge can
+  go, since P3 gives it.
+\end{enumerate}
+
+\paragraph{When the blockers close.} Both brief issues close once the brief adopts these
+readings, or the alternatives. In Lean, \lean{IsProjectiveLimit} then takes the limit over
+subdivisions. With P1 and P2, \lean{IsProjectiveLimit.isEvolution} no longer assumes composition
+for irrational ratios, and $\Phi_0 = I$ becomes part of the definition, so DR-UNIT
+$\Leftrightarrow$ DR-PROJ holds without the extra clauses of
+\lean{drUnit_iff_drProj_and_map_zero_and_map_add}. \lean{DrProj} already matches the guess on
+reconstruction; adding the branch form and P3 is short.
+
+\end{document}
