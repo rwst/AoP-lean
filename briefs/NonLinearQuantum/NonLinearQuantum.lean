@@ -556,7 +556,7 @@ theorem map_add_of_map_smul {F : Type*} [AddCommGroup F] [Module ℂ F]
     (x y : F) : f (x + y) = f x + f y := by
   have : Nontrivial F := Module.nontrivial_of_finrank_eq_succ hF
   obtain ⟨b, hb⟩ := exists_ne (0 : F)
-  have hspan := (finrank_eq_one_iff_of_nonzero' b hb).mp hF
+  have hspan := (finrank_eq_one_iff_of_ne_zero' b hb).mp hF
   obtain ⟨c, rfl⟩ := hspan x
   obtain ⟨d, rfl⟩ := hspan y
   rw [← add_smul, hf, hf, hf, add_smul]

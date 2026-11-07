@@ -357,7 +357,7 @@ theorem posTrace_pinching {ρ : E →L[ℂ] E} (hρ : 0 ≤ ρ) :
     rw [← h.tsum_eq, ENNReal.ofReal_tsum_of_nonneg (fun _ => sq_nonneg _) h.summable]
     simp_rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm]
   simp_rw [hterm]
-  rw [ENNReal.tsum_comm]
+  rw [tsum_comm]
   have h := tsum_hilbertSchmidtEnergy_comp_right (CFC.sqrt ρ) b b P hP.tsum_enorm_adjoint_sq
   simp only [hilbertSchmidtEnergy_def, comp_apply] at h
   rw [h]
@@ -382,7 +382,7 @@ theorem hilbertSchmidtEnergy_le_one {κ : Type*} {ρ : E →L[ℂ] E} (hρ : IsD
     rw [hs.isSelfAdjoint.star_eq, hss] at h
     nlinarith [hρ.norm_le_one, norm_nonneg (CFC.sqrt ρ)]
   rw [← hρ.posTrace_eq_one, posTrace_eq_tsum_norm_sqrt_sq hρ.nonneg b, hilbertSchmidtEnergy_def]
-  refine ENNReal.tsum_le_tsum fun k => ?_
+  refine tsum_le_tsum fun k => ?_
   rw [← ofReal_norm, ← ENNReal.ofReal_pow (norm_nonneg _)]
   refine ENNReal.ofReal_le_ofReal (pow_le_pow_left₀ (norm_nonneg _) ?_ 2)
   calc ‖ρ (b k)‖ = ‖CFC.sqrt ρ (CFC.sqrt ρ (b k))‖ := by
@@ -416,9 +416,9 @@ theorem hilbertSchmidtEnergy_sub {κ : Type*} (ρ : E →L[ℂ] E) {σ : E →L[
   have hsplit := fun T : E →L[ℂ] E => tsum_tsum_hilbertSchmidtEnergy_comp T b b P P
     hP.tsum_enorm_sq hP.tsum_enorm_adjoint_sq
   rw [← hsplit (ρ - σ), ← hsplit (ρ - hP.pinching ρ), ← hsplit (hP.pinching ρ - σ),
-    ← ENNReal.tsum_add]
+    ← tsum_add]
   refine tsum_congr fun j => ?_
-  rw [← ENNReal.tsum_add]
+  rw [← tsum_add]
   refine tsum_congr fun i => ?_
   have hσb := hP.mul_pinching_mul σ i j
   rw [hP.pinching_eq_self_iff.mpr hσ] at hσb
@@ -440,7 +440,7 @@ theorem hilbertSchmidtNorm_sub_pinching_lt {ρ σ : E →L[ℂ] E} (hρ : IsDens
   have h2 := hilbertSchmidtEnergy_sub_ne_top hPρ hσ b
   have hpos : (hP.pinching ρ - σ).hilbertSchmidtEnergy b ≠ 0 := by
     intro h0
-    rw [hilbertSchmidtEnergy_def, ENNReal.tsum_eq_zero] at h0
+    rw [hilbertSchmidtEnergy_def, tsum_eq_zero_iff] at h0
     refine hne (sub_eq_zero.mp ?_).symm
     ext v
     have hk : ∀ k, (hP.pinching ρ - σ) (b k) = 0 := fun k => by simpa using h0 k

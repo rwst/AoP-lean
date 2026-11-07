@@ -79,7 +79,7 @@ theorem tendsto_mul_of_tendsto_apply {α : Type*} {l : Filter α} {D : α → E 
   have hfin : posTrace (D a * S * star (D a * S)) ≠ ⊤ := by
     rw [posTrace_mul_star _ b]
     refine ne_top_of_le_ne_top (ENNReal.mul_ne_top (ENNReal.ofReal_ne_top (r := C ^ 2)) hSb)
-      ((ENNReal.tsum_le_tsum fun i => ?_).trans ENNReal.tsum_mul_left.le)
+      ((tsum_le_tsum fun i => ?_).trans ENNReal.tsum_mul_left.le)
     rw [← ENNReal.ofReal_mul (sq_nonneg _)]
     exact ENNReal.ofReal_le_ofReal (hle a ha i)
   rw [← abs_norm]

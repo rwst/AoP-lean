@@ -284,7 +284,7 @@ theorem secondCountableTopology_topology [Countable ι] {H : Type*} [SeminormedA
     [NormedSpace ℂ H] [SecondCountableTopology H] (J : V →ₗ[ℂ] H)
     (hJ : ∀ v, ‖J v‖ = c.toSeminorm v) : @SecondCountableTopology V (topology c X) := by
   let := topology c X
-  have : Countable (FreeMonoid ι) := inferInstanceAs (Countable (List ι))
+  have : Countable (FreeMonoid ι) := .of_equiv _ (FreeMonoid.toListEquiv (α := ι)).symm
   let Φ : V →ₗ[ℂ] (FreeMonoid ι → H) := LinearMap.pi fun w => J ∘ₗ (word X w).1
   have hq := withSeminorms_pi fun _ : FreeMonoid ι => norm_withSeminorms ℂ H
   have hind := Φ.withSeminorms_induced hq
@@ -350,7 +350,7 @@ lemma posOp_pow_apply (n : ℕ) (f : 𝓢(ℝ, ℂ)) (x : ℝ) :
     (posOp ^ n) f x = (x : ℂ) ^ n * f x := by
   induction n generalizing f with
   | zero => simp
-  | succ n ih => rw [pow_succ, Module.End.mul_apply, ih, posOp_apply, pow_succ]; ring
+  | succ n ih => rw [pow_succ, mul_apply_eq_comp, ih, posOp_apply, pow_succ]; ring
 
 lemma momOp_pow_apply (n : ℕ) (f : 𝓢(ℝ, ℂ)) (x : ℝ) :
     (momOp ħ ^ n) f x = (-I * ħ) ^ n * iteratedDeriv n f x := by
@@ -358,7 +358,7 @@ lemma momOp_pow_apply (n : ℕ) (f : 𝓢(ℝ, ℂ)) (x : ℝ) :
   | zero => simp
   | succ n ih =>
     have h : ⇑((momOp ħ ^ n) f) = fun y => (-I * ħ) ^ n * iteratedDeriv n f y := funext ih
-    rw [pow_succ', Module.End.mul_apply, momOp_apply, h, deriv_const_mul_field',
+    rw [pow_succ', mul_apply_eq_comp, momOp_apply, h, deriv_const_mul_field',
       iteratedDeriv_succ, pow_succ']
     ring
 
@@ -369,8 +369,8 @@ theorem posOp_mul_momOp_sub :
   have hd : HasDerivAt (fun y : ℝ => (y : ℂ) * f y) (1 * f x + x * deriv f x) x :=
     (hasDerivAt_id x).ofReal_comp.mul (f.hasDerivAt x)
   have he : ⇑(posOp f) = fun y : ℝ => (y : ℂ) * f y := funext (posOp_apply f)
-  simp only [LinearMap.sub_apply, Module.End.mul_apply, posOp_apply, momOp_apply, he, hd.deriv,
-    LinearMap.smul_apply, Module.End.one_apply, sub_apply, smul_apply,
+  simp only [LinearMap.sub_apply, mul_apply_eq_comp, posOp_apply, momOp_apply, he, hd.deriv,
+    LinearMap.smul_apply, one_apply_eq_self, sub_apply, smul_apply,
     smul_eq_mul]
   ring
 
@@ -475,7 +475,7 @@ lemma mono_mem_algebra (a b : ℕ) : mono ħ a b ∈ algebra (obs ħ) :=
 lemma mono_apply (a b : ℕ) (f : 𝓢(ℝ, ℂ)) :
     ⇑(mono ħ a b f) = (-I * ħ) ^ b • weighted a b f := by
   funext x
-  simp only [mono, Module.End.mul_apply, posOp_pow_apply, momOp_pow_apply, weighted,
+  simp only [mono, mul_apply_eq_comp, posOp_pow_apply, momOp_pow_apply, weighted,
     Pi.smul_apply, smul_eq_mul]
   ring
 
@@ -767,14 +767,14 @@ lemma lineDerivOp_comm (u v : EuclideanSpace ℝ (Fin n)) (f : 𝓢ₙ) :
 
 lemma posOpN_comm (i j : Fin n) : posOpN n i * posOpN n j - posOpN n j * posOpN n i = 0 := by
   ext f x
-  simp only [LinearMap.sub_apply, Module.End.mul_apply, posOpN_apply, LinearMap.zero_apply,
+  simp only [LinearMap.sub_apply, mul_apply_eq_comp, posOpN_apply, LinearMap.zero_apply,
     sub_apply, zero_apply]
   ring
 
 lemma momOpN_comm (i j : Fin n) :
     momOpN n ħ i * momOpN n ħ j - momOpN n ħ j * momOpN n ħ i = 0 := by
   ext f : 1
-  simp only [LinearMap.sub_apply, Module.End.mul_apply, momOpN_eq, LinearMap.smul_apply,
+  simp only [LinearMap.sub_apply, mul_apply_eq_comp, momOpN_eq, LinearMap.smul_apply,
     derivN_apply, lineDerivOp_smul, lineDerivOp_comm n (unitVec n i), sub_self,
     LinearMap.zero_apply]
 
@@ -784,7 +784,7 @@ lemma posOpN_comm_momOpN (i j : Fin n) :
       if i = j then (I * ħ) • (1 : Module.End ℂ 𝓢ₙ) else 0 := by
   ext f x
   have h := lineDerivOp_posOpN n i (unitVec n j) f x
-  simp only [LinearMap.sub_apply, Module.End.mul_apply, momOpN_eq, LinearMap.smul_apply,
+  simp only [LinearMap.sub_apply, mul_apply_eq_comp, momOpN_eq, LinearMap.smul_apply,
     derivN_apply, sub_apply, smul_apply, posOpN_apply, h, PiLp.single_apply, smul_eq_mul]
   split_ifs with hij <;> simp [hij] <;> ring
 
@@ -905,8 +905,8 @@ lemma weightN_apply (k : ℕ) (f : 𝓢ₙ) (x : EuclideanSpace ℝ (Fin n)) :
   | succ k ih =>
     have h1 : weightN n (k + 1) f =
         weightN n k f + ∑ i, posOpN n i (posOpN n i (weightN n k f)) := by
-      rw [weightN, pow_succ', Module.End.mul_apply, ← weightN, LinearMap.add_apply,
-        Module.End.one_apply, LinearMap.sum_apply]
+      rw [weightN, pow_succ', mul_apply_eq_comp, ← weightN, LinearMap.add_apply,
+        one_apply_eq_self, LinearMap.sum_apply]
       rfl
     have hs : ∑ i, ((x i : ℝ) : ℂ) * (((x i : ℝ) : ℂ) * weightN n k f x) =
         (∑ i, ((x i : ℝ) : ℂ) ^ 2) * weightN n k f x := by
@@ -957,7 +957,7 @@ theorem exists_seminorm_le (hħ : ħ ≠ 0) (k m : ℕ) : ∃ C, 0 ≤ C ∧ ∀
       ‖((∂_{b i})^[n + 1] (g r)).toLp 2‖ := fun r i => by
     rw [hb]
     change (l2CoreN n).toSeminorm ((derivN n i ^ (n + 1)) (g r)) = _
-    rw [l2CoreN_toSeminorm, Module.End.pow_apply]
+    rw [l2CoreN_toSeminorm, pow_apply_eq_iterate]
     rfl
   have hsum : ∑ ρ, seminormFamily (l2CoreN n) (obsN n ħ) (boundOp n hħ k m ρ) f =
       ∑ r, (‖(g r).toLp 2‖ + ∑ i, ‖((∂_{b i})^[n + 1] (g r)).toLp 2‖) := by

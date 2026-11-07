@@ -275,10 +275,10 @@ lemma tsum_iSup_of_monotone {α : Type*} {a : ℕ → α → ℝ≥0∞} (ha : �
       rw [Finset.sum_insert hj, ih, ENNReal.iSup_add_iSup_of_monotone (ha j)
         (fun n m h => Finset.sum_le_sum fun k _ => ha k h)]
       simp_rw [Finset.sum_insert hj]
-  rw [ENNReal.tsum_eq_iSup_sum]
+  rw [tsum_eq_iSup_sum]
   simp_rw [hfin]
   rw [iSup_comm]
-  simp_rw [← ENNReal.tsum_eq_iSup_sum]
+  simp_rw [← tsum_eq_iSup_sum]
 
 /-- The cross term in an eigenbasis of `σ`: `-tr (ρ log σ) = ∑ⱼ (-log μⱼ) ⟨fⱼ, ρ fⱼ⟩`. -/
 theorem IsEigenbasis.crossEntropy_eq {σ : E →L[ℂ] E} {κ : Type*} {f : HilbertBasis κ ℂ E}
@@ -343,14 +343,14 @@ theorem crossEntropy_eq_lindbladSum_add (hρ : IsDensityOperator ρ) (hσ : IsDe
       ∑' i, ∑' j, c i j * (ENNReal.ofReal (ev i) * negLogENNReal (μ j)) := by
     rw [hf.crossEntropy_eq hσ hρ.nonneg]
     simp_rw [he.ofReal_re_inner_apply hρ, ← ENNReal.tsum_mul_left]
-    rw [ENNReal.tsum_comm]
+    rw [tsum_comm]
     congr 1
     ext i
     congr 1
     ext j
     ring
   have hμsum : ∑' i, ∑' j, c i j * ENNReal.ofReal (μ j) = 1 := by
-    rw [ENNReal.tsum_comm]
+    rw [tsum_comm]
     simp_rw [ENNReal.tsum_mul_right, hcol, one_mul]
     exact hf.tsum_ofReal_eq_one hσ
   have hlsum : ∑' i, ∑' j, c i j * ENNReal.ofReal (ev i) = 1 := by
@@ -363,7 +363,7 @@ theorem crossEntropy_eq_lindbladSum_add (hρ : IsDensityOperator ρ) (hσ : IsDe
       ∑' i, ∑' j, c i j * ENNReal.ofReal (μ j) =
       lindbladSum e ev f μ + ∑' i, ∑' j, c i j * ENNReal.ofReal (negMulLog (ev i)) +
         ∑' i, ∑' j, c i j * ENNReal.ofReal (ev i) := by
-    simp only [lindbladSum, ← ENNReal.tsum_add, ← mul_add]
+    simp only [lindbladSum, ← tsum_add, ← mul_add]
     congr 1
     ext i
     congr 1
@@ -379,7 +379,7 @@ theorem eq_of_lindbladSum_eq_zero (hρ : IsDensityOperator ρ) (hσ : IsDensityO
     (he : IsEigenbasis ρ e ev) (hf : IsEigenbasis σ f μ) (h : lindbladSum e ev f μ = 0) :
     ρ = σ := by
   have hij : ∀ i j, ⟪e i, (ρ - σ) (f j)⟫_ℂ = 0 := fun i j => by
-    have h1 := ENNReal.tsum_eq_zero.mp (ENNReal.tsum_eq_zero.mp h i) j
+    have h1 := tsum_eq_zero_iff.mp (tsum_eq_zero_iff.mp h i) j
     have hρe : ⟪e i, ρ (f j)⟫_ℂ = ev i * ⟪e i, f j⟫_ℂ := by
       have e1 : ⟪ρ (e i), f j⟫_ℂ = ⟪e i, ρ (f j)⟫_ℂ := hρ.isSelfAdjoint.isSymmetric (e i) (f j)
       rw [← e1, he.apply_eq, inner_smul_left, Complex.conj_ofReal]
@@ -426,7 +426,7 @@ theorem relativeEntropy_eq_lindbladSum (hρ : IsDensityOperator ρ) (hσ : IsDen
 theorem relativeEntropy_self (hρ : IsDensityOperator ρ) : relativeEntropy ρ ρ = 0 := by
   simp only [relativeEntropy, hρ, and_self, ↓reduceDIte]
   rw [lindbladSum]
-  refine ENNReal.tsum_eq_zero.mpr fun i => ENNReal.tsum_eq_zero.mpr fun j => ?_
+  refine tsum_eq_zero_iff.mpr fun i => tsum_eq_zero_iff.mpr fun j => ?_
   by_cases hij : i = j
   · subst hij
     rw [(kleinTerm_eq_zero_iff (hρ.isEigenbasis.eigenvalue_mem_Icc hρ i).1

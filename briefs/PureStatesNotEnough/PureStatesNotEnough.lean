@@ -117,7 +117,7 @@ theorem Convex.classicalEnsembles (μ : Measure X) : Convex ℝ≥0 (classicalEn
   have := h₁.1
   have := h₂.1
   refine ⟨⟨?_⟩, (h₁.2.smul_left a).add_left (h₂.2.smul_left b)⟩
-  simp only [Measure.add_apply, Measure.smul_apply, measure_univ, ENNReal.smul_def, smul_eq_mul,
+  simp only [add_apply, smul_apply, measure_univ, ENNReal.smul_def, smul_eq_mul,
     mul_one]
   rw [← ENNReal.coe_add, hab, ENNReal.coe_one]
 
@@ -258,7 +258,7 @@ theorem not_injOn_of_map_add {W : Type*} [AddCommGroup W] [Module ℝ W] [Finite
     (by rw [hFa, hFb, hab])
   -- Evaluate both mixtures on `sⱼ`.
   have hev : ∀ w : Fin (d + 2) → ℝ≥0, (∑ i, w i • ν i) (s j) = w j := fun w => by
-    simp only [Measure.finsetSum_apply, Measure.smul_apply, ENNReal.smul_def,
+    simp only [sum_apply, smul_apply, ENNReal.smul_def,
       smul_eq_mul, ν, cond_apply_of_pairwise hsm hsd hs, mul_ite, mul_one, mul_zero,
       Finset.sum_ite_eq', Finset.mem_univ, ite_true]
   have hj' : a j = b j := by
@@ -297,18 +297,18 @@ theorem subsingleton_projectivization {V : Type*} [AddCommGroup V] [Module ℂ V
   refine ⟨fun p q => ?_⟩
   induction p using Projectivization.ind with | h v hv => ?_
   induction q using Projectivization.ind with | h w hw => ?_
-  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' w hw).1 h v
+  obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_ne_zero' w hw).1 h v
   exact (Projectivization.mk_eq_mk_iff' ℂ v w hv hw).2 ⟨c, hc⟩
 
 /-- For `V = 0` the projective space `P(V)` is empty. -/
 theorem isEmpty_projectivization {V : Type*} [AddCommGroup V] [Module ℂ V] [Subsingleton V] :
     IsEmpty (ℙ ℂ V) :=
-  ⟨fun p => p.rep_nonzero (Subsingleton.elim _ _)⟩
+  ⟨fun p => p.rep_ne_zero (Subsingleton.elim _ _)⟩
 
 /-- `P(V)` is nonempty if and only if `V ≠ 0`. -/
 theorem nonempty_projectivization_iff {V : Type*} [AddCommGroup V] [Module ℂ V] :
     Nonempty (ℙ ℂ V) ↔ Nontrivial V := by
-  refine ⟨fun ⟨p⟩ => nontrivial_of_ne _ _ p.rep_nonzero, fun _ => ?_⟩
+  refine ⟨fun ⟨p⟩ => nontrivial_of_ne _ _ p.rep_ne_zero, fun _ => ?_⟩
   obtain ⟨v, hv⟩ := exists_ne (0 : V)
   exact ⟨Projectivization.mk ℂ v hv⟩
 
@@ -645,7 +645,7 @@ theorem toDensity_surjective : Surjective (toDensity (H := H)) := by
     Measure.sum fun i => ENNReal.ofReal (lam i) • Measure.dirac (pureState (hb i))
   have hν : IsProbabilityMeasure ν := ⟨by
     rw [Measure.sum_apply _ MeasurableSet.univ]
-    simp only [Measure.smul_apply, measure_univ, smul_eq_mul, mul_one]
+    simp only [smul_apply, measure_univ, smul_eq_mul, mul_one]
     rw [← ENNReal.ofReal_tsum_of_nonneg hlam h1.summable, h1.tsum_eq, ENNReal.ofReal_one]⟩
   refine ⟨⟨ν, hν⟩, Subtype.ext ?_⟩
   change barycenter ν = ρ

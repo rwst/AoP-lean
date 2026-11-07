@@ -22,13 +22,13 @@ rev = "848dca442b63be5fd69c82b84ae42b0632941864"
 [[require]]
 name = "TauCeti"
 git = "https://github.com/TauCetiProject/TauCeti"
-rev = "eb4dd2412a1cd62f73128361bfd3cb422df32e37"
+rev = "e7e7f52d948560db58d39261f4c56ed4e600ca1f"
 
-# Same Mathlib commit as TauCeti (eb4dd24); lake-manifest.json carries the exact pin.
+# Same Mathlib commit as TauCeti (e7e7f52); lake-manifest.json carries the exact pin.
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4"
-rev = "2cabef97b63d3275776b8b060d802de6a6fa1055"
+rev = "1b1ccf4b088b32fa3f23f2de1127433254a81e1e"
 
 # Material that belongs in Mathlib, in Mathlib's directory layout.
 [[lean_lib]]

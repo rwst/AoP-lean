@@ -67,7 +67,7 @@ theorem tsum_ofReal_norm_apply_sq_eq_adjoint (R : E →L[ℂ] E) (b : HilbertBas
       = ∑' i, ∑' j, ENNReal.ofReal (‖⟪c j, R (b i)⟫_ℂ‖ ^ 2) := by
         simp_rw [c.tsum_ofReal_norm_inner_sq]
     _ = ∑' j, ∑' i, ENNReal.ofReal (‖⟪b i, adjoint R (c j)⟫_ℂ‖ ^ 2) := by
-        rw [ENNReal.tsum_comm]
+        rw [tsum_comm]
         congr! 4 with j i
         rw [← adjoint_inner_left, norm_inner_symm]
     _ = _ := by simp_rw [b.tsum_ofReal_norm_inner_sq]
@@ -136,7 +136,7 @@ theorem posTrace_conj_of_star_mul_self (hT : 0 ≤ T) {U : E →L[ℂ] E} (hU : 
 theorem posTrace_add {S : E →L[ℂ] E} (hS : 0 ≤ S) (hT : 0 ≤ T) :
     posTrace (S + T) = posTrace S + posTrace T := by
   simp only [posTrace, add_apply, inner_add_right, Complex.add_re]
-  rw [← ENNReal.tsum_add]
+  rw [← tsum_add]
   congr! 2 with i
   exact ENNReal.ofReal_add (re_inner_apply_nonneg hS _) (re_inner_apply_nonneg hT _)
 
@@ -155,7 +155,7 @@ theorem posTrace_zero : posTrace (0 : E →L[ℂ] E) = 0 := by
 theorem posTrace_eq_zero_iff (hT : 0 ≤ T) : posTrace T = 0 ↔ T = 0 := by
   refine ⟨fun h => ?_, fun h => h ▸ posTrace_zero⟩
   set b := posTraceBasis E
-  rw [posTrace_eq_tsum_norm_sqrt_sq hT b, ENNReal.tsum_eq_zero] at h
+  rw [posTrace_eq_tsum_norm_sqrt_sq hT b, tsum_eq_zero_iff] at h
   have hb : ∀ i, CFC.sqrt T (b i) = 0 := fun i => by
     have := h i
     rw [ENNReal.ofReal_eq_zero] at this
@@ -189,7 +189,7 @@ theorem ofReal_re_inner_le_posTrace (hT : 0 ≤ T) {x : E} (hx : ‖x‖ = 1) :
   have hbx : b ⟨x, hx'⟩ = x := by simp [hb]
   calc ENNReal.ofReal (⟪x, T x⟫_ℂ).re = ENNReal.ofReal (⟪b ⟨x, hx'⟩, T (b ⟨x, hx'⟩)⟫_ℂ).re := by
         rw [hbx]
-    _ ≤ _ := ENNReal.le_tsum (f := fun i => ENNReal.ofReal (⟪b i, T (b i)⟫_ℂ).re) ⟨x, hx'⟩
+    _ ≤ _ := le_tsum (fun i => ENNReal.ofReal (⟪b i, T (b i)⟫_ℂ).re) ⟨x, hx'⟩
 
 /-- The operator norm of a positive operator is at most its trace. -/
 theorem norm_le_toReal_posTrace (hT : 0 ≤ T) (hfin : posTrace T ≠ ⊤) :
