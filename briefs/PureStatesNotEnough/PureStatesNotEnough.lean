@@ -67,11 +67,14 @@ single orientation-preserving, area-preserving diffeomorphism is the end of a Ha
 needs Smale's theorem `Diff⁺(S²) ≃ SO(3)` and is not formalized.
 
 **Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is formalized in
-part. For `V = ℂⁿ⁺¹` the "if" holds: `ℂPⁿ` has exactly one symplectic form that pulls back along
-the Hopf map `S²ⁿ⁺¹ → ℂPⁿ` to the restriction of the standard form `Im ⟪u, w⟫` of `ℂⁿ⁺¹`, the
-Fubini–Study form, obtained by symplectic descent. Not formalized are the transport to an
-arbitrary `V` of finite dimension, the Liouville measure of the form and the "only if". The edges
-are checked. `P(V)` is empty for `V = 0`, a single point for `dim V = 1`, and has two points
+part. The "if" holds for every complex inner product space `V` of finite dimension `n + 1`.
+`ℂPⁿ` has exactly one symplectic form that pulls back along the Hopf map `S²ⁿ⁺¹ → ℂPⁿ` to the
+restriction of the standard form `Im ⟪u, w⟫` of `ℂⁿ⁺¹`, the Fubini–Study form, obtained by
+symplectic descent. An orthonormal basis of `V` identifies `P(V)` with `ℂPⁿ` as topological
+spaces; a change of basis acts on `ℂPⁿ` through a unitary map, which is smooth and preserves the
+Fubini–Study form, so the symplectic structure carried over to `P(V)` does not depend on the
+basis. Not formalized are the Liouville measure of the form and the "only if". The edges are
+checked. `P(V)` is empty for `V = 0`, a single point for `dim V = 1`, and has two points
 exactly when `2 ≤ dim V`. If a point counts as a `0`-dimensional symplectic manifold, Theorem 3
 fails for `dim H = 1`: the CST ensembles of a point and the density operators of `ℂ` are both a
 single point. And as sets `P(ℓ²)` and `P(ℂ²)` are in bijection, so the "only if" of Theorem 1
@@ -86,6 +89,10 @@ needs the topology of `P(V)`, not only its points.
 - `PureStatesNotEnough.cst_qeDens_inconsistent`: Theorem 3.
 - `PureStatesNotEnough.existsUnique_isSymplectic_projectivization`: Theorem 1, "if", for
   `V = ℂⁿ⁺¹`; `ℂPⁿ` with the Fubini–Study form is a symplectic manifold.
+- `PureStatesNotEnough.basisHomeomorph`, `PureStatesNotEnough.contMDiff_basisHomeomorph_symm_trans`,
+  `PureStatesNotEnough.mpullback_basisHomeomorph_symm_trans`: Theorem 1, "if", for every
+  finite-dimensional `V`; the structure carried over along an orthonormal basis does not depend
+  on the basis.
 - `PureStatesNotEnough.subsingleton_projectivization`: for `dim V = 1`, `P(V)` is one point.
 - `PureStatesNotEnough.isEmpty_projectivization`,
   `PureStatesNotEnough.nonempty_projectivization_iff`,
@@ -475,6 +482,58 @@ theorem existsUnique_isSymplectic_projectivization (n : ℕ) :
     (Projectivization.isSubmersion_hopfMap (by simp)) Projectivization.hopfMap_surjective
     Projectivization.isClosed_sphereForm Projectivization.isBasic_sphereForm
     Projectivization.ker_bilinFormAt_sphereForm
+
+section Transport
+
+open scoped Manifold ContDiff
+
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℂ V] {n : ℕ}
+
+/-- An orthonormal basis `b` of `V` identifies `P(V)`, with its quotient topology, with `ℂPⁿ`,
+sending the line `[v]` to the line of the coordinates of `v`. -/
+def basisHomeomorph (b : OrthonormalBasis (Fin (n + 1)) ℂ V) :
+    ℙ ℂ V ≃ₜ ℙ ℂ (Fin (n + 1) → ℂ) :=
+  Projectivization.mapHomeomorph
+    (b.repr.toContinuousLinearEquiv.trans (PiLp.continuousLinearEquiv 2 ℂ fun _ ↦ ℂ))
+
+/-- A space of dimension `n + 1` has an orthonormal basis indexed by `Fin (n + 1)`. -/
+theorem nonempty_orthonormalBasis [FiniteDimensional ℂ V] (hV : Module.finrank ℂ V = n + 1) :
+    Nonempty (OrthonormalBasis (Fin (n + 1)) ℂ V) :=
+  ⟨(stdOrthonormalBasis ℂ V).reindex (finCongr hV)⟩
+
+/-- The change of orthonormal basis acts on `ℂPⁿ` through a unitary map of `ℂⁿ⁺¹`. -/
+theorem basisHomeomorph_symm_trans (b₁ b₂ : OrthonormalBasis (Fin (n + 1)) ℂ V) :
+    (basisHomeomorph b₁).symm.trans (basisHomeomorph b₂) =
+      Projectivization.unitaryMap (b₁.repr.symm.trans b₂.repr) :=
+  Homeomorph.ext <| Projectivization.ind fun v hv ↦ by
+    simp [basisHomeomorph, Projectivization.unitaryMap]
+
+/-- The change of orthonormal basis is smooth on `ℂPⁿ`, so the smooth structure that an orthonormal
+basis carries over to `P(V)` does not depend on the basis. -/
+theorem contMDiff_basisHomeomorph_symm_trans (b₁ b₂ : OrthonormalBasis (Fin (n + 1)) ℂ V) :
+    ContMDiff 𝓘(ℝ, Fin n → ℂ) 𝓘(ℝ, Fin n → ℂ) ∞
+      ((basisHomeomorph b₁).symm.trans (basisHomeomorph b₂)) := by
+  rw [basisHomeomorph_symm_trans]
+  exact Projectivization.contMDiff_unitaryMap _ ∞
+
+/-- **Theorem 1, "if".** For a complex inner product space `V` of dimension `n + 1`, every
+orthonormal basis identifies `P(V)` with `ℂPⁿ` (`basisHomeomorph`), which the Fubini–Study form
+makes a symplectic manifold (`existsUnique_isSymplectic_projectivization`). The change of basis
+preserves the Fubini–Study form, so the symplectic structure carried over to `P(V)` does not
+depend on the basis. -/
+theorem mpullback_basisHomeomorph_symm_trans (b₁ b₂ : OrthonormalBasis (Fin (n + 1)) ℂ V) :
+    TauCeti.SmoothForm.mpullback _ (contMDiff_basisHomeomorph_symm_trans b₁ b₂)
+      (Projectivization.fubiniStudyForm n) = Projectivization.fubiniStudyForm n := by
+  have key (f : ℙ ℂ (Fin (n + 1) → ℂ) ≃ₜ ℙ ℂ (Fin (n + 1) → ℂ))
+      (hf : ContMDiff 𝓘(ℝ, Fin n → ℂ) 𝓘(ℝ, Fin n → ℂ) ∞ f)
+      (hfU : f = Projectivization.unitaryMap (b₁.repr.symm.trans b₂.repr)) :
+      TauCeti.SmoothForm.mpullback f hf (Projectivization.fubiniStudyForm n) =
+        Projectivization.fubiniStudyForm n := by
+    subst hfU
+    exact Projectivization.mpullback_unitaryMap_fubiniStudyForm _
+  exact key _ _ (basisHomeomorph_symm_trans b₁ b₂)
+
+end Transport
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 

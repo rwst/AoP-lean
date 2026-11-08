@@ -38,7 +38,7 @@ checked; no claim of the brief waits on them.
 Theorem~5 is verified, and Theorem~3 for $\dim\mathcal H \ge 2$. Example~2 is verified at the
 level of topology and measure and, on the Riemann sphere, of the symplectic form and of
 Hamiltonian evolution, with the correction of the item ``Hamiltonian evolution on the classical
-qubit''. Of Theorem~1 only the ``if'' for $V = \mathbb C^{n+1}$ is checked: see the two items
+qubit''. Of Theorem~1 only the ``if'' is checked, without the Liouville measure: see the two items
 marked below.
 
 \section*{From the brief}
@@ -98,18 +98,15 @@ marked below.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \blocker{formalization gap}\textbf{Theorem~1.} The ``if'' is formalized for
-  $V = \mathbb C^{n+1}$: $\mathbb CP^n$, with TauCeti's real manifold structure, has exactly one
+\item \blocker{formalization gap}\textbf{Theorem~1.} The ``if'' is formalized up to the
+  Liouville measure. $\mathbb CP^n$, with TauCeti's real manifold structure, has exactly one
   symplectic form whose pullback along the Hopf map $S^{2n+1} \to \mathbb CP^n$ is the standard
   form $\operatorname{Im}\langle u, w\rangle$ of $\mathbb C^{n+1}$ restricted to the unit sphere,
-  the Fubini--Study form (\lean{existsUnique_isSymplectic_projectivization}). Three parts are open.
+  the Fubini--Study form (\lean{existsUnique_isSymplectic_projectivization}). For a complex inner
+  product space $V$ of dimension $n + 1$, an orthonormal basis identifies $P(V)$ with
+  $\mathbb CP^n$ (\lean{basisHomeomorph}), and a change of basis is smooth and preserves the form
+  (\lean{mpullback_basisHomeomorph_symm_trans}). Two parts are open.
   \begin{itemize}
-  \item \emph{Arbitrary $V$.} TauCeti puts a manifold structure only on
-    $P(\mathbb C^{n+1})$. For a complex vector space $V$ of finite dimension with a Hermitian
-    inner product, the structure and the form are carried over along an orthonormal basis
-    $V \simeq \mathbb C^{n+1}$. Two bases differ by a unitary map, which preserves the standard
-    form and commutes with the Hopf map, so the form does not depend on the choice; this is not
-    yet checked.
   \item \emph{The Liouville measure.} CST asks for the measure $\omega^n$ of the symplectic form,
     which is still missing upstream.
   \item \emph{The ``only if''.} That a symplectic $P(V)$ forces $\dim V < \infty$ needs the

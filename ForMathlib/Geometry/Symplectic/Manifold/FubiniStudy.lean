@@ -6,8 +6,11 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import ForMathlib.Geometry.Manifold.Instances.HopfMap
+public import ForMathlib.Topology.Algebra.Projectivization
 public import TauCeti.Geometry.Symplectic.Manifold.TwoForm
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
+import TauCeti.Geometry.Manifold.ContMDiff.RestrictScalars
+import TauCeti.Geometry.Manifold.Projectivization.Map
 import TauCeti.Geometry.Symplectic.Manifold.Descent
 
 /-!
@@ -25,10 +28,16 @@ By symplectic descent, `σ` is the pullback along the Hopf map of a unique sympl
 `ℂPⁿ = ℙ ℂ (Fin (n + 1) → ℂ)`, the Fubini–Study form `Projectivization.fubiniStudyForm`. This is
 the symplectic reduction of `ℂⁿ⁺¹` by the circle at the unit sphere.
 
+A unitary map `U` of `ℂⁿ⁺¹` preserves the standard form and the unit sphere, and the map
+`[v] ↦ [U v]` of `ℂPⁿ` commutes with the Hopf map. So the pullback of the Fubini–Study form along
+it is again a symplectic form pulling back to `σ`, and by uniqueness it is the Fubini–Study form
+(`Projectivization.mpullback_unitaryMap_fubiniStudyForm`).
+
 ## Main definitions
 
 * `Projectivization.sphereForm`: the restriction of the standard form of `ℂⁿ⁺¹` to `S²ⁿ⁺¹`.
 * `Projectivization.fubiniStudyForm`: its descent along the Hopf map.
+* `Projectivization.unitaryMap`: the map of `ℂPⁿ` induced by a unitary map of `ℂⁿ⁺¹`.
 
 ## Main results
 
@@ -37,6 +46,7 @@ the symplectic reduction of `ℂⁿ⁺¹` by the circle at the unit sphere.
 * `Projectivization.isBasic_sphereForm`: `σ` is basic for the Hopf map.
 * `Projectivization.mpullback_fubiniStudyForm`: the Fubini–Study form pulls back to `σ`.
 * `Projectivization.isSymplectic_fubiniStudyForm`: the Fubini–Study form is symplectic.
+* `Projectivization.mpullback_unitaryMap_fubiniStudyForm`: unitary maps preserve it.
 
 ## References
 
@@ -244,6 +254,27 @@ theorem ker_bilinFormAt_sphereForm (x : sphere (0 : EuclideanSpace ℂ (Fin (n +
     · rw [finrank_span_singleton hu₀0, finrank_ker_mfderiv_hopfMap]
   rw [hσ, hh]
 
+/-- The derivative of the restriction to the unit sphere of a real linear map `L` that preserves
+the sphere is `L` on the tangent vectors in `ℂⁿ⁺¹`. -/
+theorem mvfderiv_codRestrict_sphere
+    (L : EuclideanSpace ℂ (Fin (n + 1)) →L[ℝ] EuclideanSpace ℂ (Fin (n + 1)))
+    (hL : ∀ p : sphere (0 : EuclideanSpace ℂ (Fin (n + 1))) 1,
+      L p ∈ sphere (0 : EuclideanSpace ℂ (Fin (n + 1))) 1)
+    {x y : sphere (0 : EuclideanSpace ℂ (Fin (n + 1))) 1} (hxy : codRestrict (L ∘ ιS) _ hL x = y)
+    (u : TangentSpace (𝓡 (2 * n + 1)) x) :
+    mvfderiv (𝓡 (2 * n + 1)) ιS y
+        (mfderiv (𝓡 (2 * n + 1)) (𝓡 (2 * n + 1)) (codRestrict (L ∘ ιS) _ hL) x u) =
+      L (mvfderiv (𝓡 (2 * n + 1)) ιS x u) := by
+  have hm : ContMDiff (𝓡 (2 * n + 1)) (𝓡 (2 * n + 1)) ∞ (codRestrict (L ∘ ιS) _ hL) :=
+    ContMDiff.codRestrict_sphere (L.contMDiff.comp contMDiff_coe_sphere) hL
+  have h1 := mfderiv_comp_apply_of_eq x
+    ((contMDiff_coe_sphere (m := 1) y).mdifferentiableAt one_ne_zero)
+    ((hm x).mdifferentiableAt (by simp)) hxy u
+  have h2 := mfderiv_comp_apply x L.mdifferentiableAt
+    ((contMDiff_coe_sphere (m := 1) x).mdifferentiableAt one_ne_zero) u
+  rw [show ιS ∘ codRestrict (L ∘ ιS) _ hL = L ∘ ιS from rfl, h2, L.mfderiv_eq] at h1
+  exact h1.symm
+
 /-- **The restricted form is basic for the Hopf map.** Two unit vectors with the same image differ
 by a unit complex scalar `c`; multiplication by `c` commutes with the Hopf map and preserves the
 standard form, and tangent vectors with the same image under the derivative of the Hopf map differ
@@ -283,13 +314,8 @@ theorem isBasic_sphereForm :
     mfderiv (𝓡 (2 * n + 1)) (𝓡 (2 * n + 1)) m x
   -- It is multiplication by `c` on the tangent vectors in `ℂⁿ⁺¹`.
   have hDm (u : TangentSpace (𝓡 (2 * n + 1)) x) :
-      mvfderiv (𝓡 (2 * n + 1)) ιS y (dm u) = c • mvfderiv (𝓡 (2 * n + 1)) ιS x u := by
-    have h1 := mfderiv_comp_apply_of_eq x
-      ((contMDiff_coe_sphere (m := 1) y).mdifferentiableAt one_ne_zero) hmd hmx u
-    have h2 := mfderiv_comp_apply x L.mdifferentiableAt
-      ((contMDiff_coe_sphere (m := 1) x).mdifferentiableAt one_ne_zero) u
-    rw [show ιS ∘ m = L ∘ ιS from rfl, h2, L.mfderiv_eq] at h1
-    exact h1.symm
+      mvfderiv (𝓡 (2 * n + 1)) ιS y (dm u) = c • mvfderiv (𝓡 (2 * n + 1)) ιS x u :=
+    mvfderiv_codRestrict_sphere L hmS hmx u
   have hhd (u : TangentSpace (𝓡 (2 * n + 1)) x) :
       mfderiv (𝓡 (2 * n + 1)) 𝓘(ℝ, Fin n → ℂ) (hopfMap n) y (dm u) =
         mfderiv (𝓡 (2 * n + 1)) 𝓘(ℝ, Fin n → ℂ) (hopfMap n) x u := by
@@ -341,5 +367,81 @@ theorem mpullback_fubiniStudyForm :
 theorem isSymplectic_fubiniStudyForm : (fubiniStudyForm n).IsSymplectic :=
   SmoothTwoForm.isSymplectic_descendedForm_iff.2
     ⟨isClosed_sphereForm, ker_bilinFormAt_sphereForm⟩
+
+/-! ### Invariance under unitary maps -/
+
+/-- The map of `ℂPⁿ` induced by a unitary map `U` of `ℂⁿ⁺¹`, sending `[v]` to `[U v]`. -/
+@[expose] def unitaryMap
+    (U : EuclideanSpace ℂ (Fin (n + 1)) ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin (n + 1))) :
+    ℙ ℂ (Fin (n + 1) → ℂ) ≃ₜ ℙ ℂ (Fin (n + 1) → ℂ) :=
+  mapHomeomorph (((PiLp.continuousLinearEquiv 2 ℂ fun _ : Fin (n + 1) ↦ ℂ).symm.trans
+    U.toContinuousLinearEquiv).trans (PiLp.continuousLinearEquiv 2 ℂ fun _ ↦ ℂ))
+
+theorem unitaryMap_hopfMap
+    (U : EuclideanSpace ℂ (Fin (n + 1)) ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin (n + 1)))
+    (p : sphere (0 : EuclideanSpace ℂ (Fin (n + 1))) 1) :
+    unitaryMap U (hopfMap n p) = hopfMap n ⟨U p, by simp⟩ :=
+  rfl
+
+theorem unitaryMap_symm
+    (U : EuclideanSpace ℂ (Fin (n + 1)) ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin (n + 1))) :
+    (unitaryMap U).symm = unitaryMap U.symm :=
+  Homeomorph.ext <| ind fun v hv ↦ by simp [unitaryMap]
+
+/-- The map of `ℂPⁿ` induced by a unitary map is smooth. -/
+theorem contMDiff_unitaryMap
+    (U : EuclideanSpace ℂ (Fin (n + 1)) ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin (n + 1))) (r : ℕ∞ω) :
+    ContMDiff 𝓘(ℝ, Fin n → ℂ) 𝓘(ℝ, Fin n → ℂ) r (unitaryMap U) := by
+  rw [unitaryMap, coe_mapHomeomorph]
+  simpa using (contMDiff_map _ (((PiLp.continuousLinearEquiv 2 ℂ fun _ : Fin (n + 1) ↦ ℂ).symm.trans
+    U.toContinuousLinearEquiv).trans (PiLp.continuousLinearEquiv 2 ℂ fun _ ↦ ℂ)).injective
+      r).restrictScalars ℝ
+
+/-- **Unitary maps preserve the Fubini–Study form.** A unitary map `U` preserves the standard form
+of `ℂⁿ⁺¹` and the unit sphere, and the map it induces on `ℂPⁿ` commutes with the Hopf map, so the
+pullback of the Fubini–Study form is again a symplectic form that pulls back to the restricted
+standard form; such a form is unique. -/
+theorem mpullback_unitaryMap_fubiniStudyForm
+    (U : EuclideanSpace ℂ (Fin (n + 1)) ≃ₗᵢ[ℂ] EuclideanSpace ℂ (Fin (n + 1))) :
+    SmoothForm.mpullback (unitaryMap U) (contMDiff_unitaryMap U ∞) (fubiniStudyForm n) =
+      fubiniStudyForm n := by
+  let Φ : ℙ ℂ (Fin (n + 1) → ℂ) ≃ₘ⟮𝓘(ℝ, Fin n → ℂ), 𝓘(ℝ, Fin n → ℂ)⟯ ℙ ℂ (Fin (n + 1) → ℂ) :=
+    { toEquiv := (unitaryMap U).toEquiv
+      contMDiff_toFun := contMDiff_unitaryMap U ∞
+      contMDiff_invFun := by
+        change ContMDiff _ _ _ (unitaryMap U).symm
+        rw [unitaryMap_symm]
+        exact contMDiff_unitaryMap U.symm ∞ }
+  -- `U` restricted to the unit sphere.
+  let L : EuclideanSpace ℂ (Fin (n + 1)) →L[ℝ] EuclideanSpace ℂ (Fin (n + 1)) :=
+    (U.toContinuousLinearEquiv : EuclideanSpace ℂ (Fin (n + 1)) →L[ℂ] _).restrictScalars ℝ
+  have hL (p : sphere (0 : EuclideanSpace ℂ (Fin (n + 1))) 1) :
+      L p ∈ sphere (0 : EuclideanSpace ℂ (Fin (n + 1))) 1 := by
+    simp [L]
+  let m := codRestrict (L ∘ ιS) _ hL
+  have hm : ContMDiff (𝓡 (2 * n + 1)) (𝓡 (2 * n + 1)) ∞ m :=
+    ContMDiff.codRestrict_sphere (L.contMDiff.comp contMDiff_coe_sphere) hL
+  have hσ : SmoothForm.mpullback m hm (sphereForm n) = sphereForm n := by
+    refine SmoothBundleForm.ext_eval₂ fun x v w ↦ ?_
+    rw [SmoothForm.eval₂_mpullback, eval₂_sphereForm, eval₂_sphereForm,
+      mvfderiv_codRestrict_sphere L hL rfl, mvfderiv_codRestrict_sphere L hL rfl]
+    simp only [L, ContinuousLinearMap.coe_restrictScalars', ContinuousLinearEquiv.coe_coe,
+      LinearIsometryEquiv.coe_toContinuousLinearEquiv]
+    rw [← LinearIsometryEquiv.map_smul, real_inner_eq_re_inner_euclideanSpace,
+      real_inner_eq_re_inner_euclideanSpace, LinearIsometryEquiv.inner_map_map]
+  have hcomm : unitaryMap U ∘ hopfMap n = hopfMap n ∘ m := funext fun p ↦ unitaryMap_hopfMap U p
+  have hcongr (f g : sphere (0 : EuclideanSpace ℂ (Fin (n + 1))) 1 → ℙ ℂ (Fin (n + 1) → ℂ))
+      (hf : ContMDiff (𝓡 (2 * n + 1)) 𝓘(ℝ, Fin n → ℂ) ∞ f)
+      (hg : ContMDiff (𝓡 (2 * n + 1)) 𝓘(ℝ, Fin n → ℂ) ∞ g) (hfg : f = g) :
+      SmoothForm.mpullback f hf (fubiniStudyForm n) =
+        SmoothForm.mpullback g hg (fubiniStudyForm n) := by
+    subst hfg; rfl
+  refine (SmoothTwoForm.existsUnique_isSymplectic_mpullback_eq (isSubmersion_hopfMap (by simp))
+    hopfMap_surjective isClosed_sphereForm isBasic_sphereForm ker_bilinFormAt_sphereForm).unique
+    ⟨(Φ.isLocalDiffeomorph.isSymplectic_mpullback_iff Φ.surjective).2
+      isSymplectic_fubiniStudyForm, ?_⟩ ⟨isSymplectic_fubiniStudyForm, mpullback_fubiniStudyForm⟩
+  rw [SmoothForm.mpullback_mpullback, hcongr _ _ _ ((contMDiff_hopfMap ∞).comp hm) hcomm,
+    ← SmoothForm.mpullback_mpullback m (hopfMap n) hm (contMDiff_hopfMap ∞),
+    mpullback_fubiniStudyForm, hσ]
 
 end Projectivization

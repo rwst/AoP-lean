@@ -54,7 +54,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/PureStatesNotEnough/PureStatesNotEnough.lean}
 \item Library: \lean{PureStatesNotEnough}
-\item Imports: five new \lean{ForMathlib} files:\newline
+\item Imports: six new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/Convex/Combination.lean}: a map that preserves the convex combinations
   of two points of a convex set preserves all finite convex combinations
   (\lean{Convex.map_sum_of_map_add}), and a convex set contains them
@@ -71,6 +71,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   compactification of a real vector space of dimension at least two is simply connected
   (\lean{OnePoint.simplyConnectedSpace_of_two_le_finrank}), by Mathlib's homeomorphism with the
   sphere and TauCeti's simple connectivity of spheres; in particular the Riemann sphere is.\newline
+  \lean{ForMathlib/Topology/Algebra/Projectivization.lean}: a continuous linear equivalence
+  $e : V \simeq W$ induces a homeomorphism $P(V) \simeq P(W)$, $[v] \mapsto [ev]$, of the quotient
+  topologies (\lean{Projectivization.mapHomeomorph}).\newline
   \lean{ForMathlib/Geometry/Manifold/Instances/HopfMap.lean}: the Hopf map
   $S^{2n+1} \to \mathbb CP^n$, $x \mapsto [x]$ (\lean{Projectivization.hopfMap}), from the unit
   sphere of $\mathbb C^{n+1}$ to $\mathbb CP^n = P(\mathbb C^{n+1})$ with TauCeti's real
@@ -93,7 +96,11 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   (\lean{Projectivization.isBasic_sphereForm}). TauCeti's symplectic descent then gives the
   Fubini--Study form \lean{Projectivization.fubiniStudyForm}, which pulls back to $\sigma$
   (\lean{Projectivization.mpullback_fubiniStudyForm}) and is symplectic
-  (\lean{Projectivization.isSymplectic_fubiniStudyForm}).\newline
+  (\lean{Projectivization.isSymplectic_fubiniStudyForm}). A unitary map $U$ of
+  $\mathbb C^{n+1}$ induces a smooth map $[v] \mapsto [Uv]$ of $\mathbb CP^n$
+  (\lean{Projectivization.unitaryMap}) that commutes with the Hopf map, and since $U$ preserves
+  the standard form, uniqueness of the descended form shows that it preserves the Fubini--Study
+  form (\lean{Projectivization.mpullback_unitaryMap_fubiniStudyForm}).\newline
   Five new \lean{ForPhyslib} files on the qubit, in \lean{ForPhyslib/QuantumMechanics/Qubit/}:\newline
   \lean{BlochSphere.lean}: the Bloch point of a ray (\lean{blochPoint}), injective, onto the unit
   sphere, and a homeomorphism \lean{blochSphere} $: P(\mathbb C^2) \simeq S^2$;
@@ -174,11 +181,16 @@ CST, the ensemble space & \lean{classicalEnsembles}; it is convex:
 Theorem~3, CST and QE-DENS are inconsistent & \lean{cst_qeDens_inconsistent}, for
   $\dim\mathcal H < \infty$ \\
 Theorem~1, QP-RAY and CST are consistent iff $1 \le \dim V < \infty$ & only in part: the
-  ``if'' for $V = \mathbb C^{n+1}$, and the edges below \\
+  ``if'', without the Liouville measure, and the edges below \\
 (Theorem~1, ``if'') $P(V)$ with the Fubini--Study form is a symplectic manifold, for
   $V = \mathbb C^{n+1}$ & \lean{existsUnique_isSymplectic_projectivization}: $\mathbb CP^n$ has
   exactly one symplectic form whose pullback along the Hopf map is the restricted standard form of
   $\mathbb C^{n+1}$; for $n = 0$ it lives on a point \\
+(Theorem~1, ``if'') the same for every $V$ of finite dimension $n + 1$ &
+  \lean{basisHomeomorph}: an orthonormal basis identifies $P(V)$ with $\mathbb CP^n$ as
+  topological spaces; \lean{contMDiff_basisHomeomorph_symm_trans},
+  \lean{mpullback_basisHomeomorph_symm_trans}: the change of basis is smooth and preserves the
+  Fubini--Study form, so the structure carried over does not depend on the basis \\
 (Theorem~1) $\dim V = 0$ & \lean{isEmpty_projectivization}: $P(V)$ is empty;
   \lean{nonempty_projectivization_iff} \\
 (Theorem~1) $\dim V = 1$ & \lean{subsingleton_projectivization}: $P(V)$ is a single point \\
@@ -253,7 +265,12 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   No Choquet theory is used. ``$\equiv$'' is the bijection between the quotient by
   $r(\mu_1) = r(\mu_2)$ and $D(\mathcal H)$.
 \item Theorem~1, ``if'', is checked for $V = \mathbb C^{n+1}$ (\lean{Fin}~$(n+1) \to \mathbb C$),
-  with $P(V)$ the real manifold of dimension $2n$ given by TauCeti's affine charts. ``$X$ is a
+  with $P(V)$ the real manifold of dimension $2n$ given by TauCeti's affine charts. For a complex
+  inner product space $V$ of dimension $n + 1$, $P(V)$ is not given charts of its own in Lean.
+  An orthonormal basis identifies it with $\mathbb CP^n$, and the statement is that the
+  identification is unique up to a smooth map of $\mathbb CP^n$ that preserves the Fubini--Study
+  form; the structure carried over is therefore well defined. QP-RAY asks only for a complex
+  vector space; a Hermitian inner product is needed to single out the Fubini--Study form. ``$X$ is a
   symplectic manifold'' becomes a closed, nondegenerate smooth two-form on $P(V)$. The
   Fubini--Study form is defined by reduction, as the descent of the standard form of
   $\mathbb C^{n+1}$ restricted to the unit sphere, not by a K\"ahler potential; in this
@@ -278,9 +295,7 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   time, not as one jointly smooth $H(t, x)$.
 \item Not formalized:
   \begin{itemize}
-  \item Theorem~1, except the ``if'' for $V = \mathbb C^{n+1}$: the transport to an arbitrary
-    complex vector space of finite dimension, the Liouville measure of the Fubini--Study form, and
-    the ``only if'';
+  \item in Theorem~1: the Liouville measure of the Fubini--Study form, and the ``only if'';
   \item in Example~2: the Liouville measure of the Fubini--Study form and the symplectic form
     $dz \wedge d\theta$ in the chart; the diffeomorphism $\mathbb CP^1 \cong S^2$ with the
     comparison of the Fubini--Study and round area forms; ensembles as densities $\rho(z,\theta)$
@@ -296,7 +311,7 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
 \paragraph{Problems found in the brief.} Theorem~5 holds, and Theorem~3 holds for
 $\dim\mathcal H \ge 2$, but their proofs have gaps. Example~2 holds for evolutions once
 ``volume-conserving'' is read as ``area-form-preserving''. At $\dim\mathcal H = 1$ Theorem~3 depends on a
-convention of Theorem~1. Of Theorem~1 only the ``if'' for $V = \mathbb C^{n+1}$ is checked.
+convention of Theorem~1. Of Theorem~1 only the ``if'' is checked, without the Liouville measure.
 \begin{itemize}
 \item Theorem~1 states $1 \le \dim V$, while its proof uses $2 \le \dim X$. For $\dim V = 1$ the
   state space $P(V)$ is a single point (\lean{subsingleton_projectivization}), a manifold of
