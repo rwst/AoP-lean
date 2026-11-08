@@ -343,7 +343,12 @@ convention of Theorem~1. Of Theorem~1 only the ``if'' is checked, without the Li
 \item In the proof of Theorem~3, for $\dim\mathcal H \ge 3$ the sphere $P(A)$ has dimension
   $2 < 2(\dim\mathcal H - 1)$ and therefore Liouville measure zero. No CST ensemble has support in
   $P(A)$, so the classical side is empty, not infinite-dimensional. The argument works as written
-  only for $\dim\mathcal H = 2$. Comparing the whole spaces repairs it.
+  only for $\dim\mathcal H = 2$. Comparing the whole spaces repairs it for
+  $\dim\mathcal H < \infty$, as in Lean. A repair closer to the text reads ``the ensembles with
+  support in $A$'' as those of the two-level system $A$ itself, with CST on $P(A)$ and its own
+  Liouville measure. It needs the premise that CST and QE-DENS hold for every quantum system, and
+  then covers every $\dim\mathcal H \ge 2$, also $\dim\mathcal H = \infty$, by the checked case
+  $\dim\mathcal H = 2$.
 \item The proof of Theorem~5 cites Choquet theory, which concerns compact convex sets, but
   $D(\mathcal H)$ is not compact when $\dim\mathcal H = \infty$. The proof also never shows that
   every density operator is represented, which $D(\mathcal H) \equiv M^1/{\sim}$ needs. Both gaps

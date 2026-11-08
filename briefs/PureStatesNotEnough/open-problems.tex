@@ -70,11 +70,24 @@ marked below.
   $2 \le \dim V < \infty$ for a Hausdorff $V$ with $X = P(V)$ as topological spaces. Theorem~3 and its Lean proof then stand
   as they are. The alternative keeps $1 \le \dim V$, also excludes the empty space and restricts
   Theorem~3 to $\dim\mathcal H \ge 2$. (Log, ``Problems found'', first three items.)
-\item \textbf{Ensembles supported on a subspace.} The proof of Theorem~3 compares the ensembles
-  with support in a two-dimensional subspace $A$. For $\dim\mathcal H \ge 3$ no CST ensemble has
-  support in $P(A)$, which has Liouville measure zero. Whether the brief means the classical
-  ensembles of the subsystem $P(A)$, with its own Liouville measure, is open. The formalization
-  compares the whole ensemble spaces instead. (Log, ``Problems found'', second item.)
+\item \textbf{Ensembles supported on a subspace.} This is a brief issue: the proof of Theorem~3
+  needs to be corrected, while its Lean version is not affected. The proof compares the ensembles
+  with support in a two-dimensional subspace $A$. On the side of QE-DENS these are the density
+  operators with range in $A$, a copy of the Bloch ball. On the side of CST, for
+  $\dim\mathcal H \ge 3$ no ensemble has support in $P(A)$, which has Liouville measure zero,
+  and for $\dim\mathcal H = \infty$ there is no Liouville measure on $P(\mathcal H)$. As written,
+  the proof works only for $\dim\mathcal H = 2$. The formalization compares the whole ensemble
+  spaces instead (\lean{cst_qeDens_inconsistent}), which needs $\dim\mathcal H < \infty$ and so,
+  for $\dim\mathcal H = \infty$, the ``only if'' of Theorem~1. (Log, ``Problems found'', second
+  item.)
+
+  Proposed: read ``the ensembles with support in $A$'' as the ensembles of the two-level system
+  $A$ itself, CST on the sphere $P(A)$ with its own Liouville measure against QE-DENS on $A$, and
+  state the premise that CST and QE-DENS hold for every quantum system, including the subsystem
+  $A$. The proof is then the case $\dim\mathcal H = 2$, which is checked, and it covers every
+  $\mathcal H$ with $\dim\mathcal H \ge 2$, also infinite-dimensional ones, without the ``only
+  if'' of Theorem~1. The alternative is to compare the whole spaces as in Lean and keep
+  $\dim\mathcal H < \infty$ from Theorem~1.
 \item \textbf{Hamiltonian evolution on the classical qubit.} Example~2 identifies Hamiltonian
   evolution with the diffeomorphisms that conserve the volume. Area-preserving reflections of the
   sphere are not Hamiltonian, so the area form should be meant. Lean checks this for complex
@@ -112,7 +125,8 @@ marked below.
   \item \emph{The ``only if''.} That a symplectic $P(V)$ forces $\dim V < \infty$ needs the
     topology of $P(V)$; as sets it is false (\lean{nonempty_projectivization_equiv}). Theorem~3
     for $\dim\mathcal H = \infty$ rests on it, so it is formalized only for
-    $\dim\mathcal H < \infty$.
+    $\dim\mathcal H < \infty$; with the reading proposed in the item ``Ensembles supported on a
+    subspace'' it no longer does.
   \end{itemize}
   (Log, ``Results''.)
 \item \textbf{Example~2.} $P(\mathbb C^2)$ is homeomorphic to the sphere
