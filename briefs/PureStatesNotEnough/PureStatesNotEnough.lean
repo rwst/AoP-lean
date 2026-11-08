@@ -13,7 +13,9 @@ public import ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.CanonicalEx
 public import ForPhyslib.QuantumMechanics.DensityOperator
 public import ForPhyslib.QuantumMechanics.Qubit.HamiltonianIsotopy
 public import ForPhyslib.QuantumMechanics.Qubit.Precession
+public import Mathlib.Analysis.Convex.Extreme
 public import Mathlib.Analysis.Convex.Integral
+import ForPhyslib.QuantumMechanics.Kadison
 import TauCeti.Geometry.Symplectic.Manifold.Descent
 
 /-!
@@ -37,7 +39,8 @@ would carry `dim + 2` independent ensembles to `dim + 2` independent points of a
 dimension `dim`, which is impossible. The argument needs neither positivity nor trace of the
 density operators, only the finite dimension of the space that contains them.
 
-**Theorem 5.** Let `H` be a separable complex Hilbert space of any dimension. A probability
+**Theorem 5.** Let `H` be a separable complex Hilbert space of any dimension. The pure states are
+the extreme points of the density operators, as the proof of Theorem 5 starts from. A probability
 measure `μ` on the pure states (with the Borel σ-algebra of the operator norm) represents the
 density operator `r(μ) = ∫ |ψ⟩⟨ψ| dμ`, its barycenter. It is positive because the positive
 operators form a closed convex cone, and has trace one by Parseval and monotone convergence over a
@@ -104,6 +107,8 @@ needs the topology of `P(V)`, not only its points.
 - `PureStatesNotEnough.mk_projectivization`, `PureStatesNotEnough.nonempty_projectivization_equiv`:
   `P(ℓ²)` and `P(ℂ²)` have the same cardinality `𝔠`.
 - `PureStatesNotEnough.born_ne_delta`: the Remark after Example 2.
+- `PureStatesNotEnough.pureStates_eq_extremePoints`: the pure states are the extreme points of
+  `D(H)`.
 - `PureStatesNotEnough.barycenter`, `PureStatesNotEnough.barycenter_add`: the barycenter map `r`
   and its affinity.
 - `PureStatesNotEnough.posTrace_barycenter`, `PureStatesNotEnough.isDensityOperator_barycenter`:
@@ -656,6 +661,22 @@ omit [TopologicalSpace.SeparableSpace H] in
 lemma isDensityOperator_coe (ρ : pureStates H) : IsDensityOperator (ρ : H →L[ℂ] H) := by
   obtain ⟨_, ψ, hψ, rfl⟩ := ρ
   exact isDensityOperator_proj hψ
+
+omit [TopologicalSpace.SeparableSpace H] in
+/-- **Proof of Theorem 5.** The pure states are the extreme points of the convex set `D(H)` of
+density operators. -/
+theorem pureStates_eq_extremePoints :
+    pureStates H = Set.extremePoints ℝ {ρ : H →L[ℂ] H | IsDensityOperator ρ} := by
+  ext ρ
+  have hpure : ρ ∈ pureStates H ↔ IsPure ρ :=
+    ⟨fun ⟨ψ, hψ, h⟩ => ⟨ψ, hψ, h.symm⟩, fun ⟨ψ, hψ, h⟩ => ⟨ψ, hψ, h.symm⟩⟩
+  rw [hpure, isPure_iff_isExtremeDensityOperator, IsExtremeDensityOperator,
+    mem_extremePoints_iff_left]
+  simp only [Complex.coe_smul, Set.mem_ofPred_eq]
+  refine and_congr_right fun _ => ⟨fun h σ hσ τ hτ ⟨a, b, ha, hb, hab, hρ⟩ => ?_,
+    fun h σ τ hσ hτ t ht0 ht1 hρ => h σ hσ τ hτ ⟨t, 1 - t, ht0, by linarith, by ring, hρ.symm⟩⟩
+  obtain rfl : b = 1 - a := by linarith
+  exact h σ τ hσ hτ a ha (by linarith) hρ.symm
 
 /-- The barycenter `r(μ) = ∫ ρ dμ(ρ)` of a measure on the pure states: the ensemble that `μ`
 represents. -/

@@ -146,9 +146,11 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   Existing files: \lean{ForMathlib/Analysis/InnerProductSpace/l2Space.lean}
   (\lean{Orthonormal.countable}), \lean{ForPhyslib/QuantumMechanics/DensityOperator.lean}
   (\lean{IsDensityOperator}, \lean{posTrace}), \lean{ForPhyslib/QuantumMechanics/Wigner/Density.lean}
-  (\lean{IsDensity}, \lean{proj}) and
+  (\lean{IsDensity}, \lean{proj}),
   \lean{ForPhyslib/ProbabilisticTheory/HilbertSpace/TraceClass/CanonicalExpansion.lean}
-  (\lean{IsTraceClass.exists_hasSum_rankOne}).
+  (\lean{IsTraceClass.exists_hasSum_rankOne}) and
+  \lean{ForPhyslib/QuantumMechanics/Kadison.lean}
+  (\lean{isPure_iff_isExtremeDensityOperator}).
 \end{itemize}
 
 \paragraph{Setting.} The ensembles of CST over a measurable space $X$ with Liouville measure
@@ -204,6 +206,8 @@ Theorem~1, QP-RAY and CST are consistent iff $1 \le \dim V < \infty$ & only in p
   as sets \\
 Remark after Example~2, the Born rule is not $\delta_{\psi\phi}$ & \lean{born_ne_delta}: $e_0$ and
   $(e_0 + e_1)/\sqrt2$ are distinct rays with Born probability $\frac12$ \\
+Proof of Theorem~5, the pure states are the extreme points of $D(\mathcal H)$ &
+  \lean{pureStates_eq_extremePoints} \\
 Theorem~5, the map $r : M^1(P(\mathcal H)) \to D(\mathcal H)$ & \lean{barycenter}
   $r(\mu) = \int \rho\,d\mu(\rho)$; \lean{isDensityOperator_barycenter},
   \lean{posTrace_barycenter}; \lean{toDensity} \\
@@ -263,7 +267,9 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   convergence over a countable Hilbert basis. $r$ is onto by the canonical expansion
   $\rho = \sum_i\lambda_i|e_i\rangle\langle e_i|$, represented by $\sum_i\lambda_i\delta_{e_i}$.
   No Choquet theory is used. ``$\equiv$'' is the bijection between the quotient by
-  $r(\mu_1) = r(\mu_2)$ and $D(\mathcal H)$.
+  $r(\mu_1) = r(\mu_2)$ and $D(\mathcal H)$. That the pure states are the extreme points of
+  $D(\mathcal H)$, where the brief's proof starts, is checked separately, in Mathlib's sense of
+  extreme points of a real convex set; the rest of the proof does not use it.
 \item Theorem~1, ``if'', is checked for $V = \mathbb C^{n+1}$ (\lean{Fin}~$(n+1) \to \mathbb C$),
   with $P(V)$ the real manifold of dimension $2n$ given by TauCeti's affine charts. For a complex
   inner product space $V$ of dimension $n + 1$, $P(V)$ is not given charts of its own in Lean.
@@ -302,9 +308,7 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
     (Radon--Nikodym, not restated); the classical side of linear Hamiltonians (moment maps);
     that every orientation-preserving, area-preserving diffeomorphism of the sphere is the end of a
     Hamiltonian evolution, which needs Smale's theorem $\mathrm{Diff}^+(S^2) \simeq SO(3)$;
-  \item Insight~4, which is informal;
-  \item that the pure states are the extreme points of $D(\mathcal H)$, which the proof of
-    Theorem~5 does not need.
+  \item Insight~4, which is informal.
   \end{itemize}
 \end{itemize}
 
