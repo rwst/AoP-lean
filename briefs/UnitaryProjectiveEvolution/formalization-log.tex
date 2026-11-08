@@ -251,7 +251,8 @@ directions, with an unbounded generator.
 \item File: \lean{briefs/UnitaryProjectiveEvolution/UnitaryProjectiveEvolution/InfiniteDimensional.lean}
 \item Library: \lean{UnitaryProjectiveEvolution}, which now builds every module
   \lean{UnitaryProjectiveEvolution.*}
-\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.SpectralCutoff},\newline
+\item Imports:\newline \lean{ForPhyslib.QuantumMechanics.ForwardHamiltonian},\newline
+  \lean{ForPhyslib.QuantumMechanics.SpectralCutoff},\newline
   \lean{ForPhyslib.QuantumMechanics.VonNeumannResolvent.Laplace},\newline
   \lean{Mathlib.NumberTheory.Real.Irrational} (for \lean{Irrational}),\newline
   and \lean{SchroedingerEvolution.InfiniteDimensional} (for \lean{IsEvolution}, \lean{DrUnit},
@@ -346,6 +347,9 @@ $e^{tH_\tau/(i\hbar)} \to e^{tH/(i\hbar)}$ strongly & \lean{tendsto_cutoffGroup_
 Eq.~(23) & \lean{cutoffResolvent} \\
 Eq.~(26), on the core of bounded spectral support & \lean{infinitesimal_cutoffResolvent},
   \lean{laplaceResolvent_cutoffGroup_eq}, \lean{cutoffGroup_mul_spectralCutoffProj} \\
+The generator of family~(23) is $[H,\rho]/(i\hbar)$, on the core &
+  \lean{cutoffResolvent_generator}, \lean{expGroup_mul_spectralCutoffProj},
+  \lean{exists_mem_domain_of_spectralCutoffProj}, \lean{forwardHamiltonian_expGroup} \\
 The core is dense & \lean{exists_isDensityOperator_mul_eq},
   \lean{tendsto_spectralCutoffProj_apply} \\
 Eqs.~(24)--(25), hence eq.~(20) for unbounded $H$ & \lean{tendsto_cutoffResolvent_iterate},
@@ -422,14 +426,20 @@ Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero_and
   \lean{UnitaryOneParameterGroup}, it is the brief's $f_\tau(H)$. Strong convergence of the cutoff
   groups is dominated convergence in
   $\|(W_t - U_t)x\|^2 = \int |e^{itc_M(x)} - e^{itx}|^2\,d\mu_x$.
-\item Eq.~(26) is formalized without naming the generator: $(\Psi_\tau\rho - \rho)/\tau$
-  converges for $\rho$ in a dense set $D$ of density operators. $D$ is the brief's core, the
-  density operators with $P_m\rho = \rho$ for $P_m = \mu_S[-m,m]$ and some $m$. On such $\rho$,
+\item In \lean{IsProjectiveLimit}, eq.~(26) does not name the generator: $(\Psi_\tau\rho -
+  \rho)/\tau$ converges for $\rho$ in a dense set $D$ of density operators. $D$ is the brief's
+  core, the density operators with $P_m\rho = \rho$ for $P_m = \mu_S[-m,m]$ and some $m$. On
+  such $\rho$,
   $W^{(M)}_tP_m = W^{(m)}_tP_m$ for $M \ge m$, so once $M_\tau \ge m$, $\Psi_\tau\rho$ is the
   resolvent of the fixed bounded group $W^{(m)}$, and the bounded case applies. The core is dense
   because $P_m \to 1$ strongly: $P_m\rho P_m/\operatorname{tr}(P_m\rho P_m) \to \rho$ in trace norm.
-  The limit is $L_{K_m}\rho$, the commutator with the bounded part of $H$; the formalization only
-  asserts that it exists.
+  The limit is $L_{K_m}\rho$, the commutator with the bounded part $K_m$ of $H$. It is the
+  brief's $[H,\rho]/(i\hbar)$ in the following sense (\lean{cutoffResolvent_generator}): for the
+  self-adjoint $H$ with $U_t = e^{-itH}$ (Stone's theorem), $\rho$ maps into the domain of $H$,
+  and $L\rho\,\psi = -i(H\rho\psi - \rho H\psi)$ for $\psi$ in the domain, which determines the
+  bounded $L\rho$. On the range of $P_m$, $U_t = W^{(m)}_t$, so $H = K_m$ there; this uses that
+  $H$ is the forward Hamiltonian of $U$ from the brief on the Schr\"odinger equation
+  (\lean{forwardHamiltonian_expGroup}). Then $\rho H\psi = \rho K_m\psi$ by symmetry of $H$.
 \item DR-UNIT $\Rightarrow$ DR-PROJ needs no \lean{IsEvolution}, as in finite dimension.
   Reconstruction uses the cutoff resolvents of the reversed group $t \mapsto U_{-t}$, which has its
   own spectral measure.

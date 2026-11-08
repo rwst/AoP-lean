@@ -80,21 +80,16 @@ Beyond finite dimension the formalization has a part in any dimension, which cov
 unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ and derives the evolution structure
 \lean{IsEvolution} from DR-PROJ up to the item ``Durations with irrational ratio'' below
 (\lean{drUnit_iff_drProj_and_map_zero_and_map_add}). It leaves open the item ``Resolvent of an
-unbounded generator'' above and the items ``The generator of the cutoff family'' and ``General
-cutoff levels'' below.
+unbounded generator'' above and the item ``General cutoff levels'' below.
 \end{quote}
 
 \noindent
-From \lean{open-problems.tex}, ``From the formalization'' (needed if the first blocker is resolved
-through the generator, by Chernoff's formula):
-\begin{enumerate}
-\setcounter{enumi}{3}
-\item \textbf{The generator of the cutoff family.} For unbounded $H$ the brief states that the
-  family~(23) is infinitesimal with generator $\mathcal{L}(\rho) = [H,\rho]/(i\hbar)$. The
-  formalization only shows that $(\Psi_\tau(\rho) - \rho)/\tau$ converges on the core; it does
-  not identify the limit. (Brief, Sec.~4, after eq.~(23); Log, Sec.~1.1, ``Differences'', item
-  on eq.~(26).)
-\end{enumerate}
+The former item ``The generator of the cutoff family'' of \lean{open-problems.tex}, needed if the
+first blocker is resolved through the generator by Chernoff's formula, is resolved. On the core,
+the generator
+of the family~(23) is $\mathcal{L}(\rho) = [H,\rho]/(i\hbar)$: $\rho$ maps into the domain of $H$,
+and $\mathcal{L}(\rho)\psi = -i(H\rho\psi - \rho H\psi)$ for $\psi$ in the domain
+(\lean{cutoffResolvent_generator}; Log, Sec.~1.1, ``Differences'', item on eq.~(26)).
 
 \noindent
 From \lean{open-problems.tex}, ``From the brief'' (likewise):
@@ -233,9 +228,10 @@ subdivision of a rational $t$ into irrational steps leads to $e^{-itH_2}$, not $
 
 \paragraph{Alternative.} Keep the equal subdivisions and assume instead that the closure of the
 generator $L$ of eq.~(26) generates a contraction semigroup. Chernoff's product formula then gives
-$\Phi_t = e^{t\bar L}$, and composition follows. This needs the related items ``The generator of
-the cutoff family'' and, for the direction DR-UNIT $\Rightarrow$ DR-PROJ, the identification of
-$\bar L$ with $[H,\cdot\,]/(i\hbar)$, and Chernoff's formula is not in Mathlib.
+$\Phi_t = e^{t\bar L}$, and composition follows. For the direction DR-UNIT $\Rightarrow$ DR-PROJ
+this needs $\bar L$ to be the generator of $\rho \mapsto U_t\rho U_t^\dagger$; on the core, $L$ is
+$[H,\cdot\,]/(i\hbar)$ (\lean{cutoffResolvent_generator}), but that the core is a core for this
+generator is not formalized, and Chernoff's formula is not in Mathlib.
 
 \paragraph{Why.}
 \begin{itemize}

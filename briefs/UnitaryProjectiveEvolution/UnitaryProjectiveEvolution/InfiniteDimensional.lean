@@ -55,6 +55,11 @@ Theorem 18, DR-UNIT ⇒ DR-PROJ, unbounded generator:
   `W_{t/n} t → V t` strongly (bounded convergence) gives eq. (25). The core of eq. (26) is the
   density operators supported in a spectral subspace `P_m = μS [-m, m]`, on which `Ψ τ` agrees with
   the resolvent of the fixed bounded group `W_m` once `M_τ ≥ m`;
+* `cutoffResolvent_generator`  the generator of the family (23) is the brief's
+  `L ρ = [H, ρ] / (iħ)`: for the self-adjoint Hamiltonian `H` of `V t = e^{-itH}` and `ρ` on the
+  core, `ρ` maps into the domain of `H` and `L ρ ψ = -i (H ρ ψ - ρ H ψ)` on the domain. On the
+  range of `P_m`, `V` agrees with `W_m` (`expGroup_mul_spectralCutoffProj`), so `H` is the
+  bounded generator of `W_m` there (`exists_mem_domain_of_spectralCutoffProj`);
 * `DrUnit.drProj`  prediction by the resolvents of `V`, reconstruction by those of `t ↦ V (-t)`.
 
 Theorem 18, DR-PROJ ⇒ DR-UNIT, over `IsEvolution`:
@@ -81,6 +86,7 @@ The evolution structure from DR-PROJ, by the brief's route:
 * `drUnit_iff_drProj_and_map_zero_and_map_add`  Theorem 18 without assuming `IsEvolution`.
 -/
 
+public import ForPhyslib.QuantumMechanics.ForwardHamiltonian
 public import ForPhyslib.QuantumMechanics.SpectralCutoff
 public import ForPhyslib.QuantumMechanics.VonNeumannResolvent.Laplace
 public import SchroedingerEvolution.InfiniteDimensional
@@ -457,6 +463,16 @@ lemma laplaceResolvent_cutoffGroup_eq {m M : ℝ} (hm : m ≤ M) {ρ : E →L[�
   rw [laplaceResolvent_apply, laplaceResolvent_apply]
   simp only [hT]
 
+/-- On a density operator supported in `P_m`, `(Ψ τ ρ - ρ) / τ` tends to `L_m ρ = -i [H_m, ρ]`,
+with `H_m` the generator of the bounded group `W_m`. -/
+lemma tendsto_inv_smul_cutoffResolvent_sub {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) {m : ℝ}
+    (hm : spectralCutoffProj μS m * ρ = ρ) :
+    Tendsto (fun τ : ℝ => traceENorm (τ⁻¹ • (cutoffResolvent μS τ ρ - ρ) -
+      vonNeumannGenerator (cutoffGroup μS m).generator ρ)) (𝓝[>] 0) (𝓝 0) := by
+  refine (tendsto_inv_smul_laplaceResolvent_sub (cutoffGroup μS m) hρ).congr' ?_
+  filter_upwards [tendsto_cutoffLevel.eventually (eventually_ge_atTop m)] with τ hτ
+  rw [cutoffResolvent, cutoffGroupAt, laplaceResolvent_cutoffGroup_eq μS hτ hρ.isSelfAdjoint hm]
+
 /-- **Eq. (26)**: the cutoff resolvents are infinitesimal on the dense set of density operators
 supported in a spectral subspace `P_m`. -/
 theorem infinitesimal_cutoffResolvent : ∃ D : Set (E →L[ℂ] E), (∀ ρ ∈ D, IsDensityOperator ρ) ∧
@@ -469,10 +485,87 @@ theorem infinitesimal_cutoffResolvent : ∃ D : Set (E →L[ℂ] E), (∀ ρ ∈
   · obtain ⟨m, σ, hσ, hPσ, hd⟩ := exists_isDensityOperator_mul_eq
       (isStarProjection_spectralCutoffProj μS) (tendsto_spectralCutoffProj_apply μS) hρ hε
     exact ⟨σ, ⟨hσ, m, hPσ⟩, hd⟩
-  · refine ⟨vonNeumannGenerator (cutoffGroup μS m).generator ρ,
-      (tendsto_inv_smul_laplaceResolvent_sub (cutoffGroup μS m) hρ).congr' ?_⟩
-    filter_upwards [tendsto_cutoffLevel.eventually (eventually_ge_atTop m)] with τ hτ
-    rw [cutoffResolvent, cutoffGroupAt, laplaceResolvent_cutoffGroup_eq μS hτ hρ.isSelfAdjoint hm]
+  · exact ⟨_, tendsto_inv_smul_cutoffResolvent_sub μS hρ hm⟩
+
+/-- On the range of `P_m` the full group is the bounded group `W_m`: `V t P_m = W_m t P_m`. -/
+lemma expGroup_mul_spectralCutoffProj (m t : ℝ) :
+    expGroup μS t * spectralCutoffProj μS m = cutoffGroup μS m t * spectralCutoffProj μS m := by
+  ext x
+  change expGroup μS t (spectralCutoffProj μS m x) = cutoffGroup μS m t (spectralCutoffProj μS m x)
+  refine tendsto_nhds_unique (tendsto_cutoffGroup_apply μS t (spectralCutoffProj μS m x))
+    (tendsto_const_nhds.congr' ?_)
+  filter_upwards [eventually_ge_atTop m] with M hM
+  simpa using congrArg (fun A => A x) (cutoffGroup_mul_spectralCutoffProj μS hM t).symm
+
+/-- The Hamiltonian `H` of `V` is the forward Hamiltonian of `V`. -/
+lemma forwardHamiltonian_expGroup {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H)
+    (hV : SolvesSchrodinger 1 H (expGroup μS)) : forwardHamiltonian (expGroup μS) 1 = H := by
+  have hV0 : expGroup μS 0 = 1 := by simp [expGroup, expIntegral_zero]
+  have hU : ∀ t, expGroup μS t ∈ unitary (E →L[ℂ] E) := fun t => by
+    have h := Unitary.mem_iff.mp (expIntegral_mem_unitary μS t)
+    exact Unitary.mem_iff.mpr
+      ⟨congrArg ContinuousLinearMapWOT.toCLM h.1, congrArg ContinuousLinearMapWOT.toCLM h.2⟩
+  have heq := hV.eq_schrodingerPropagator one_ne_zero hH hV0
+  refine forwardHamiltonian_eq_of_isLittleO one_ne_zero hV0
+    (fun τ _ x y => ContinuousLinearMap.inner_map_map_of_mem_unitary (hU τ) x y) hH
+    fun ψ _ => ?_
+  simp only [heq, sub_self]
+  exact Asymptotics.isLittleO_zero _ _
+
+/-- On the range of `P_m`, the Hamiltonian `H` of `V` is the bounded generator `H_m` of `W_m`. -/
+lemma exists_mem_domain_of_spectralCutoffProj {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H)
+    (hV : SolvesSchrodinger 1 H (expGroup μS)) {m : ℝ} {x : E}
+    (hx : spectralCutoffProj μS m x = x) :
+    ∃ h : x ∈ H.domain, H ⟨x, h⟩ = (cutoffGroup μS m).generator x := by
+  obtain rfl := forwardHamiltonian_expGroup μS hH hV
+  set W := cutoffGroup μS m
+  have h0 : HasDerivAt (fun t => (W t : E →L[ℂ] E)) (W 0 * -(Complex.I • W.generator)) 0 :=
+    W.hasDerivAt 0
+  have hW : HasDerivAt (fun t => W t x) (-(Complex.I • W.generator x)) 0 := by
+    have h := (((ContinuousLinearMap.apply ℂ E x).restrictScalars ℝ).hasFDerivAt
+      ).comp_hasDerivAt (0 : ℝ) h0
+    simpa [AddChar.map_zero_eq_one, Function.comp_def] using h
+  have hfun : ∀ t, expGroup μS t x = W t x := fun t => by
+    conv_lhs => rw [← hx]
+    conv_rhs => rw [← hx]
+    exact congrArg (fun A => A x) (expGroup_mul_spectralCutoffProj μS m t)
+  obtain ⟨h, hHx⟩ := forwardHamiltonian_of_hasDerivWithinAt 1
+    (hW.hasDerivWithinAt.congr (s := Ici 0) (fun t _ => hfun t) (hfun 0))
+  refine ⟨h, ?_⟩
+  rw [hHx, smul_neg, smul_smul, Complex.ofReal_one, mul_one, Complex.I_mul_I, neg_one_smul,
+    neg_neg]
+
+/-- **The generator of the cutoff family.** On a density operator `ρ` supported in `P_m`,
+`(Ψ τ ρ - ρ) / τ` converges in trace norm to `L ρ = [H, ρ] / i` (with `ħ = 1`), for the
+self-adjoint, in general unbounded, Hamiltonian `H` of `V t = e^{-itH}`: `ρ` maps into the domain
+of `H`, and `L ρ ψ = -i (H ρ ψ - ρ H ψ)` for `ψ` in the domain. -/
+theorem cutoffResolvent_generator {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H)
+    (hV : SolvesSchrodinger 1 H (expGroup μS)) {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) {m : ℝ}
+    (hm : spectralCutoffProj μS m * ρ = ρ) :
+    ∃ Lρ : E →L[ℂ] E,
+      Tendsto (fun τ : ℝ => traceENorm (τ⁻¹ • (cutoffResolvent μS τ ρ - ρ) - Lρ)) (𝓝[>] 0)
+        (𝓝 0) ∧
+      ∃ hdom : ∀ x, ρ x ∈ H.domain, ∀ ψ : H.domain,
+        Lρ ψ = -Complex.I • (H ⟨ρ ψ, hdom ψ⟩ - ρ (H ψ)) := by
+  set K := (cutoffGroup μS m).generator
+  have hP : ∀ x, spectralCutoffProj μS m (ρ x) = ρ x := fun x => by
+    simpa using congrArg (fun A => A x) hm
+  have hdom : ∀ x, ρ x ∈ H.domain := fun x =>
+    (exists_mem_domain_of_spectralCutoffProj μS hH hV (hP x)).1
+  have hHρ : ∀ x, H ⟨ρ x, hdom x⟩ = K (ρ x) := fun x =>
+    (exists_mem_domain_of_spectralCutoffProj μS hH hV (hP x)).2
+  have hρH : ∀ ψ : H.domain, ρ (H ψ) = ρ (K ψ) := fun ψ => by
+    have hsρ := hρ.isSelfAdjoint.isSymmetric
+    have hsK := (cutoffGroup μS m).generator_isSelfAdjoint.isSymmetric
+    refine ext_inner_left ℂ fun φ => ?_
+    calc ⟪φ, ρ (H ψ)⟫_ℂ = ⟪ρ φ, H ψ⟫_ℂ := (hsρ _ _).symm
+      _ = ⟪H ⟨ρ φ, hdom φ⟩, ψ⟫_ℂ := (LinearPMap.IsSelfAdjoint.isSymmetric hH ⟨ρ φ, hdom φ⟩ ψ).symm
+      _ = ⟪K (ρ φ), ψ⟫_ℂ := by rw [hHρ]
+      _ = ⟪ρ φ, K ψ⟫_ℂ := hsK _ _
+      _ = ⟪φ, ρ (K ψ)⟫_ℂ := hsρ _ _
+  refine ⟨_, tendsto_inv_smul_cutoffResolvent_sub μS hρ hm, hdom, fun ψ => ?_⟩
+  rw [hHρ, hρH, vonNeumannGenerator_apply]
+  rfl
 
 /-- **Theorem 18**, DR-UNIT ⇒ DR-PROJ for a possibly unbounded generator: the cutoff resolvents
 form a projective limit of the unitary evolution. -/
