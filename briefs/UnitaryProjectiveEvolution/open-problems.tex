@@ -53,8 +53,8 @@ precise first.
 \noindent Beyond finite dimension the formalization has a part in any dimension, which covers
 unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ and derives the evolution structure
 \lean{IsEvolution} from DR-PROJ up to the item ``Durations with irrational ratio'' below
-(\lean{drUnit_iff_drProj_and_map_zero_and_map_add}). It leaves open the item ``Resolvent of an
-unbounded generator'' above and the item ``General cutoff levels'' below.
+(\lean{drUnit_iff_drProj_and_map_zero_and_map_add}), for every cutoff level satisfying
+eq.~(22). It leaves open the item ``Resolvent of an unbounded generator'' above.
 \begin{enumerate}
 \item \blocker{brief issue}
   \textbf{Durations with irrational ratio.}
@@ -86,10 +86,6 @@ unbounded generator'' above and the item ``General cutoff levels'' below.
   not settled whether the brief's weaker wording already makes $\Phi_t$ a bijection of the pure
   states, or what the right formulation is. (Brief, Sec.~4: ``Perfect reconstruction gives the
   converse correspondence''; Log, ``Differences'' and ``Problems found''.)
-\item \textbf{General cutoff levels.} DR-UNIT $\Rightarrow$ DR-PROJ for unbounded $H$ is
-  formalized for the single choice $M_\tau = \tau^{-1/4}$. The brief's argument for every
-  cutoff satisfying eq.~(22) is not formalized. (Brief, eq.~(22); Log, Sec.~1.1,
-  ``Differences''.)
 \item \textbf{The qubit picture.} $\Psi_\tau = (I + \mathcal{C}_\tau)/2$ with the Cayley
   transform $\mathcal{C}_\tau = (I + \tau\mathcal{L})(I - \tau\mathcal{L})^{-1}$, its
   orthogonality for the Hilbert--Schmidt inner product, and the midpoint picture on the Bloch

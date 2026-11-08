@@ -339,8 +339,8 @@ $(\Psi_\tau - I)/\tau = L\Psi_\tau \to L$, bounded $K$ &
   \lean{tendsto_inv_smul_laplaceResolvent_sub}, error $\le 4\|K\|^2\tau$ \\
 Eq.~(20), bounded $K$ & \lean{tendsto_laplaceResolvent_iterate},
   \lean{traceENorm_laplaceResolvent_iterate_sub_le}: error $\le 80\|K\|^2t^2/n$ \\
-Eq.~(22) & \lean{cutoffLevel}: $M_\tau = \tau^{-1/4}$, \lean{mul_cutoffLevel_sq},
-  \lean{tendsto_cutoffLevel} \\
+Eq.~(22) & \lean{IsCutoffLevel}; $M_\tau = \tau^{-1/4}$ satisfies it
+  (\lean{isCutoffLevel_cutoffLevel}) \\
 $H_\tau = f_\tau(H)$, $\|H_\tau\| \le M_\tau$ & \lean{cutoffGroup},
   \lean{norm_cutoffGroup_generator_le} \\
 $e^{tH_\tau/(i\hbar)} \to e^{tH/(i\hbar)}$ strongly & \lean{tendsto_cutoffGroup_apply} \\
@@ -418,7 +418,13 @@ Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero_and
   eq.~(14) on pure states with constant $80$. It extends to all density operators by summing the
   canonical expansion in $\mathcal{S}_1$. For $8\|K\|^2\tau^2 > \frac12$ the bound is trivial,
   since $\|\Psi_\tau\rho - T_\tau\rho\|_1 \le 2$, so eq.~(14) holds for every $\tau \ge 0$.
-\item The cutoff of eq.~(22) is $M_\tau = \tau^{-1/4}$, so $\tau M_\tau^2 = \sqrt\tau$.
+\item The cutoff level is any $M_\tau$ with the two limits of eq.~(22)
+  (\lean{IsCutoffLevel}), as in the brief. The brief's $M_\tau > 0$ is not assumed: $M_\tau \to
+  \infty$ gives it for small $\tau$, which is all the estimates use. The bounds are explicit at
+  $\tau = t/n$: the accumulated error is at most $80\,t\tau M_\tau^2$, the failure probability
+  at most $8\,t\tau M_\tau^2$, and the state error at most $64\,t\tau M_\tau^2$. The level
+  $M_\tau = \tau^{-1/4}$, with $\tau M_\tau^2 = \sqrt\tau$, shows that such levels exist
+  (\lean{isCutoffLevel_cutoffLevel}), and \lean{exists_isProjectiveLimit} uses it.
   $H_\tau$ is never formed as an operator of its own. The cutoff group
   $W_t = \int e^{itc_M(x)}\,d\mu_S(x)$, with $c_M(x) = \max(-M,\min(x,M))$, is a norm-continuous
   unitary group because $\|W_t - W_s\| \le M|t-s|$, and $H_\tau$ is its bounded generator, of norm
