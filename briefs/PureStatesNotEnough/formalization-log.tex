@@ -94,9 +94,14 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   Hamiltonian flow preserves a closed form
   (\lean{SmoothTwoForm.mpullback_timeDependentFlowOf_of_isHamiltonianVectorField}), and on a simply
   connected manifold a jointly smooth time-dependent flow preserves it exactly when every velocity
-  field is Hamiltonian (\lean{SmoothTwoForm.forall_mpullback_timeDependentFlowOf_eq_iff}); on the
-  Riemann sphere, with completeness from compactness, no time map of a time-dependent Hamiltonian
-  flow is complex conjugation (\lean{timeDependentFlowOf_ne_conjSphere}).\newline
+  field is Hamiltonian (\lean{SmoothTwoForm.forall_mpullback_timeDependentFlowOf_eq_iff}); a smooth
+  isotopy with jointly smooth inverses is the time-dependent flow of its generating field
+  $X_t = \dot\varphi_t \circ \varphi_t^{-1}$ (\lean{isotopyField}, \lean{contMDiff_isotopyField},
+  \lean{timeDependentFlowOf_isotopyField}), so an isotopy from the identity preserves a closed form
+  exactly when every $X_t$ is Hamiltonian (\lean{SmoothTwoForm.forall_mpullback_isotopy_eq_iff});
+  on the Riemann sphere, with completeness from compactness, no time map of a time-dependent
+  Hamiltonian flow is complex conjugation (\lean{timeDependentFlowOf_ne_conjSphere}), nor any map
+  of a Hamiltonian isotopy (\lean{isotopy_ne_conjSphere}).\newline
   \lean{Precession.lean}: every Hermitian $H$ is $c + \frac12 n\cdot\sigma$
   (\lean{exists_eq_smul_one_add_pauli}); along a solution of $i\psi' = H\psi$ the Bloch vector
   satisfies $a' = n \times a$ (\lean{hasDerivAt_blochVector}).\newline
@@ -186,8 +191,10 @@ Example~2, Hamiltonian evolutions are the volume-preserving diffeomorphisms &
   \lean{timeDependentFlowOf_ne_conjSphere}: complex conjugation of the Riemann sphere preserves
   the area but is not Hamiltonian (see ``Problems found''); with the area form,
   \lean{lieDeriv_areaForm_eq_zero_iff_hamiltonian}: the vector fields that preserve it are the
-  Hamiltonian ones, and \lean{preserves_areaForm_iff_hamiltonian}: the time-dependent flows that
-  preserve it are the Hamiltonian evolutions \\
+  Hamiltonian ones, \lean{preserves_areaForm_iff_hamiltonian}: the time-dependent flows that
+  preserve it are the Hamiltonian evolutions, and
+  \lean{isotopy_preserves_areaForm_iff_hamiltonian}: so are the isotopies from the identity that
+  preserve it \\
 Example~2, quantum evolutions are exactly the rotations & \lean{exists_unitaryAction_eq_iff}: a
   map of rays is the action of a unitary iff it is a rotation on Bloch vectors;
   \lean{unitaryAction_eq_iff}: unitaries act alike iff they differ by a phase \\
@@ -228,9 +235,10 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   is not integrated to a finite rotation. ``Hamiltonian evolution'' is checked for vector fields
   and for evolutions: the time-dependent flows of jointly smooth time-dependent vector fields,
   which preserve the Fubini--Study form exactly when each velocity field $X_t$ is the
-  Hamiltonian vector field of a smooth $H_t$. The $H_t$ are found one time at a time, not as one
-  jointly smooth $H(t, x)$, and an evolution is given by its velocity field, not as a family of
-  diffeomorphisms.
+  Hamiltonian vector field of a smooth $H_t$, and the smooth isotopies from the identity with
+  jointly smooth inverses, which preserve it exactly when each generating field
+  $X_t = \dot\varphi_t \circ \varphi_t^{-1}$ is Hamiltonian. The $H_t$ are found one time at a
+  time, not as one jointly smooth $H(t, x)$.
 \item Not formalized:
   \begin{itemize}
   \item Theorem~1;
@@ -288,12 +296,15 @@ convention of Theorem~1. Theorem~1 is not checked.
   ones, such as $z \mapsto -z$, which are not Hamiltonian. So Hamiltonian evolution preserves the
   area form, not only the area. Checked in Lean for complex conjugation of the Riemann sphere,
   the reflection $a_1 \mapsto -a_1$ of the Bloch sphere: it preserves the Fubini--Study density
-  but reverses the form, and no time map of a Hamiltonian flow, autonomous or time-dependent,
-  equals it (\lean{conjSphere_preserves_area_reverses_form}, \lean{globalFlow_ne_conjSphere},
-  \lean{timeDependentFlowOf_ne_conjSphere}). With the area form, the claim holds for evolutions:
-  a time-dependent flow preserves the form exactly when it is Hamiltonian
-  (\lean{preserves_areaForm_iff_hamiltonian}). The obstruction would lie in $H^1_{dR}(S^2) = 0$,
-  so no flux homomorphism is involved. Along an evolution from the identity, preserving the area
+  but reverses the form, and no time map of a Hamiltonian flow, autonomous or time-dependent, or
+  of a Hamiltonian isotopy equals it (\lean{conjSphere_preserves_area_reverses_form},
+  \lean{globalFlow_ne_conjSphere}, \lean{timeDependentFlowOf_ne_conjSphere},
+  \lean{isotopy_ne_conjSphere}). With the area form, the claim holds for evolutions:
+  a time-dependent flow, or an isotopy from the identity, preserves the form exactly when it is
+  Hamiltonian (\lean{preserves_areaForm_iff_hamiltonian},
+  \lean{isotopy_preserves_areaForm_iff_hamiltonian}). The obstruction would lie in
+  $H^1_{dR}(S^2) = 0$, so no flux homomorphism is involved. Along an evolution from the identity,
+  preserving the area
   and preserving the form agree, since the sign of the pulled-back form cannot jump (not checked
   in Lean); only single maps tell them apart.
 \item CST says $p(\xi_1\mid\xi_2) = 0$ ``for all $\xi_1, \xi_2 \in X$'', which includes

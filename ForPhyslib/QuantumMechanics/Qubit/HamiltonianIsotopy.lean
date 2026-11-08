@@ -35,6 +35,10 @@ never reach complex conjugation, which preserves the area but reverses `ω_FS`. 
 evolution of the classical qubit is the area-form-preserving evolution, not the area-preserving
 one.
 
+An evolution can also be given as a family of diffeomorphisms: a smooth isotopy `φ t` from the
+identity with jointly smooth inverses. It is the time-dependent flow of its generating field
+`X_t = φ̇_t ∘ φ_t⁻¹`, which is jointly smooth, so the same characterization holds for isotopies.
+
 ## Main results
 
 - `TauCeti.SmoothTwoForm.mem_symplecticVectorFields_iff_exists_isHamiltonianVectorField`: on a
@@ -57,6 +61,15 @@ one.
   the Riemann sphere, where every suspension is complete.
 - `QuantumMechanics.Qubit.timeDependentFlowOf_ne_conjSphere`: no time map of a time-dependent
   Hamiltonian flow is complex conjugation.
+- `TauCeti.isotopyField`, `TauCeti.contMDiff_isotopyField`,
+  `TauCeti.timeDependentFlowOf_isotopyField`: the generating field of an isotopy is jointly
+  smooth, and the isotopy is its time-dependent flow.
+- `TauCeti.SmoothTwoForm.forall_mpullback_isotopy_eq_iff`,
+  `QuantumMechanics.Qubit.forall_mpullback_isotopy_fubiniStudyForm_iff`: on a simply connected
+  manifold, and on the Riemann sphere, an isotopy preserves a closed form exactly when its
+  generating fields are Hamiltonian.
+- `QuantumMechanics.Qubit.isotopy_ne_conjSphere`: no Hamiltonian isotopy reaches complex
+  conjugation.
 -/
 
 public section
@@ -159,6 +172,128 @@ end TimeDependent
 
 end TauCeti.SmoothTwoForm
 
+/-! ### Isotopies -/
+
+namespace TauCeti
+
+variable {E H M : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [TopologicalSpace H]
+  (I : ModelWithCorners ℝ E H) [TopologicalSpace M] [ChartedSpace H M]
+
+/-- The **generating vector field** of an isotopy `φ t` with inverses `ψ t`: at time `t` and
+point `y` it is the velocity at `u = t` of the curve `u ↦ φ u x` through `x = ψ t y`, the point
+that `φ t` sends to `y`. In short, `X_t = φ̇_t ∘ φ_t⁻¹`. -/
+@[expose] noncomputable def isotopyField (φ ψ : ℝ → M → M) (t : ℝ) (y : M) : TangentSpace I y :=
+  mfderiv (𝓘(ℝ, ℝ).prod I) I (fun p : ℝ × M ↦ φ p.1 p.2) (t, ψ t y) (1, 0)
+
+variable {I} {φ ψ : ℝ → M → M}
+
+theorem isotopyField_def (t : ℝ) (y : M) :
+    isotopyField I φ ψ t y =
+      mfderiv (𝓘(ℝ, ℝ).prod I) I (fun p : ℝ × M ↦ φ p.1 p.2) (t, ψ t y) (1, 0) :=
+  rfl
+
+/-- The curves of an isotopy solve the time-dependent equation of its generating field. -/
+theorem hasMFDerivAt_isotopyField [IsManifold I 1 M]
+    (hφ : ContMDiff (𝓘(ℝ, ℝ).prod I) I 1 (fun p : ℝ × M ↦ φ p.1 p.2))
+    (hψφ : ∀ t x, ψ t (φ t x) = x) (x : M) (t : ℝ) :
+    HasMFDerivAt 𝓘(ℝ, ℝ) I (fun u ↦ φ u x) t
+      ((1 : ℝ →L[ℝ] ℝ).smulRight (isotopyField I φ ψ t (φ t x))) := by
+  have hd := (hφ.mdifferentiableAt one_ne_zero (x := (t, x))).hasMFDerivAt
+  have hc := (hasMFDerivAt_id (I := 𝓘(ℝ, ℝ)) t).prodMk
+    (hasMFDerivAt_const (I := 𝓘(ℝ, ℝ)) (I' := I) x t)
+  refine (hd.comp t hc).congr_mfderiv (ContinuousLinearMap.ext_ring ?_)
+  simp only [isotopyField]
+  generalize hy : ψ t (φ t x) = y
+  rw [hψφ] at hy
+  subst hy
+  exact (one_smul ℝ _).symm
+
+/-- The generating field of a smooth isotopy with jointly smooth inverses is jointly smooth. -/
+theorem contMDiff_isotopyField [IsManifold I ∞ M]
+    (hφ : ContMDiff (𝓘(ℝ, ℝ).prod I) I ∞ (fun p : ℝ × M ↦ φ p.1 p.2))
+    (hψ : ContMDiff (𝓘(ℝ, ℝ).prod I) I ∞ (fun p : ℝ × M ↦ ψ p.1 p.2))
+    (hφψ : ∀ t y, φ t (ψ t y) = y) :
+    ContMDiff (𝓘(ℝ, ℝ).prod I) I.tangent ∞
+      (fun p : ℝ × M ↦ (⟨p.2, isotopyField I φ ψ p.1 p.2⟩ : TangentBundle I M)) := by
+  have h0 : ContMDiff (𝓘(ℝ, ℝ).prod I) I.tangent ∞
+      (fun p : ℝ × M ↦ (⟨p.2, (0 : E)⟩ : TangentBundle I M)) :=
+    (Bundle.contMDiff_zeroSection ℝ (TangentSpace I (M := M))).comp contMDiff_snd
+  -- `(t, y) ↦ dφ_{(t, ψ t y)}(1, 0)`, the tangent map of `φ` applied to `∂_t` at `(t, ψ t y)`
+  have h := (hφ.contMDiff_tangentMap (m := ∞) le_rfl).comp
+    ((contMDiff_timeDependentSuspensionField (X := fun _ _ ↦ 0) h0).comp
+      (contMDiff_fst.prodMk hψ))
+  have hW (q : ℝ × M) :
+      timeDependentSuspensionField (I := I) (fun _ _ ↦ 0) q = ((1 : ℝ), (0 : E)) :=
+    Prod.ext (timeDependentSuspensionField_fst _ q) (timeDependentSuspensionField_snd _ q)
+  refine h.congr fun p ↦ ?_
+  simp only [Function.comp_apply, hW]
+  have key : ∀ a b : M, a = b → ∀ v : E,
+      (⟨a, v⟩ : TangentBundle I M) = (⟨b, v⟩ : TangentBundle I M) := by
+    rintro a b rfl v; rfl
+  exact key _ _ (hφψ p.1 p.2).symm _
+
+/-- The generating field of an isotopy has a complete suspension: its time-dependent flow is
+defined at all times. -/
+theorem isCompleteVectorField_isotopyField [IsManifold I 1 M]
+    (hφ : ContMDiff (𝓘(ℝ, ℝ).prod I) I 1 (fun p : ℝ × M ↦ φ p.1 p.2))
+    (hφψ : ∀ t y, φ t (ψ t y) = y) (hψφ : ∀ t x, ψ t (φ t x) = x) :
+    IsCompleteVectorField (timeDependentSuspensionField (isotopyField I φ ψ)) := by
+  refine isCompleteVectorField_iff_maximalIntegralCurveInterval.2 fun ⟨s, x⟩ ↦
+    Set.eq_univ_of_forall fun τ ↦ mem_flowDomain.1 ?_
+  have h := mem_timeDependentFlowDomain_of_hasMFDerivAt (s := s) (t := s + τ)
+    (γ := fun u ↦ φ u (ψ s x)) (a := min s (s + τ) - 1) (b := max s (s + τ) + 1)
+    (fun u _ ↦ hasMFDerivAt_isotopyField hφ hψφ _ u)
+    ⟨by linarith [min_le_left s (s + τ)], by linarith [le_max_left s (s + τ)]⟩
+    ⟨by linarith [min_le_right s (s + τ)], by linarith [le_max_right s (s + τ)]⟩
+  rwa [hφψ, mem_timeDependentFlowDomain, add_sub_cancel_left] at h
+
+/-- **An isotopy is the time-dependent flow of its generating field**: `φ_{s,t} = φ_t ∘ φ_s⁻¹`. -/
+theorem timeDependentFlowOf_isotopyField [T2Space M] [IsManifold I ∞ M]
+    [BoundarylessManifold I M]
+    (hφ : ContMDiff (𝓘(ℝ, ℝ).prod I) I ∞ (fun p : ℝ × M ↦ φ p.1 p.2))
+    (hψ : ContMDiff (𝓘(ℝ, ℝ).prod I) I ∞ (fun p : ℝ × M ↦ ψ p.1 p.2))
+    (hφψ : ∀ t y, φ t (ψ t y) = y) (hψφ : ∀ t x, ψ t (φ t x) = x) (s t : ℝ) (x : M) :
+    timeDependentFlowOf (isotopyField I φ ψ) s t x = φ t (ψ s x) := by
+  have h := timeDependentFlowOf_eq_of_hasMFDerivAt
+    ((contMDiff_isotopyField hφ hψ hφψ).of_le (by simp)) (s := s) (t := t)
+    (γ := fun u ↦ φ u (ψ s x)) (a := min s t - 1) (b := max s t + 1)
+    (fun u _ ↦ hasMFDerivAt_isotopyField (hφ.of_le (by simp)) hψφ _ u)
+    ⟨by linarith [min_le_left s t], by linarith [le_max_left s t]⟩
+    ⟨by linarith [min_le_right s t], by linarith [le_max_right s t]⟩
+  rwa [hφψ] at h
+
+/-- **Form-preserving isotopies are Hamiltonian.** On a simply connected manifold, let `φ t` be a
+smooth isotopy from the identity with jointly smooth inverses `ψ t`, and `σ` a closed form. Every
+`φ t` preserves `σ` exactly when every generating field `X_t = φ̇_t ∘ φ_t⁻¹` is the Hamiltonian
+vector field of a smooth function. -/
+theorem SmoothTwoForm.forall_mpullback_isotopy_eq_iff [FiniteDimensional ℝ E] [T2Space M]
+    [IsManifold I ∞ M] [I.Boundaryless] [SimplyConnectedSpace M] {σ : SmoothTwoForm I M}
+    (hσ : σ.IsClosed) (hφ : ContMDiff (𝓘(ℝ, ℝ).prod I) I ∞ (fun p : ℝ × M ↦ φ p.1 p.2))
+    (hψ : ContMDiff (𝓘(ℝ, ℝ).prod I) I ∞ (fun p : ℝ × M ↦ ψ p.1 p.2))
+    (hφψ : ∀ t y, φ t (ψ t y) = y) (hψφ : ∀ t x, ψ t (φ t x) = x) (hφ0 : ∀ x, φ 0 x = x) :
+    (∀ t, mpullback I I (φ t) σ.1 = σ.1) ↔
+      ∀ t, ∃ f : M → ℝ, ContMDiff I 𝓘(ℝ) ∞ f ∧
+        σ.IsHamiltonianVectorField f (isotopyField I φ ψ t) := by
+  have hφt : ∀ t, MDifferentiable I I (φ t) := fun t ↦
+    (hφ.comp ((contMDiff_const (c := t)).prodMk contMDiff_id)).mdifferentiable (by simp)
+  have hψt : ∀ t, MDifferentiable I I (ψ t) := fun t ↦
+    (hψ.comp ((contMDiff_const (c := t)).prodMk contMDiff_id)).mdifferentiable (by simp)
+  rw [← forall_mpullback_timeDependentFlowOf_eq_iff hσ
+    (isCompleteVectorField_isotopyField (hφ.of_le (by simp)) hφψ hψφ)
+    (contMDiff_isotopyField hφ hψ hφψ)]
+  simp only [fun s t ↦ funext (timeDependentFlowOf_isotopyField hφ hψ hφψ hψφ s t)]
+  refine ⟨fun h s t ↦ ?_, fun h t ↦ ?_⟩
+  · -- `ψ s = (φ s)⁻¹` preserves `σ` too
+    have hs : mpullback I I (ψ s) σ.1 = σ.1 := by
+      rw [← congrArg (mpullback I I (ψ s)) (h s), ← mpullback_comp (hψt s) (hφt s),
+        show φ s ∘ ψ s = id from funext (hφψ s), mpullback_id]
+    change mpullback I I (φ t ∘ ψ s) σ.1 = σ.1
+    rw [mpullback_comp (hψt s) (hφt t), h t, hs]
+  · have hψ0 : ψ 0 = id := funext fun x ↦ (hφ0 _).symm.trans (hφψ 0 x)
+    simpa [hψ0] using h 0 t
+
+end TauCeti
+
 namespace QuantumMechanics.Qubit
 
 open OnePoint (fubiniStudyForm isSymplectic_fubiniStudyForm)
@@ -232,5 +367,32 @@ theorem forall_mpullback_timeDependentFlowOf_fubiniStudyForm_iff
         fubiniStudyForm.IsHamiltonianVectorField f (X t) :=
   SmoothTwoForm.forall_mpullback_timeDependentFlowOf_eq_iff isSymplectic_fubiniStudyForm.isClosed
     (isCompleteVectorField_timeDependentSuspensionField_onePoint (hX.of_le (by simp))) hX
+
+/-- **Area-form-preserving isotopies of the classical qubit are Hamiltonian.** A smooth isotopy
+`φ t` of the Riemann sphere from the identity, with jointly smooth inverses `ψ t`, preserves
+`ω_FS` at all times exactly when every generating field `X_t = φ̇_t ∘ φ_t⁻¹` is the Hamiltonian
+vector field of a smooth function. -/
+theorem forall_mpullback_isotopy_fubiniStudyForm_iff {φ ψ : ℝ → OnePoint ℂ → OnePoint ℂ}
+    (hφ : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ) ∞ (fun p : ℝ × OnePoint ℂ ↦ φ p.1 p.2))
+    (hψ : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ) ∞ (fun p : ℝ × OnePoint ℂ ↦ ψ p.1 p.2))
+    (hφψ : ∀ t y, φ t (ψ t y) = y) (hψφ : ∀ t x, ψ t (φ t x) = x) (hφ0 : ∀ x, φ 0 x = x) :
+    (∀ t, mpullback 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (φ t) fubiniStudyForm.1 = fubiniStudyForm.1) ↔
+      ∀ t, ∃ f : OnePoint ℂ → ℝ, ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ) ∞ f ∧
+        fubiniStudyForm.IsHamiltonianVectorField f (isotopyField 𝓘(ℝ, ℂ) φ ψ t) :=
+  SmoothTwoForm.forall_mpullback_isotopy_eq_iff isSymplectic_fubiniStudyForm.isClosed hφ hψ hφψ
+    hψφ hφ0
+
+/-- **No Hamiltonian isotopy of the classical qubit ends at complex conjugation.** If every
+generating field of a smooth isotopy of the Riemann sphere from the identity is Hamiltonian, no
+`φ t` is complex conjugation. -/
+theorem isotopy_ne_conjSphere {φ ψ : ℝ → OnePoint ℂ → OnePoint ℂ}
+    (hφ : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ) ∞ (fun p : ℝ × OnePoint ℂ ↦ φ p.1 p.2))
+    (hψ : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ) ∞ (fun p : ℝ × OnePoint ℂ ↦ ψ p.1 p.2))
+    (hφψ : ∀ t y, φ t (ψ t y) = y) (hψφ : ∀ t x, ψ t (φ t x) = x) (hφ0 : ∀ x, φ 0 x = x)
+    (hH : ∀ t, ∃ f : OnePoint ℂ → ℝ, ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ) ∞ f ∧
+      fubiniStudyForm.IsHamiltonianVectorField f (isotopyField 𝓘(ℝ, ℂ) φ ψ t)) (t : ℝ) :
+    φ t ≠ conjSphere :=
+  ne_conjSphere_of_mpullback_eq
+    ((forall_mpullback_isotopy_fubiniStudyForm_iff hφ hψ hφψ hψφ hφ0).2 hH t)
 
 end QuantumMechanics.Qubit
