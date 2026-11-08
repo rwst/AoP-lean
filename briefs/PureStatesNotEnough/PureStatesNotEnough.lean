@@ -7,12 +7,14 @@ module
 
 public import ForMathlib.Analysis.Convex.Combination
 public import ForMathlib.Analysis.InnerProductSpace.l2Space
+public import ForMathlib.Geometry.Symplectic.Manifold.FubiniStudy
 public import ForMathlib.MeasureTheory.Constructions.HaarToSphere
 public import ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.CanonicalExpansion
 public import ForPhyslib.QuantumMechanics.DensityOperator
 public import ForPhyslib.QuantumMechanics.Qubit.HamiltonianIsotopy
 public import ForPhyslib.QuantumMechanics.Qubit.Precession
 public import Mathlib.Analysis.Convex.Integral
+import TauCeti.Geometry.Symplectic.Manifold.Descent
 
 /-!
 # Quantum pure states are not enough
@@ -64,13 +66,16 @@ would be a class in `H¹_dR`, which vanishes because the sphere is simply connec
 single orientation-preserving, area-preserving diffeomorphism is the end of a Hamiltonian evolution
 needs Smale's theorem `Diff⁺(S²) ≃ SO(3)` and is not formalized.
 
-**Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is not formalized:
-it needs the symplectic geometry of `P(V)` in every dimension. Only its edges are checked. `P(V)`
-is empty for `V = 0`, a single point for `dim V = 1`, and has two points exactly when
-`2 ≤ dim V`. If a point counts as a `0`-dimensional symplectic manifold, Theorem 3 fails for
-`dim H = 1`: the CST ensembles of a point and the density operators of `ℂ` are both a single
-point. And as sets `P(ℓ²)` and `P(ℂ²)` are in bijection, so the "only if" of Theorem 1 needs the
-topology of `P(V)`, not only its points.
+**Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is formalized in
+part. For `V = ℂⁿ⁺¹` the "if" holds: `ℂPⁿ` has exactly one symplectic form that pulls back along
+the Hopf map `S²ⁿ⁺¹ → ℂPⁿ` to the restriction of the standard form `Im ⟪u, w⟫` of `ℂⁿ⁺¹`, the
+Fubini–Study form, obtained by symplectic descent. Not formalized are the transport to an
+arbitrary `V` of finite dimension, the Liouville measure of the form and the "only if". The edges
+are checked. `P(V)` is empty for `V = 0`, a single point for `dim V = 1`, and has two points
+exactly when `2 ≤ dim V`. If a point counts as a `0`-dimensional symplectic manifold, Theorem 3
+fails for `dim H = 1`: the CST ensembles of a point and the density operators of `ℂ` are both a
+single point. And as sets `P(ℓ²)` and `P(ℂ²)` are in bijection, so the "only if" of Theorem 1
+needs the topology of `P(V)`, not only its points.
 
 ## ii. Key results
 
@@ -79,6 +84,8 @@ topology of `P(V)`, not only its points.
   into a finite-dimensional real vector space is injective.
 - `PureStatesNotEnough.hasManyDisjointSets_restrict`: a Darboux chart has enough disjoint sets.
 - `PureStatesNotEnough.cst_qeDens_inconsistent`: Theorem 3.
+- `PureStatesNotEnough.existsUnique_isSymplectic_projectivization`: Theorem 1, "if", for
+  `V = ℂⁿ⁺¹`; `ℂPⁿ` with the Fubini–Study form is a symplectic manifold.
 - `PureStatesNotEnough.subsingleton_projectivization`: for `dim V = 1`, `P(V)` is one point.
 - `PureStatesNotEnough.isEmpty_projectivization`,
   `PureStatesNotEnough.nonempty_projectivization_iff`,
@@ -454,6 +461,20 @@ theorem nonempty_projectivization_equiv :
       fun _ _ => lp.ext).trans (mk_fun_le_continuum ℕ)
   exact Cardinal.eq.mp
     (by rw [mk_projectivization hl hlc, mk_projectivization hc (mk_fun_le_continuum (Fin 2))])
+
+open scoped Manifold ContDiff in
+/-- **Theorem 1, "if", for `V = ℂⁿ⁺¹`.** For every `n` the projective space
+`P(ℂⁿ⁺¹) = ℂPⁿ`, a real manifold of dimension `2 n`, has exactly one symplectic form whose pullback
+along the Hopf map `S²ⁿ⁺¹ → ℂPⁿ` is the restriction of the standard form `Im ⟪u, w⟫` of `ℂⁿ⁺¹`:
+the Fubini–Study form. For `n = 0` it lives on a point. -/
+theorem existsUnique_isSymplectic_projectivization (n : ℕ) :
+    ∃! η : TauCeti.SmoothTwoForm 𝓘(ℝ, Fin n → ℂ) (ℙ ℂ (Fin (n + 1) → ℂ)),
+      η.IsSymplectic ∧ TauCeti.SmoothForm.mpullback (Projectivization.hopfMap n)
+        (Projectivization.contMDiff_hopfMap ∞) η = Projectivization.sphereForm n :=
+  TauCeti.SmoothTwoForm.existsUnique_isSymplectic_mpullback_eq
+    (Projectivization.isSubmersion_hopfMap (by simp)) Projectivization.hopfMap_surjective
+    Projectivization.isClosed_sphereForm Projectivization.isBasic_sphereForm
+    Projectivization.ker_bilinFormAt_sphereForm
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 

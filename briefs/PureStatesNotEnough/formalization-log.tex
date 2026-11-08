@@ -54,7 +54,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/PureStatesNotEnough/PureStatesNotEnough.lean}
 \item Library: \lean{PureStatesNotEnough}
-\item Imports: three new \lean{ForMathlib} files:\newline
+\item Imports: five new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/Convex/Combination.lean}: a map that preserves the convex combinations
   of two points of a convex set preserves all finite convex combinations
   (\lean{Convex.map_sum_of_map_add}), and a convex set contains them
@@ -71,6 +71,29 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   compactification of a real vector space of dimension at least two is simply connected
   (\lean{OnePoint.simplyConnectedSpace_of_two_le_finrank}), by Mathlib's homeomorphism with the
   sphere and TauCeti's simple connectivity of spheres; in particular the Riemann sphere is.\newline
+  \lean{ForMathlib/Geometry/Manifold/Instances/HopfMap.lean}: the Hopf map
+  $S^{2n+1} \to \mathbb CP^n$, $x \mapsto [x]$ (\lean{Projectivization.hopfMap}), from the unit
+  sphere of $\mathbb C^{n+1}$ to $\mathbb CP^n = P(\mathbb C^{n+1})$ with TauCeti's real
+  manifold structure, is onto, smooth
+  (\lean{Projectivization.contMDiff_hopfMap}) and a submersion
+  (\lean{Projectivization.isSubmersion_hopfMap}): in the affine chart $x_i \ne 0$ it is
+  $x \mapsto (x_j / x_i)_{j \ne i}$, and its derivative is onto because
+  $z \mapsto (x_i/|x_i|)\,\hat z/\|\hat z\|$, with $\hat z$ the vector $z$ with $1$ inserted at
+  $i$, is a smooth local section through $x$.\newline
+  \lean{ForMathlib/Geometry/Symplectic/Manifold/FubiniStudy.lean}: the Fubini--Study form on
+  $\mathbb CP^n$ by symplectic reduction. The standard form
+  $\omega(u, w) = \operatorname{Im}\langle u, w\rangle = \langle iu, w\rangle_{\mathbb R}$ of
+  $\mathbb C^{n+1}$ restricts to a closed form $\sigma$ on the unit sphere
+  (\lean{Projectivization.sphereForm}, \lean{Projectivization.isClosed_sphereForm}). At a unit
+  vector $x$ the kernel of $\sigma$ and the kernel of the derivative of the Hopf map are both the
+  line spanned by the tangent vector $ix$ (\lean{Projectivization.ker_bilinFormAt_sphereForm}):
+  the first because the tangent space is the real orthogonal complement of $x$, the second by
+  counting dimensions, $2n + 1 - 2n = 1$, since the Hopf map is constant along $e^{it}x$. Unit
+  scalars preserve $\omega$ and commute with the Hopf map, so $\sigma$ is basic
+  (\lean{Projectivization.isBasic_sphereForm}). TauCeti's symplectic descent then gives the
+  Fubini--Study form \lean{Projectivization.fubiniStudyForm}, which pulls back to $\sigma$
+  (\lean{Projectivization.mpullback_fubiniStudyForm}) and is symplectic
+  (\lean{Projectivization.isSymplectic_fubiniStudyForm}).\newline
   Five new \lean{ForPhyslib} files on the qubit, in \lean{ForPhyslib/QuantumMechanics/Qubit/}:\newline
   \lean{BlochSphere.lean}: the Bloch point of a ray (\lean{blochPoint}), injective, onto the unit
   sphere, and a homeomorphism \lean{blochSphere} $: P(\mathbb C^2) \simeq S^2$;
@@ -106,7 +129,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   (\lean{exists_eq_smul_one_add_pauli}); along a solution of $i\psi' = H\psi$ the Bloch vector
   satisfies $a' = n \times a$ (\lean{hasDerivAt_blochVector}).\newline
   These use TauCeti's Pauli map, double cover $SU(2) \to SO(3)$, Hermitian projectors, topology of
-  projective space, Fubini--Study form on \lean{OnePoint}~$\mathbb C$, global Hamiltonian flows,
+  projective space, its real manifold structure and affine charts, submersions and their
+  criterion by surjective derivatives, symplectic descent along surjective submersions,
+  Fubini--Study form on \lean{OnePoint}~$\mathbb C$, global Hamiltonian flows,
   area formula and identification of \lean{Measure.toSphere} with Hausdorff measure, simple
   connectivity of spheres, vanishing of $H^1_{dR}$ on simply connected manifolds, symplectic
   vector fields and the class $[\iota_X\sigma]$, and time-dependent flows with the Lie derivative
@@ -148,8 +173,12 @@ CST, the ensemble space & \lean{classicalEnsembles}; it is convex:
   vector space is injective \\
 Theorem~3, CST and QE-DENS are inconsistent & \lean{cst_qeDens_inconsistent}, for
   $\dim\mathcal H < \infty$ \\
-Theorem~1, QP-RAY and CST are consistent iff $1 \le \dim V < \infty$ & not formalized;
-  only its edges, below \\
+Theorem~1, QP-RAY and CST are consistent iff $1 \le \dim V < \infty$ & only in part: the
+  ``if'' for $V = \mathbb C^{n+1}$, and the edges below \\
+(Theorem~1, ``if'') $P(V)$ with the Fubini--Study form is a symplectic manifold, for
+  $V = \mathbb C^{n+1}$ & \lean{existsUnique_isSymplectic_projectivization}: $\mathbb CP^n$ has
+  exactly one symplectic form whose pullback along the Hopf map is the restricted standard form of
+  $\mathbb C^{n+1}$; for $n = 0$ it lives on a point \\
 (Theorem~1) $\dim V = 0$ & \lean{isEmpty_projectivization}: $P(V)$ is empty;
   \lean{nonempty_projectivization_iff} \\
 (Theorem~1) $\dim V = 1$ & \lean{subsingleton_projectivization}: $P(V)$ is a single point \\
@@ -223,6 +252,14 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   $\rho = \sum_i\lambda_i|e_i\rangle\langle e_i|$, represented by $\sum_i\lambda_i\delta_{e_i}$.
   No Choquet theory is used. ``$\equiv$'' is the bijection between the quotient by
   $r(\mu_1) = r(\mu_2)$ and $D(\mathcal H)$.
+\item Theorem~1, ``if'', is checked for $V = \mathbb C^{n+1}$ (\lean{Fin}~$(n+1) \to \mathbb C$),
+  with $P(V)$ the real manifold of dimension $2n$ given by TauCeti's affine charts. ``$X$ is a
+  symplectic manifold'' becomes a closed, nondegenerate smooth two-form on $P(V)$. The
+  Fubini--Study form is defined by reduction, as the descent of the standard form of
+  $\mathbb C^{n+1}$ restricted to the unit sphere, not by a K\"ahler potential; in this
+  normalization a projective line should have area $\pi$ (not checked), while TauCeti's form on the
+  Riemann sphere, used in Example~2, has total area $1$. The two are not compared in Lean. The
+  Liouville measure $\omega^n$, which CST also requires, is not constructed.
 \item Example~2 is checked at the level of topology and measure, and its symplectic part on the
   Riemann sphere \lean{OnePoint}~$\mathbb C$ with TauCeti's Fubini--Study form. The sphere is the
   unit sphere of $\mathbb R^3$ with Mathlib's surface measure, which TauCeti identifies with the
@@ -241,7 +278,9 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   time, not as one jointly smooth $H(t, x)$.
 \item Not formalized:
   \begin{itemize}
-  \item Theorem~1;
+  \item Theorem~1, except the ``if'' for $V = \mathbb C^{n+1}$: the transport to an arbitrary
+    complex vector space of finite dimension, the Liouville measure of the Fubini--Study form, and
+    the ``only if'';
   \item in Example~2: the Liouville measure of the Fubini--Study form and the symplectic form
     $dz \wedge d\theta$ in the chart; the diffeomorphism $\mathbb CP^1 \cong S^2$ with the
     comparison of the Fubini--Study and round area forms; ensembles as densities $\rho(z,\theta)$
@@ -257,7 +296,7 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
 \paragraph{Problems found in the brief.} Theorem~5 holds, and Theorem~3 holds for
 $\dim\mathcal H \ge 2$, but their proofs have gaps. Example~2 holds for evolutions once
 ``volume-conserving'' is read as ``area-form-preserving''. At $\dim\mathcal H = 1$ Theorem~3 depends on a
-convention of Theorem~1. Theorem~1 is not checked.
+convention of Theorem~1. Of Theorem~1 only the ``if'' for $V = \mathbb C^{n+1}$ is checked.
 \begin{itemize}
 \item Theorem~1 states $1 \le \dim V$, while its proof uses $2 \le \dim X$. For $\dim V = 1$ the
   state space $P(V)$ is a single point (\lean{subsingleton_projectivization}), a manifold of

@@ -38,8 +38,8 @@ checked; no claim of the brief waits on them.
 Theorem~5 is verified, and Theorem~3 for $\dim\mathcal H \ge 2$. Example~2 is verified at the
 level of topology and measure and, on the Riemann sphere, of the symplectic form and of
 Hamiltonian evolution, with the correction of the item ``Hamiltonian evolution on the classical
-qubit''. Theorem~1 is not: see the
-two items marked below.
+qubit''. Of Theorem~1 only the ``if'' for $V = \mathbb C^{n+1}$ is checked: see the two items
+marked below.
 
 \section*{From the brief}
 \begin{enumerate}
@@ -98,14 +98,25 @@ two items marked below.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \blocker{formalization gap}\textbf{Theorem~1.} Neither direction of Theorem~1 is
-  formalized: that $P(V)$ with the Fubini--Study form is symplectic for $\dim V < \infty$, and
-  that a symplectic $P(V)$ forces $\dim V < \infty$. TauCeti has symplectic manifolds, the
-  topology of projective space and the Fubini--Study form on the Riemann sphere
-  $\cong P(\mathbb C^2)$; the Fubini--Study form on $\mathbb CP^n$ for $n \ge 2$ and the Liouville
-  measure of a symplectic form are still missing upstream. Theorem~3 for $\dim\mathcal H = \infty$ rests on the second
-  direction, so it is formalized only for $\dim\mathcal H < \infty$. The second direction
-  needs the topology of $P(V)$; as sets it is false (\lean{nonempty_projectivization_equiv}).
+\item \blocker{formalization gap}\textbf{Theorem~1.} The ``if'' is formalized for
+  $V = \mathbb C^{n+1}$: $\mathbb CP^n$, with TauCeti's real manifold structure, has exactly one
+  symplectic form whose pullback along the Hopf map $S^{2n+1} \to \mathbb CP^n$ is the standard
+  form $\operatorname{Im}\langle u, w\rangle$ of $\mathbb C^{n+1}$ restricted to the unit sphere,
+  the Fubini--Study form (\lean{existsUnique_isSymplectic_projectivization}). Three parts are open.
+  \begin{itemize}
+  \item \emph{Arbitrary $V$.} TauCeti puts a manifold structure only on
+    $P(\mathbb C^{n+1})$. For a complex vector space $V$ of finite dimension with a Hermitian
+    inner product, the structure and the form are carried over along an orthonormal basis
+    $V \simeq \mathbb C^{n+1}$. Two bases differ by a unitary map, which preserves the standard
+    form and commutes with the Hopf map, so the form does not depend on the choice; this is not
+    yet checked.
+  \item \emph{The Liouville measure.} CST asks for the measure $\omega^n$ of the symplectic form,
+    which is still missing upstream.
+  \item \emph{The ``only if''.} That a symplectic $P(V)$ forces $\dim V < \infty$ needs the
+    topology of $P(V)$; as sets it is false (\lean{nonempty_projectivization_equiv}). Theorem~3
+    for $\dim\mathcal H = \infty$ rests on it, so it is formalized only for
+    $\dim\mathcal H < \infty$.
+  \end{itemize}
   (Log, ``Results''.)
 \item \textbf{Example~2.} $P(\mathbb C^2)$ is homeomorphic to the sphere
   (\lean{nonempty_homeomorph_sphere}), its area is $dz\,d\theta$ (\lean{toSphere_eq_dz_dtheta}),
@@ -114,7 +125,8 @@ two items marked below.
   missing: the area as the Liouville measure of the Fubini--Study form, and
   $\omega = dz \wedge d\theta$ in the chart, which need a Liouville measure upstream; the
   diffeomorphism $\mathbb CP^1 \cong S^2$ that compares the Fubini--Study form with the round area
-  form; the integrated rotation of the precession; the classical side of linear Hamiltonians,
+  form, and TauCeti's form on the Riemann sphere, of total area $1$, with the form of the previous
+  item for $n = 1$ (\lean{Projectivization.fubiniStudyForm}), which should give area $\pi$; the integrated rotation of the precession; the classical side of linear Hamiltonians,
   $X_{n\cdot x} = n \times x$, which needs moment maps. Refinements of Hamiltonian evolution are
   in the next item. (Log, ``Differences''.)
 \item \textsc{[optional]}~\textbf{Refinements of Hamiltonian evolution.} The evolutions of
