@@ -35,8 +35,9 @@ in Lean alone, while a \emph{brief issue} needs the brief to be corrected or mad
 precise first.
 
 Theorem~5 is verified, and Theorem~3 for $\dim\mathcal H \ge 2$. Example~2 is verified at the
-level of topology and measure and, on the Riemann sphere, of the symplectic form, with the
-correction of the item ``Hamiltonian evolution on the classical qubit''. Theorem~1 is not: see the
+level of topology and measure and, on the Riemann sphere, of the symplectic form and of
+Hamiltonian evolution, with the correction of the item ``Hamiltonian evolution on the classical
+qubit''. Theorem~1 is not: see the
 two items marked below.
 
 \section*{From the brief}
@@ -77,11 +78,19 @@ two items marked below.
   evolution with the diffeomorphisms that conserve the volume. Area-preserving reflections of the
   sphere are not Hamiltonian, so the area form should be meant. Lean checks this for complex
   conjugation of the Riemann sphere, the Bloch reflection $a_1 \mapsto -a_1$
-  (\lean{conjSphere_preserves_area_reverses_form}, \lean{globalFlow_ne_conjSphere}). The
-  correct statement for the sphere, that the area-form-preserving diffeomorphisms isotopic to the
-  identity are Hamiltonian because $H^1(S^2) = 0$, needs the flux homomorphism and is not
-  formalized. That quantum evolutions are exactly the rotations is checked
-  (\lean{exists_unitaryAction_eq_iff}). (Log, ``Problems found'', Example~2 item.)
+  (\lean{conjSphere_preserves_area_reverses_form}, \lean{globalFlow_ne_conjSphere},
+  \lean{timeDependentFlowOf_ne_conjSphere}). With the area form the claim is checked for
+  evolutions. A vector field preserves the Fubini--Study form exactly when it is Hamiltonian
+  (\lean{lieDeriv_areaForm_eq_zero_iff_hamiltonian}), and a jointly smooth time-dependent flow
+  preserves it exactly when every velocity field is Hamiltonian
+  (\lean{preserves_areaForm_iff_hamiltonian}). No flux homomorphism is needed: the obstruction is
+  a class in $H^1_{dR}(S^2)$, which vanishes because the sphere is simply connected. Open is the
+  statement for single maps, that every orientation-preserving, area-preserving diffeomorphism of
+  the sphere is the end of a Hamiltonian evolution. It needs Smale's theorem
+  $\mathrm{Diff}^+(S^2) \simeq SO(3)$, or at least that $\mathrm{Diff}^+(S^2)$ is connected through
+  smooth isotopies, and a Moser argument for area forms on $S^2$. That quantum evolutions are
+  exactly the rotations is checked (\lean{exists_unitaryAction_eq_iff}). (Log, ``Problems
+  found'', Example~2 item.)
 \end{enumerate}
 
 \section*{From the formalization}
@@ -102,8 +111,10 @@ two items marked below.
   missing: the area as the Liouville measure of the Fubini--Study form, and
   $\omega = dz \wedge d\theta$ in the chart, which need a Liouville measure upstream; the
   diffeomorphism $\mathbb CP^1 \cong S^2$ that compares the Fubini--Study form with the round area
-  form; the integrated rotation of the precession; and the classical side of linear Hamiltonians,
-  $X_{n\cdot x} = n \times x$, which needs moment maps. (Log, ``Differences''.)
+  form; the integrated rotation of the precession; the classical side of linear Hamiltonians,
+  $X_{n\cdot x} = n \times x$, which needs moment maps; and, for Hamiltonian evolution, a jointly
+  smooth $H(t, x)$, which needs a Poincaré lemma with parameters, and evolutions given as families
+  of diffeomorphisms rather than by their velocity fields. (Log, ``Differences''.)
 \item \textbf{Extreme points.} The proof of Theorem~5 starts from the fact that the pure states are
   the extreme points of $D(\mathcal H)$. The formalization does not need it and does not prove
   it. (Log, ``Differences'', last item.)

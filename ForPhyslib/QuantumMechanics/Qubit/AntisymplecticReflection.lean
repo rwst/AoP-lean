@@ -32,6 +32,8 @@ diffeomorphisms of the sphere include orientation-reversing ones.
 - `QuantumMechanics.Qubit.contMDiff_conjSphere`: it is smooth as a map of real surfaces.
 - `QuantumMechanics.Qubit.fubiniStudyDensity_conj`: it preserves the area density.
 - `QuantumMechanics.Qubit.mpullback_conjSphere`: it pulls `ω_FS` back to `-ω_FS`.
+- `QuantumMechanics.Qubit.ne_conjSphere_of_mpullback_eq`: no map preserving `ω_FS` is complex
+  conjugation.
 - `QuantumMechanics.Qubit.globalFlow_ne_conjSphere`: it is not the time-`t` map of a Hamiltonian
   flow.
 - `QuantumMechanics.Qubit.equivProjectivization_conjSphere`: under `OnePoint ℂ ≃ ℙ ℂ (Fin 2 → ℂ)`
@@ -143,6 +145,21 @@ theorem mpullback_conjSphere_coe :
   rw [← SmoothForm.coe_mpullback conjSphere contMDiff_conjSphere, mpullback_conjSphere]
   rfl
 
+/-- A map that pulls `ω_FS` back to itself is not complex conjugation, which pulls it back to
+`-ω_FS`. -/
+theorem ne_conjSphere_of_mpullback_eq {φ : OnePoint ℂ → OnePoint ℂ}
+    (hφ : TauCeti.mpullback 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) φ fubiniStudyForm.1 = fubiniStudyForm.1) :
+    φ ≠ conjSphere := by
+  rintro rfl
+  rw [mpullback_conjSphere_coe] at hφ
+  have h2 : fubiniStudyForm.1 OnePoint.infty ![(1 : ℂ), I] = Real.pi⁻¹ :=
+    (SmoothBundleForm.eval₂_apply _ _ _ _).symm.trans
+      ((eval₂_fubiniStudyForm_infty 1 I).trans (by simp))
+  have h3 := congrArg (fun α ↦ α OnePoint.infty ![(1 : ℂ), I]) hφ
+  simp only [Pi.neg_apply, ContinuousAlternatingMap.neg_apply, h2] at h3
+  have hπ : 0 < Real.pi⁻¹ := inv_pos.mpr Real.pi_pos
+  linarith
+
 /-- **Complex conjugation is not Hamiltonian.** For a `C²` Hamiltonian vector field `X` of a `C²`
 function on the Riemann sphere with the Fubini–Study form, no time-`t` map of the flow of `X` is
 complex conjugation, although complex conjugation preserves the area. -/
@@ -153,18 +170,9 @@ theorem globalFlow_ne_conjSphere {f : OnePoint ℂ → ℝ}
       (fun y ↦ (⟨y, X y⟩ : TangentBundle 𝓘(ℝ, ℂ) (OnePoint ℂ))))
     (t : ℝ) :
     globalFlow X (hv.of_le one_le_two)
-      (isCompleteVectorField_of_compactSpace (hv.of_le one_le_two)) t ≠ conjSphere := by
-  intro h
-  have h1 := hX.mpullback_globalFlow isSymplectic_fubiniStudyForm.isClosed hf
-    (isCompleteVectorField_of_compactSpace (hv.of_le one_le_two)) hv t
-  rw [h, mpullback_conjSphere_coe] at h1
-  have h2 : fubiniStudyForm.1 OnePoint.infty ![(1 : ℂ), I] = Real.pi⁻¹ :=
-    (SmoothBundleForm.eval₂_apply _ _ _ _).symm.trans
-      ((eval₂_fubiniStudyForm_infty 1 I).trans (by simp))
-  have h3 := congrArg (fun α ↦ α OnePoint.infty ![(1 : ℂ), I]) h1
-  simp only [Pi.neg_apply, ContinuousAlternatingMap.neg_apply, h2] at h3
-  have hπ : 0 < Real.pi⁻¹ := inv_pos.mpr Real.pi_pos
-  linarith
+      (isCompleteVectorField_of_compactSpace (hv.of_le one_le_two)) t ≠ conjSphere :=
+  ne_conjSphere_of_mpullback_eq (hX.mpullback_globalFlow isSymplectic_fubiniStudyForm.isClosed hf
+    (isCompleteVectorField_of_compactSpace (hv.of_le one_le_two)) hv t)
 
 /-- Under the identification `OnePoint ℂ ≃ ℙ ℂ (Fin 2 → ℂ)`, `z ↦ [z : 1]`, complex conjugation
 of the sphere is the antiunitary complex conjugation of rays. -/

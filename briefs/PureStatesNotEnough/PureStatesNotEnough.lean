@@ -10,7 +10,7 @@ public import ForMathlib.Analysis.InnerProductSpace.l2Space
 public import ForMathlib.MeasureTheory.Constructions.HaarToSphere
 public import ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.CanonicalExpansion
 public import ForPhyslib.QuantumMechanics.DensityOperator
-public import ForPhyslib.QuantumMechanics.Qubit.AntisymplecticReflection
+public import ForPhyslib.QuantumMechanics.Qubit.HamiltonianIsotopy
 public import ForPhyslib.QuantumMechanics.Qubit.Precession
 public import Mathlib.Analysis.Convex.Integral
 
@@ -55,7 +55,12 @@ unitaries on rays, are exactly the rotations of the Bloch sphere, and every Hami
 `c + ½ n · σ` makes the Bloch vector precess about `n`, `a' = n × a`. Complex conjugation of the
 Riemann sphere `OnePoint ℂ ≅ P(ℂ²)` preserves the area density of the Fubini–Study form but
 reverses the form, so it is area-preserving and not Hamiltonian: Hamiltonian evolution preserves
-the area form, not only the area.
+the area form, not only the area. With the area form the claim holds for evolutions: a vector field
+preserves the Fubini–Study form exactly when it is Hamiltonian, and a jointly smooth time-dependent
+flow preserves it at all times exactly when every velocity field is Hamiltonian. The obstruction
+would be a class in `H¹_dR`, which vanishes because the sphere is simply connected. That every
+single orientation-preserving, area-preserving diffeomorphism is the end of a Hamiltonian evolution
+needs Smale's theorem `Diff⁺(S²) ≃ SO(3)` and is not formalized.
 
 **Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is not formalized:
 it needs the symplectic geometry of `P(V)` in every dimension. Only its edges are checked. `P(V)`
@@ -92,8 +97,13 @@ topology of `P(V)`, not only its points.
 - `PureStatesNotEnough.nonempty_homeomorph_sphere`: `P(ℂ²)` is a two-sphere.
 - `PureStatesNotEnough.toSphere_eq_dz_dtheta`: the area of the sphere is `dz dθ`.
 - `PureStatesNotEnough.conjSphere_preserves_area_reverses_form`,
-  `QuantumMechanics.Qubit.globalFlow_ne_conjSphere`: an area-preserving map that is not
-  Hamiltonian.
+  `QuantumMechanics.Qubit.globalFlow_ne_conjSphere`,
+  `QuantumMechanics.Qubit.timeDependentFlowOf_ne_conjSphere`: an area-preserving map that is not
+  Hamiltonian, nor the end of a time-dependent Hamiltonian evolution.
+- `PureStatesNotEnough.lieDeriv_areaForm_eq_zero_iff_hamiltonian`: the vector fields that preserve
+  the area form are the Hamiltonian ones.
+- `PureStatesNotEnough.preserves_areaForm_iff_hamiltonian`: the time-dependent flows that preserve
+  the area form are the Hamiltonian evolutions.
 - `PureStatesNotEnough.exists_unitaryAction_eq_iff`: the quantum evolutions of a qubit are exactly
   the rotations of the Bloch sphere.
 - `PureStatesNotEnough.exists_blochVector_precession`: every Hamiltonian makes the Bloch vector
@@ -748,12 +758,37 @@ theorem toSphere_eq_dz_dtheta :
 
 /-- Complex conjugation of the Riemann sphere `OnePoint ℂ ≅ P(ℂ²)` preserves the area density
 of the Fubini–Study form but reverses the form. So it preserves the area and is not the time-`t`
-map of a Hamiltonian flow (`QuantumMechanics.Qubit.globalFlow_ne_conjSphere`). -/
+map of a Hamiltonian flow (`QuantumMechanics.Qubit.globalFlow_ne_conjSphere`), nor of a
+time-dependent one (`QuantumMechanics.Qubit.timeDependentFlowOf_ne_conjSphere`). -/
 theorem conjSphere_preserves_area_reverses_form :
     (∀ z : ℂ, fubiniStudyDensity (conj z) = fubiniStudyDensity z) ∧
       TauCeti.SmoothForm.mpullback conjSphere contMDiff_conjSphere fubiniStudyForm =
         -fubiniStudyForm :=
   ⟨fubiniStudyDensity_conj, mpullback_conjSphere⟩
+
+/-- **Infinitesimal Hamiltonian evolution of the classical qubit.** A smooth vector field on the
+Riemann sphere preserves the Fubini–Study form, `L_X ω_FS = 0`, exactly when it is the Hamiltonian
+vector field of a smooth function. -/
+theorem lieDeriv_areaForm_eq_zero_iff_hamiltonian
+    {X : Cₛ^∞⟮𝓘(ℝ, ℂ); ℂ, TangentSpace 𝓘(ℝ, ℂ) (M := OnePoint ℂ)⟯} :
+    TauCeti.mlieDerivForm X fubiniStudyForm.1 = 0 ↔
+      ∃ f : OnePoint ℂ → ℝ, ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ) ∞ f ∧
+        fubiniStudyForm.IsHamiltonianVectorField f X :=
+  mlieDerivForm_fubiniStudyForm_eq_zero_iff
+
+/-- **Hamiltonian evolution of the classical qubit preserves the area form, and only it.** The
+time-dependent flow of a jointly smooth time-dependent vector field on the Riemann sphere preserves
+the Fubini–Study form at all times exactly when every velocity field `X t` is the Hamiltonian
+vector field of a smooth function. -/
+theorem preserves_areaForm_iff_hamiltonian
+    {X : ℝ → (x : OnePoint ℂ) → TangentSpace 𝓘(ℝ, ℂ) x}
+    (hX : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ).tangent ∞
+      (fun p : ℝ × OnePoint ℂ ↦ (⟨p.2, X p.1 p.2⟩ : TangentBundle 𝓘(ℝ, ℂ) (OnePoint ℂ)))) :
+    (∀ s t, TauCeti.mpullback 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (TauCeti.timeDependentFlowOf X s t)
+        fubiniStudyForm.1 = fubiniStudyForm.1) ↔
+      ∀ t, ∃ f : OnePoint ℂ → ℝ, ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ) ∞ f ∧
+        fubiniStudyForm.IsHamiltonianVectorField f (X t) :=
+  forall_mpullback_timeDependentFlowOf_fubiniStudyForm_iff hX
 
 /-- **The quantum evolutions of a qubit are exactly the rotations of the Bloch sphere**: a map of
 rays is the action of a unitary if and only if it is a rotation on Bloch vectors. -/

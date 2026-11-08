@@ -54,7 +54,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/PureStatesNotEnough/PureStatesNotEnough.lean}
 \item Library: \lean{PureStatesNotEnough}
-\item Imports: two new \lean{ForMathlib} files:\newline
+\item Imports: three new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/Convex/Combination.lean}: a map that preserves the convex combinations
   of two points of a convex set preserves all finite convex combinations
   (\lean{Convex.map_sum_of_map_add}), and a convex set contains them
@@ -67,7 +67,11 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   formula), so Mathlib's surface measure is $dz\,d\theta$
   (\lean{Measure.map_toSphere_volume_eq_map_cylinderToSphere}) and the height is distributed as
   $2\pi\,dz$ (\lean{Measure.map_toSphere_volume_height}).\newline
-  Four new \lean{ForPhyslib} files on the qubit, in \lean{ForPhyslib/QuantumMechanics/Qubit/}:\newline
+  \lean{ForMathlib/Topology/Compactification/OnePoint/SimplyConnected.lean}: the one-point
+  compactification of a real vector space of dimension at least two is simply connected
+  (\lean{OnePoint.simplyConnectedSpace_of_two_le_finrank}), by Mathlib's homeomorphism with the
+  sphere and TauCeti's simple connectivity of spheres; in particular the Riemann sphere is.\newline
+  Five new \lean{ForPhyslib} files on the qubit, in \lean{ForPhyslib/QuantumMechanics/Qubit/}:\newline
   \lean{BlochSphere.lean}: the Bloch point of a ray (\lean{blochPoint}), injective, onto the unit
   sphere, and a homeomorphism \lean{blochSphere} $: P(\mathbb C^2) \simeq S^2$;
   $|\psi\rangle\langle\psi| = \frac12(1 + a\cdot\sigma)$ (\lean{hermitianProjector_eq}).\newline
@@ -79,15 +83,29 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   (\lean{conjAction_ne_unitaryAction}).\newline
   \lean{AntisymplecticReflection.lean}: complex conjugation \lean{conjSphere} of the Riemann
   sphere is smooth, preserves the Fubini--Study density (\lean{fubiniStudyDensity_conj}), pulls
-  the Fubini--Study form back to its negative (\lean{mpullback_conjSphere}), is no time-$t$ map of
-  a Hamiltonian flow (\lean{globalFlow_ne_conjSphere}), and corresponds to \lean{conjAction}
-  (\lean{equivProjectivization_conjSphere}).\newline
+  the Fubini--Study form back to its negative (\lean{mpullback_conjSphere}), so no map that
+  preserves the form is complex conjugation (\lean{ne_conjSphere_of_mpullback_eq}), nor any time-$t$
+  map of a Hamiltonian flow (\lean{globalFlow_ne_conjSphere}); it corresponds to
+  \lean{conjAction} (\lean{equivProjectivization_conjSphere}).\newline
+  \lean{HamiltonianIsotopy.lean}: on a simply connected manifold, a smooth vector field with
+  closed contraction $\iota_X\sigma$ is Hamiltonian
+  (\lean{SmoothTwoForm.mem_symplecticVectorFields_iff_exists_isHamiltonianVectorField}), so for a
+  closed $\sigma$ the fields with $L_X\sigma = 0$ are the Hamiltonian ones; a time-dependent
+  Hamiltonian flow preserves a closed form
+  (\lean{SmoothTwoForm.mpullback_timeDependentFlowOf_of_isHamiltonianVectorField}), and on a simply
+  connected manifold a jointly smooth time-dependent flow preserves it exactly when every velocity
+  field is Hamiltonian (\lean{SmoothTwoForm.forall_mpullback_timeDependentFlowOf_eq_iff}); on the
+  Riemann sphere, with completeness from compactness, no time map of a time-dependent Hamiltonian
+  flow is complex conjugation (\lean{timeDependentFlowOf_ne_conjSphere}).\newline
   \lean{Precession.lean}: every Hermitian $H$ is $c + \frac12 n\cdot\sigma$
   (\lean{exists_eq_smul_one_add_pauli}); along a solution of $i\psi' = H\psi$ the Bloch vector
   satisfies $a' = n \times a$ (\lean{hasDerivAt_blochVector}).\newline
   These use TauCeti's Pauli map, double cover $SU(2) \to SO(3)$, Hermitian projectors, topology of
   projective space, Fubini--Study form on \lean{OnePoint}~$\mathbb C$, global Hamiltonian flows,
-  area formula and identification of \lean{Measure.toSphere} with Hausdorff measure.\newline
+  area formula and identification of \lean{Measure.toSphere} with Hausdorff measure, simple
+  connectivity of spheres, vanishing of $H^1_{dR}$ on simply connected manifolds, symplectic
+  vector fields and the class $[\iota_X\sigma]$, and time-dependent flows with the Lie derivative
+  of forms along them.\newline
   Existing files: \lean{ForMathlib/Analysis/InnerProductSpace/l2Space.lean}
   (\lean{Orthonormal.countable}), \lean{ForPhyslib/QuantumMechanics/DensityOperator.lean}
   (\lean{IsDensityOperator}, \lean{posTrace}), \lean{ForPhyslib/QuantumMechanics/Wigner/Density.lean}
@@ -164,9 +182,12 @@ Example~2, Darboux coordinates $z$, $\theta_{xy}$, the Liouville measure is the 
   \lean{toSphere_eq_dz_dtheta}: the surface measure is $dz\,d\theta$ on
   $(-1, 1) \times (-\pi, \pi]$; the height is distributed as $2\pi\,dz$ \\
 Example~2, Hamiltonian evolutions are the volume-preserving diffeomorphisms &
-  \lean{conjSphere_preserves_area_reverses_form}, \lean{globalFlow_ne_conjSphere}: complex
-  conjugation of the Riemann sphere preserves the area but is not Hamiltonian (see ``Problems
-  found'') \\
+  \lean{conjSphere_preserves_area_reverses_form}, \lean{globalFlow_ne_conjSphere},
+  \lean{timeDependentFlowOf_ne_conjSphere}: complex conjugation of the Riemann sphere preserves
+  the area but is not Hamiltonian (see ``Problems found''); with the area form,
+  \lean{lieDeriv_areaForm_eq_zero_iff_hamiltonian}: the vector fields that preserve it are the
+  Hamiltonian ones, and \lean{preserves_areaForm_iff_hamiltonian}: the time-dependent flows that
+  preserve it are the Hamiltonian evolutions \\
 Example~2, quantum evolutions are exactly the rotations & \lean{exists_unitaryAction_eq_iff}: a
   map of rays is the action of a unitary iff it is a rotation on Bloch vectors;
   \lean{unitaryAction_eq_iff}: unitaries act alike iff they differ by a phase \\
@@ -204,7 +225,12 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   is invariance of the Fubini--Study density, since there is no measure on
   \lean{OnePoint}~$\mathbb C$ yet. Quantum evolution is the action of a unitary on rays, and for a
   Hamiltonian the Schrödinger equation is a hypothesis on $\psi$; the precession $a' = n\times a$
-  is not integrated to a finite rotation.
+  is not integrated to a finite rotation. ``Hamiltonian evolution'' is checked for vector fields
+  and for evolutions: the time-dependent flows of jointly smooth time-dependent vector fields,
+  which preserve the Fubini--Study form exactly when each velocity field $X_t$ is the
+  Hamiltonian vector field of a smooth $H_t$. The $H_t$ are found one time at a time, not as one
+  jointly smooth $H(t, x)$, and an evolution is given by its velocity field, not as a family of
+  diffeomorphisms.
 \item Not formalized:
   \begin{itemize}
   \item Theorem~1;
@@ -212,6 +238,8 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
     $dz \wedge d\theta$ in the chart; the diffeomorphism $\mathbb CP^1 \cong S^2$ with the
     comparison of the Fubini--Study and round area forms; ensembles as densities $\rho(z,\theta)$
     (Radon--Nikodym, not restated); the classical side of linear Hamiltonians (moment maps);
+    that every orientation-preserving, area-preserving diffeomorphism of the sphere is the end of a
+    Hamiltonian evolution, which needs Smale's theorem $\mathrm{Diff}^+(S^2) \simeq SO(3)$;
   \item Insight~4, which is informal;
   \item that the pure states are the extreme points of $D(\mathcal H)$, which the proof of
     Theorem~5 does not need.
@@ -219,8 +247,8 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
 \end{itemize}
 
 \paragraph{Problems found in the brief.} Theorem~5 holds, and Theorem~3 holds for
-$\dim\mathcal H \ge 2$, but their proofs have gaps. Example~2 holds once ``volume-conserving''
-is read as ``area-form-preserving''. At $\dim\mathcal H = 1$ Theorem~3 depends on a
+$\dim\mathcal H \ge 2$, but their proofs have gaps. Example~2 holds for evolutions once
+``volume-conserving'' is read as ``area-form-preserving''. At $\dim\mathcal H = 1$ Theorem~3 depends on a
 convention of Theorem~1. Theorem~1 is not checked.
 \begin{itemize}
 \item Theorem~1 states $1 \le \dim V$, while its proof uses $2 \le \dim X$. For $\dim V = 1$ the
@@ -260,8 +288,14 @@ convention of Theorem~1. Theorem~1 is not checked.
   ones, such as $z \mapsto -z$, which are not Hamiltonian. So Hamiltonian evolution preserves the
   area form, not only the area. Checked in Lean for complex conjugation of the Riemann sphere,
   the reflection $a_1 \mapsto -a_1$ of the Bloch sphere: it preserves the Fubini--Study density
-  but reverses the form, and no time-$t$ map of a Hamiltonian flow equals it
-  (\lean{conjSphere_preserves_area_reverses_form}, \lean{globalFlow_ne_conjSphere}).
+  but reverses the form, and no time map of a Hamiltonian flow, autonomous or time-dependent,
+  equals it (\lean{conjSphere_preserves_area_reverses_form}, \lean{globalFlow_ne_conjSphere},
+  \lean{timeDependentFlowOf_ne_conjSphere}). With the area form, the claim holds for evolutions:
+  a time-dependent flow preserves the form exactly when it is Hamiltonian
+  (\lean{preserves_areaForm_iff_hamiltonian}). The obstruction would lie in $H^1_{dR}(S^2) = 0$,
+  so no flux homomorphism is involved. Along an evolution from the identity, preserving the area
+  and preserving the form agree, since the sign of the pulled-back form cannot jump (not checked
+  in Lean); only single maps tell them apart.
 \item CST says $p(\xi_1\mid\xi_2) = 0$ ``for all $\xi_1, \xi_2 \in X$'', which includes
   $p(\xi\mid\xi) = 0$. It should say $\xi_1 \ne \xi_2$, as the Remark after Example~2
   ($p(\psi\mid\phi) = \delta_{\psi\phi}$) has it.
