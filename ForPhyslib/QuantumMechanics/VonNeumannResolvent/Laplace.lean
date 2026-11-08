@@ -5,6 +5,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
+public import ForMathlib.Analysis.CStarAlgebra.CompletelyPositiveMap
 public import ForPhyslib.QuantumMechanics.TraceNorm
 public import ForPhyslib.QuantumMechanics.VonNeumannResolvent
 public import PhyslibAlpha.ProbabilisticTheory.HilbertSpace.TraceClass.Pairing
@@ -24,8 +25,9 @@ Neumann generator `L ρ = -i (K ρ - ρ K)`. For every real `τ` the Laplace int
 converges in operator norm on `E →L[ℂ] E`, and it is the two-sided inverse of `1 - τ L`: the
 integrand of `(1 - τ L) Ψ τ ρ` is `-(d/ds) (e^{-s} T (τ s) ρ)`, and `L` commutes with `T`. So
 `Ψ τ` is the resolvent of the finite-dimensional file `VonNeumannResolvent`, now without any
-dimension hypothesis. As a mixture of unitary channels, `Ψ τ` maps density operators to density
-operators: the integral also converges in the trace class, where the trace is continuous.
+dimension hypothesis. As a mixture of unitary channels, `Ψ τ` is completely positive, and it
+maps density operators to density operators: the integral also converges in the trace class, where
+the trace is continuous.
 
 The resolvent is a projective measurement adapted to its output. Let `σ = Ψ τ ρ` for a density
 operator `ρ`; it is a positive trace-class operator, so it has a Hilbert basis `(bᵢ)` of
@@ -50,6 +52,9 @@ We set `ħ = 1`; the general case is `K = H / ħ`.
 - `QuantumMechanics.laplaceResolvent_sub`, `laplaceResolvent_vonNeumannStep`: `Ψ τ` inverts
   `1 - τ L` on both sides.
 - `QuantumMechanics.isDensityOperator_laplaceResolvent`: `Ψ τ` preserves density operators.
+- `QuantumMechanics.laplaceResolventCP`: `Ψ τ` is completely positive.
+- `QuantumMechanics.vonNeumannResolvent_eq_laplaceResolvent`: in finite dimension `(1 - τ L)⁻¹` is
+  the Laplace integral.
 - `QuantumMechanics.exists_hilbertBasis_laplaceResolvent`: `Ψ τ ρ = ∑ᵢ Pᵢ ρ Pᵢ` for the
   projectors onto an eigenbasis of `Ψ τ ρ`, with `Pᵢ ρ Pᵢ = μᵢ Pᵢ`.
 - `QuantumMechanics.exists_max_laplaceResolvent_proj`: the largest outcome on a pure state.
@@ -63,7 +68,7 @@ We set `ħ = 1`; the general case is `K = H / ħ`.
 
 - A. The unitary channel on operators
 - B. The Laplace resolvent
-- C. Density operators
+- C. Density operators and complete positivity
 - D. The resolvent is a projective measurement
 - E. Second-order estimates in operator norm
 - F. The largest outcome on a pure state
@@ -79,7 +84,7 @@ We set `ħ = 1`; the general case is `K = H / ħ`.
 
 @[expose] public noncomputable section
 
-open scoped InnerProductSpace ComplexOrder Topology ENNReal
+open scoped InnerProductSpace ComplexOrder Topology ENNReal CStarAlgebra
 open InnerProductSpace QuantumMechanics.Wigner Complex Set Filter MeasureTheory
   ProbabilisticTheory ProbabilisticTheory.TraceClass
 open ContinuousLinearMap (re_inner_apply_nonneg posTrace)
@@ -258,7 +263,7 @@ lemma isSelfAdjoint_laplaceResolvent (τ : ℝ) {ρ : E →L[ℂ] E} (hρ : IsSe
     IsSelfAdjoint (laplaceResolvent V τ ρ) := by
   rw [IsSelfAdjoint, ← laplaceResolvent_star, hρ.star_eq]
 
-/-! ## C. Density operators -/
+/-! ## C. Density operators and complete positivity -/
 
 /-- `re ⟪x, A x⟫`, as a real-linear functional of `A`. -/
 def expectationL (x : E) : (E →L[ℂ] E) →L[ℝ] ℝ :=
@@ -323,6 +328,44 @@ theorem isDensityOperator_laplaceResolvent (τ : ℝ) {ρ : E →L[ℂ] E} (hρ 
   rw [tracePairing_apply, trace_transport (one_mul S.1)] at h1
   rw [← h1]
   exact trace_transport hS.symm htc
+
+/-- The unitary channel is completely positive: it is conjugation by a unitary, a
+⋆-automorphism. -/
+lemma unitaryChannelL_cstarMatrix_nonneg (t : ℝ) {k : ℕ}
+    {M : CStarMatrix (Fin k) (Fin k) (E →L[ℂ] E)} (hM : 0 ≤ M) :
+    0 ≤ M.map (unitaryChannelL V t) := by
+  have h : 0 ≤ M.map (Unitary.conjStarAlgAut ℂ (E →L[ℂ] E) ⟨V t, V.mem_unitary t⟩) :=
+    CompletelyPositiveMapClass.map_cstarMatrix_nonneg' _ k M hM
+  convert h using 3
+  funext ρ
+  rw [Unitary.conjStarAlgAut_apply]
+  rfl
+
+lemma laplaceKernel_cstarMatrix_nonneg (τ s : ℝ) {k : ℕ}
+    {M : CStarMatrix (Fin k) (Fin k) (E →L[ℂ] E)} (hM : 0 ≤ M) :
+    0 ≤ M.map (laplaceKernel V τ s) := by
+  have h : M.map (laplaceKernel V τ s) = Real.exp (-s) • M.map (unitaryChannelL V (τ * s)) := by
+    ext i j
+    simp [laplaceKernel]
+  rw [h]
+  exact smul_nonneg (Real.exp_pos _).le (unitaryChannelL_cstarMatrix_nonneg V _ hM)
+
+/-- **The resolvent is completely positive**, as a mixture of unitary channels: `Ψ τ` as a
+completely positive map. -/
+def laplaceResolventCP (τ : ℝ) : (E →L[ℂ] E) →CP (E →L[ℂ] E) :=
+  CompletelyPositiveMap.integral (laplaceKernel V τ) (volume.restrict (Ioi 0))
+    (Eventually.of_forall fun s _ _ hM => laplaceKernel_cstarMatrix_nonneg V τ s hM)
+
+@[simp]
+lemma coe_laplaceResolventCP (τ : ℝ) : ⇑(laplaceResolventCP V τ) = laplaceResolvent V τ :=
+  rfl
+
+/-- In finite dimension the resolvent `(1 - τ L)⁻¹` is the Laplace integral, so it is completely
+positive too. -/
+theorem vonNeumannResolvent_eq_laplaceResolvent [FiniteDimensional ℂ E] (τ : ℝ)
+    (ρ : E →L[ℂ] E) : vonNeumannResolvent V τ ρ = laplaceResolvent V τ ρ := by
+  apply injective_vonNeumannStep V.generator_isSelfAdjoint τ
+  rw [vonNeumannStep_apply, vonNeumannStep_apply, vonNeumannResolvent_sub, laplaceResolvent_sub]
 
 /-! ## D. The resolvent is a projective measurement -/
 

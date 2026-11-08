@@ -122,6 +122,8 @@ Eq.~(12) & \lean{spectralProj_mul_mul_vonNeumannResolvent} \\
 Eq.~(4), $\Psi_\tau\rho = \sum_a P_a^\rho\rho P_a^\rho$ & \lean{pinching_vonNeumannResolvent} \\
 $\Psi_\tau$ is affine, positive, trace preserving & \lean{isDensity_vonNeumannResolvent},
   \lean{trace_vonNeumannResolvent} \\
+Eq.~(7), and $\Psi_\tau$ is completely positive & \lean{vonNeumannResolvent_eq_laplaceResolvent},
+  \lean{laplaceResolventCP} (any-dimension part) \\
 Proposition~2 & \lean{isStateAdaptiveProjective_vonNeumannResolvent} \\
 $\|L_K\| \le 2M/\hbar$ & \lean{norm_vonNeumannGenerator_apply_le} \\
 Eq.~(16) & \lean{norm_vonNeumannResolvent_sub_sub_le}, \lean{norm_unitaryChannel_sub_sub_le} \\
@@ -166,8 +168,10 @@ Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero} \\
   trace-norm version of (14) and (15) would carry the dimension.
 \item Positivity and trace preservation of $\Psi_\tau$ come from eq.~(12), not from the integral
   representation~(7): $\Psi_\tau\rho = \sum_x P_x\rho P_x$, which is a density operator when
-  $\rho$ is. Eqs.~(5)--(9) and complete positivity are not formalized. The same identity gives
-  injectivity of $1 - \tau L$, so Proposition~2 holds for every real $\tau$.
+  $\rho$ is. The same identity gives injectivity of $1 - \tau L$, so Proposition~2 holds for
+  every real $\tau$. Eqs.~(5)--(6) are not formalized. Eqs.~(7)--(9) and complete positivity come
+  from the any-dimension part: there $\Psi_\tau$ is the integral~(7), and in finite dimension it
+  equals $(1 - \tau L)^{-1}$ (\lean{vonNeumannResolvent_eq_laplaceResolvent}).
 \item Eq.~(15) is proved for the largest eigenvalue, once $8\|K\|^2\tau^2 \le \frac12$; it is the
   only case the proof of Theorem~18 uses.
 \item DR-PROJ is made precise as follows. Outcomes and branches refer to a projective
@@ -255,7 +259,8 @@ directions, with an unbounded generator.
   \lean{AffineOnDensityOperators})
 \item New file \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Laplace.lean}: the resolvent
   of a bounded generator in any dimension as the Laplace integral of the unitary channel, its
-  inverse identities, preservation of density operators, the eigenbasis decomposition, the
+  inverse identities, complete positivity, preservation of density operators, its agreement with
+  $(1 - \tau L)^{-1}$ in finite dimension, the eigenbasis decomposition, the
   second-order estimates and the largest outcome in trace norm, the exponential formula and the
   generator limit.
 \item New file \lean{ForPhyslib/QuantumMechanics/SpectralCutoff.lean}: the cutoff groups
@@ -276,6 +281,9 @@ directions, with an unbounded generator.
   \lean{StronglyContinuousUnitaryGroup.exists_expIntegral}, every strongly continuous unitary
   group is $t \mapsto \int e^{itx}\,d\mu_S(x)$ for a projection-valued measure $\mu_S$ on
   $\mathbb{R}$.
+\item New \lean{ForMathlib} material:\newline
+  \lean{ForMathlib/Analysis/CStarAlgebra/CompletelyPositiveMap.lean} (an integral of completely
+  positive maps is completely positive, \lean{CompletelyPositiveMap.integral}).
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
@@ -315,6 +323,8 @@ Eqs.~(8)--(9), $(I - \tau L)\Psi_\tau = I$ & \lean{integral_laplace_vonNeumannSt
 $\Psi_\tau(I - \tau L) = I$ & \lean{laplaceResolvent_vonNeumannStep} \\
 $\Psi_\tau$ is affine, positive, trace preserving & \lean{laplaceResolvent_nonneg},
   \lean{isDensityOperator_laplaceResolvent} \\
+Proposition~2, $\Psi_\tau$ is completely positive & \lean{laplaceResolventCP},
+  \lean{coe_laplaceResolventCP} \\
 Eq.~(11), on an eigenbasis & \lean{inner_vonNeumannGenerator_apply_eq_zero} \\
 Eqs.~(4), (12) & \lean{exists_hilbertBasis_laplaceResolvent}: $\Psi_\tau\rho = \sum_i
   P_i\rho P_i$ with $P_i\rho P_i = \mu_iP_i$ \\
@@ -449,8 +459,11 @@ Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero_and
   \lean{PerfectPrediction} that the final branch states converge. The bound
   $\|\Psi^nP - Q_n\|_1 \le 2(1-w_n)$ and $\Psi^nP \to \Phi_tP$ already give $Q_n \to \Phi_tP$.
   The clause is kept so that the definitions match those of finite dimension.
-\item Complete positivity in Proposition~2 and the remark on the resolvent of an unbounded
-  generator are not formalized.
+\item Complete positivity is Mathlib's \lean{CompletelyPositiveMap}: $\Psi_\tau \otimes
+  \mathrm{id}$ is positive on the $k \times k$ matrices of operators for every $k$. It holds
+  because every unitary channel is a $*$-automorphism, and an integral of completely positive
+  maps is completely positive, since the positive operators form a closed cone. The remark on the
+  resolvent of an unbounded generator is not formalized.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No errors. Gaps beyond those of the finite-dimensional

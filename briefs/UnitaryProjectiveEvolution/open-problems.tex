@@ -54,8 +54,8 @@ precise first.
 unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ and derives the evolution structure
 \lean{IsEvolution} from DR-PROJ up to the item ``Durations with irrational ratio'' below
 (\lean{drUnit_iff_drProj_and_map_zero_and_map_add}). It leaves open the item ``Resolvent of an
-unbounded generator'' above and the items ``Complete positivity'', ``The generator of the cutoff
-family'' and ``General cutoff levels'' below (the first is open in finite dimension too).
+unbounded generator'' above and the items ``The generator of the cutoff family'' and ``General
+cutoff levels'' below.
 \begin{enumerate}
 \item \blocker{brief issue}
   \textbf{Durations with irrational ratio.}
@@ -87,10 +87,6 @@ family'' and ``General cutoff levels'' below (the first is open in finite dimens
   not settled whether the brief's weaker wording already makes $\Phi_t$ a bijection of the pure
   states, or what the right formulation is. (Brief, Sec.~4: ``Perfect reconstruction gives the
   converse correspondence''; Log, ``Differences'' and ``Problems found''.)
-\item \textbf{Complete positivity.} Proposition~2 says that $\Psi_\tau$ is completely positive,
-  as a mixture of unitary channels by eq.~(7). Only positivity and trace preservation are
-  formalized, in either dimension. (Log, ``Differences''; Sec.~1.1, ``Differences'', last
-  item.)
 \item \textbf{The generator of the cutoff family.} For unbounded $H$ the brief states that the
   family~(23) is infinitesimal with generator $\mathcal{L}(\rho) = [H,\rho]/(i\hbar)$. The
   formalization only shows that $(\Psi_\tau(\rho) - \rho)/\tau$ converges on the core; it does
