@@ -6,6 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import ForMathlib.Analysis.Convex.AffineOnBall
+public import ForPhyslib.QuantumMechanics.Kadison
 public import ForPhyslib.QuantumMechanics.Qubit.BlochBall
 public import ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture
 
@@ -50,6 +51,14 @@ brief's EQST as well. Every ensemble is a countable mixture of pure states, its 
 countable affinity determines `p` from its values on pure states (Corollary 8); with BR-BORN,
 `p(ϕ | ρ) = ⟨ϕ, ρ ϕ⟩`.
 
+The three conditions are independent over EQST, when `E` has two orthonormal vectors: each one
+holds in a model where the other two fail. The models use the Born rule for ensembles
+`b(ψ | ρ) = ⟨ψ, ρ ψ⟩` and its shift `(1 + b) / 2`, which is affine and `1` only on the same ray
+but never `0`: `b` with entropy `0` (BR-BORN only), `(1 + b) / 2` with the von Neumann entropy
+(BR-ENT only), and `(1 + b) / 2` with the entropy `0` on pure states and `∞` otherwise ([B]MUTEX
+only, since no two states are mutually exclusive and no mixture of two has entropy `log 2`). In
+dimension at most one, EQST alone implies BR-BORN.
+
 ## ii. Key results
 
 - `BornRuleEntropy.entropyOfBorn`, `BornRuleEntropy.strictAntiOn_entropyOfBorn`: Fig. 2.
@@ -72,6 +81,8 @@ countable affinity determines `p` from its values on pure states (Corollary 8); 
 - `BornRuleEntropy.CountablyAffine.exists_hasSum_proj`,
   `BornRuleEntropy.CountablyAffine.eq_of_eq_on_pure`: Corollary 8.
 - `BornRuleEntropy.CountablyAffine.apply_eq_re_inner`: the Born rule for ensembles.
+- `BornRuleEntropy.conditions_independent`: the conditions are independent over EQST.
+- `BornRuleEntropy.BornRule.of_rank_le_one`: in dimension at most one, EQST implies BR-BORN.
 
 ## iii. Table of contents
 
@@ -84,6 +95,7 @@ countable affinity determines `p` from its values on pure states (Corollary 8); 
 - G. BR-ENT and [B]MUTEX imply BR-BORN on the Bloch ball
 - H. Theorem 9
 - I. Countable affinity and Corollary 8
+- J. Independence of the conditions
 
 ## iv. References
 
@@ -236,6 +248,37 @@ variable {p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ} {S : (E →L[ℂ] E) 
 
 /-! ## C. BR-BORN and BR-ENT imply [B]MUTEX -/
 
+omit [CompleteSpace E] in
+/-- The weights `½, ½` on two indices `i ≠ j` of a family of vectors: their mixture is the equal
+mixture of `ψᵢ` and `ψⱼ`, and their Shannon entropy is `log 2`. -/
+lemma exists_weights_mix {ι : Type*} (ψ : ι → E) {i j : ι} (hij : i ≠ j) :
+    ∃ w : ι → ℝ, (∀ k, 0 ≤ w k) ∧ HasSum w 1 ∧
+      ∑' k, (w k : ℂ) • proj (ψ k) = mix (proj (ψ i)) (proj (ψ j)) ∧
+      ∑' k, ENNReal.ofReal (negMulLog (w k)) = ENNReal.ofReal (log 2) := by
+  classical
+  set w : ι → ℝ := fun k => if k = i ∨ k = j then 2⁻¹ else 0 with hw_def
+  have hsupp : ∀ k ∉ ({i, j} : Finset ι), w k = 0 := fun k hk => by
+    simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hk
+    simp [w, hk.1, hk.2]
+  have hwi : w i = 2⁻¹ := by simp [w]
+  have hwj : w j = 2⁻¹ := by simp [w]
+  have hw : HasSum w 1 := by
+    have h : HasSum w (∑ k ∈ {i, j}, w k) := hasSum_sum_of_ne_finset_zero hsupp
+    rwa [Finset.sum_pair hij, hwi, hwj, show (2⁻¹ : ℝ) + 2⁻¹ = 1 by norm_num] at h
+  have hmix : ∑' k, (w k : ℂ) • proj (ψ k) = mix (proj (ψ i)) (proj (ψ j)) := by
+    rw [tsum_eq_sum (s := {i, j}) fun k hk => by rw [hsupp k hk]; simp, Finset.sum_pair hij,
+      hwi, hwj, mix]
+    push_cast
+    rfl
+  have hη : negMulLog 2⁻¹ = 2⁻¹ * log 2 := by
+    rw [negMulLog, Real.log_inv]
+    ring
+  have hent : ∑' k, ENNReal.ofReal (negMulLog (w k)) = ENNReal.ofReal (log 2) := by
+    rw [tsum_eq_sum (s := {i, j}) fun k hk => by rw [hsupp k hk]; simp, Finset.sum_pair hij,
+      hwi, hwj, hη, ← ENNReal.ofReal_add (by positivity) (by positivity)]
+    ring_nf
+  exact ⟨w, fun k => by simp only [w]; split_ifs <;> norm_num, hw, hmix, hent⟩
+
 /-- BR-BORN and BR-ENT imply [B]MUTEX. -/
 theorem MutualExclusivity.of_bornRule (hB : BornRule p) (hS : IsVonNeumannEntropy S) :
     MutualExclusivity S p := by
@@ -256,29 +299,8 @@ theorem MutualExclusivity.of_bornRule (hB : BornRule p) (hS : IsVonNeumannEntrop
     rw [hS _ (isDensityOperator_tsum_smul_proj hon hw0 hw),
       vonNeumannEntropy_tsum_smul_proj hon hw0 hw]
   · intro h i j hij
-    classical
-    set w : ι → ℝ := fun k => if k = i ∨ k = j then 2⁻¹ else 0 with hw_def
-    have hsupp : ∀ k ∉ ({i, j} : Finset ι), w k = 0 := fun k hk => by
-      simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hk
-      simp [w, hk.1, hk.2]
-    have hwi : w i = 2⁻¹ := by simp [w]
-    have hwj : w j = 2⁻¹ := by simp [w]
-    have hw : HasSum w 1 := by
-      have h : HasSum w (∑ k ∈ {i, j}, w k) := hasSum_sum_of_ne_finset_zero hsupp
-      rwa [Finset.sum_pair hij, hwi, hwj, show (2⁻¹ : ℝ) + 2⁻¹ = 1 by norm_num] at h
-    have hmix : ∑' k, (w k : ℂ) • proj (ψ k) = mix (proj (ψ i)) (proj (ψ j)) := by
-      rw [tsum_eq_sum (s := {i, j}) fun k hk => by rw [hsupp k hk]; simp, Finset.sum_pair hij,
-        hwi, hwj, mix]
-      push_cast
-      rfl
-    have hη : negMulLog 2⁻¹ = 2⁻¹ * log 2 := by
-      rw [negMulLog, Real.log_inv]
-      ring
-    have hent : ∑' k, ENNReal.ofReal (negMulLog (w k)) = ENNReal.ofReal (log 2) := by
-      rw [tsum_eq_sum (s := {i, j}) fun k hk => by rw [hsupp k hk]; simp, Finset.sum_pair hij,
-        hwi, hwj, hη, ← ENNReal.ofReal_add (by positivity) (by positivity)]
-      ring_nf
-    have hS2 := h w (fun k => by simp only [w]; split_ifs <;> norm_num) hw
+    obtain ⟨w, hw0, hw, hmix, hent⟩ := exists_weights_mix ψ hij
+    have hS2 := h w hw0 hw
     rw [hmix, hS _ ((isDensityOperator_proj (hψ i)).mix (isDensityOperator_proj (hψ j))),
       hent] at hS2
     rw [hB (hψ i) (hψ j), (inner_eq_zero_iff (hψ i) (hψ j)).mpr hS2]
@@ -720,5 +742,206 @@ theorem CountablyAffine.apply_eq_re_inner (hp : CountablyAffine p) (hB : BornRul
       ← inner_conj_symm ϕ (ψ i), mul_assoc, Complex.mul_conj']
     norm_cast
   · rfl
+
+/-! ## J. Independence of the conditions -/
+
+open Classical in
+/-- The Born rule extended to ensembles, `p(ψ | ρ) = ⟨ψ, ρ ψ⟩`, read off the pure state
+`|ψ⟩⟨ψ|` (and `0` if the first argument is not a pure state). -/
+def bornProb (A ρ : E →L[ℂ] E) : ℝ :=
+  if h : ∃ ψ : E, ‖ψ‖ = 1 ∧ A = proj ψ then (⟪h.choose, ρ h.choose⟫_ℂ).re else 0
+
+omit [CompleteSpace E] in
+lemma bornProb_proj {ψ : E} (hψ : ‖ψ‖ = 1) (ρ : E →L[ℂ] E) :
+    bornProb (proj ψ) ρ = (⟪ψ, ρ ψ⟫_ℂ).re := by
+  rw [bornProb]
+  split_ifs with h
+  swap
+  · exact absurd ⟨ψ, hψ, rfl⟩ h
+  obtain ⟨hφ, he⟩ := h.choose_spec
+  obtain ⟨c, hc, hcφ⟩ := exists_norm_eq_one_smul_of_norm_inner_eq_one (𝕜 := ℂ) hφ hψ
+    (by rw [norm_inner_symm]; exact norm_inner_eq_one_of_proj_eq hψ he)
+  rw [hcφ, map_smul, inner_smul_left, inner_smul_right, ← mul_assoc, Complex.conj_mul', hc]
+  simp
+
+omit [CompleteSpace E] in
+lemma bornProb_proj_proj {ψ : E} (hψ : ‖ψ‖ = 1) (φ : E) :
+    bornProb (proj ψ) (proj φ) = ‖⟪ψ, φ⟫_ℂ‖ ^ 2 := by
+  rw [bornProb_proj hψ, inner_proj_apply, Complex.ofReal_re, norm_inner_symm]
+
+lemma bornProb_mem_Icc {ψ : E} (hψ : ‖ψ‖ = 1) {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) :
+    bornProb (proj ψ) ρ ∈ Set.Icc 0 1 := by
+  rw [bornProb_proj hψ]
+  refine ⟨ContinuousLinearMap.re_inner_apply_nonneg hρ.nonneg ψ, ?_⟩
+  calc (⟪ψ, ρ ψ⟫_ℂ).re ≤ ‖⟪ψ, ρ ψ⟫_ℂ‖ := Complex.re_le_norm _
+    _ ≤ ‖ψ‖ * ‖ρ ψ‖ := norm_inner_le_norm _ _
+    _ ≤ ‖ψ‖ * (‖ρ‖ * ‖ψ‖) := by gcongr; exact ρ.le_opNorm ψ
+    _ ≤ 1 := by rw [hψ, one_mul, mul_one]; exact hρ.norm_le_one
+
+theorem bornProb_countablyAffine : CountablyAffine (bornProb (E := E)) := by
+  intro ϕ ι _ ψ w hϕ hψ hw0 hw
+  have hs : Summable fun i => (w i : ℂ) • proj (ψ i) :=
+    Summable.of_norm_bounded hw.summable.abs fun i => by simp [norm_smul, hψ i]
+  have h := Complex.hasSum_re
+    ((innerSL ℂ ϕ).hasSum ((ContinuousLinearMap.apply ℂ E ϕ).hasSum hs.hasSum))
+  rw [bornProb_proj hϕ]
+  convert h using 1
+  · funext i
+    rw [bornProb_proj hϕ]
+    simp [inner_smul_right]
+  · rfl
+
+/-- The Born rule extended to ensembles satisfies EQST. -/
+theorem ensemblesAndStates_bornProb : EnsemblesAndStates (bornProb (E := E)) :=
+  .of_countablyAffine (fun hψ hρ => bornProb_mem_Icc hψ hρ) bornProb_countablyAffine fun hψ hφ => by
+    rw [bornProb_proj_proj hψ, pow_eq_one_iff_of_nonneg (norm_nonneg _) two_ne_zero]
+    exact ⟨proj_eq_proj_of_norm_inner_eq_one hψ hφ, norm_inner_eq_one_of_proj_eq hψ⟩
+
+omit [CompleteSpace E] in
+lemma bornRule_bornProb : BornRule (bornProb (E := E)) := fun hψ _ => bornProb_proj_proj hψ _
+
+/-- The Born rule moved halfway to certainty, `p(ψ | ρ) = (1 + ⟨ψ, ρ ψ⟩) / 2`. -/
+def halfBornProb (A ρ : E →L[ℂ] E) : ℝ := 2⁻¹ + 2⁻¹ * bornProb A ρ
+
+theorem halfBornProb_countablyAffine : CountablyAffine (halfBornProb (E := E)) := by
+  intro ϕ ι _ ψ w hϕ hψ hw0 hw
+  convert (hw.mul_left 2⁻¹).add ((bornProb_countablyAffine ι ψ w hϕ hψ hw0 hw).mul_left 2⁻¹)
+    using 1
+  · funext i
+    simp only [halfBornProb]
+    ring
+  · simp [halfBornProb]
+
+/-- `(1 + ⟨ψ, ρ ψ⟩) / 2` satisfies EQST. -/
+theorem ensemblesAndStates_halfBornProb : EnsemblesAndStates (halfBornProb (E := E)) :=
+  .of_countablyAffine
+    (fun hψ hρ => by
+      have h := bornProb_mem_Icc hψ hρ
+      simp only [halfBornProb, Set.mem_Icc] at h ⊢
+      constructor <;> linarith [h.1, h.2])
+    halfBornProb_countablyAffine fun hψ hφ => by
+      rw [halfBornProb, ← ensemblesAndStates_bornProb.eq_one_iff hψ hφ]
+      constructor <;> intro h <;> linarith
+
+open Classical in
+/-- The entropy `0` on pure states and `∞` on all other operators. -/
+def pureEntropy (ρ : E →L[ℂ] E) : ℝ≥0∞ :=
+  if ∃ ψ : E, ‖ψ‖ = 1 ∧ ρ = proj ψ then 0 else ⊤
+
+omit [CompleteSpace E] in
+lemma pureEntropy_proj {ψ : E} (hψ : ‖ψ‖ = 1) : pureEntropy (proj ψ) = 0 := by
+  rw [pureEntropy]
+  split_ifs with h
+  · rfl
+  · exact absurd ⟨ψ, hψ, rfl⟩ h
+
+omit [CompleteSpace E] in
+lemma pureEntropy_eq_zero_or_eq_top (ρ : E →L[ℂ] E) : pureEntropy ρ = 0 ∨ pureEntropy ρ = ⊤ := by
+  unfold pureEntropy
+  split_ifs <;> simp
+
+/-- `(1 + ⟨ψ, ρ ψ⟩) / 2` and `pureEntropy` satisfy [B]MUTEX: no two states are mutually exclusive,
+and every mixture of two or more states has entropy `0` or `∞`, never a Shannon entropy `log 2`. -/
+theorem mutualExclusivity_pureEntropy : MutualExclusivity (pureEntropy (E := E)) halfBornProb := by
+  intro ι _ φ hφ
+  have hpos : ∀ i j, halfBornProb (proj (φ i)) (proj (φ j)) ≠ 0 := fun i j h => by
+    have := (bornProb_mem_Icc (hφ i) (isDensityOperator_proj (hφ j))).1
+    rw [halfBornProb] at h
+    linarith
+  constructor
+  · intro h0 w hw0 hw
+    have hsub : ∀ i j, i = j := fun i j => by_contra fun hij => hpos i j (h0 i j hij)
+    have hne : Nonempty ι := by
+      by_contra hne
+      have : IsEmpty ι := not_nonempty_iff.mp hne
+      exact one_ne_zero (hw.unique hasSum_empty)
+    obtain ⟨i⟩ := hne
+    have hwi : w i = 1 := (hasSum_single i fun j hj => absurd (hsub j i) hj).unique hw
+    rw [tsum_eq_single i fun j hj => absurd (hsub j i) hj,
+      tsum_eq_single i fun j hj => absurd (hsub j i) hj, hwi]
+    simp [pureEntropy_proj (hφ i)]
+  · intro hS i j hij
+    obtain ⟨w, hw0, hw, hmix, hent⟩ := exists_weights_mix φ hij
+    have h := hS w hw0 hw
+    rw [hmix, hent] at h
+    rcases pureEntropy_eq_zero_or_eq_top (mix (proj (φ i)) (proj (φ j))) with h' | h'
+    · rw [h] at h'
+      exact absurd h' (ENNReal.ofReal_pos.mpr (Real.log_pos one_lt_two)).ne'
+    · rw [h] at h'
+      exact absurd h' ENNReal.ofReal_ne_top
+
+section Models
+
+variable {ψ χ : E} (hψ : ‖ψ‖ = 1) (hχ : ‖χ‖ = 1) (hψχ : ⟪ψ, χ⟫_ℂ = 0)
+include hψ hχ hψχ
+
+omit [CompleteSpace E] in
+lemma not_bornRule_halfBornProb : ¬ BornRule (halfBornProb (E := E)) := fun hB => by
+  have h := hB hψ hχ
+  rw [halfBornProb, bornProb_proj_proj hψ, hψχ] at h
+  norm_num at h
+
+/-- **Independence, first model.** The Born rule with entropy `0` satisfies EQST and BR-BORN, but
+neither BR-ENT nor [B]MUTEX. -/
+theorem exists_bornRule_not_isVonNeumannEntropy :
+    ∃ (p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ) (S : (E →L[ℂ] E) → ℝ≥0∞), EnsemblesAndStates p ∧
+      CountablyAffine p ∧ BornRule p ∧ ¬ IsVonNeumannEntropy S ∧ ¬ MutualExclusivity S p := by
+  have hS : ¬ IsVonNeumannEntropy (fun _ => 0 : (E →L[ℂ] E) → ℝ≥0∞) := fun h => by
+    have h0 := h _ ((isDensityOperator_proj hψ).mix (isDensityOperator_proj hχ))
+    rw [(inner_eq_zero_iff hψ hχ).mp hψχ] at h0
+    exact (ENNReal.ofReal_pos.mpr (Real.log_pos one_lt_two)).ne h0
+  exact ⟨bornProb, _, ensemblesAndStates_bornProb, bornProb_countablyAffine, bornRule_bornProb,
+    hS, fun hM => hS (IsVonNeumannEntropy.of_bornRule bornRule_bornProb hM)⟩
+
+/-- **Independence, second model.** `(1 + ⟨ψ, ρ ψ⟩) / 2` with the von Neumann entropy satisfies
+EQST and BR-ENT, but neither BR-BORN nor [B]MUTEX. -/
+theorem exists_isVonNeumannEntropy_not_bornRule :
+    ∃ (p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ) (S : (E →L[ℂ] E) → ℝ≥0∞), EnsemblesAndStates p ∧
+      CountablyAffine p ∧ IsVonNeumannEntropy S ∧ ¬ BornRule p ∧ ¬ MutualExclusivity S p :=
+  ⟨halfBornProb, vonNeumannEntropy, ensemblesAndStates_halfBornProb,
+    halfBornProb_countablyAffine, fun _ _ => rfl, not_bornRule_halfBornProb hψ hχ hψχ,
+    fun hM => not_bornRule_halfBornProb hψ hχ hψχ
+      (BornRule.of_isVonNeumannEntropy ensemblesAndStates_halfBornProb (fun _ _ => rfl) hM)⟩
+
+/-- **Independence, third model.** `(1 + ⟨ψ, ρ ψ⟩) / 2` with `pureEntropy` satisfies EQST and
+[B]MUTEX, but neither BR-BORN nor BR-ENT. -/
+theorem exists_mutualExclusivity_not_bornRule :
+    ∃ (p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ) (S : (E →L[ℂ] E) → ℝ≥0∞), EnsemblesAndStates p ∧
+      CountablyAffine p ∧ MutualExclusivity S p ∧ ¬ BornRule p ∧ ¬ IsVonNeumannEntropy S :=
+  ⟨halfBornProb, pureEntropy, ensemblesAndStates_halfBornProb, halfBornProb_countablyAffine,
+    mutualExclusivity_pureEntropy, not_bornRule_halfBornProb hψ hχ hψχ,
+    fun hS => not_bornRule_halfBornProb hψ hχ hψχ (BornRule.of_isVonNeumannEntropy
+      ensemblesAndStates_halfBornProb hS mutualExclusivity_pureEntropy)⟩
+
+/-- **Independence of the conditions.** If `E` has two orthonormal vectors, none of BR-BORN,
+BR-ENT and [B]MUTEX implies another over EQST (with countable affinity): for each condition
+there are `p` and `S` satisfying it and violating the other two. -/
+theorem conditions_independent :
+    (∃ (p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ) (S : (E →L[ℂ] E) → ℝ≥0∞), EnsemblesAndStates p ∧
+      CountablyAffine p ∧ BornRule p ∧ ¬ IsVonNeumannEntropy S ∧ ¬ MutualExclusivity S p) ∧
+    (∃ (p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ) (S : (E →L[ℂ] E) → ℝ≥0∞), EnsemblesAndStates p ∧
+      CountablyAffine p ∧ IsVonNeumannEntropy S ∧ ¬ BornRule p ∧ ¬ MutualExclusivity S p) ∧
+    (∃ (p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ) (S : (E →L[ℂ] E) → ℝ≥0∞), EnsemblesAndStates p ∧
+      CountablyAffine p ∧ MutualExclusivity S p ∧ ¬ BornRule p ∧ ¬ IsVonNeumannEntropy S) :=
+  ⟨exists_bornRule_not_isVonNeumannEntropy hψ hχ hψχ,
+    exists_isVonNeumannEntropy_not_bornRule hψ hχ hψχ,
+    exists_mutualExclusivity_not_bornRule hψ hχ hψχ⟩
+
+end Models
+
+/-- In dimension at most one, EQST alone implies BR-BORN, since all unit vectors span the same
+ray; so independence needs two orthonormal vectors. -/
+theorem BornRule.of_rank_le_one (hp : EnsemblesAndStates p) (hE : Module.rank ℂ E ≤ 1) :
+    BornRule p := by
+  intro ψ ϕ hψ hϕ
+  obtain ⟨v, hv⟩ := rank_le_one_iff.mp hE
+  obtain ⟨a, rfl⟩ := hv ψ
+  obtain ⟨b, rfl⟩ := hv ϕ
+  have h1 : ‖⟪a • v, b • v⟫_ℂ‖ = 1 := by
+    rw [inner_smul_left, inner_smul_right, inner_self_eq_norm_sq_to_K]
+    simp only [norm_mul, Complex.norm_conj, norm_pow, RCLike.norm_ofReal, abs_norm]
+    rw [norm_smul] at hψ hϕ
+    linear_combination (‖b‖ * ‖v‖) * hψ + hϕ
+  rw [(hp.eq_one_iff hψ hϕ).mpr (proj_eq_proj_of_norm_inner_eq_one hψ hϕ h1), h1, one_pow]
 
 end BornRuleEntropy

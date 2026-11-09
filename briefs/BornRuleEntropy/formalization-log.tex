@@ -55,6 +55,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item File: \lean{briefs/BornRuleEntropy/BornRuleEntropy.lean}
 \item Library: \lean{BornRuleEntropy}
 \item Imports: \lean{ForMathlib.Analysis.Convex.AffineOnBall},
+  \lean{ForPhyslib.QuantumMechanics.Kadison},
   \lean{ForPhyslib.QuantumMechanics.Qubit.BlochBall},
   \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture}
 \item New \lean{ForMathlib} material:
@@ -177,6 +178,27 @@ Corollary~8, $p$ is fully specified by its values on pure states &
 \end{tabularx}
 \end{center}
 
+\noindent Independence of the conditions (not in the brief), for $E$ with two orthonormal
+vectors; every model satisfies EQST and \lean{CountablyAffine}:
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Statement & Lean \\
+\midrule
+$p(\psi|\rho) = \braket{\psi|\rho|\psi}$ satisfies EQST & \lean{bornProb},
+  \lean{ensemblesAndStates_bornProb}, \lean{bornProb_countablyAffine} \\
+BR-BORN without BR-ENT or [B]MUTEX: $p = \braket{\psi|\rho|\psi}$, $S = 0$ &
+  \lean{exists_bornRule_not_isVonNeumannEntropy} \\
+BR-ENT without BR-BORN or [B]MUTEX: $p = (1 + \braket{\psi|\rho|\psi})/2$, $S$ the von
+  Neumann entropy & \lean{exists_isVonNeumannEntropy_not_bornRule} \\
+{[B]MUTEX} without BR-BORN or BR-ENT: $p = (1 + \braket{\psi|\rho|\psi})/2$, $S = 0$ on pure
+  states and $\infty$ otherwise & \lean{exists_mutualExclusivity_not_bornRule} \\
+the three models together & \lean{conditions_independent} \\
+in dimension at most one, EQST implies BR-BORN & \lean{BornRule.of_rank_le_one} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item $E$ is a Hilbert space of any dimension; separability is not used. [B]MUTEX quantifies over
@@ -200,6 +222,14 @@ Corollary~8, $p$ is fully specified by its values on pure states &
 \item In BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN, [B]MUTEX is used only for pairs of orthogonal
   states, and only in the direction ``Shannon entropy $\Rightarrow$ mutually exclusive''. In
   BR-BORN + [B]MUTEX $\Rightarrow$ BR-ENT only the other direction is used.
+\item Independence of the conditions is not in the brief; its conclusion only says that
+  [B]MUTEX is the one extra requirement. The formalization shows that none of BR-BORN, BR-ENT and
+  [B]MUTEX implies another over EQST, when $E$ has two orthonormal vectors (in dimension at most
+  one, EQST alone implies BR-BORN). The model for [B]MUTEX alone satisfies it in a degenerate
+  way: $p(\psi|\phi) \ge \tfrac12$ for all pure states, so no two states are mutually exclusive,
+  and every mixture of two or more states has entropy $0$ or $\infty$, never a Shannon entropy
+  $\log 2$. In each model the failure of one of the two remaining conditions follows from
+  Theorem~9.
 \item BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN is proved twice. The first proof follows Fig.~3.
   The states of the plane spanned by $\psi$ and a unit $\chi \perp \psi$ form a Bloch ball, on
   which $f = p(\psi|\cdot)$ is affine along every chord, since the ends of a chord are pure states;
