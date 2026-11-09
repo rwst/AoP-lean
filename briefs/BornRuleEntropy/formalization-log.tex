@@ -70,7 +70,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   operator (\lean{isDensityOperator_tsum_smul_proj}) with entropy $\sum_i \eta(p_i)$,
   $\eta(x) = -x\log x$ (\lean{vonNeumannEntropy_tsum_smul_proj}); the entropy of an equal mixture
   of two pure states is $h((1 + |\braket{\psi|\phi}|)/2)$, $h$ the binary entropy
-  (\lean{vonNeumannEntropy_mix_proj}).
+  (\lean{vonNeumannEntropy_mix_proj}); every density operator is such a mixture, of countably many
+  orthonormal pure states, its eigenvectors with nonzero eigenvalue
+  (\lean{IsDensityOperator.exists_tsum_smul_proj}).
 \item \lean{ForPhyslib/QuantumMechanics/Qubit/BlochBall.lean}: the Bloch ball of the plane spanned by
   orthonormal $\psi, \chi$ in $E$. The point $r \in \mathbb R^3$ is the operator
   $\tfrac12(\ket\psi\bra\psi + \ket\chi\bra\chi + r\cdot\sigma)$
@@ -103,7 +105,11 @@ $\psi$ having prepared $\rho$. The conditions are:
 \item \lean{MutualExclusivity}~$S\ p$ ([B]MUTEX): for every countable family $(\psi_i)$ of unit
   vectors, $p(\ket{\psi_i}\bra{\psi_i}, \ket{\psi_j}\bra{\psi_j}) = 0$ for all $i \ne j$ iff
   $S(\sum_i w_i\ket{\psi_i}\bra{\psi_i}) = \sum_i \eta(w_i)$ for all weights $w_i \ge 0$ with
-  $\sum_i w_i = 1$ (the sum of operators converging in operator norm).
+  $\sum_i w_i = 1$ (the sum of operators converging in operator norm);
+\item \lean{CountablyAffine}~$p$ (the affinity of the brief's EQST): for every countable family
+  $(\psi_i)$ of unit vectors and weights $w_i \ge 0$ with $\sum_i w_i = 1$,
+  $\sum_i w_i\,p(\ket\phi\bra\phi, \ket{\psi_i}\bra{\psi_i})$ converges to
+  $p(\ket\phi\bra\phi, \sum_i w_i\ket{\psi_i}\bra{\psi_i})$.
 \end{itemize}
 
 \paragraph{Results.}
@@ -151,6 +157,26 @@ Theorem~9 & \lean{two_conditions_imply_third} \\
 \end{tabularx}
 \end{center}
 
+\noindent Countable affinity and Corollary~8:
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+EQST, affinity for countable mixtures & \lean{CountablyAffine}; it implies the affinity of
+  \lean{EnsemblesAndStates} (\lean{CountablyAffine.affine},
+  \lean{EnsemblesAndStates.of_countablyAffine}) \\
+Theorem~9 over the brief's EQST & \lean{two_conditions_imply_third_of_countablyAffine} \\
+Corollary~8, every ensemble is a countable mixture $\sum_i w_i\rho_{\psi_i}$ of pure states, and
+  $p(\phi|\rho) = \sum_i w_i\,p(\phi|\psi_i)$ & \lean{CountablyAffine.exists_hasSum_proj} \\
+Corollary~8, $p$ is fully specified by its values on pure states &
+  \lean{CountablyAffine.eq_of_eq_on_pure} \\
+(not in the brief) with BR-BORN, $p(\phi|\rho) = \braket{\phi|\rho|\phi}$ &
+  \lean{CountablyAffine.apply_eq_re_inner} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item $E$ is a Hilbert space of any dimension; separability is not used. [B]MUTEX quantifies over
@@ -159,10 +185,16 @@ Theorem~9 & \lean{two_conditions_imply_third} \\
   family since the eigenvalues are summable.
 \item Entropies take values in $[0, \infty]$, not in $\mathbb{R}$: the von Neumann entropy and the
   Shannon entropy of a countable family of weights can be infinite (see ``Problems found'').
-\item In EQST, affinity is assumed only for mixtures of two pure states, which is weaker than the
-  brief's countable mixtures. EQST is used only for BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN,
-  and there only through $p(\psi|\psi) = 1$, affinity for two pure states, and $p \ge 0$ on pure
-  states (the algebraic proof) or $p \le 1$ on pure states (the Bloch-ball proof). The other two directions do not use EQST. Corollary~8 is not formalized.
+\item In \lean{EnsemblesAndStates}, affinity is assumed only for mixtures of two pure states,
+  which is weaker than the brief's countable mixtures, so \lean{two_conditions_imply_third} is
+  stronger than Theorem~9. The brief's countable affinity is \lean{CountablyAffine}; it implies
+  the two-state affinity, and Theorem~9 over the brief's EQST follows
+  (\lean{two_conditions_imply_third_of_countablyAffine}). EQST is used only for BR-ENT +
+  [B]MUTEX $\Rightarrow$ BR-BORN, and there only through $p(\psi|\psi) = 1$, affinity for two
+  pure states, and $p \ge 0$ on pure states (the algebraic proof) or $p \le 1$ on pure states
+  (the Bloch-ball proof). The other two directions do not use EQST. Corollary~8 needs countable
+  affinity: in infinite dimension an ensemble is in general only a countable mixture of pure
+  states.
 \item The first argument of $p$ is the projection $\ket\psi\bra\psi$, so $p$ depends on the ray of
   $\psi$ only.
 \item In BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN, [B]MUTEX is used only for pairs of orthogonal

@@ -44,6 +44,12 @@ A second proof follows the brief's Fig. 3. The states of the plane form a Bloch 
 function is `(1 + a · r) / 2` with `a` the Bloch vector of `ψ`, which on the sphere is the Born
 rule.
 
+`EnsemblesAndStates` assumes affinity only for mixtures of two pure states, which makes Theorem 9
+stronger. The brief's affinity for countable mixtures implies it, so Theorem 9 holds over the
+brief's EQST as well. Every ensemble is a countable mixture of pure states, its eigenvectors, so
+countable affinity determines `p` from its values on pure states (Corollary 8); with BR-BORN,
+`p(ϕ | ρ) = ⟨ϕ, ρ ϕ⟩`.
+
 ## ii. Key results
 
 - `BornRuleEntropy.entropyOfBorn`, `BornRuleEntropy.strictAntiOn_entropyOfBorn`: Fig. 2.
@@ -60,6 +66,12 @@ rule.
 - `BornRuleEntropy.BornRule.of_isVonNeumannEntropy`: BR-ENT + [B]MUTEX ⇒ BR-BORN.
 - `BornRuleEntropy.BlochBall.BornRule.of_isVonNeumannEntropy`: the same, on the Bloch ball.
 - `BornRuleEntropy.two_conditions_imply_third`: Theorem 9.
+- `BornRuleEntropy.CountablyAffine`: the brief's countable affinity.
+- `BornRuleEntropy.two_conditions_imply_third_of_countablyAffine`: Theorem 9 over the brief's
+  EQST.
+- `BornRuleEntropy.CountablyAffine.exists_hasSum_proj`,
+  `BornRuleEntropy.CountablyAffine.eq_of_eq_on_pure`: Corollary 8.
+- `BornRuleEntropy.CountablyAffine.apply_eq_re_inner`: the Born rule for ensembles.
 
 ## iii. Table of contents
 
@@ -71,6 +83,7 @@ rule.
 - F. BR-ENT and [B]MUTEX imply BR-BORN
 - G. BR-ENT and [B]MUTEX imply BR-BORN on the Bloch ball
 - H. Theorem 9
+- I. Countable affinity and Corollary 8
 
 ## iv. References
 
@@ -274,37 +287,13 @@ theorem MutualExclusivity.of_bornRule (hB : BornRule p) (hS : IsVonNeumannEntrop
 /-! ## D. BR-BORN and [B]MUTEX imply BR-ENT -/
 
 /-- BR-BORN and [B]MUTEX imply BR-ENT. The eigenvectors with nonzero eigenvalue of a density
-operator form a countable orthonormal family, mutually exclusive by BR-BORN. -/
+operator form a countable orthonormal family (`IsDensityOperator.exists_tsum_smul_proj`),
+mutually exclusive by BR-BORN. -/
 theorem IsVonNeumannEntropy.of_bornRule (hB : BornRule p) (hM : MutualExclusivity S p) :
     IsVonNeumannEntropy S := by
   intro ρ hρ
-  set e := hρ.eigenbasis
-  set ev := hρ.eigenvalue
-  have he : IsEigenbasis ρ e ev := hρ.isEigenbasis
-  have hev0 : ∀ i, 0 ≤ ev i := fun i => (he.eigenvalue_mem_Icc hρ i).1
-  have hsum : HasSum ev 1 := by
-    have h1 := he.tsum_ofReal_eq_one hρ
-    have hs : Summable ev := (summable_iff_tsum_ofReal_ne_top hev0).mpr (by rw [h1]; simp)
-    rw [← ENNReal.ofReal_tsum_of_nonneg hev0 hs, ENNReal.ofReal_eq_one] at h1
-    exact h1 ▸ hs.hasSum
-  set s := Function.support ev
-  have : Countable s := hsum.summable.countable_support.to_subtype
-  set φ : s → E := fun i => e i
-  set w : s → ℝ := fun i => ev i
-  have hφ : Orthonormal ℂ φ := e.orthonormal.comp _ Subtype.val_injective
-  have hw : HasSum w 1 := (hasSum_subtype_iff_of_support_subset subset_rfl).mpr hsum
-  have hw0 : ∀ i, 0 ≤ w i := fun i => hev0 i
-  have hρ' : ∑' i, (w i : ℂ) • proj (φ i) = ρ := by
-    refine ContinuousLinearMap.ext_on
-      (Submodule.dense_iff_topologicalClosure_eq_top.mpr e.dense_span) ?_
-    rintro _ ⟨k, rfl⟩
-    by_cases hk : k ∈ s
-    · exact (tsum_smul_proj_apply_self hφ hw.summable ⟨k, hk⟩).trans (he.apply_eq k).symm
-    · have hk0 : ev k = 0 := by simpa [s] using hk
-      rw [tsum_smul_proj_apply_of_inner_eq_zero hφ hw.summable
-        fun i => e.orthonormal.2 fun h => hk (by rw [← h]; exact i.2), he.apply_eq k, hk0]
-      simp
-  have hM' := (hM s φ hφ.1).mp (fun i j hij => by
+  obtain ⟨ι, _, φ, w, hφ, hw0, hw, hρ'⟩ := hρ.exists_tsum_smul_proj
+  have hM' := (hM ι φ hφ.1).mp (fun i j hij => by
     rw [hB (hφ.1 i) (hφ.1 j), hφ.2 hij]
     simp) w hw0 hw
   rw [hρ'] at hM'
@@ -642,5 +631,94 @@ theorem two_conditions_imply_third (hp : EnsemblesAndStates p) :
       (IsVonNeumannEntropy S → MutualExclusivity S p → BornRule p) :=
   ⟨MutualExclusivity.of_bornRule, IsVonNeumannEntropy.of_bornRule,
     BornRule.of_isVonNeumannEntropy hp⟩
+
+
+/-! ## I. Countable affinity and Corollary 8 -/
+
+/-- **Affinity in EQST**, as the brief states it: `p(ϕ | ∑ᵢ wᵢ ψᵢ) = ∑ᵢ wᵢ p(ϕ | ψᵢ)` for every
+countable mixture of pure states, with the sum on the right converging. -/
+def CountablyAffine (p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ) : Prop :=
+  ∀ {ϕ : E} (ι : Type u) [Countable ι] (ψ : ι → E) (w : ι → ℝ), ‖ϕ‖ = 1 → (∀ i, ‖ψ i‖ = 1) →
+    (∀ i, 0 ≤ w i) → HasSum w 1 →
+      HasSum (fun i => w i * p (proj ϕ) (proj (ψ i))) (p (proj ϕ) (∑' i, (w i : ℂ) • proj (ψ i)))
+
+private lemma tsum_ulift_fin_two {X : Type*} [AddCommMonoid X] [TopologicalSpace X]
+    (F : ULift.{u} (Fin 2) → X) : ∑' i, F i = F ⟨0⟩ + F ⟨1⟩ := by
+  rw [← Equiv.ulift.symm.tsum_eq, tsum_fintype, Fin.sum_univ_two]
+  rfl
+
+omit [CompleteSpace E] in
+/-- Countable affinity implies the affinity for two pure states of `EnsemblesAndStates`. -/
+theorem CountablyAffine.affine (hp : CountablyAffine p) {ψ φ₁ φ₂ : E} {t : ℝ} (hψ : ‖ψ‖ = 1)
+    (h₁ : ‖φ₁‖ = 1) (h₂ : ‖φ₂‖ = 1) (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
+    p (proj ψ) ((t : ℂ) • proj φ₁ + ((1 - t : ℝ) : ℂ) • proj φ₂) =
+      t * p (proj ψ) (proj φ₁) + (1 - t) * p (proj ψ) (proj φ₂) := by
+  set φ : ULift.{u} (Fin 2) → E := fun i => ![φ₁, φ₂] i.down
+  set w : ULift.{u} (Fin 2) → ℝ := fun i => ![t, 1 - t] i.down
+  have hw : HasSum w 1 := by
+    rw [← Equiv.ulift.symm.hasSum_iff]
+    convert hasSum_fintype (w ∘ Equiv.ulift.symm)
+    simp [w, Fin.sum_univ_two]
+  have h := (hp _ φ w hψ (by rintro ⟨i⟩; fin_cases i <;> simpa [φ])
+    (by rintro ⟨i⟩; fin_cases i <;> simp [w, ht0, ht1]) hw).tsum_eq
+  rw [tsum_ulift_fin_two, tsum_ulift_fin_two] at h
+  exact h.symm
+
+/-- The brief's EQST, with countable affinity, implies `EnsemblesAndStates`. -/
+theorem EnsemblesAndStates.of_countablyAffine
+    (mem_Icc : ∀ {ψ : E} {ρ : E →L[ℂ] E}, ‖ψ‖ = 1 → IsDensityOperator ρ →
+      p (proj ψ) ρ ∈ Set.Icc 0 1)
+    (hp : CountablyAffine p)
+    (eq_one_iff : ∀ {ψ φ : E}, ‖ψ‖ = 1 → ‖φ‖ = 1 →
+      (p (proj ψ) (proj φ) = 1 ↔ proj ψ = proj φ)) :
+    EnsemblesAndStates p :=
+  ⟨mem_Icc, hp.affine, eq_one_iff⟩
+
+/-- **Theorem 9** over the brief's EQST, with affinity for countable mixtures. -/
+theorem two_conditions_imply_third_of_countablyAffine
+    (mem_Icc : ∀ {ψ : E} {ρ : E →L[ℂ] E}, ‖ψ‖ = 1 → IsDensityOperator ρ →
+      p (proj ψ) ρ ∈ Set.Icc 0 1)
+    (hp : CountablyAffine p)
+    (eq_one_iff : ∀ {ψ φ : E}, ‖ψ‖ = 1 → ‖φ‖ = 1 →
+      (p (proj ψ) (proj φ) = 1 ↔ proj ψ = proj φ)) :
+    (BornRule p → IsVonNeumannEntropy S → MutualExclusivity S p) ∧
+      (BornRule p → MutualExclusivity S p → IsVonNeumannEntropy S) ∧
+      (IsVonNeumannEntropy S → MutualExclusivity S p → BornRule p) :=
+  two_conditions_imply_third (EnsemblesAndStates.of_countablyAffine mem_Icc hp eq_one_iff)
+
+/-- **Corollary 8.** Every ensemble is a countable mixture of pure states,
+`ρ = ∑ᵢ wᵢ |ψᵢ⟩⟨ψᵢ|`, and then `p(ϕ | ρ) = ∑ᵢ wᵢ p(ϕ | ψᵢ)`. -/
+theorem CountablyAffine.exists_hasSum_proj (hp : CountablyAffine p) {ϕ : E} (hϕ : ‖ϕ‖ = 1)
+    {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) :
+    ∃ (ι : Type u) (_ : Countable ι) (ψ : ι → E) (w : ι → ℝ), Orthonormal ℂ ψ ∧
+      (∀ i, 0 ≤ w i) ∧ HasSum w 1 ∧ ∑' i, (w i : ℂ) • proj (ψ i) = ρ ∧
+      HasSum (fun i => w i * p (proj ϕ) (proj (ψ i))) (p (proj ϕ) ρ) := by
+  obtain ⟨ι, _, ψ, w, hψ, hw0, hw, rfl⟩ := hρ.exists_tsum_smul_proj
+  exact ⟨ι, inferInstance, ψ, w, hψ, hw0, hw, rfl, hp ι ψ w hϕ hψ.1 hw0 hw⟩
+
+/-- **Corollary 8.** `p` is fully specified by its values on pure states: two countably affine
+conditional probabilities that agree on pure states agree on all ensembles. -/
+theorem CountablyAffine.eq_of_eq_on_pure {q : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ}
+    (hp : CountablyAffine p) (hq : CountablyAffine q)
+    (h : ∀ {ϕ ψ : E}, ‖ϕ‖ = 1 → ‖ψ‖ = 1 → p (proj ϕ) (proj ψ) = q (proj ϕ) (proj ψ))
+    {ϕ : E} (hϕ : ‖ϕ‖ = 1) {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) :
+    p (proj ϕ) ρ = q (proj ϕ) ρ := by
+  obtain ⟨ι, _, ψ, w, hψ, hw0, hw, rfl⟩ := hρ.exists_tsum_smul_proj
+  refine (hp ι ψ w hϕ hψ.1 hw0 hw).unique ?_
+  convert hq ι ψ w hϕ hψ.1 hw0 hw using 3 with i
+  exact h hϕ (hψ.1 i)
+
+/-- With BR-BORN, Corollary 8 gives the Born rule for ensembles: `p(ϕ | ρ) = ⟨ϕ, ρ ϕ⟩`. -/
+theorem CountablyAffine.apply_eq_re_inner (hp : CountablyAffine p) (hB : BornRule p) {ϕ : E}
+    (hϕ : ‖ϕ‖ = 1) {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) :
+    p (proj ϕ) ρ = (⟪ϕ, ρ ϕ⟫_ℂ).re := by
+  obtain ⟨ι, _, ψ, w, hψ, hw0, hw, rfl⟩ := hρ.exists_tsum_smul_proj
+  refine (hp ι ψ w hϕ hψ.1 hw0 hw).unique ?_
+  convert Complex.hasSum_re
+    ((innerSL ℂ ϕ).hasSum (hasSum_smul_proj_apply hψ hw.summable ϕ)) using 2 with i
+  · rw [hB hϕ (hψ.1 i), norm_inner_symm, innerSL_apply_apply, inner_smul_right,
+      ← inner_conj_symm ϕ (ψ i), mul_assoc, Complex.mul_conj']
+    norm_cast
+  · rfl
 
 end BornRuleEntropy

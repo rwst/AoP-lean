@@ -17,7 +17,9 @@ For an orthonormal family `(ψᵢ)` in a Hilbert space of any dimension and weig
 `∑ᵢ pᵢ = 1`, the mixture `ρ = ∑ᵢ pᵢ |ψᵢ⟩⟨ψᵢ|` converges in operator norm. Extending `(ψᵢ)` to a
 Hilbert basis gives an eigenbasis of `ρ`, with eigenvalue `pᵢ` on `ψᵢ` and `0` on the added
 vectors. So `ρ` is a density operator and its entropy is the Shannon entropy
-`S(ρ) = ∑ᵢ η(pᵢ)`, `η(x) = -x log x`, in `[0, ∞]`.
+`S(ρ) = ∑ᵢ η(pᵢ)`, `η(x) = -x log x`, in `[0, ∞]`. Conversely, every density operator is such a
+mixture: of its eigenvectors with nonzero eigenvalue, a countable family since the eigenvalues
+are summable.
 
 For two unit vectors `ψ`, `ϕ` with `c = ⟨ψ, ϕ⟩`, the equal mixture `½ |ψ⟩⟨ψ| + ½ |ϕ⟩⟨ϕ|` is
 diagonal in the orthogonal vectors `ψ ± ω ϕ`, where the phase `ω` makes `ω c = |c|`; the
@@ -27,6 +29,8 @@ eigenvalues are `(1 ± |c|) / 2`. Its entropy is the binary entropy `h((1 + |c|)
 
 - `QuantumMechanics.isDensityOperator_tsum_smul_proj`: `∑ᵢ pᵢ |ψᵢ⟩⟨ψᵢ|` is a density operator.
 - `QuantumMechanics.vonNeumannEntropy_tsum_smul_proj`: its entropy is `∑ᵢ η(pᵢ)`.
+- `QuantumMechanics.IsDensityOperator.exists_tsum_smul_proj`: every density operator is such a
+  mixture, of countably many orthonormal pure states.
 - `QuantumMechanics.vonNeumannEntropy_mix_proj`: `S(½ |ψ⟩⟨ψ| + ½ |ϕ⟩⟨ϕ|) = h((1 + |⟨ψ, ϕ⟩|) / 2)`.
 
 ## iii. Table of contents
@@ -47,7 +51,9 @@ open InnerProductSpace Real QuantumMechanics.Wigner
 
 namespace QuantumMechanics
 
-variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
+universe u
+
+variable {E : Type u} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
 
 /-! ## A. Mixtures of orthonormal pure states -/
 
@@ -168,6 +174,37 @@ theorem vonNeumannEntropy_tsum_smul_proj (hψ : Orthonormal ℂ ψ) (hp0 : ∀ i
     hF (fun x => ENNReal.ofReal (negMulLog x)) (by simp)]
 
 end Orthonormal
+
+/-- Every density operator is a mixture `∑ᵢ pᵢ |ψᵢ⟩⟨ψᵢ|` of countably many orthonormal pure
+states: its eigenvectors with nonzero eigenvalue. -/
+theorem IsDensityOperator.exists_tsum_smul_proj {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) :
+    ∃ (ι : Type u) (_ : Countable ι) (ψ : ι → E) (p : ι → ℝ), Orthonormal ℂ ψ ∧
+      (∀ i, 0 ≤ p i) ∧ HasSum p 1 ∧ ∑' i, (p i : ℂ) • proj (ψ i) = ρ := by
+  set e := hρ.eigenbasis
+  set ev := hρ.eigenvalue
+  have he : IsEigenbasis ρ e ev := hρ.isEigenbasis
+  have hev0 : ∀ i, 0 ≤ ev i := fun i => (he.eigenvalue_mem_Icc hρ i).1
+  have hsum : HasSum ev 1 := by
+    have h1 := he.tsum_ofReal_eq_one hρ
+    have hs : Summable ev := (summable_iff_tsum_ofReal_ne_top hev0).mpr (by rw [h1]; simp)
+    rw [← ENNReal.ofReal_tsum_of_nonneg hev0 hs, ENNReal.ofReal_eq_one] at h1
+    exact h1 ▸ hs.hasSum
+  set s := Function.support ev
+  have hs : Countable s := hsum.summable.countable_support.to_subtype
+  set φ : s → E := fun i => e i
+  set w : s → ℝ := fun i => ev i
+  have hφ : Orthonormal ℂ φ := e.orthonormal.comp _ Subtype.val_injective
+  have hw : HasSum w 1 := (hasSum_subtype_iff_of_support_subset subset_rfl).mpr hsum
+  refine ⟨s, hs, φ, w, hφ, fun i => hev0 i, hw, ?_⟩
+  refine ContinuousLinearMap.ext_on
+    (Submodule.dense_iff_topologicalClosure_eq_top.mpr e.dense_span) ?_
+  rintro _ ⟨k, rfl⟩
+  by_cases hk : k ∈ s
+  · exact (tsum_smul_proj_apply_self hφ hw.summable ⟨k, hk⟩).trans (he.apply_eq k).symm
+  · have hk0 : ev k = 0 := by simpa [s] using hk
+    rw [tsum_smul_proj_apply_of_inner_eq_zero hφ hw.summable
+      fun i => e.orthonormal.2 fun h => hk (by rw [← h]; exact i.2), he.apply_eq k, hk0]
+    simp
 
 /-! ## B. Equal mixtures of two pure states -/
 
