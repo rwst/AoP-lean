@@ -5,6 +5,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
+public import ForMathlib.InformationTheory.EntropyVariation
 public import ForMathlib.InformationTheory.GibbsInequality
 public import ForMathlib.Probability.Distributions.Gaussian.Real
 
@@ -39,6 +40,16 @@ and for `(f, g) = (q, p)` equality holds exactly when `ρ` is that product of Ga
 then gives Theorem 2. The final remark of the brief, that CUP does not imply ZENT, holds too:
 a uniform distribution on two small squares far apart has negative entropy and large spread.
 
+The brief's own route is formalized as well. Along the variations `ρ (1 + t φ)`, `φ` bounded,
+the first variation of its Lagrangian `σ_q² σ_p² + λ₁ (∫ ρ - 1) + λ₂ (S_h[ρ] - S)` is the
+brief's `δL = ∫ δρ [(q - μ_q)² σ_p² + σ_q² (p - μ_p)² + λ₁ - λ₂ (log (h ρ) + 1)]`, with
+`δρ = ρ φ`. For `ρ > 0` a.e. it vanishes in every direction exactly when `ρ` is the product
+of Gaussians with the means and variances of `ρ`, `λ₂ = -2 σ_q² σ_p²` and
+`λ₁ = λ₂ (1 + log (ħ / (σ_q σ_p)))`. So the Gaussians are the only critical points; that
+they minimize comes from Gibbs' inequality. The variations `ρ φ` vanish where `ρ` does, so
+`ρ > 0` must be assumed: the entropy has no derivative in directions that move mass to
+`{ρ = 0}`.
+
 ## ii. Key results
 
 - `ClassicalUncertaintyPrinciple.entropy_uniform`,
@@ -55,6 +66,11 @@ a uniform distribution on two small squares far apart has negative entropy and l
 - `ClassicalUncertaintyPrinciple.hbar_div_exp_mul_exp_entropy_add_le`,
   `ClassicalUncertaintyPrinciple.hbar_div_exp_mul_exp_le_sd_mul_sd`: Theorem 2, eq. (5).
 - `ClassicalUncertaintyPrinciple.exists_not_lowerEntropicBound`: the final remark.
+- `ClassicalUncertaintyPrinciple.hasDerivAt_lagrangian`: the first variation `δL`.
+- `ClassicalUncertaintyPrinciple.hasDerivAt_lagrangian_zero_iff`: its critical points are
+  exactly the products of Gaussians.
+- `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_of_hasDerivAt_lagrangian`: at a critical point,
+  `σ_q σ_p = (ħ / e) e^{S_h[ρ]}`.
 
 ## iii. Table of contents
 
@@ -63,6 +79,7 @@ a uniform distribution on two small squares far apart has negative entropy and l
 - C. Canonical variables: Theorem 2, eq. (3)
 - D. Non-conjugate variables: Theorem 2, eq. (5)
 - E. CUP does not imply ZENT
+- F. The Lagrange computation
 -/
 
 open Real MeasureTheory ProbabilityTheory Set
@@ -718,5 +735,380 @@ theorem exists_not_lowerEntropicBound {h : ℝ} (hh : 0 < h) :
     exact log_neg (by norm_num) (by norm_num)
 
 end Converse
+
+/-! ### F. The Lagrange computation -/
+
+section Variation
+
+variable {X : Type*} [MeasurableSpace X] {μ : Measure X} {ρ f g φ : X → ℝ} {C c : ℝ}
+
+lemma integrable_mul_one_add (hρ : Integrable ρ μ) (hφ : AEStronglyMeasurable φ μ)
+    (hC : ∀ x, |φ x| ≤ C) (t : ℝ) : Integrable (fun x => ρ x * (1 + t * φ x)) μ :=
+  hρ.mul_bdd (aestronglyMeasurable_const.add (hφ.const_mul t)) (c := 1 + |t| * C)
+    (ae_of_all _ fun x => by
+      rw [Real.norm_eq_abs]
+      calc |1 + t * φ x| ≤ |1| + |t * φ x| := abs_add_le _ _
+        _ ≤ 1 + |t| * C := by
+          rw [abs_one, abs_mul]
+          exact add_le_add_right (mul_le_mul_of_nonneg_left (hC x) (abs_nonneg t)) 1)
+
+/-- The integral of `g` against the variation `ρ (1 + t φ)` is affine in `t`. -/
+lemma integral_mul_one_add (hg : Integrable (fun x => g x * ρ x) μ)
+    (hφ : AEStronglyMeasurable φ μ) (hC : ∀ x, |φ x| ≤ C) (t : ℝ) :
+    Integrable (fun x => g x * (ρ x * φ x)) μ ∧
+      Integrable (fun x => g x * (ρ x * (1 + t * φ x))) μ ∧
+      ∫ x, g x * (ρ x * (1 + t * φ x)) ∂μ =
+        ∫ x, g x * ρ x ∂μ + t * ∫ x, g x * (ρ x * φ x) ∂μ := by
+  have h1 : Integrable (fun x => g x * (ρ x * φ x)) μ :=
+    (hg.mul_bdd hφ (c := C) (ae_of_all _ fun x => (Real.norm_eq_abs _).trans_le (hC x))).congr
+      (ae_of_all _ fun x => by simp only; ring)
+  refine ⟨h1, (integrable_mul_one_add hg hφ hC t).congr
+    (ae_of_all _ fun x => by simp only; ring), ?_⟩
+  rw [← integral_const_mul, ← integral_add hg (h1.const_mul t)]
+  congr 1
+  ext x
+  ring
+
+/-- `∫ (f - m)² w = ∫ f² w - 2 m ∫ f w + m² ∫ w`. -/
+lemma integral_sub_sq_mul_eq {w : X → ℝ} (hw : Integrable w μ)
+    (hfw : Integrable (fun x => f x * w x) μ) (hf2w : Integrable (fun x => f x ^ 2 * w x) μ)
+    (m : ℝ) :
+    ∫ x, (f x - m) ^ 2 * w x ∂μ =
+      ∫ x, f x ^ 2 * w x ∂μ - 2 * m * ∫ x, f x * w x ∂μ + m ^ 2 * ∫ x, w x ∂μ := by
+  calc ∫ x, (f x - m) ^ 2 * w x ∂μ
+      = ∫ x, f x ^ 2 * w x - 2 * m * (f x * w x) + m ^ 2 * w x ∂μ := by
+        congr 1
+        ext x
+        ring
+    _ = _ := by
+        rw [integral_add, integral_sub, integral_const_mul, integral_const_mul]
+        all_goals first
+          | exact hf2w
+          | exact hfw.const_mul _
+          | exact hw.const_mul _
+          | exact hf2w.sub (hfw.const_mul _)
+
+/-- The first variation of the variance: `δσ_f² = ∫ δρ (f - E[f])²`, with `δρ = ρ φ`. The
+mean moves too, but its contribution `∫ (f - E[f]) ρ` vanishes. -/
+lemma hasDerivAt_var (hρ : IsEnsemble ρ μ) (hf : Measurable f)
+    (hf2 : Integrable (fun x => f x ^ 2 * ρ x) μ) (hφ : AEStronglyMeasurable φ μ)
+    (hC : ∀ x, |φ x| ≤ C) :
+    HasDerivAt (fun t => var (fun x => ρ x * (1 + t * φ x)) f μ)
+      (∫ x, (f x - mean ρ f μ) ^ 2 * (ρ x * φ x) ∂μ) 0 := by
+  have h1 : Integrable (fun x => 1 * ρ x) μ := by simpa using hρ.integrable
+  have hf1 := hρ.integrable_mul hf hf2
+  obtain ⟨i0, -, -⟩ := integral_mul_one_add h1 hφ hC 0
+  obtain ⟨j0, -, -⟩ := integral_mul_one_add hf1 hφ hC 0
+  obtain ⟨k0, -, -⟩ := integral_mul_one_add hf2 hφ hC 0
+  simp only [one_mul] at i0
+  have hvar : ∀ t, var (fun x => ρ x * (1 + t * φ x)) f μ =
+      (∫ x, f x ^ 2 * ρ x ∂μ + t * ∫ x, f x ^ 2 * (ρ x * φ x) ∂μ) -
+        2 * (mean ρ f μ + t * ∫ x, f x * (ρ x * φ x) ∂μ) ^ 2 +
+        (mean ρ f μ + t * ∫ x, f x * (ρ x * φ x) ∂μ) ^ 2 * (1 + t * ∫ x, ρ x * φ x ∂μ) := by
+    intro t
+    obtain ⟨-, i1, i2⟩ := integral_mul_one_add h1 hφ hC t
+    obtain ⟨-, j1, j2⟩ := integral_mul_one_add hf1 hφ hC t
+    obtain ⟨-, k1, k2⟩ := integral_mul_one_add hf2 hφ hC t
+    simp only [one_mul] at i1 i2
+    simp only [var, mean]
+    rw [integral_sub_sq_mul_eq i1 j1 k1, i2, j2, k2, hρ.integral_eq_one]
+    ring
+  have aff : ∀ a b : ℝ, HasDerivAt (fun t : ℝ => a + t * b) b 0 := fun a b => by
+    simpa using ((hasDerivAt_id (0 : ℝ)).mul_const b).const_add a
+  rw [show (fun t => var (fun x => ρ x * (1 + t * φ x)) f μ) = _ from funext hvar]
+  have hM := aff (mean ρ f μ) (∫ x, f x * (ρ x * φ x) ∂μ)
+  refine (((aff _ _).sub ((hM.pow 2).const_mul 2)).add ((hM.pow 2).mul (aff 1 _))).congr_deriv ?_
+  rw [integral_sub_sq_mul_eq i0 j0 k0]
+  simp only [zero_mul, add_zero, mul_one, Pi.pow_apply]
+  ring
+
+/-- `-y log (c y) = -y log y - y log c`. -/
+lemma neg_mul_log_mul (hc : c ≠ 0) (y : ℝ) : -(y * log (c * y)) = negMulLog y - log c * y := by
+  rcases eq_or_ne y 0 with rfl | hy
+  · simp
+  rw [log_mul hc hy, negMulLog]
+  ring
+
+lemma integrable_mul_log_mul_add_one (hc : c ≠ 0) (hρ : IsEnsemble ρ μ)
+    (hφ : AEStronglyMeasurable φ μ) (hC : ∀ x, |φ x| ≤ C) :
+    Integrable (fun x => ρ x * φ x * (log (c * ρ x) + 1)) μ := by
+  refine ((hρ.integrable.mul_const (log c + 1)).sub hρ.integrable_negMulLog).bdd_mul hφ
+    (c := C) (ae_of_all _ fun x => (Real.norm_eq_abs _).trans_le (hC x)) |>.congr
+    (ae_of_all _ fun x => ?_)
+  have := neg_mul_log_mul hc (ρ x)
+  simp only [negMulLog, Pi.sub_apply] at this ⊢
+  linear_combination φ x * this
+
+/-- The first variation of the entropy: `δS_c = -∫ δρ (log (c ρ) + 1)`, with `δρ = ρ φ`. -/
+lemma hasDerivAt_entropy (hc : 0 < c) (hρ : IsEnsemble ρ μ) (hφ : AEStronglyMeasurable φ μ)
+    (hC : ∀ x, |φ x| ≤ C) :
+    HasDerivAt (fun t => entropy c (fun x => ρ x * (1 + t * φ x)) μ)
+      (∫ x, -(ρ x * φ x * (log (c * ρ x) + 1)) ∂μ) 0 := by
+  have h1 : Integrable (fun x => 1 * ρ x) μ := by simpa using hρ.integrable
+  obtain ⟨i0, -, -⟩ := integral_mul_one_add h1 hφ hC 0
+  simp only [one_mul] at i0
+  have he : ∀ t, entropy c (fun x => ρ x * (1 + t * φ x)) μ =
+      ∫ x, negMulLog (ρ x * (1 + t * φ x)) ∂μ -
+        log c * (∫ x, ρ x ∂μ + t * ∫ x, ρ x * φ x ∂μ) := by
+    intro t
+    obtain ⟨-, i1, i2⟩ := integral_mul_one_add h1 hφ hC t
+    simp only [one_mul] at i1 i2
+    simp only [entropy, neg_mul_log_mul hc.ne']
+    rw [integral_sub (integrable_negMulLog_mul_one_add hρ.integrable hρ.integrable_negMulLog hφ
+      hC t) (i1.const_mul _), integral_const_mul, i2]
+  rw [show (fun t => entropy c (fun x => ρ x * (1 + t * φ x)) μ) = _ from funext he]
+  have hD := (hasDerivAt_integral_negMulLog_mul_one_add hρ.nonneg hρ.integrable
+    hρ.integrable_negMulLog hφ hC).sub
+      (((((hasDerivAt_id (0 : ℝ)).mul_const (∫ x, ρ x * φ x ∂μ)).const_add
+        (∫ x, ρ x ∂μ))).const_mul (log c))
+  refine hD.congr_deriv ?_
+  have hi : Integrable (fun x => -(ρ x * φ x * (log (ρ x) + 1))) μ := by
+    simpa [log_one] using (integrable_mul_log_mul_add_one one_ne_zero hρ hφ hC).neg
+  rw [one_mul, ← integral_const_mul, ← integral_sub hi (i0.const_mul _)]
+  congr 1
+  ext x
+  have := neg_mul_log_mul hc.ne' (ρ x)
+  simp only [negMulLog] at this
+  linear_combination (-φ x) * this
+
+end Variation
+
+section Lagrange
+
+variable {ρ φ : ℝ × ℝ → ℝ} {h l₁ l₂ S C : ℝ}
+
+/-- The brief's Lagrangian `L = σ_q² σ_p² + λ₁ (∫ ρ - 1) + λ₂ (S_h[ρ] - S)`, for multipliers
+`λ₁ = l₁`, `λ₂ = l₂`. -/
+def lagrangian (h l₁ l₂ S : ℝ) (ρ : ℝ × ℝ → ℝ) : ℝ :=
+  var ρ Prod.fst * var ρ Prod.snd + l₁ * ((∫ x, ρ x) - 1) + l₂ * (entropy h ρ - S)
+
+/-- The bracket of the brief's first variation, `δL = ∫ δρ · eulerLagrange`:
+`(q - μ_q)² σ_p² + σ_q² (p - μ_p)² + λ₁ - λ₂ (log (h ρ) + 1)`. -/
+def eulerLagrange (h l₁ l₂ : ℝ) (ρ : ℝ × ℝ → ℝ) (x : ℝ × ℝ) : ℝ :=
+  (x.1 - mean ρ Prod.fst) ^ 2 * var ρ Prod.snd + var ρ Prod.fst * (x.2 - mean ρ Prod.snd) ^ 2 +
+    l₁ - l₂ * (log (h * ρ x) + 1)
+
+/-- **The first variation of the Lagrangian.** Along `ρ (1 + t φ)`, with `δρ = ρ φ`,
+`δL = ∫ δρ [(q - μ_q)² σ_p² + σ_q² (p - μ_p)² + λ₁ - λ₂ (log (h ρ) + 1)]`. -/
+theorem hasDerivAt_lagrangian (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
+    (hφ : Measurable φ) (hC : ∀ x, |φ x| ≤ C) :
+    HasDerivAt (fun t => lagrangian h l₁ l₂ S fun x => ρ x * (1 + t * φ x))
+      (∫ x, ρ x * φ x * eulerLagrange h l₁ l₂ ρ x) 0 := by
+  have hφ' := hφ.aestronglyMeasurable (μ := volume)
+  have h1 : Integrable (fun x => 1 * ρ x) := by simpa using hρ.integrable
+  obtain ⟨i0, -, -⟩ := integral_mul_one_add h1 hφ' hC 0
+  simp only [one_mul] at i0
+  obtain ⟨iq, -, -⟩ := integral_mul_one_add
+    (hρ.integrable_sub_sq_mul measurable_fst hq (mean ρ Prod.fst)) hφ' hC 0
+  obtain ⟨ip, -, -⟩ := integral_mul_one_add
+    (hρ.integrable_sub_sq_mul measurable_snd hp (mean ρ Prod.snd)) hφ' hC 0
+  have hN : HasDerivAt (fun t => ∫ x, ρ x * (1 + t * φ x)) (∫ x, ρ x * φ x) 0 := by
+    have : (fun t => ∫ x, ρ x * (1 + t * φ x)) = fun t => (∫ x, ρ x) + t * ∫ x, ρ x * φ x :=
+      funext fun t => by simpa using (integral_mul_one_add h1 hφ' hC t).2.2
+    rw [this]
+    simpa using ((hasDerivAt_id (0 : ℝ)).mul_const (∫ x, ρ x * φ x)).const_add (∫ x, ρ x)
+  have hD := (((hasDerivAt_var hρ measurable_fst hq hφ' hC).mul
+    (hasDerivAt_var hρ measurable_snd hp hφ' hC)).add ((hN.sub_const 1).const_mul l₁)).add
+      (((hasDerivAt_entropy hh hρ hφ' hC).sub_const S).const_mul l₂)
+  refine hD.congr_deriv ?_
+  simp only [zero_mul, add_zero, mul_one]
+  have hl := integrable_mul_log_mul_add_one hh.ne' hρ hφ' hC
+  have e : ∫ x, ρ x * φ x * eulerLagrange h l₁ l₂ ρ x =
+      ∫ x, (x.1 - mean ρ Prod.fst) ^ 2 * (ρ x * φ x) * var ρ Prod.snd +
+        var ρ Prod.fst * ((x.2 - mean ρ Prod.snd) ^ 2 * (ρ x * φ x)) + l₁ * (ρ x * φ x) +
+        l₂ * -(ρ x * φ x * (log (h * ρ x) + 1)) := by
+    congr 1
+    ext x
+    simp only [eulerLagrange]
+    ring
+  rw [e, integral_add, integral_add, integral_add, integral_mul_const, integral_const_mul,
+    integral_const_mul, integral_const_mul]
+  all_goals first
+    | exact iq.mul_const _
+    | exact ip.const_mul _
+    | exact i0.const_mul _
+    | exact hl.neg.const_mul _
+    | exact (iq.mul_const _).add (ip.const_mul _)
+    | exact ((iq.mul_const _).add (ip.const_mul _)).add (i0.const_mul _)
+
+/-- The bracket of the first variation is integrable against `ρ`. -/
+lemma integrable_mul_eulerLagrange (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x) :
+    Integrable fun x => ρ x * eulerLagrange h l₁ l₂ ρ x := by
+  have hl := integrable_mul_log_mul_add_one hh.ne' hρ aestronglyMeasurable_const
+    (C := 1) (φ := fun _ => 1) (fun _ => by simp)
+  refine ((((hρ.integrable_sub_sq_mul measurable_fst hq (mean ρ Prod.fst)).mul_const
+    (var ρ Prod.snd)).add ((hρ.integrable_sub_sq_mul measurable_snd hp
+      (mean ρ Prod.snd)).const_mul (var ρ Prod.fst))).add (hρ.integrable.const_mul l₁)).sub
+        (hl.const_mul l₂) |>.congr (ae_of_all _ fun x => ?_)
+  simp only [eulerLagrange, Pi.add_apply, Pi.sub_apply, mul_one]
+  ring
+
+/-- At a product of Gaussians with `λ₂ = -2 σ_q² σ_p²`, the bracket of the first variation is
+the constant `λ₁ - λ₂ (1 + log (ħ / (σ_q σ_p)))`. -/
+lemma eulerLagrange_gaussProd (hh : 0 < h) {a b v w : ℝ} (hv : 0 < v) (hw : 0 < w)
+    (x : ℝ × ℝ) :
+    (x.1 - a) ^ 2 * w + v * (x.2 - b) ^ 2 + l₁ -
+        -2 * v * w * (log (h * gaussProd a v.toNNReal b w.toNNReal x) + 1) =
+      l₁ - -2 * v * w * (1 + log (hbar h / (√v * √w))) := by
+  have hv' : v.toNNReal ≠ 0 := by simpa using hv
+  have hw' : w.toNNReal ≠ 0 := by simpa using hw
+  rw [log_mul hh.ne' (gaussProd_pos hv' hw' x).ne', gaussProd,
+    log_mul (gaussianPDFReal_pos _ _ _ hv').ne' (gaussianPDFReal_pos _ _ _ hw').ne',
+    log_gaussianPDFReal hv', log_gaussianPDFReal hw', Real.coe_toNNReal _ hv.le,
+    Real.coe_toNNReal _ hw.le, hbar, log_div (by positivity) (by positivity),
+    log_div hh.ne' (by positivity), log_mul (sqrt_pos.2 hv).ne' (sqrt_pos.2 hw).ne',
+    log_sqrt hv.le, log_sqrt hw.le, log_mul (by positivity) hv.ne',
+    log_mul (by positivity) hw.ne']
+  field_simp
+  ring
+
+/-- `volume` on `ℝ²` is not finite. -/
+lemma not_isFiniteMeasure_volume : ¬ IsFiniteMeasure (volume : Measure (ℝ × ℝ)) := by
+  intro hfin
+  have h := measure_lt_top (volume : Measure (ℝ × ℝ)) univ
+  rw [← univ_prod_univ, Measure.volume_eq_prod, Measure.prod_prod, Real.volume_univ,
+    ENNReal.top_mul_top] at h
+  exact lt_irrefl _ h
+
+/-- **The Lagrange computation.** Let `ρ > 0` a.e. The first variation of the Lagrangian
+vanishes in every bounded direction exactly when `ρ` is the product of Gaussians with the
+means and variances of `ρ`, with multipliers `λ₂ = -2 σ_q² σ_p²` and
+`λ₁ = λ₂ (1 + log (ħ / (σ_q σ_p)))`. -/
+theorem hasDerivAt_lagrangian_zero_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
+    (hpos : ∀ᵐ x, 0 < ρ x) :
+    (∀ φ : ℝ × ℝ → ℝ, Measurable φ → (∃ C, ∀ x, |φ x| ≤ C) →
+        HasDerivAt (fun t => lagrangian h l₁ l₂ S fun x => ρ x * (1 + t * φ x)) 0 0) ↔
+      ρ =ᵐ[volume] gaussProd (mean ρ Prod.fst) (var ρ Prod.fst).toNNReal (mean ρ Prod.snd)
+          (var ρ Prod.snd).toNNReal ∧
+        l₂ = -2 * var ρ Prod.fst * var ρ Prod.snd ∧
+        l₁ = l₂ * (1 + log (hbar h / (sd ρ Prod.fst * sd ρ Prod.snd))) := by
+  have H := hyp_canonical hρ hq hp
+  have hv := H.var_pos_fst
+  have hw := H.var_pos_snd
+  have hcrit : (∀ φ : ℝ × ℝ → ℝ, Measurable φ → (∃ C, ∀ x, |φ x| ≤ C) →
+      HasDerivAt (fun t => lagrangian h l₁ l₂ S fun x => ρ x * (1 + t * φ x)) 0 0) ↔
+      ∀ φ : ℝ × ℝ → ℝ, Measurable φ → (∃ C, ∀ x, |φ x| ≤ C) →
+        ∫ x, ρ x * φ x * eulerLagrange h l₁ l₂ ρ x = 0 :=
+    forall_congr' fun φ => imp_congr_right fun hφ => imp_congr_right fun ⟨C, hC⟩ =>
+      ⟨fun H0 => (hasDerivAt_lagrangian hh hρ hq hp hφ hC).unique H0,
+        fun H0 => by
+          have := hasDerivAt_lagrangian (l₁ := l₁) (l₂ := l₂) (S := S) hh hρ hq hp hφ hC
+          rwa [H0] at this⟩
+  rw [hcrit]
+  set a := mean ρ Prod.fst
+  set b := mean ρ Prod.snd
+  set v := var ρ Prod.fst
+  set w := var ρ Prod.snd
+  constructor
+  · intro H0
+    -- the fundamental lemma of the calculus of variations, with indicators as directions
+    have hz : ∀ᵐ x, eulerLagrange h l₁ l₂ ρ x = 0 := by
+      have h0 : (fun x => ρ x * eulerLagrange h l₁ l₂ ρ x) =ᵐ[volume] 0 :=
+        (integrable_mul_eulerLagrange hh hρ hq hp).ae_eq_zero_of_forall_setIntegral_eq_zero
+          fun s hs _ => by
+            have := H0 (s.indicator 1) (measurable_one.indicator hs)
+              ⟨1, fun x => by by_cases hx : x ∈ s <;> simp [hx]⟩
+            rw [← integral_indicator hs, ← this]
+            congr 1
+            ext x
+            by_cases hx : x ∈ s <;> simp [hx]
+      filter_upwards [h0, hpos] with x hx hx'
+      exact (mul_eq_zero.1 hx).resolve_left hx'.ne'
+    rcases lt_trichotomy l₂ 0 with hl | hl | hl
+    · -- `λ₂ < 0`: `ρ` is a multiple of a product of Gaussians
+      have hv'0 : (-l₂ / (2 * w)).toNNReal ≠ 0 := by
+        rw [Ne, Real.toNNReal_eq_zero, not_le]; exact div_pos (by linarith) (by linarith)
+      have hw'0 : (-l₂ / (2 * v)).toNNReal ≠ 0 := by
+        rw [Ne, Real.toNNReal_eq_zero, not_le]; exact div_pos (by linarith) (by linarith)
+      set K := exp (l₁ / l₂ - 1 - log h + log (2 * π * (-l₂ / (2 * w))) / 2 +
+        log (2 * π * (-l₂ / (2 * v))) / 2)
+      have hK : ρ =ᵐ[volume] fun x =>
+          K * gaussProd a (-l₂ / (2 * w)).toNNReal b (-l₂ / (2 * v)).toNNReal x := by
+        filter_upwards [hz, hpos] with x hx hx'
+        refine log_injOn_pos hx' (mul_pos (exp_pos _) (gaussProd_pos hv'0 hw'0 x)) ?_
+        change (x.1 - a) ^ 2 * w + v * (x.2 - b) ^ 2 + l₁ - l₂ * (log (h * ρ x) + 1) = 0 at hx
+        rw [log_mul hh.ne' hx'.ne'] at hx
+        have hl0 := hl.ne
+        have hlogρ : log (ρ x) = ((x.1 - a) ^ 2 * w + v * (x.2 - b) ^ 2 + l₁) / l₂ - log h - 1 := by
+          field_simp
+          linarith
+        rw [hlogρ, log_mul (exp_pos _).ne' (gaussProd_pos hv'0 hw'0 x).ne', log_exp, gaussProd,
+          log_mul (gaussianPDFReal_pos _ _ _ hv'0).ne' (gaussianPDFReal_pos _ _ _ hw'0).ne',
+          log_gaussianPDFReal hv'0, log_gaussianPDFReal hw'0,
+          Real.coe_toNNReal _ (div_pos (by linarith) (by linarith)).le,
+          Real.coe_toNNReal _ (div_pos (by linarith) (by linarith)).le]
+        field_simp
+        ring
+      have hK1 : K = 1 := by
+        have := hρ.integral_eq_one
+        rwa [integral_congr_ae hK, integral_const_mul, integral_gaussProd hv'0 hw'0,
+          mul_one] at this
+      have hG : ρ =ᵐ[volume] gaussProd a (-l₂ / (2 * w)).toNNReal b (-l₂ / (2 * v)).toNNReal :=
+        hK.trans (ae_of_all _ fun x => by simp [hK1])
+      have hvv := var_fst_gaussProd hG hv'0 hw'0
+      rw [Real.coe_toNNReal _ (div_pos (by linarith) (by linarith)).le] at hvv
+      have hl₂ : l₂ = -2 * v * w := by
+        field_simp at hvv
+        linarith
+      have hww : -l₂ / (2 * v) = w := by
+        rw [hl₂]
+        field_simp
+      rw [← hvv, hww] at hG
+      refine ⟨hG, hl₂, ?_⟩
+      obtain ⟨x, hx, hxG⟩ := (hz.and hG).exists
+      change (x.1 - a) ^ 2 * w + v * (x.2 - b) ^ 2 + l₁ - l₂ * (log (h * ρ x) + 1) = 0 at hx
+      rw [hxG, hl₂, eulerLagrange_gaussProd hh hv hw] at hx
+      rw [hl₂, show sd ρ Prod.fst volume = √v from rfl, show sd ρ Prod.snd volume = √w from rfl]
+      linarith
+    · -- `λ₂ = 0`: the quadratic would be constant
+      have hc : Continuous fun x : ℝ × ℝ => (x.1 - a) ^ 2 * w + v * (x.2 - b) ^ 2 + l₁ := by
+        fun_prop
+      have he := (hc.ae_eq_iff_eq volume continuous_const).1
+        (hz.mono fun x hx => by simpa [eulerLagrange, hl] using hx)
+      have h1 := congrFun he (a, b)
+      have h2 := congrFun he (a + 1, b)
+      simp only [sub_self, add_sub_cancel_left] at h1 h2
+      nlinarith
+    · -- `λ₂ > 0`: `ρ` would be bounded below by a positive constant
+      have hlow : ∀ᵐ x, exp (l₁ / l₂ - 1) / h ≤ ρ x := by
+        filter_upwards [hz, hpos] with x hx hx'
+        simp only [eulerLagrange] at hx
+        have hQ : 0 ≤ (x.1 - a) ^ 2 * w + v * (x.2 - b) ^ 2 := by positivity
+        have hle : l₁ / l₂ - 1 ≤ log (h * ρ x) := by
+          rw [div_sub_one hl.ne', div_le_iff₀ hl]
+          nlinarith
+        rw [div_le_iff₀ hh, mul_comm]
+        calc exp (l₁ / l₂ - 1) ≤ exp (log (h * ρ x)) := exp_le_exp.2 hle
+          _ = h * ρ x := exp_log (mul_pos hh hx')
+      have hint : Integrable (fun _ : ℝ × ℝ => exp (l₁ / l₂ - 1) / h) :=
+        hρ.integrable.mono' aestronglyMeasurable_const (hlow.mono fun x hx => by
+          rwa [Real.norm_of_nonneg (by positivity)])
+      rcases integrable_const_iff.1 hint with h0 | hfin
+      · exact absurd h0 (by positivity)
+      · exact absurd hfin not_isFiniteMeasure_volume
+  · rintro ⟨hG, hl₂, hl₁⟩ φ - -
+    refine integral_eq_zero_of_ae (hG.mono fun x hx => ?_)
+    change ρ x * φ x * ((x.1 - a) ^ 2 * w + v * (x.2 - b) ^ 2 + l₁ -
+      l₂ * (log (h * ρ x) + 1)) = 0
+    rw [hx, hl₂, eulerLagrange_gaussProd hh hv hw, hl₁, hl₂,
+      show sd ρ Prod.fst volume = √v from rfl, show sd ρ Prod.snd volume = √w from rfl]
+    ring
+
+/-- **The brief's final line.** At a critical point of the Lagrangian,
+`σ_q σ_p = (ħ / e) e^{S_h[ρ]}`, i.e. `S_h[ρ] = log (2π e σ_q σ_p / h)`. -/
+theorem sd_mul_sd_eq_of_hasDerivAt_lagrangian (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
+    (hpos : ∀ᵐ x, 0 < ρ x)
+    (hcrit : ∀ φ : ℝ × ℝ → ℝ, Measurable φ → (∃ C, ∀ x, |φ x| ≤ C) →
+      HasDerivAt (fun t => lagrangian h l₁ l₂ S fun x => ρ x * (1 + t * φ x)) 0 0) :
+    sd ρ Prod.fst * sd ρ Prod.snd = hbar h / exp 1 * exp (entropy h ρ) := by
+  have H := hyp_canonical hρ hq hp
+  exact (sd_mul_sd_eq_iff hh hρ hq hp).2 ⟨_, _, _, _, H.var_toNNReal_ne_zero_fst,
+    H.var_toNNReal_ne_zero_snd, ((hasDerivAt_lagrangian_zero_iff hh hρ hq hp hpos).1 hcrit).1⟩
+
+end Lagrange
 
 end ClassicalUncertaintyPrinciple

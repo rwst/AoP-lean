@@ -54,14 +54,20 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple.lean}
 \item Library: \lean{ClassicalUncertaintyPrinciple}
-\item Imports: two new \lean{ForMathlib} files:\newline
-  \lean{ForMathlib/InformationTheory/GibbsInequality.lean}: Gibbs' inequality
+\item Imports: three new \lean{ForMathlib} files:
+  \begin{itemize}
+  \item \lean{ForMathlib/InformationTheory/GibbsInequality.lean}:\newline Gibbs' inequality
   $-\int\rho\log\rho \le -\int\rho\log G$ for a probability density $\rho$ and a positive $G$
   with $\int G \le 1$ (\lean{MeasureTheory.integral_negMulLog_le}), with equality only for
-  $\rho = G$ a.e.\ (\lean{MeasureTheory.ae_eq_of_integral_negMulLog_eq});\newline
-  \lean{ForMathlib/Probability/Distributions/Gaussian/Real.lean}: the logarithm of the Gaussian
-  density (\lean{log_gaussianPDFReal}), and its mean and variance as Lebesgue integrals
-  (\lean{integral_mul_gaussianPDFReal}, \lean{integral_sub_sq_mul_gaussianPDFReal}).
+  $\rho = G$ a.e.\ (\lean{MeasureTheory.ae_eq_of_integral_negMulLog_eq})
+  \item \lean{ForMathlib/Probability/Distributions/Gaussian/Real.lean}: the logarithm of the
+  Gaussian density (\lean{log_gaussianPDFReal}), and its mean and variance as Lebesgue integrals
+  (\lean{integral_mul_gaussianPDFReal}, \lean{integral_sub_sq_mul_gaussianPDFReal})
+  \item \lean{ForMathlib/InformationTheory/EntropyVariation.lean}:\newline the first variation
+  $\frac{d}{dt}\int -\rho_t\log\rho_t\,\big|_{t=0} = -\int\rho\varphi(\log\rho + 1)$ along
+  $\rho_t = \rho(1 + t\varphi)$ for bounded $\varphi$
+  (\lean{MeasureTheory.hasDerivAt_integral_negMulLog_mul_one_add}).
+  \end{itemize}
 \end{itemize}
 
 \paragraph{Setting.} An ensemble on a measure space $(X, \mu)$ (\lean{IsEnsemble}~$\rho$~$\mu$) is
@@ -77,7 +83,11 @@ $\mathbb R \times \mathbb R$ with Lebesgue measure and cell $h > 0$, and $\hbar 
 \end{itemize}
 Finite second moments of the variables are hypotheses of the theorems. The Poisson bracket
 \lean{poissonBracket}~$f$~$g$ is $\partial_q f\,\partial_p g - \partial_p f\,\partial_q g$, with
-Fréchet derivatives.
+Fréchet derivatives. For the brief's own proof,
+\lean{lagrangian}~$h$~$\lambda_1$~$\lambda_2$~$S$~$\rho$ is
+$\sigma_q^2\sigma_p^2 + \lambda_1(\int\rho - 1) + \lambda_2(S_h[\rho] - S)$, varied along
+$\rho(1 + t\varphi)$ with $\varphi$ bounded and measurable, so $\delta\rho = \rho\varphi$, and
+\lean{eulerLagrange} is the bracket of its first variation.
 
 \paragraph{Results.}
 \begin{center}
@@ -102,6 +112,15 @@ Theorem~2, eq.~(5), $\sigma_f\sigma_g \ge (\hbar/e)e^{E[\log|\{f,g\}|]}$ under Z
   $\sigma_f\sigma_g \ge (\hbar/e)e^{S_h[\rho] + E[\log|\{f,g\}|]}$:
   \lean{hbar_div_exp_mul_exp_entropy_add_le} \\
 Remark, CUP does not imply ZENT & \lean{exists_not_lowerEntropicBound} \\
+Theorem~2, proof: $\delta L = \int\delta\rho\,[(q - \mu_q)^2\sigma_p^2 + \sigma_q^2(p - \mu_p)^2
+  + \lambda_1 - \lambda_2\ln(h\rho) - \lambda_2]$ & \lean{hasDerivAt_lagrangian} \\
+Theorem~2, proof: the solution of $\delta L = 0$ is a product of two independent Gaussians &
+  \lean{hasDerivAt_lagrangian_zero_iff}: for $\rho > 0$ a.e., $\delta L = 0$ in every bounded
+  direction iff $\rho$ is a.e.\ the product of Gaussians with the means and variances of
+  $\rho$, $\lambda_2 = -2\sigma_q^2\sigma_p^2$ and
+  $\lambda_1 = \lambda_2(1 + \ln(\hbar/\sigma_q\sigma_p))$ \\
+Theorem~2, proof: then $\sigma_q\sigma_p = (\hbar/e)e^{S[\rho]}$ &
+  \lean{sd_mul_sd_eq_of_hasDerivAt_lagrangian} \\
 (used for both equations) the Gaussian bound on any measure space &
   \lean{Hyp.hbar_div_exp_mul_exp_le}: $\sigma_f\sigma_g \ge (\hbar/e)e^{S_h[\rho] + E[\log J]}$
   for a weight $J > 0$ that turns every product of Gaussians in $(f, g)$ into a subprobability
@@ -112,11 +131,19 @@ Remark, CUP does not imply ZENT & \lean{exists_not_lowerEntropicBound} \\
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
-\item The Lagrange-multiplier argument is replaced by Gibbs' inequality against the product
-  $G$ of Gaussians in $q$ and $p$ with the means and variances of $\rho$:
+\item The bound $\sigma_q\sigma_p \ge (\hbar/e)e^{S}$ is proved by Gibbs' inequality against
+  the product $G$ of Gaussians in $q$ and $p$ with the means and variances of $\rho$:
   $-\int\rho\log\rho \le -\int\rho\log G = \log(2\pi e\,\sigma_q\sigma_p)$. This proves that the
   Gaussian is a minimum, not only a critical point, and gives the equality case. Only the
-  marginal variances enter, so no covariance matrix is needed.
+  marginal variances enter, so no covariance matrix is needed. The brief's Lagrange computation
+  is formalized as well, as a second proof that the Gaussians are the critical points.
+\item In the Lagrange computation, $\delta\rho$ is $\rho\varphi$ with $\varphi$ bounded and
+  measurable, rather than arbitrary. Along these variations $\rho(1 + t\varphi)$ stays
+  nonnegative for small $t$ and the entropy is differentiable. The vanishing of $\delta L$ in
+  all of them gives the brief's equation for $\ln(h\rho)$ where $\rho > 0$. The brief solves it
+  for $\rho$ in one line; here the cases $\lambda_2 = 0$ (the quadratic would be constant) and
+  $\lambda_2 > 0$ ($\rho$ would be bounded below, so not integrable) are excluded, and
+  normalization and the variances of $\rho$ fix the constant and $\lambda_2$.
 \item Only one DOF is formalized: ZENT and CUP are stated for a density on $\mathbb R^2$ (the
   marginal of the DOF). Marginals of a density on $(\mathbb R^2)^n$ are not formalized;
   Corollary~1 is, for any $n$.
@@ -147,7 +174,11 @@ correct; the equality case is misstated.
   $\sigma_q\sigma_p = \hbar/e$ (\lean{sd_mul_sd_eq_hbar_div_exp_iff}).
 \item The Lagrange multipliers give only a stationary point of $\sigma_q^2\sigma_p^2$ at fixed
   entropy. They show neither that it is a minimum nor that a minimizer exists, which the proof
-  then uses (``the gaussian is the distribution that minimizes the uncertainty'').
+  then uses (``the gaussian is the distribution that minimizes the uncertainty''). The
+  computation also needs $\rho > 0$ almost everywhere, which the brief does not state: a
+  variation cannot move mass onto $\{\rho = 0\}$ while keeping the entropy differentiable,
+  since $-x\ln x$ has infinite slope at $0$. So $\delta L = 0$ says nothing about where $\rho$
+  vanishes (\lean{hasDerivAt_lagrangian_zero_iff} assumes $\rho > 0$ a.e.).
 \item In the derivation of eq.~(5), ``order preserving'' should be ``orientation preserving'';
   the last two lines of the chain of equalities are identical; and CUP writes
   $E[\ln\{f, g\}]$ where the abstract and eq.~(5) have $E[\ln|\{f, g\}|]$. The logarithm needs
