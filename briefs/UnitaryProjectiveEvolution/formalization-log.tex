@@ -69,8 +69,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item New \lean{ForMathlib} material:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Trace.lean} (the operator norm of a positive
   operator is at most its trace).
-\item For the remarks ``The qubit picture'' and ``The finite process is not unitary'', not
-  imported by the brief's file:\newline
+\item For the remarks ``The qubit picture'' and ``The finite process is not unitary'', and for
+  the thermodynamic analogy, not imported by the brief's file:\newline
   \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Cayley.lean} (the Cayley transform of
   $L$ and its Hilbert--Schmidt unitarity),\newline
   \lean{ForPhyslib/QuantumMechanics/Qubit/VonNeumannCayley.lean} (the resolvent of a qubit on
@@ -78,7 +78,11 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForMathlib/LinearAlgebra/Matrix/Cayley.lean} (the Cayley transform of a skew-symmetric
   matrix is special orthogonal),\newline
   \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Irreversible.lean} (purity decreases,
-  and the inverse $1 - \tau L$ is not positive).
+  and the inverse $1 - \tau L$ is not positive),\newline
+  \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/QuasiStatic.lean} (purity loss and
+  entropy production vanish in the quasi-static limit),\newline
+  \lean{ForMathlib/Analysis/SpecialFunctions/Pow/NegMulLog.lean} (the Shannon entropy is at most
+  $8n(1 - \sum_i p_i^2)^{3/4}$).
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a finite-dimensional complex Hilbert space, with density operators,
@@ -180,6 +184,16 @@ Sec.~5, $I - \tau L$ is not generally positive & \lean{not_nonneg_vonNeumannStep
 Sec.~5, ``generally'': unless $K$ is a multiple of the identity &
   \lean{exists_isPure_not_isPure_vonNeumannResolvent},
   \lean{forall_isPure_vonNeumannResolvent_iff}, \lean{vonNeumannResolvent_eq_self_of_eq_smul} \\
+Secs.~1 and~6, thermodynamic analogy: purity loss per step $O(\tau^2)$, in total $O(1/n)$ &
+  \lean{hsNormSq_vonNeumannGenerator_le}, \lean{hsNormSq_sub_hsNormSq_vonNeumannResolvent_le},
+  \lean{hsNormSq_sub_hsNormSq_vonNeumannResolvent_iterate_le},
+  \lean{tendsto_hsNormSq_sub_hsNormSq_vonNeumannResolvent_iterate},
+  \lean{tendsto_sum_one_sub_hsNormSq_vonNeumannResolvent_proj} \\
+Secs.~1 and~6, thermodynamic analogy: entropy production per step $O(\tau^{3/2})$, in total
+  $O(1/\sqrt n)$ &
+  \lean{Wigner.IsDensity.vonNeumannEntropy_le}, \lean{sum_negMulLog_le},
+  \lean{vonNeumannEntropy_vonNeumannResolvent_proj_le},
+  \lean{tendsto_sum_vonNeumannEntropy_vonNeumannResolvent_proj} \\
 \bottomrule
 \end{xltabular}
 
@@ -247,6 +261,22 @@ Sec.~5, ``generally'': unless $K$ is a multiple of the identity &
   expectation value in $v$ is $-1$. The proofs use neither the Cayley transform nor the spectral
   theorem. That reconstruction uses $(I + \tau L)^{-1}$, and that only the limit is unitary, is
   the reconstruction clause of DR-PROJ and Theorem~18 (\lean{drUnit_iff_drProj}).
+\item The thermodynamic analogy. The brief states no result linking the two limits; the
+  statements formalized are our reading of it. In thermodynamics a reversible quasi-static
+  process is a limit of irreversible equilibration steps whose entropy production is quadratic in
+  the step, so that the total vanishes. Here each step $\Psi_\tau$ is irreversible, with a purity
+  loss that is positive unless $L\rho = 0$ (previous item) and equals
+  $\tau^2\|L\Psi_\tau\rho\|_2^2 \le 4\|K\|^2\tau^2\|\rho\|_2^2$, with $\|A\|_2^2 =
+  \operatorname{tr}(A^\dagger A)$ the Hilbert--Schmidt norm. Over $n$ steps of duration $t/n$ the
+  purity loss of $(\Psi_{t/n})^n\rho$ is at most $4\|K\|^2t^2\|\rho\|_2^2/n$, and along any
+  sequence of pure states, as along a branch, the summed loss is at most $4\|K\|^2t^2/n$. For the
+  von Neumann entropy, $S(\sigma) \le 8d(1 - \operatorname{tr}\sigma^2)^{3/4}$ in dimension $d$,
+  from $-x\log x \le 8(x(1-x))^{3/4}$ on $[0,1]$. So one step on a pure state produces entropy at
+  most $8d\,a\sqrt a$ with $a = 2\|K\||\tau|$, and the entropy summed along any sequence of pure
+  states is at most $8d\,c\sqrt{c/n}$ with $c = 2\|K\||t|$. The bound carries the dimension
+  and the exponent $3/4$ is not optimal; the true order is $\tau^2\log(1/\tau)$ per step. The
+  purity version has neither defect. Only branches, with pure inputs, are covered: the entropy of
+  the unconditioned iterate $(\Psi_{t/n})^n\rho$ for mixed $\rho$ is not formalized.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No errors in the statements. Gaps and implicit points:

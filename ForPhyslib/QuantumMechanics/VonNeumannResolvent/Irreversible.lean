@@ -54,10 +54,11 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteS
 
 /-! ## A. The Hilbert–Schmidt norm -/
 
-/-- `tr (A† A) = ∑ ‖A bᵢ‖²` in an orthonormal basis. -/
-lemma re_trace_star_mul_self (A : E →L[ℂ] E) :
-    re (LinearMap.trace ℂ E ↑(star A * A)) = ∑ i, ‖A (stdOrthonormalBasis ℂ E i)‖ ^ 2 := by
-  rw [LinearMap.trace_eq_sum_inner _ (stdOrthonormalBasis ℂ E), re_sum]
+omit [FiniteDimensional ℂ E] in
+/-- `tr (A† A) = ∑ ‖A bᵢ‖²` in an orthonormal basis `b`. -/
+lemma re_trace_star_mul_self {ι : Type*} [Fintype ι] (A : E →L[ℂ] E)
+    (b : OrthonormalBasis ι ℂ E) : re (LinearMap.trace ℂ E ↑(star A * A)) = ∑ i, ‖A (b i)‖ ^ 2 := by
+  rw [LinearMap.trace_eq_sum_inner _ b, re_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [ContinuousLinearMap.coe_coe, mul_apply_eq_comp,
     ContinuousLinearMap.star_eq_adjoint, ContinuousLinearMap.adjoint_inner_right]
@@ -65,7 +66,7 @@ lemma re_trace_star_mul_self (A : E →L[ℂ] E) :
 
 lemma re_trace_star_mul_self_pos {A : E →L[ℂ] E} (hA : A ≠ 0) :
     0 < re (LinearMap.trace ℂ E ↑(star A * A)) := by
-  rw [re_trace_star_mul_self]
+  rw [re_trace_star_mul_self A (stdOrthonormalBasis ℂ E)]
   obtain ⟨i, hi⟩ : ∃ i, A (stdOrthonormalBasis ℂ E i) ≠ 0 := by
     by_contra! h
     exact hA (ContinuousLinearMap.coe_injective
