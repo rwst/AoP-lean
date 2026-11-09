@@ -6,7 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import ForMathlib.InformationTheory.EntropyVariation
-public import ForMathlib.InformationTheory.GibbsInequality
+public import ForMathlib.InformationTheory.MarginalEntropy
 public import ForMathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -50,6 +50,12 @@ they minimize comes from Gibbs' inequality. The variations `ρ φ` vanish where 
 `ρ > 0` must be assumed: the entropy has no derivative in directions that move mass to
 `{ρ = 0}`.
 
+For several DOFs, on the phase space `(ℝ²)ⁿ⁺¹`, ZENT is a condition on the marginal `ρᵢ` of each
+DOF `i`, the integral of `ρ` over the other DOFs. The marginal is again an ensemble: finite
+second moments of the other DOFs give it finite entropy, by Gibbs' inequality against a
+Gaussian in the integrated variables. Its means and variances are those of `qᵢ, pᵢ` under `ρ`,
+so Theorem 2 for one DOF applies to each `ρᵢ`.
+
 ## ii. Key results
 
 - `ClassicalUncertaintyPrinciple.entropy_uniform`,
@@ -71,6 +77,10 @@ they minimize comes from Gibbs' inequality. The variations `ρ φ` vanish where 
   exactly the products of Gaussians.
 - `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_of_hasDerivAt_lagrangian`: at a critical point,
   `σ_q σ_p = (ħ / e) e^{S_h[ρ]}`.
+- `ClassicalUncertaintyPrinciple.isEnsemble_marginal`: the marginal of a DOF is an ensemble.
+- `ClassicalUncertaintyPrinciple.uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace`,
+  `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_iff_marginal`: Theorem 2 for several
+  DOFs.
 
 ## iii. Table of contents
 
@@ -80,6 +90,7 @@ they minimize comes from Gibbs' inequality. The variations `ρ φ` vanish where 
 - D. Non-conjugate variables: Theorem 2, eq. (5)
 - E. CUP does not imply ZENT
 - F. The Lagrange computation
+- G. Several degrees of freedom
 -/
 
 open Real MeasureTheory ProbabilityTheory Set
@@ -1110,5 +1121,151 @@ theorem sd_mul_sd_eq_of_hasDerivAt_lagrangian (hh : 0 < h) (hρ : IsEnsemble ρ)
     H.var_toNNReal_ne_zero_snd, ((hasDerivAt_lagrangian_zero_iff hh hρ hq hp hpos).1 hcrit).1⟩
 
 end Lagrange
+
+/-! ### G. Several degrees of freedom -/
+
+section Reference
+
+variable {X : Type*} [MeasurableSpace X] {μ : Measure X} {ρ f g : X → ℝ}
+
+lemma log_gaussProd_zero_one (y : ℝ × ℝ) :
+    log (gaussProd 0 1 0 1 y) = -log (2 * π) - y.1 ^ 2 / 2 - y.2 ^ 2 / 2 := by
+  rw [gaussProd, log_mul (gaussianPDFReal_pos _ _ _ one_ne_zero).ne'
+    (gaussianPDFReal_pos _ _ _ one_ne_zero).ne', log_gaussianPDFReal one_ne_zero,
+    log_gaussianPDFReal one_ne_zero]
+  simp only [NNReal.coe_one, mul_one, sub_zero]
+  ring
+
+/-- With finite second moments of `f, g`, `ρ log G(f, g)` is integrable for the standard
+Gaussian `G`. -/
+lemma IsEnsemble.integrable_mul_log_gaussProd (hρ : IsEnsemble ρ μ)
+    (hf : Integrable (fun x => f x ^ 2 * ρ x) μ) (hg : Integrable (fun x => g x ^ 2 * ρ x) μ) :
+    Integrable (fun x => ρ x * log (gaussProd 0 1 0 1 (f x, g x))) μ := by
+  refine (((hρ.integrable.const_mul (-log (2 * π))).sub (hf.const_mul 2⁻¹)).sub
+    (hg.const_mul 2⁻¹)).congr (ae_of_all _ fun x => ?_)
+  simp only [Pi.sub_apply, log_gaussProd_zero_one]
+  ring
+
+end Reference
+
+section PhaseSpace
+
+variable {n : ℕ} {ρ : (Fin (n + 1) → ℝ × ℝ) → ℝ} {h : ℝ}
+
+/-- The marginal `ρᵢ(q, p)` of the DOF `i` on the phase space `(ℝ²)ⁿ⁺¹`: the integral of `ρ`
+over the other `n` DOFs. -/
+def marginal (ρ : (Fin (n + 1) → ℝ × ℝ) → ℝ) (i : Fin (n + 1)) (z : ℝ × ℝ) : ℝ :=
+  ∫ y : Fin n → ℝ × ℝ, ρ (Fin.insertNth i z y)
+
+lemma integrable_insertNth_iff {F : (Fin (n + 1) → ℝ × ℝ) → ℝ} (i : Fin (n + 1)) :
+    Integrable (fun z : (ℝ × ℝ) × (Fin n → ℝ × ℝ) => F (Fin.insertNth i z.1 z.2))
+      (volume.prod volume) ↔ Integrable F :=
+  (volume_preserving_piFinSuccAbove (fun _ => ℝ × ℝ) i).symm.integrable_comp_emb
+    (MeasurableEquiv.measurableEmbedding _)
+
+lemma integral_insertNth (F : (Fin (n + 1) → ℝ × ℝ) → ℝ) (i : Fin (n + 1)) :
+    ∫ z : (ℝ × ℝ) × (Fin n → ℝ × ℝ), F (Fin.insertNth i z.1 z.2) ∂(volume.prod volume) =
+      ∫ x, F x :=
+  (volume_preserving_piFinSuccAbove (fun _ => ℝ × ℝ) i).symm.integral_comp' F
+
+/-- Moments of the marginal are moments of `ρ`. -/
+lemma integral_mul_marginal {F : ℝ × ℝ → ℝ} (i : Fin (n + 1))
+    (hF : Integrable fun x => F (x i) * ρ x) :
+    Integrable (fun z => F z * marginal ρ i z) ∧
+      ∫ z, F z * marginal ρ i z = ∫ x, F (x i) * ρ x := by
+  have hw : Integrable (fun w : (ℝ × ℝ) × (Fin n → ℝ × ℝ) =>
+      F w.1 * ρ (Fin.insertNth i w.1 w.2)) (volume.prod volume) := by
+    simpa only [Fin.insertNth_apply_same] using
+      (integrable_insertNth_iff (F := fun x => F (x i) * ρ x) i).2 hF
+  refine ⟨integrable_mul_integral_prod hw, (integral_mul_integral_prod hw).trans ?_⟩
+  simpa only [Fin.insertNth_apply_same] using integral_insertNth (fun x => F (x i) * ρ x) i
+
+/-- The marginal of a DOF is an ensemble: the joint finite entropy and the finite second
+moments of the other DOFs give it finite entropy. -/
+theorem isEnsemble_marginal (hρ : IsEnsemble ρ)
+    (hq : ∀ j, Integrable fun x => (x j).1 ^ 2 * ρ x)
+    (hp : ∀ j, Integrable fun x => (x j).2 ^ 2 * ρ x) (i : Fin (n + 1)) :
+    IsEnsemble (marginal ρ i) where
+  nonneg z := integral_nonneg fun y => hρ.nonneg _
+  integral_eq_one := by
+    have := (integral_mul_marginal i (F := fun _ => 1) (by simpa using hρ.integrable)).2
+    simpa [hρ.integral_eq_one] using this
+  integrable_negMulLog := by
+    have hG : ∀ k, Integrable fun x => ρ x * log (gaussProd 0 1 0 1 (x k)) := fun k => by
+      simpa using hρ.integrable_mul_log_gaussProd (hq k) (hp k)
+    have hG0 : ∀ y, 0 < gaussProd 0 1 0 1 y := gaussProd_pos one_ne_zero one_ne_zero
+    refine integrable_negMulLog_integral_prod (ρ := fun w => ρ (Fin.insertNth i w.1 w.2))
+      (fun z => hρ.nonneg _) ((integrable_insertNth_iff i).2 hρ.integrable)
+      ((integrable_insertNth_iff (F := fun x => negMulLog (ρ x)) i).2 hρ.integrable_negMulLog)
+      (γ := fun y => ∏ j, gaussProd 0 1 0 1 (y j))
+      (fun y => Finset.prod_pos fun j _ => hG0 _)
+      (Integrable.fintype_prod fun _ => integrable_gaussProd 0 0 1 1) ?_ ?_ hG0
+      (integrable_gaussProd 0 0 1 1) ?_
+    · rw [integral_fintype_prod_volume_eq_prod]
+      simp [integral_gaussProd one_ne_zero one_ne_zero]
+    · refine (integrable_finsetSum Finset.univ fun j _ =>
+        (integrable_insertNth_iff i).2 (hG (i.succAbove j))).congr (ae_of_all _ fun z => ?_)
+      simp only [Fin.insertNth_apply_succAbove]
+      rw [Real.log_prod fun j _ => (hG0 _).ne', Finset.mul_sum]
+    · simpa only [Fin.insertNth_apply_same] using (integrable_insertNth_iff i).2 (hG i)
+
+variable {u : ℝ × ℝ → ℝ}
+
+lemma mean_marginal (hρ : IsEnsemble ρ) (hu : Measurable u) (i : Fin (n + 1))
+    (hu2 : Integrable fun x => u (x i) ^ 2 * ρ x) :
+    mean (marginal ρ i) u = mean ρ fun x => u (x i) :=
+  (integral_mul_marginal i (hρ.integrable_mul (hu.comp (measurable_pi_apply i)) hu2)).2
+
+lemma var_marginal (hρ : IsEnsemble ρ) (hu : Measurable u) (i : Fin (n + 1))
+    (hu2 : Integrable fun x => u (x i) ^ 2 * ρ x) :
+    var (marginal ρ i) u = var ρ fun x => u (x i) := by
+  have hm := mean_marginal hρ hu i hu2
+  set a := mean ρ fun x => u (x i)
+  have := (integral_mul_marginal i (F := fun z => (u z - a) ^ 2)
+    (hρ.integrable_sub_sq_mul (hu.comp (measurable_pi_apply i)) hu2 a)).2
+  rw [var, var, hm]
+  exact this
+
+lemma sd_marginal (hρ : IsEnsemble ρ) (hu : Measurable u) (i : Fin (n + 1))
+    (hu2 : Integrable fun x => u (x i) ^ 2 * ρ x) :
+    sd (marginal ρ i) u = sd ρ fun x => u (x i) := by
+  rw [sd, sd, var_marginal hρ hu i hu2]
+
+/-- Condition ZENT on the phase space `(ℝ²)ⁿ⁺¹`: the marginal of every DOF has
+`S_h[ρᵢ] ≥ 0`. -/
+def LowerEntropicBoundPhaseSpace (h : ℝ) (ρ : (Fin (n + 1) → ℝ × ℝ) → ℝ) : Prop :=
+  ∀ i, LowerEntropicBound h (marginal ρ i)
+
+/-- Condition CUP on the phase space `(ℝ²)ⁿ⁺¹`: `σ_{qᵢ} σ_{pᵢ} ≥ ħ / e` for every DOF `i`. -/
+def UncertaintyPrinciplePhaseSpace (h : ℝ) (ρ : (Fin (n + 1) → ℝ × ℝ) → ℝ) : Prop :=
+  ∀ i, hbar h / exp 1 ≤ sd ρ (fun x => (x i).1) * sd ρ fun x => (x i).2
+
+/-- **Theorem 2 for `n + 1` DOFs.** ZENT implies CUP. -/
+theorem uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace (hh : 0 < h)
+    (hρ : IsEnsemble ρ) (hq : ∀ j, Integrable fun x => (x j).1 ^ 2 * ρ x)
+    (hp : ∀ j, Integrable fun x => (x j).2 ^ 2 * ρ x) (hZ : LowerEntropicBoundPhaseSpace h ρ) :
+    UncertaintyPrinciplePhaseSpace h ρ := fun i => by
+  have := uncertaintyPrinciple_of_lowerEntropicBound hh (isEnsemble_marginal hρ hq hp i)
+    (integral_mul_marginal i (F := fun z => z.1 ^ 2) (hq i)).1
+    (integral_mul_marginal i (F := fun z => z.2 ^ 2) (hp i)).1 (hZ i)
+  rwa [UncertaintyPrinciple, sd_marginal hρ measurable_fst i (hq i),
+    sd_marginal hρ measurable_snd i (hp i)] at this
+
+/-- **Theorem 2 for `n + 1` DOFs, equality case.** Under ZENT for the DOF `i`,
+`σ_{qᵢ} σ_{pᵢ} = ħ / e` exactly when its marginal is a product of Gaussians in `qᵢ` and `pᵢ`
+with `σ_{qᵢ} σ_{pᵢ} = ħ / e`. -/
+theorem sd_mul_sd_eq_hbar_div_exp_iff_marginal (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : ∀ j, Integrable fun x => (x j).1 ^ 2 * ρ x)
+    (hp : ∀ j, Integrable fun x => (x j).2 ^ 2 * ρ x) (i : Fin (n + 1))
+    (hZ : LowerEntropicBound h (marginal ρ i)) :
+    sd ρ (fun x => (x i).1) * sd ρ (fun x => (x i).2) = hbar h / exp 1 ↔
+      ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧ √(v : ℝ) * √(w : ℝ) = hbar h / exp 1 ∧
+        marginal ρ i =ᵐ[volume] gaussProd a v b w := by
+  rw [← sd_marginal hρ measurable_fst i (hq i), ← sd_marginal hρ measurable_snd i (hp i)]
+  exact sd_mul_sd_eq_hbar_div_exp_iff hh (isEnsemble_marginal hρ hq hp i)
+    (integral_mul_marginal i (F := fun z => z.1 ^ 2) (hq i)).1
+    (integral_mul_marginal i (F := fun z => z.2 ^ 2) (hp i)).1 hZ
+
+end PhaseSpace
 
 end ClassicalUncertaintyPrinciple

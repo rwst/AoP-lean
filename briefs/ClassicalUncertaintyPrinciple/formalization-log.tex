@@ -54,7 +54,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple.lean}
 \item Library: \lean{ClassicalUncertaintyPrinciple}
-\item Imports: three new \lean{ForMathlib} files:
+\item Imports: four new \lean{ForMathlib} files (the first through the last):
   \begin{itemize}
   \item \lean{ForMathlib/InformationTheory/GibbsInequality.lean}:\newline Gibbs' inequality
   $-\int\rho\log\rho \le -\int\rho\log G$ for a probability density $\rho$ and a positive $G$
@@ -66,7 +66,13 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \item \lean{ForMathlib/InformationTheory/EntropyVariation.lean}:\newline the first variation
   $\frac{d}{dt}\int -\rho_t\log\rho_t\,\big|_{t=0} = -\int\rho\varphi(\log\rho + 1)$ along
   $\rho_t = \rho(1 + t\varphi)$ for bounded $\varphi$
-  (\lean{MeasureTheory.hasDerivAt_integral_negMulLog_mul_one_add}).
+  (\lean{MeasureTheory.hasDerivAt_integral_negMulLog_mul_one_add})
+  \item \lean{ForMathlib/InformationTheory/MarginalEntropy.lean}:\newline the marginal
+  $\rho_X(x) = \int\rho(x, y)\,dy$ of a density of finite entropy on $X \times Y$ has finite
+  entropy if $\rho\log\gamma(y)$ and $\rho\log\gamma'(x)$ are integrable for positive $\gamma$,
+  $\gamma'$ of integral at most~$1$
+  (\lean{MeasureTheory.integrable_negMulLog_integral_prod}), and its moments are moments of
+  $\rho$ (\lean{MeasureTheory.integral_mul_integral_prod}).
   \end{itemize}
 \end{itemize}
 
@@ -89,6 +95,13 @@ $\sigma_q^2\sigma_p^2 + \lambda_1(\int\rho - 1) + \lambda_2(S_h[\rho] - S)$, var
 $\rho(1 + t\varphi)$ with $\varphi$ bounded and measurable, so $\delta\rho = \rho\varphi$, and
 \lean{eulerLagrange} is the bracket of its first variation.
 
+For several DOFs the phase space is $(\mathbb R^2)^{n+1}$ (\lean{Fin}~$(n + 1) \to \mathbb R
+\times \mathbb R$), and DOF $i$ is the pair $(q_i, p_i)$ of coordinates $i$. Its marginal
+\lean{marginal}~$\rho$~$i$ is $\rho$ integrated over the other $n$ DOFs. ZENT and CUP become
+\lean{LowerEntropicBoundPhaseSpace}~$h$~$\rho$ ($S_h[\rho_i] \ge 0$ for every $i$) and
+\lean{UncertaintyPrinciplePhaseSpace}~$h$~$\rho$ ($\sigma_{q_i}\sigma_{p_i} \ge \hbar/e$ for
+every $i$, with $\sigma$ under $\rho$).
+
 \paragraph{Results.}
 \begin{center}
 \begin{tabularx}{\textwidth}{@{}BL@{}}
@@ -98,13 +111,21 @@ Brief & Lean \\
 Corollary~1, $S[\rho_U] = \log(\mu(U)/h^n)$ & \lean{entropy_uniform} (any measure space, any
   cell $c > 0$); \lean{entropy_uniform_phaseSpace} (phase space $(\mathbb R^2)^n$, $c = h^n$) \\
 Corollary~1, $S[\rho_U] = 0$ iff $\mu(U) = h^n$ & \lean{entropy_uniform_eq_zero_iff} \\
-ZENT, CUP & \lean{LowerEntropicBound}, \lean{UncertaintyPrinciple} \\
+ZENT, CUP & \lean{LowerEntropicBound}, \lean{UncertaintyPrinciple} (one DOF);
+  \lean{LowerEntropicBoundPhaseSpace}, \lean{UncertaintyPrinciplePhaseSpace} (each DOF of
+  $(\mathbb R^2)^{n+1}$) \\
 Theorem~2, proof: a product of two independent Gaussians minimizes $\sigma_q\sigma_p$ at given
   entropy, and then $\sigma_q\sigma_p = (\hbar/e)e^{S}$ &
   \lean{hbar_div_exp_mul_exp_entropy_le}: $\sigma_q\sigma_p \ge (\hbar/e)e^{S_h[\rho]}$ for every
   ensemble; \lean{sd_mul_sd_eq_iff}: equality iff $\rho$ is a.e.\ a product of Gaussians \\
-Theorem~2, eq.~(3), ZENT implies CUP & \lean{uncertaintyPrinciple_of_lowerEntropicBound} \\
-CUP, equality case & \lean{sd_mul_sd_eq_hbar_div_exp_iff}, corrected (see ``Problems found'') \\
+Theorem~2, eq.~(3), ZENT implies CUP & \lean{uncertaintyPrinciple_of_lowerEntropicBound};
+  for several DOFs
+  \lean{uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace} \\
+CUP, equality case & \lean{sd_mul_sd_eq_hbar_div_exp_iff}, corrected (see ``Problems found'');
+  for several DOFs \lean{sd_mul_sd_eq_hbar_div_exp_iff_marginal} \\
+ZENT, ``$\rho(q, p)$ is the marginal over the DOF'' & \lean{isEnsemble_marginal}: the marginal
+  is an ensemble; \lean{mean_marginal}, \lean{var_marginal}: with the means and variances of
+  $q_i, p_i$ under $\rho$ \\
 Eq.~(4), the Poisson bracket is the Jacobian determinant & \lean{det_prod};
   \lean{poissonBracket_fst_snd}: $\{q, p\} = 1$ \\
 Theorem~2, eq.~(5), $\sigma_f\sigma_g \ge (\hbar/e)e^{E[\log|\{f,g\}|]}$ under ZENT &
@@ -144,9 +165,14 @@ Theorem~2, proof: then $\sigma_q\sigma_p = (\hbar/e)e^{S[\rho]}$ &
   for $\rho$ in one line; here the cases $\lambda_2 = 0$ (the quadratic would be constant) and
   $\lambda_2 > 0$ ($\rho$ would be bounded below, so not integrable) are excluded, and
   normalization and the variances of $\rho$ fix the constant and $\lambda_2$.
-\item Only one DOF is formalized: ZENT and CUP are stated for a density on $\mathbb R^2$ (the
-  marginal of the DOF). Marginals of a density on $(\mathbb R^2)^n$ are not formalized;
-  Corollary~1 is, for any $n$.
+\item For several DOFs, ZENT and CUP are stated on $(\mathbb R^2)^{n+1}$, so there is at least
+  one DOF. An ``independent DOF'' is read as a pair $(q_i, p_i)$ of coordinates; DOFs in other
+  canonical coordinates, after a change of variables that mixes the pairs, are not considered.
+  The marginal of each DOF is shown to be an ensemble with finite second moments. Its finite
+  entropy comes from Gibbs' inequality in the integrated variables, against a standard Gaussian
+  in the other DOFs, and from the pointwise bound against a standard Gaussian in the DOF
+  itself. Theorem~2 for one DOF then applies to each marginal. Corollary~1 is formalized for
+  any $n$.
 \item The hypotheses that the brief leaves implicit are explicit: $\rho \ge 0$, $\int\rho = 1$,
   finite entropy and finite second moments. Positive variances are proved, not assumed: an
   ensemble of finite entropy cannot have zero variance in any variable, since Gibbs' inequality
@@ -184,7 +210,12 @@ correct; the equality case is misstated.
   $E[\ln\{f, g\}]$ where the abstract and eq.~(5) have $E[\ln|\{f, g\}|]$. The logarithm needs
   the absolute value when $\{f, g\} < 0$.
 \item The brief does not state that the entropy and the second moments must be finite. Without
-  this $S[\rho]$ or $\sigma$ may be undefined.
+  this $S[\rho]$ or $\sigma$ may be undefined. For several DOFs, finite entropy of $\rho$ does
+  not even give its marginals finite entropy (not formalized): for any probability density
+  $\rho_1$ on $\mathbb R$, the indicator of $\{(x, y) : |y| < \rho_1(x)/2\}$ has entropy $0$
+  (for $h = 1$) and marginal $\rho_1$, whose entropy can be $-\infty$. Here the second moment
+  of $y$ is infinite; finite second moments of all DOFs exclude this
+  (\lean{isEnsemble_marginal}).
 \end{itemize}
 
 \end{document}
