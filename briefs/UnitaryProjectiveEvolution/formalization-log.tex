@@ -201,7 +201,7 @@ Secs.~1 and~6, thermodynamic analogy: entropy production per step $O(\tau^{3/2})
 \begin{itemize}
 \item Finite dimension only; the brief has a separable Hilbert space. Every generator is bounded,
   so the cutoffs $H_\tau = f_\tau(H)$, eqs.~(22)--(25) and the remark on unbounded generators are
-  not needed and not formalized.
+  not needed here; Sec.~\ref{sec:unitary-projective-any-dim} formalizes them.
 \item Norms are operator norms, not trace norms. Density operators have operator norm at most one,
   so the bounds of Proposition~13 are uniform over density operators as in the brief, with the
   explicit constants $8$ and $48$. In finite dimension trace-norm convergence follows, but a
@@ -326,7 +326,7 @@ Secs.~1 and~6, thermodynamic analogy: entropy production per step $O(\tau^{3/2})
 \subsection{Hilbert spaces of any dimension}\label{sec:unitary-projective-any-dim}
 
 This subsection covers Definition~1, Propositions~2 and~13, eq.~(20) and Theorem~18 in both
-directions, with an unbounded generator.
+directions, with an unbounded generator, and the remark ``Unbounded generators'' of Sec.~5.
 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
@@ -340,6 +340,20 @@ directions, with an unbounded generator.
   and \lean{SchroedingerEvolution.InfiniteDimensional} (for \lean{IsEvolution}, \lean{DrUnit},
   \lean{DrEv} and \lean{DrEv.drUnit}; it brings \lean{StronglyContinuousUnitaryGroup} and
   \lean{AffineOnDensityOperators})
+\item For the remark ``Unbounded generators'': the file \lean{UnboundedResolvent.lean} next to
+  \lean{InfiniteDimensional.lean}, importing \lean{UnitaryProjectiveEvolution.InfiniteDimensional} and
+  \lean{ForPhyslib.QuantumMechanics.VonNeumannResolvent.Strong}
+\item New file \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Strong.lean}: the resolvent
+  of a strongly continuous unitary group as the Laplace integral taken pointwise on vectors, its
+  agreement with the Laplace resolvent of a norm-continuous group, positivity, preservation of
+  density operators, the derivative of $u \mapsto T_u\Psi_\tau\rho\,x$ at zero, the eigenbasis
+  decomposition, the largest outcome on a pure state with a Lipschitz orbit, Lipschitz orbits
+  on the domain of the generator, and complete positivity.
+\item New file \lean{ForPhyslib/ProbabilisticTheory/CStarAlgebra/Stinespring/Kernel.lean}: a
+  $k \times k$ matrix $M$ of operators is positive exactly when
+  $\sum_{ij}\braket{x_i|M_{ij}x_j} \ge 0$ for every $x \in E^k$. It extends PhyslibAlpha's block
+  operator \lean{blockMatrixMap}, an injective $*$-homomorphism, and an injective $*$-homomorphism
+  of C$^*$-algebras is an order embedding (Mathlib).
 \item New file \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Laplace.lean}: the resolvent
   of a bounded generator in any dimension as the Laplace integral of the unitary channel, its
   inverse identities, complete positivity, preservation of density operators, its agreement with
@@ -467,6 +481,22 @@ Eq.~(29), composition for durations of rational ratio & \lean{IsProjectiveLimit.
 The evolution structure from DR-PROJ & \lean{IsProjectiveLimit.isEvolution}, assuming
   $\Phi_0 = I$ and composition for durations of irrational ratio \\
 Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero_and_map_add} \\
+\midrule
+Sec.~5, the resolvent of an unbounded generator, used directly & \lean{resolvent},
+  \lean{resolvent_eq_laplaceResolvent} (in \lean{StronglyContinuousUnitaryGroup}) \\
+It is positive and trace preserving & \lean{resolvent_nonneg},
+  \lean{isDensityOperator_resolvent} \\
+It is completely positive & \lean{exists_completelyPositiveMap_resolvent},
+  \lean{resolventCP}, \lean{cstarMatrix_nonneg_iff} \\
+Proposition~2 for it, eq.~(11) without a domain & \lean{isStateAdaptiveProjective_resolvent},
+  \lean{exists_hilbertBasis_resolvent}, \lean{inner_apply_eq_of_resolvent_apply},
+  \lean{hasDerivAt_conj_resolvent_apply} \\
+Its resolvent exponential formula & \lean{tendsto_resolvent_iterate} \\
+Eq.~(26) for it, on the core & \lean{infinitesimal_resolvent},
+  \lean{resolvent_eq_laplaceResolvent_cutoffGroup}, \lean{resolvent_iterate_eq} \\
+Perfect prediction on the domain of $H$, failure at most $8\|H\psi\|^2t^2/n$ &
+  \lean{perfectPrediction_resolvent}, \lean{perfectPrediction_resolvent_of_mem_domain},
+  \lean{exists_max_resolvent_proj}, \lean{norm_apply_sub_le_of_mem_domain} \\
 \bottomrule
 \end{xltabular}
 
@@ -560,8 +590,45 @@ Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero_and
 \item Complete positivity is Mathlib's \lean{CompletelyPositiveMap}: $\Psi_\tau \otimes
   \mathrm{id}$ is positive on the $k \times k$ matrices of operators for every $k$. It holds
   because every unitary channel is a $*$-automorphism, and an integral of completely positive
-  maps is completely positive, since the positive operators form a closed cone. The remark on the
-  resolvent of an unbounded generator is not formalized.
+  maps is completely positive, since the positive operators form a closed cone.
+\item The remark ``Unbounded generators'' is read as three claims about
+  $\Psi_\tau = \int_0^\infty e^{-s}T_{\tau s}\,ds$ for the group $U_t$ itself, with no cutoff. In
+  operator norm $s \mapsto T_s$ is now only strongly continuous, so the integral is taken pointwise,
+  $(\Psi_\tau\rho)x = \int_0^\infty e^{-s}T_{\tau s}\rho\,x\,ds$, a Bochner integral in $E$. On a
+  positive trace-class $\rho$ the integrand is still continuous in $\mathcal{S}_1$, so the
+  trace argument above carries over.
+  \begin{itemize}
+  \item ``A completely positive trace-preserving map'': formalized, together with Proposition~2
+    for every $\tau > 0$. \lean{CompletelyPositiveMap.integral} needs an integral in operator
+    norm, so complete positivity takes another route. A $k \times k$ matrix $M$ of operators is
+    positive exactly when $\sum_{ij}\braket{x_i|M_{ij}x_j} \ge 0$ for every $x \in E^k$. For the
+    matrix of the $\Psi_\tau M_{ij}$ this sum is
+    $\int_0^\infty e^{-s}\sum_{ij}\braket{x_i|T_{\tau s}M_{ij}\,x_j}\,ds$, and the integrand is
+    nonnegative since $T_{\tau s}$ is completely positive.
+  \item Eq.~(11) has no meaning when $L\sigma$ is not an operator. It is replaced by the
+    derivative of $u \mapsto T_u\sigma\,x$ at $0$, which is $(\sigma x - \rho x)/\tau$ by the shifted
+    Laplace integral $T_u\sigma\,x = e^{u/\tau}(\sigma x - \int_0^{u/\tau}e^{-s}T_{\tau s}\rho\,x\,ds)$.
+    For an eigenvector $\sigma b = \mu b$, $\braket{b|(T_u\sigma - \sigma)U_ub} = 0$ exactly, so
+    $\braket{b|T_u\sigma\,b} - \mu$ is $O(u)\cdot o(1)$, and comparing derivatives gives
+    $\braket{b|\rho\,b} = \mu$.
+  \item ``The resolvent exponential formula'': $(\Psi_{t/n})^n\rho \to T_t\rho$ in trace norm for
+    every density operator. On the core of eq.~(26), $\Psi_\tau$ is the resolvent of the bounded
+    group $W^{(m)}$ for every $\tau$ and keeps the core, since $P_m$ commutes with $W^{(m)}$. So the
+    bounded formula applies there, and trace-norm contraction extends it.
+  \item ``Only to ensure that the total probability \ldots\ tends to one \ldots\ including states
+    outside the domain'': prediction is perfect from every pure state $P_\psi$ with $\psi$ in the
+    domain of $H$. The hypothesis used is a Lipschitz orbit, $\|U_u\psi - \psi\| \le C|u|$, which
+    holds with $C = \|H\psi\|$ on the domain of the forward Hamiltonian. Testing $\Psi_\tau P_\psi$ on
+    $\psi$ gives a largest eigenvalue $q \ge 1 - 2C^2\tau^2$, since $1 - |\braket{\psi|U_u\psi}|^2
+    \le \|U_u\psi - \psi\|^2$ and $\int_0^\infty s^2e^{-s}\,ds = 2$. Its eigenvector
+    $\phi = q^{-1}\int_0^\infty e^{-s}\braket{U_{\tau s}\psi|\phi}U_{\tau s}\psi\,ds$ has a
+    Lipschitz orbit with constant $C/q$. Along the branch of largest outcomes the constant stays
+    below $2C$ once $8C^2t^2/n \le \frac12$, so the branch probability is at least
+    $1 - 8C^2t^2/n$. The final state converges by the branch estimate and the exponential formula.
+  \end{itemize}
+  So the untruncated family has every property of \lean{IsProjectiveLimit} except
+  \lean{PerfectPrediction}, which asks for every pure state. Whether prediction fails outside the
+  domain is not settled; the brief does not claim that it does.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No errors. Gaps beyond those of the finite-dimensional

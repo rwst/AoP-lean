@@ -34,23 +34,12 @@ claim of the brief as the brief states it: a \emph{formalization gap} can be clo
 in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
 precise first.
 
-\section*{From the brief}
-\begin{enumerate}
-\item \textbf{Resolvent of an unbounded generator.} The brief states that ``direct use of the
-  resolvent of an unbounded generator still gives a completely positive trace-preserving map
-  and the resolvent exponential formula'', and that the spectral truncations are needed only
-  for states outside the domain of $H$. Neither claim is proved, and whether the untruncated
-  $(I - \tau\mathcal{L})^{-1}$ gives perfect prediction on the domain of $H$ is left open.
-  Not formalized. (Brief, Sec.~5, ``Unbounded generators''; Log, Sec.~1.1, ``Differences'',
-  last item.)
-\end{enumerate}
-
 \section*{From the formalization}
 \noindent Beyond finite dimension the formalization has a part in any dimension, which covers
 unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ and derives the evolution structure
 \lean{IsEvolution} from DR-PROJ up to the item ``Durations with irrational ratio'' below
 (\lean{drUnit_iff_drProj_and_map_zero_and_map_add}), for every cutoff level satisfying
-eq.~(22). It leaves open the item ``Resolvent of an unbounded generator'' above.
+eq.~(22).
 \begin{enumerate}
 \item \blocker{brief issue}
   \textbf{Durations with irrational ratio.}
