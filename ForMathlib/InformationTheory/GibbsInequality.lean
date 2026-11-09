@@ -23,6 +23,7 @@ with equality only if `ρ = G` almost everywhere. The proof integrates the point
 * `Real.negMulLog_le_neg_mul_log_add_sub`, `Real.negMulLog_eq_neg_mul_log_add_sub_iff`: the
   pointwise bound and its equality case;
 * `MeasureTheory.integral_negMulLog_le`: Gibbs' inequality;
+* `MeasureTheory.integral_negMulLog_le_of_imp_pos`: the same for `G ≥ 0` positive where `ρ` is;
 * `MeasureTheory.ae_eq_of_integral_negMulLog_eq`: its equality case.
 -/
 
@@ -76,21 +77,33 @@ private lemma integral_gibbsGap (hρ1 : ∫ x, ρ x ∂μ = 1) (hGi : Integrable
   rw [integral_sub h2 hρρ, integral_sub h1 hρi,
     integral_add (f := fun x => -(ρ x * log (G x))) hρG.neg hGi, integral_neg, hρ1]
 
+/-- **Gibbs' inequality**, for a reference `G ≥ 0` that is positive wherever `ρ` is: for a
+probability density `ρ` and `∫ G ≤ 1`, `-∫ ρ log ρ ≤ -∫ ρ log G`. -/
+theorem integral_negMulLog_le_of_imp_pos (hρ0 : 0 ≤ᵐ[μ] ρ) (hρ1 : ∫ x, ρ x ∂μ = 1)
+    (hG0 : 0 ≤ᵐ[μ] G) (hG : ∀ᵐ x ∂μ, 0 < ρ x → 0 < G x) (hGi : Integrable G μ)
+    (hG1 : ∫ x, G x ∂μ ≤ 1) (hρρ : Integrable (fun x => negMulLog (ρ x)) μ)
+    (hρG : Integrable (fun x => ρ x * log (G x)) μ) :
+    ∫ x, negMulLog (ρ x) ∂μ ≤ -∫ x, ρ x * log (G x) ∂μ := by
+  have h0 : 0 ≤ ∫ x, (-(ρ x * log (G x)) + G x - ρ x - negMulLog (ρ x)) ∂μ := by
+    refine integral_nonneg_of_ae ?_
+    filter_upwards [hρ0, hG0, hG] with x hx hG0x hGx
+    simp only [Pi.zero_apply] at hx hG0x ⊢
+    rcases hx.eq_or_lt with h | h
+    · simpa [← h] using hG0x
+    · have := negMulLog_le_neg_mul_log_add_sub hx (hGx h)
+      linarith
+  rw [integral_gibbsGap hρ1 hGi hρρ hρG] at h0
+  linarith
+
 /-- **Gibbs' inequality.** For a probability density `ρ` and a positive `G` with `∫ G ≤ 1`,
 `-∫ ρ log ρ ≤ -∫ ρ log G`. -/
 theorem integral_negMulLog_le (hρ0 : 0 ≤ᵐ[μ] ρ) (hρ1 : ∫ x, ρ x ∂μ = 1)
     (hG : ∀ᵐ x ∂μ, 0 < G x) (hGi : Integrable G μ) (hG1 : ∫ x, G x ∂μ ≤ 1)
     (hρρ : Integrable (fun x => negMulLog (ρ x)) μ)
     (hρG : Integrable (fun x => ρ x * log (G x)) μ) :
-    ∫ x, negMulLog (ρ x) ∂μ ≤ -∫ x, ρ x * log (G x) ∂μ := by
-  have h0 : 0 ≤ ∫ x, (-(ρ x * log (G x)) + G x - ρ x - negMulLog (ρ x)) ∂μ := by
-    refine integral_nonneg_of_ae ?_
-    filter_upwards [hρ0, hG] with x hx hGx
-    have := negMulLog_le_neg_mul_log_add_sub hx hGx
-    simp only [Pi.zero_apply]
-    linarith
-  rw [integral_gibbsGap hρ1 hGi hρρ hρG] at h0
-  linarith
+    ∫ x, negMulLog (ρ x) ∂μ ≤ -∫ x, ρ x * log (G x) ∂μ :=
+  integral_negMulLog_le_of_imp_pos hρ0 hρ1 (hG.mono fun _ hx => hx.le)
+    (hG.mono fun _ hx _ => hx) hGi hG1 hρρ hρG
 
 /-- The equality case of Gibbs' inequality: `ρ = G` almost everywhere. -/
 theorem ae_eq_of_integral_negMulLog_eq (hρ0 : 0 ≤ᵐ[μ] ρ) (hρ1 : ∫ x, ρ x ∂μ = 1)

@@ -7,7 +7,7 @@ module
 
 public import ForMathlib.InformationTheory.ChangeOfVariables
 public import ForMathlib.InformationTheory.EntropyVariation
-public import ForMathlib.InformationTheory.MarginalEntropy
+public import ForMathlib.InformationTheory.Subadditivity
 public import ForMathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -64,6 +64,24 @@ the range of `(f, g)` and `0` off it, and the change-of-variables formula gives
 eq. (5) and its equality case: under ZENT, equality holds exactly when `S_h[ρ] = 0` and `ρ_{fg}`
 is a product of Gaussians in `(f, g)`, which forces `(f, g)` to be onto up to a null set.
 
+The brief concludes that the quantum uncertainty principle, too, follows from an entropic lower
+bound, since pure states have zero entropy. The von Neumann entropy cannot carry this: it is
+zero for every pure state whatever its `σ_q σ_p`. Two quantum entropic bounds do give exactly
+`σ_q σ_p ≥ ħ / 2` through the brief's Gaussian bound; both are theorems of quantum mechanics
+resting on the sharp Hausdorff–Young inequality, and are taken here as hypotheses.
+- The bound of Białynicki-Birula and Mycielski (1975) on the densities `ρ_q = |ψ|²`,
+  `ρ_p = |ψ̂|²`: `S_1[ρ_q] + S_1[ρ_p] ≥ log (π e ħ)`. The Gaussian bound for one DOF, applied to
+  the product `ρ_q ρ_p`, gives `σ_q σ_p ≥ e^{S_1[ρ_q] + S_1[ρ_p]} / (2π e)`, hence Heisenberg,
+  with equality exactly for Gaussians. Classically, ZENT and the subadditivity of the entropy
+  give only `S_1[ρ_q] + S_1[ρ_p] ≥ log h = log (2π ħ)`, which by the same bound is CUP again;
+  the two differ by `log (e / 2)`, the ratio of `ħ / 2` to `ħ / e`.
+- Lieb's bound (1978) on the Wehrl entropy, the entropy `S_h` of the Husimi function: it is at
+  least `1`, not `0`. For coherent states squeezed by `s`, the Husimi function has the variances
+  `σ_q² + s ħ / 2` and `σ_p² + ħ / (2 s)`, and the Gaussian bound with `S_h ≥ 1` gives
+  `(σ_q² + s ħ / 2) (σ_p² + ħ / (2 s)) ≥ ħ²`; at `s = σ_q / σ_p` this is Heisenberg (Grabowski
+  1984; Ohya–Petz, *Quantum Entropy and Its Use*, §16). With `S_h ≥ 0` the same steps give a
+  vacuous bound.
+
 ## ii. Key results
 
 - `ClassicalUncertaintyPrinciple.entropy_uniform`,
@@ -95,6 +113,18 @@ is a product of Gaussians in `(f, g)`, which forces `(f, g)` to be onto up to a 
   by the brief's route.
 - `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_hbar_div_exp_mul_exp_iff`,
   `ClassicalUncertaintyPrinciple.volume_compl_range_eq_zero`: the equality case of eq. (5).
+- `ClassicalUncertaintyPrinciple.exp_entropy_add_div_le_sd_mul_sd`,
+  `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_exp_entropy_add_div_iff`: the Gaussian bound for
+  two densities on `ℝ` and its equality case.
+- `ClassicalUncertaintyPrinciple.heisenberg_of_entropicUncertainty`,
+  `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_two_iff`: Heisenberg from the bound of
+  Białynicki-Birula and Mycielski, with its equality case.
+- `ClassicalUncertaintyPrinciple.log_le_entropy_marginalFst_add_entropy_marginalSnd`,
+  `ClassicalUncertaintyPrinciple.uncertaintyPrinciple_of_lowerEntropicBound_marginal`: the
+  classical counterpart, and eq. (3) by the marginal route.
+- `ClassicalUncertaintyPrinciple.heisenberg_of_wehrlBound`,
+  `ClassicalUncertaintyPrinciple.entropy_eq_one_of_wehrlBound`: Heisenberg from Lieb's bound on
+  the Wehrl entropy, with its equality case.
 
 ## iii. Table of contents
 
@@ -106,6 +136,7 @@ is a product of Gaussians in `(f, g)`, which forces `(f, g)` to be onto up to a 
 - F. The Lagrange computation
 - G. Several degrees of freedom
 - H. Entropy in new variables
+- I. The quantum case
 -/
 
 open Real MeasureTheory ProbabilityTheory Set
@@ -1455,5 +1486,460 @@ lemma volume_compl_range_eq_zero {a b : ℝ} {v w : ℝ≥0} (hv : v ≠ 0) (hw 
     exact (gaussProd_pos hv hw u).ne) (ae_iff.1 hG)
 
 end NewVariables
+
+/-! ### I. The quantum case -/
+
+section Quantum
+
+/-! #### One-dimensional pairs -/
+
+section Pair
+
+variable {ρq ρp : ℝ → ℝ} {h : ℝ} {a b : ℝ} {v w : ℝ≥0}
+
+/-- The product `ρ_q(q) ρ_p(p)` of two densities on `ℝ`, a density on the phase space. -/
+def pairDensity (ρq ρp : ℝ → ℝ) (x : ℝ × ℝ) : ℝ := ρq x.1 * ρp x.2
+
+lemma isEnsemble_pairDensity (hq : IsEnsemble ρq) (hp : IsEnsemble ρp) :
+    IsEnsemble (pairDensity ρq ρp) where
+  nonneg x := mul_nonneg (hq.nonneg _) (hp.nonneg _)
+  integral_eq_one := by
+    rw [Measure.volume_eq_prod]
+    simp only [pairDensity]
+    rw [integral_prod_mul, hq.integral_eq_one, hp.integral_eq_one, one_mul]
+  integrable_negMulLog := by
+    rw [Measure.volume_eq_prod]
+    exact integrable_negMulLog_mul_prod hq.integrable hp.integrable hq.integrable_negMulLog
+      hp.integrable_negMulLog
+
+/-- `S_h[ρ_q ρ_p] = S_1[ρ_q] + S_1[ρ_p] - log h`. -/
+lemma entropy_pairDensity (hh : 0 < h) (hq : IsEnsemble ρq) (hp : IsEnsemble ρp) :
+    entropy h (pairDensity ρq ρp) = entropy 1 ρq + entropy 1 ρp - log h := by
+  have := integral_negMulLog_mul_prod (μ := volume) (ν := volume) hq.integrable hp.integrable
+    hq.integrable_negMulLog hp.integrable_negMulLog hq.integral_eq_one hp.integral_eq_one
+  rw [entropy_eq (isEnsemble_pairDensity hq hp) hh, entropy_eq hq one_pos, entropy_eq hp one_pos,
+    log_one, Measure.volume_eq_prod]
+  simp only [pairDensity]
+  rw [this]
+  ring
+
+lemma integral_fst_mul_pairDensity (hp : IsEnsemble ρp) (F : ℝ → ℝ) :
+    ∫ x, F x.1 * pairDensity ρq ρp x = ∫ t, F t * ρq t := by
+  rw [Measure.volume_eq_prod]
+  simp_rw [pairDensity, ← mul_assoc]
+  rw [integral_prod_mul (fun t => F t * ρq t) ρp, hp.integral_eq_one, mul_one]
+
+lemma integral_snd_mul_pairDensity (hq : IsEnsemble ρq) (F : ℝ → ℝ) :
+    ∫ x, F x.2 * pairDensity ρq ρp x = ∫ t, F t * ρp t := by
+  rw [Measure.volume_eq_prod]
+  simp_rw [pairDensity, mul_left_comm _ (ρq _)]
+  rw [integral_prod_mul ρq (fun t => F t * ρp t), hq.integral_eq_one, one_mul]
+
+lemma integrable_fst_pairDensity (hp : IsEnsemble ρp) (hq2 : Integrable fun t => t ^ 2 * ρq t) :
+    Integrable fun x : ℝ × ℝ => x.1 ^ 2 * pairDensity ρq ρp x := by
+  rw [Measure.volume_eq_prod]
+  exact (hq2.mul_prod hp.integrable).congr (ae_of_all _ fun x => by simp only [pairDensity]; ring)
+
+lemma integrable_snd_pairDensity (hq : IsEnsemble ρq) (hp2 : Integrable fun t => t ^ 2 * ρp t) :
+    Integrable fun x : ℝ × ℝ => x.2 ^ 2 * pairDensity ρq ρp x := by
+  rw [Measure.volume_eq_prod]
+  exact (hq.integrable.mul_prod hp2).congr (ae_of_all _ fun x => by simp only [pairDensity]; ring)
+
+lemma var_pairDensity_fst (hp : IsEnsemble ρp) :
+    var (pairDensity ρq ρp) Prod.fst = var ρq id := by
+  have hm : mean (pairDensity ρq ρp) Prod.fst = mean ρq id := integral_fst_mul_pairDensity hp id
+  rw [var, var, hm]
+  exact integral_fst_mul_pairDensity hp fun t => (t - mean ρq id) ^ 2
+
+lemma var_pairDensity_snd (hq : IsEnsemble ρq) :
+    var (pairDensity ρq ρp) Prod.snd = var ρp id := by
+  have hm : mean (pairDensity ρq ρp) Prod.snd = mean ρp id := integral_snd_mul_pairDensity hq id
+  rw [var, var, hm]
+  exact integral_snd_mul_pairDensity hq fun t => (t - mean ρp id) ^ 2
+
+lemma sd_pairDensity_fst (hp : IsEnsemble ρp) : sd (pairDensity ρq ρp) Prod.fst = sd ρq id := by
+  rw [sd, sd, var_pairDensity_fst hp]
+
+lemma sd_pairDensity_snd (hq : IsEnsemble ρq) : sd (pairDensity ρq ρp) Prod.snd = sd ρp id := by
+  rw [sd, sd, var_pairDensity_snd hq]
+
+/-- `ρ_q ρ_p` is a product of Gaussians exactly when `ρ_q` and `ρ_p` are Gaussians. -/
+lemma pairDensity_ae_eq_gaussProd_iff (hq : IsEnsemble ρq) (hp : IsEnsemble ρp) (hv : v ≠ 0)
+    (hw : w ≠ 0) :
+    pairDensity ρq ρp =ᵐ[volume] gaussProd a v b w ↔
+      ρq =ᵐ[volume] gaussianPDFReal a v ∧ ρp =ᵐ[volume] gaussianPDFReal b w := by
+  rw [Measure.volume_eq_prod]
+  constructor
+  · intro hG
+    constructor
+    · filter_upwards [Measure.ae_ae_of_ae_prod hG] with t ht
+      have := integral_congr_ae ht
+      simp only [pairDensity, gaussProd, integral_const_mul, hp.integral_eq_one,
+        integral_gaussianPDFReal_eq_one b hw, mul_one] at this
+      exact this
+    · have hG' := (Measure.measurePreserving_swap (μ := volume)
+        (ν := volume)).quasiMeasurePreserving.ae hG
+      filter_upwards [Measure.ae_ae_of_ae_prod hG'] with t ht
+      have := integral_congr_ae ht
+      simp only [Prod.swap_prod_mk, pairDensity, gaussProd, integral_mul_const,
+        hq.integral_eq_one, integral_gaussianPDFReal_eq_one a hv, one_mul] at this
+      exact this
+  · rintro ⟨h1, h2⟩
+    filter_upwards [Measure.quasiMeasurePreserving_fst.ae h1,
+      Measure.quasiMeasurePreserving_snd.ae h2] with x hx1 hx2
+    rw [pairDensity, gaussProd, hx1, hx2]
+
+lemma hbar_one_div_exp_mul_exp (t : ℝ) :
+    hbar 1 / exp 1 * exp t = exp t / (2 * π * exp 1) := by
+  rw [hbar_div_exp_mul_exp, mul_one]
+
+/-- **The Gaussian bound for two densities on `ℝ`.**
+`σ_q σ_p ≥ e^{S_1[ρ_q] + S_1[ρ_p]} / (2π e)`: the bound for one DOF applied to `ρ_q ρ_p`. -/
+theorem exp_entropy_add_div_le_sd_mul_sd (hq : IsEnsemble ρq) (hp : IsEnsemble ρp)
+    (hq2 : Integrable fun t => t ^ 2 * ρq t) (hp2 : Integrable fun t => t ^ 2 * ρp t) :
+    exp (entropy 1 ρq + entropy 1 ρp) / (2 * π * exp 1) ≤ sd ρq id * sd ρp id := by
+  have := hbar_div_exp_mul_exp_entropy_le one_pos (isEnsemble_pairDensity hq hp)
+    (integrable_fst_pairDensity hp hq2) (integrable_snd_pairDensity hq hp2)
+  rwa [entropy_pairDensity one_pos hq hp, log_one, sub_zero, sd_pairDensity_fst hp,
+    sd_pairDensity_snd hq, hbar_one_div_exp_mul_exp] at this
+
+/-- Equality in `exp_entropy_add_div_le_sd_mul_sd` holds exactly for Gaussians. -/
+theorem sd_mul_sd_eq_exp_entropy_add_div_iff (hq : IsEnsemble ρq) (hp : IsEnsemble ρp)
+    (hq2 : Integrable fun t => t ^ 2 * ρq t) (hp2 : Integrable fun t => t ^ 2 * ρp t) :
+    sd ρq id * sd ρp id = exp (entropy 1 ρq + entropy 1 ρp) / (2 * π * exp 1) ↔
+      ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧ ρq =ᵐ[volume] gaussianPDFReal a v ∧
+        ρp =ᵐ[volume] gaussianPDFReal b w := by
+  have key := sd_mul_sd_eq_iff one_pos (isEnsemble_pairDensity hq hp)
+    (integrable_fst_pairDensity hp hq2) (integrable_snd_pairDensity hq hp2)
+  rw [entropy_pairDensity one_pos hq hp, log_one, sub_zero, sd_pairDensity_fst hp,
+    sd_pairDensity_snd hq, hbar_one_div_exp_mul_exp] at key
+  rw [key]
+  constructor
+  · rintro ⟨a, b, v, w, hv, hw, hG⟩
+    exact ⟨a, b, v, w, hv, hw, (pairDensity_ae_eq_gaussProd_iff hq hp hv hw).1 hG⟩
+  · rintro ⟨a, b, v, w, hv, hw, hG⟩
+    exact ⟨a, b, v, w, hv, hw, (pairDensity_ae_eq_gaussProd_iff hq hp hv hw).2 hG⟩
+
+end Pair
+
+/-! #### The marginal route: Białynicki-Birula–Mycielski -/
+
+section Marginal
+
+variable {ρq ρp : ℝ → ℝ} {h : ℝ}
+
+/-- The entropic uncertainty relation of Białynicki-Birula and Mycielski for the densities
+`ρ_q = |ψ|²` of position and `ρ_p = |ψ̂|²` of momentum: `S_1[ρ_q] + S_1[ρ_p] ≥ log (π e ħ)`.
+It is a theorem of quantum mechanics (from Beckner's sharp Hausdorff–Young inequality), taken
+here as a hypothesis. -/
+def EntropicUncertainty (h : ℝ) (ρq ρp : ℝ → ℝ) : Prop :=
+  log (π * exp 1 * hbar h) ≤ entropy 1 ρq + entropy 1 ρp
+
+/-- Heisenberg's uncertainty principle `σ_q σ_p ≥ ħ / 2`. -/
+def Heisenberg (h : ℝ) (ρq ρp : ℝ → ℝ) : Prop := hbar h / 2 ≤ sd ρq id * sd ρp id
+
+lemma hbar_pos (hh : 0 < h) : 0 < hbar h := div_pos hh (by positivity)
+
+lemma exp_log_pi_exp_hbar_div (hh : 0 < h) :
+    exp (log (π * exp 1 * hbar h)) / (2 * π * exp 1) = hbar h / 2 := by
+  rw [exp_log (by have := hbar_pos hh; positivity)]
+  field_simp
+
+/-- The quantum bound exceeds the classical `log h` by `log (e / 2)`. -/
+lemma log_pi_exp_hbar_sub_log (hh : 0 < h) :
+    log (π * exp 1 * hbar h) - log h = log (exp 1 / 2) := by
+  rw [← log_div (by have := hbar_pos hh; positivity) hh.ne', hbar]
+  congr 1
+  field_simp
+
+/-- **Heisenberg from the entropic uncertainty relation.** -/
+theorem heisenberg_of_entropicUncertainty (hh : 0 < h) (hq : IsEnsemble ρq) (hp : IsEnsemble ρp)
+    (hq2 : Integrable fun t => t ^ 2 * ρq t) (hp2 : Integrable fun t => t ^ 2 * ρp t)
+    (hE : EntropicUncertainty h ρq ρp) : Heisenberg h ρq ρp :=
+  calc hbar h / 2 = exp (log (π * exp 1 * hbar h)) / (2 * π * exp 1) :=
+        (exp_log_pi_exp_hbar_div hh).symm
+    _ ≤ exp (entropy 1 ρq + entropy 1 ρp) / (2 * π * exp 1) := by
+        gcongr
+        exact hE
+    _ ≤ _ := exp_entropy_add_div_le_sd_mul_sd hq hp hq2 hp2
+
+/-- **Heisenberg, equality case.** Under the entropic uncertainty relation, `σ_q σ_p = ħ / 2`
+exactly for Gaussians `ρ_q, ρ_p` with `σ_q σ_p = ħ / 2`. -/
+theorem sd_mul_sd_eq_hbar_div_two_iff (hh : 0 < h) (hq : IsEnsemble ρq) (hp : IsEnsemble ρp)
+    (hq2 : Integrable fun t => t ^ 2 * ρq t) (hp2 : Integrable fun t => t ^ 2 * ρp t)
+    (hE : EntropicUncertainty h ρq ρp) :
+    sd ρq id * sd ρp id = hbar h / 2 ↔
+      ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧ √(v : ℝ) * √(w : ℝ) = hbar h / 2 ∧
+        ρq =ᵐ[volume] gaussianPDFReal a v ∧ ρp =ᵐ[volume] gaussianPDFReal b w := by
+  have hb := exp_entropy_add_div_le_sd_mul_sd hq hp hq2 hp2
+  have hE' : hbar h / 2 ≤ exp (entropy 1 ρq + entropy 1 ρp) / (2 * π * exp 1) := by
+    rw [← exp_log_pi_exp_hbar_div hh]
+    gcongr
+    exact hE
+  have hvar : ∀ {a b : ℝ} {v w : ℝ≥0}, v ≠ 0 → w ≠ 0 → ρq =ᵐ[volume] gaussianPDFReal a v →
+      ρp =ᵐ[volume] gaussianPDFReal b w → sd ρq id * sd ρp id = √(v : ℝ) * √(w : ℝ) :=
+    fun hv hw h1 h2 => by
+      have hG := (pairDensity_ae_eq_gaussProd_iff hq hp hv hw).2 ⟨h1, h2⟩
+      rw [sd, sd, ← var_pairDensity_fst hp, ← var_pairDensity_snd hq,
+        var_fst_gaussProd hG hv hw, var_snd_gaussProd hG hv hw]
+  constructor
+  · intro heq
+    obtain ⟨a, b, v, w, hv, hw, h1, h2⟩ :=
+      (sd_mul_sd_eq_exp_entropy_add_div_iff hq hp hq2 hp2).1 (by linarith)
+    exact ⟨a, b, v, w, hv, hw, (hvar hv hw h1 h2).symm.trans heq, h1, h2⟩
+  · rintro ⟨a, b, v, w, hv, hw, hvw, h1, h2⟩
+    rw [hvar hv hw h1 h2, hvw]
+
+end Marginal
+
+/-! #### The classical counterpart -/
+
+section Classical
+
+variable {ρ : ℝ × ℝ → ℝ} {h : ℝ}
+
+/-- The marginal density `ρ_q(q) = ∫ ρ(q, p) dp` of the position. -/
+def marginalFst (ρ : ℝ × ℝ → ℝ) (q : ℝ) : ℝ := ∫ p, ρ (q, p)
+
+/-- The marginal density `ρ_p(p) = ∫ ρ(q, p) dq` of the momentum. -/
+def marginalSnd (ρ : ℝ × ℝ → ℝ) (p : ℝ) : ℝ := ∫ q, ρ (q, p)
+
+/-- With finite second moment of `f`, `ρ log γ(f)` is integrable for the standard Gaussian
+`γ`. -/
+lemma IsEnsemble.integrable_mul_log_gaussianPDFReal {X : Type*} [MeasurableSpace X]
+    {μ : Measure X} {ρ f : X → ℝ} (hρ : IsEnsemble ρ μ)
+    (hf : Integrable (fun x => f x ^ 2 * ρ x) μ) :
+    Integrable (fun x => ρ x * log (gaussianPDFReal 0 1 (f x))) μ := by
+  refine ((hρ.integrable.const_mul (-log (2 * π) / 2)).sub (hf.const_mul 2⁻¹)).congr
+    (ae_of_all _ fun x => ?_)
+  simp only [Pi.sub_apply, log_gaussianPDFReal one_ne_zero, NNReal.coe_one, mul_one, sub_zero]
+  ring
+
+lemma integral_mul_marginalFst {F : ℝ → ℝ} (hF : Integrable fun x : ℝ × ℝ => F x.1 * ρ x) :
+    Integrable (fun t => F t * marginalFst ρ t) ∧
+      ∫ t, F t * marginalFst ρ t = ∫ x, F x.1 * ρ x := by
+  rw [Measure.volume_eq_prod] at hF ⊢
+  exact ⟨integrable_mul_integral_prod hF, integral_mul_integral_prod hF⟩
+
+lemma integral_mul_marginalSnd {F : ℝ → ℝ} (hF : Integrable fun x : ℝ × ℝ => F x.2 * ρ x) :
+    Integrable (fun t => F t * marginalSnd ρ t) ∧
+      ∫ t, F t * marginalSnd ρ t = ∫ x, F x.2 * ρ x := by
+  rw [Measure.volume_eq_prod] at hF ⊢
+  exact ⟨integrable_mul_integral_prod_snd hF, integral_mul_integral_prod_snd hF⟩
+
+lemma isEnsemble_marginalFst (hρ : IsEnsemble ρ) (hq : Integrable fun x => x.1 ^ 2 * ρ x)
+    (hp : Integrable fun x => x.2 ^ 2 * ρ x) : IsEnsemble (marginalFst ρ) where
+  nonneg t := integral_nonneg fun _ => hρ.nonneg _
+  integral_eq_one := by
+    have := (integral_mul_marginalFst (F := fun _ => 1) (by simpa using hρ.integrable)).2
+    simpa [hρ.integral_eq_one] using this
+  integrable_negMulLog := by
+    have h1 := hρ.integrable_mul_log_gaussianPDFReal hq
+    have h2 := hρ.integrable_mul_log_gaussianPDFReal hp
+    have hi := hρ.integrable
+    have hii := hρ.integrable_negMulLog
+    rw [Measure.volume_eq_prod] at h1 h2 hi hii
+    exact integrable_negMulLog_integral_prod hρ.nonneg hi hii
+      (fun _ => gaussianPDFReal_pos _ _ _ one_ne_zero) (integrable_gaussianPDFReal 0 1)
+      (integral_gaussianPDFReal_eq_one 0 one_ne_zero).le h2
+      (fun _ => gaussianPDFReal_pos _ _ _ one_ne_zero) (integrable_gaussianPDFReal 0 1) h1
+
+lemma isEnsemble_marginalSnd (hρ : IsEnsemble ρ) (hq : Integrable fun x => x.1 ^ 2 * ρ x)
+    (hp : Integrable fun x => x.2 ^ 2 * ρ x) : IsEnsemble (marginalSnd ρ) where
+  nonneg t := integral_nonneg fun _ => hρ.nonneg _
+  integral_eq_one := by
+    have := (integral_mul_marginalSnd (F := fun _ => 1) (by simpa using hρ.integrable)).2
+    simpa [hρ.integral_eq_one] using this
+  integrable_negMulLog := by
+    have h1 := hρ.integrable_mul_log_gaussianPDFReal hq
+    have h2 := hρ.integrable_mul_log_gaussianPDFReal hp
+    have hi := hρ.integrable
+    have hii := hρ.integrable_negMulLog
+    rw [Measure.volume_eq_prod] at h1 h2 hi hii
+    exact integrable_negMulLog_integral_prod (ρ := fun z => ρ (z.2, z.1)) (fun _ => hρ.nonneg _)
+      hi.swap hii.swap
+      (fun _ => gaussianPDFReal_pos _ _ _ one_ne_zero) (integrable_gaussianPDFReal 0 1)
+      (integral_gaussianPDFReal_eq_one 0 one_ne_zero).le h1.swap
+      (fun _ => gaussianPDFReal_pos _ _ _ one_ne_zero) (integrable_gaussianPDFReal 0 1) h2.swap
+
+lemma var_marginalFst (hρ : IsEnsemble ρ) (hq : Integrable fun x => x.1 ^ 2 * ρ x) :
+    var (marginalFst ρ) id = var ρ Prod.fst := by
+  have hm : mean (marginalFst ρ) id = mean ρ Prod.fst :=
+    (integral_mul_marginalFst (F := id) (hρ.integrable_mul measurable_fst hq)).2
+  set a := mean ρ Prod.fst
+  have := (integral_mul_marginalFst (F := fun t => (t - a) ^ 2)
+    (hρ.integrable_sub_sq_mul measurable_fst hq a)).2
+  rw [var, var, hm]
+  exact this
+
+lemma sd_marginalFst (hρ : IsEnsemble ρ) (hq : Integrable fun x => x.1 ^ 2 * ρ x) :
+    sd (marginalFst ρ) id = sd ρ Prod.fst := by
+  rw [sd, sd, var_marginalFst hρ hq]
+
+lemma var_marginalSnd (hρ : IsEnsemble ρ) (hp : Integrable fun x => x.2 ^ 2 * ρ x) :
+    var (marginalSnd ρ) id = var ρ Prod.snd := by
+  have hm : mean (marginalSnd ρ) id = mean ρ Prod.snd :=
+    (integral_mul_marginalSnd (F := id) (hρ.integrable_mul measurable_snd hp)).2
+  set a := mean ρ Prod.snd
+  have := (integral_mul_marginalSnd (F := fun t => (t - a) ^ 2)
+    (hρ.integrable_sub_sq_mul measurable_snd hp a)).2
+  rw [var, var, hm]
+  exact this
+
+lemma sd_marginalSnd (hρ : IsEnsemble ρ) (hp : Integrable fun x => x.2 ^ 2 * ρ x) :
+    sd (marginalSnd ρ) id = sd ρ Prod.snd := by
+  rw [sd, sd, var_marginalSnd hρ hp]
+
+/-- **The classical counterpart of the entropic uncertainty relation.** ZENT and the
+subadditivity of the entropy give `S_1[ρ_q] + S_1[ρ_p] ≥ log h = log (2π ħ)`, short of the
+quantum `log (π e ħ)` by `log (e / 2)`. -/
+theorem log_le_entropy_marginalFst_add_entropy_marginalSnd (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
+    (hZ : LowerEntropicBound h ρ) :
+    log h ≤ entropy 1 (marginalFst ρ) + entropy 1 (marginalSnd ρ) := by
+  have hX := isEnsemble_marginalFst hρ hq hp
+  have hY := isEnsemble_marginalSnd hρ hq hp
+  have hi := hρ.integrable
+  have hii := hρ.integrable_negMulLog
+  have h1 := hρ.integral_eq_one
+  rw [Measure.volume_eq_prod] at hi hii h1
+  have hsub := integral_negMulLog_le_add hρ.nonneg hi h1 hii hX.integrable_negMulLog
+    hY.integrable_negMulLog
+  rw [LowerEntropicBound, entropy_eq hρ hh, Measure.volume_eq_prod] at hZ
+  rw [entropy_eq hX one_pos, entropy_eq hY one_pos, log_one]
+  simp only [marginalFst, marginalSnd] at hsub ⊢
+  linarith
+
+/-- **Theorem 2, eq. (3), by the marginal route.** ZENT implies CUP through
+`S_1[ρ_q] + S_1[ρ_p] ≥ log h` and the Gaussian bound for two densities on `ℝ`. -/
+theorem uncertaintyPrinciple_of_lowerEntropicBound_marginal (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
+    (hZ : LowerEntropicBound h ρ) : UncertaintyPrinciple h ρ := by
+  have hb := exp_entropy_add_div_le_sd_mul_sd (isEnsemble_marginalFst hρ hq hp)
+    (isEnsemble_marginalSnd hρ hq hp) (integral_mul_marginalFst (F := fun t => t ^ 2) hq).1
+    (integral_mul_marginalSnd (F := fun t => t ^ 2) hp).1
+  rw [sd_marginalFst hρ hq, sd_marginalSnd hρ hp] at hb
+  calc hbar h / exp 1 = exp (log h) / (2 * π * exp 1) := by
+        rw [exp_log hh, hbar]
+        field_simp
+    _ ≤ exp (entropy 1 (marginalFst ρ) + entropy 1 (marginalSnd ρ)) / (2 * π * exp 1) := by
+        gcongr
+        exact log_le_entropy_marginalFst_add_entropy_marginalSnd hh hρ hq hp hZ
+    _ ≤ _ := hb
+
+end Classical
+
+/-! #### The phase-space route: Lieb–Wehrl -/
+
+section Wehrl
+
+variable {ρq ρp : ℝ → ℝ} {h : ℝ} {Q : ℝ → ℝ × ℝ → ℝ}
+
+/-- Lieb's bound on the Wehrl entropy, as a hypothesis. For every squeeze `s > 0`, the Husimi
+function `Q s` of `ψ` for the squeezed coherent states of widths `s ħ / 2` and `ħ / (2 s)`,
+divided by `h`, is an ensemble with the variances of `ρ_q = |ψ|²` and `ρ_p = |ψ̂|²` plus those
+of the coherent state, and with entropy `S_h[Q s] ≥ 1`. -/
+structure WehrlBound (h : ℝ) (Q : ℝ → ℝ × ℝ → ℝ) (ρq ρp : ℝ → ℝ) : Prop where
+  isEnsemble : ∀ s, 0 < s → IsEnsemble (Q s)
+  integrable_fst : ∀ s, 0 < s → Integrable fun x => x.1 ^ 2 * Q s x
+  integrable_snd : ∀ s, 0 < s → Integrable fun x => x.2 ^ 2 * Q s x
+  var_fst : ∀ s, 0 < s → var (Q s) Prod.fst = var ρq id + s * (hbar h / 2)
+  var_snd : ∀ s, 0 < s → var (Q s) Prod.snd = var ρp id + hbar h / 2 / s
+  one_le_entropy : ∀ s, 0 < s → 1 ≤ entropy h (Q s)
+
+/-- If `(x² + s c) (y² + c / s) ≥ (2c)²` for every `s > 0`, then `x y ≥ c`; the best `s` is
+`x / y`, where the left side is `(x y + c)²`. -/
+lemma le_mul_of_forall_sq_le_mul {x y c : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) (hc : 0 < c)
+    (H : ∀ s, 0 < s → (2 * c) ^ 2 ≤ (x ^ 2 + s * c) * (y ^ 2 + c / s)) : c ≤ x * y := by
+  rcases hx.eq_or_lt with rfl | hx
+  · have h1 := H (c / (y ^ 2 + 1)) (by positivity)
+    have h2 : (0 ^ 2 + c / (y ^ 2 + 1) * c) * (y ^ 2 + c / (c / (y ^ 2 + 1))) =
+        c ^ 2 * (2 * y ^ 2 + 1) / (y ^ 2 + 1) := by
+      field_simp
+      ring
+    rw [h2, le_div_iff₀ (by positivity)] at h1
+    nlinarith [sq_nonneg y, mul_pos hc hc]
+  rcases hy.eq_or_lt with rfl | hy
+  · have h1 := H ((x ^ 2 + 1) / c) (by positivity)
+    have h2 : (x ^ 2 + (x ^ 2 + 1) / c * c) * (0 ^ 2 + c / ((x ^ 2 + 1) / c)) =
+        c ^ 2 * (2 * x ^ 2 + 1) / (x ^ 2 + 1) := by
+      field_simp
+      ring
+    rw [h2, le_div_iff₀ (by positivity)] at h1
+    nlinarith [sq_nonneg x, mul_pos hc hc]
+  have h1 := H (x / y) (by positivity)
+  have h2 : (x ^ 2 + x / y * c) * (y ^ 2 + c / (x / y)) = (x * y + c) ^ 2 := by
+    field_simp
+  rw [h2] at h1
+  nlinarith [mul_pos hx hy]
+
+/-- `σ_{Q s, q} σ_{Q s, p} ≥ ħ`: the Gaussian bound with `S_h[Q s] ≥ 1`. -/
+lemma WehrlBound.hbar_le_sd_mul_sd (hh : 0 < h) (W : WehrlBound h Q ρq ρp) {s : ℝ} (hs : 0 < s) :
+    hbar h ≤ sd (Q s) Prod.fst * sd (Q s) Prod.snd := by
+  have hb := hbar_div_exp_mul_exp_entropy_le hh (W.isEnsemble s hs) (W.integrable_fst s hs)
+    (W.integrable_snd s hs)
+  refine le_trans ?_ hb
+  rw [div_mul_eq_mul_div, le_div_iff₀ (exp_pos 1)]
+  exact mul_le_mul_of_nonneg_left (exp_le_exp.2 (W.one_le_entropy s hs)) (hbar_pos hh).le
+
+/-- **Heisenberg from the Lieb–Wehrl bound.** With the brief's Gaussian bound, `S_h[Q s] ≥ 1`
+for every squeeze `s` gives `(σ_q² + s ħ/2) (σ_p² + ħ/(2s)) ≥ ħ²`; at the best `s` this is
+`σ_q σ_p ≥ ħ / 2`. -/
+theorem heisenberg_of_wehrlBound (hh : 0 < h) (hq : IsEnsemble ρq) (hp : IsEnsemble ρp)
+    (W : WehrlBound h Q ρq ρp) : Heisenberg h ρq ρp := by
+  refine le_mul_of_forall_sq_le_mul (sqrt_nonneg _) (sqrt_nonneg _) (by linarith [hbar_pos hh])
+    fun s hs => ?_
+  have hb := W.hbar_le_sd_mul_sd hh hs
+  rw [sd, sd, W.var_fst s hs, W.var_snd s hs] at hb
+  rw [sd, sd, sq_sqrt (var_nonneg hq), sq_sqrt (var_nonneg hp),
+    show 2 * (hbar h / 2) = hbar h by ring]
+  calc hbar h ^ 2 ≤ (√(var ρq id + s * (hbar h / 2)) * √(var ρp id + hbar h / 2 / s)) ^ 2 :=
+        pow_le_pow_left₀ (hbar_pos hh).le hb 2
+    _ = _ := by
+        have := hbar_pos hh
+        rw [mul_pow, sq_sqrt (by have := var_nonneg (f := id) hq; positivity),
+          sq_sqrt (by have := var_nonneg (f := id) hp; positivity)]
+
+/-- **Heisenberg from the Lieb–Wehrl bound, equality case.** If `σ_q σ_p = ħ / 2`, then at the
+squeeze `s = σ_q / σ_p` the Husimi function has entropy exactly `1` and is a product of
+Gaussians: Lieb's equality case, the coherent states. -/
+theorem entropy_eq_one_of_wehrlBound (hh : 0 < h) (hq : IsEnsemble ρq) (hp : IsEnsemble ρp)
+    (W : WehrlBound h Q ρq ρp) (heq : sd ρq id * sd ρp id = hbar h / 2) :
+    entropy h (Q (sd ρq id / sd ρp id)) = 1 ∧ ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧
+      Q (sd ρq id / sd ρp id) =ᵐ[volume] gaussProd a v b w := by
+  set x := sd ρq id
+  set y := sd ρp id
+  have hc := hbar_pos hh
+  have hx : 0 < x := lt_of_le_of_ne (sqrt_nonneg _) fun h0 => by
+    rw [← h0, zero_mul] at heq
+    linarith
+  have hy : 0 < y := lt_of_le_of_ne (sqrt_nonneg _) fun h0 => by
+    rw [← h0, mul_zero] at heq
+    linarith
+  have hs : 0 < x / y := div_pos hx hy
+  have hQ : sd (Q (x / y)) Prod.fst * sd (Q (x / y)) Prod.snd = hbar h := by
+    rw [sd, sd, W.var_fst _ hs, W.var_snd _ hs, ← sq_sqrt (var_nonneg (f := id) hq),
+      ← sq_sqrt (var_nonneg (f := id) hp), ← sqrt_mul (by positivity)]
+    have : (x ^ 2 + x / y * (hbar h / 2)) * (y ^ 2 + hbar h / 2 / (x / y)) =
+        (x * y + hbar h / 2) ^ 2 := by
+      field_simp
+    change √((x ^ 2 + x / y * (hbar h / 2)) * (y ^ 2 + hbar h / 2 / (x / y))) = hbar h
+    rw [this, heq, sqrt_sq (by positivity)]
+    ring
+  have hb := hbar_div_exp_mul_exp_entropy_le hh (W.isEnsemble _ hs) (W.integrable_fst _ hs)
+    (W.integrable_snd _ hs)
+  rw [hQ] at hb
+  have hS : entropy h (Q (x / y)) = 1 := by
+    refine le_antisymm ?_ (W.one_le_entropy _ hs)
+    rw [div_mul_eq_mul_div, div_le_iff₀ (exp_pos 1), mul_le_mul_iff_right₀ hc] at hb
+    exact exp_le_exp.1 hb
+  refine ⟨hS, (sd_mul_sd_eq_iff hh (W.isEnsemble _ hs) (W.integrable_fst _ hs)
+    (W.integrable_snd _ hs)).1 ?_⟩
+  rw [hQ, hS]
+  field_simp
+
+end Wehrl
+
+end Quantum
 
 end ClassicalUncertaintyPrinciple

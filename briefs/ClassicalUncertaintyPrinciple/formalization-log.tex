@@ -54,12 +54,14 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple.lean}
 \item Library: \lean{ClassicalUncertaintyPrinciple}
-\item Imports: five new \lean{ForMathlib} files (the first through the fourth):
+\item Imports: six new \lean{ForMathlib} files, the first two through
+  \lean{Subadditivity.lean}:
   \begin{itemize}
   \item \lean{ForMathlib/InformationTheory/GibbsInequality.lean}:\newline Gibbs' inequality
   $-\int\rho\log\rho \le -\int\rho\log G$ for a probability density $\rho$ and a positive $G$
   with $\int G \le 1$ (\lean{MeasureTheory.integral_negMulLog_le}), with equality only for
-  $\rho = G$ a.e.\ (\lean{MeasureTheory.ae_eq_of_integral_negMulLog_eq})
+  $\rho = G$ a.e.\ (\lean{MeasureTheory.ae_eq_of_integral_negMulLog_eq}); the same for $G \ge 0$
+  positive wherever $\rho$ is (\lean{MeasureTheory.integral_negMulLog_le_of_imp_pos})
   \item \lean{ForMathlib/Probability/Distributions/Gaussian/Real.lean}: the logarithm of the
   Gaussian density (\lean{log_gaussianPDFReal}), and its mean and variance as Lebesgue integrals
   (\lean{integral_mul_gaussianPDFReal}, \lean{integral_sub_sq_mul_gaussianPDFReal})
@@ -73,6 +75,11 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   $\gamma'$ of integral at most~$1$
   (\lean{MeasureTheory.integrable_negMulLog_integral_prod}), and its moments are moments of
   $\rho$ (\lean{MeasureTheory.integral_mul_integral_prod})
+  \item \lean{ForMathlib/InformationTheory/Subadditivity.lean}:\newline the entropy of a
+  product $f(x)g(y)$ of probability densities is the sum of their entropies
+  (\lean{MeasureTheory.integral_negMulLog_mul_prod}). If the marginals have finite entropy,
+  the entropy is subadditive, $-\int\rho\log\rho \le -\int\rho_X\log\rho_X -
+  \int\rho_Y\log\rho_Y$ (\lean{MeasureTheory.integral_negMulLog_le_add})
   \item \lean{ForMathlib/InformationTheory/ChangeOfVariables.lean}:\newline the density
   \lean{MeasureTheory.pushDensity} in new variables $u = \Phi(x)$, for $\Phi$ injective and
   differentiable with invertible derivative on a finite-dimensional space. Its moments are
@@ -110,6 +117,24 @@ For several DOFs the phase space is $(\mathbb R^2)^{n+1}$ (\lean{Fin}~$(n + 1) \
 \lean{LowerEntropicBoundPhaseSpace}~$h$~$\rho$ ($S_h[\rho_i] \ge 0$ for every $i$) and
 \lean{UncertaintyPrinciplePhaseSpace}~$h$~$\rho$ ($\sigma_{q_i}\sigma_{p_i} \ge \hbar/e$ for
 every $i$, with $\sigma$ under $\rho$).
+
+For the quantum case, $\rho_q, \rho_p$ are densities on $\mathbb R$, in quantum mechanics
+$|\psi|^2$ and $|\hat\psi|^2$, with entropies $S_1$ and standard deviations $\sigma_q, \sigma_p$
+of the identity. Their product \lean{pairDensity}~$\rho_q$~$\rho_p$ is a density on phase space.
+The conditions are:
+\begin{itemize}
+\item \lean{EntropicUncertainty}~$h$~$\rho_q$~$\rho_p$, the bound of
+  Bia\l{}ynicki-Birula and Mycielski: $S_1[\rho_q] + S_1[\rho_p] \ge \log(\pi e\hbar)$;
+\item \lean{WehrlBound}~$h$~$Q$~$\rho_q$~$\rho_p$, Lieb's bound on the Wehrl entropy: for every
+  $s > 0$, $Q_s$ is an ensemble on phase space with finite second moments,
+  $\sigma^2_{Q_s,q} = \sigma_q^2 + s\hbar/2$, $\sigma^2_{Q_s,p} = \sigma_p^2 + \hbar/(2s)$ and
+  $S_h[Q_s] \ge 1$. In quantum mechanics $Q_s$ is the Husimi function of $\psi$ for the coherent
+  states squeezed by $s$, divided by $h$;
+\item \lean{Heisenberg}~$h$~$\rho_q$~$\rho_p$: $\sigma_q\sigma_p \ge \hbar/2$.
+\end{itemize}
+For a classical ensemble $\rho$ on phase space, \lean{marginalFst}~$\rho$ and
+\lean{marginalSnd}~$\rho$ are the densities $\int\rho(q, p)\,dp$ of $q$ and $\int\rho(q, p)\,dq$
+of $p$.
 
 \paragraph{Results.}
 \begin{xltabular}{\textwidth}{@{}BL@{}}
@@ -172,6 +197,23 @@ Theorem~2, proof: the solution of $\delta L = 0$ is a product of two independent
   $\lambda_1 = \lambda_2(1 + \ln(\hbar/\sigma_q\sigma_p))$ \\
 Theorem~2, proof: then $\sigma_q\sigma_p = (\hbar/e)e^{S[\rho]}$ &
   \lean{sd_mul_sd_eq_of_hasDerivAt_lagrangian} \\
+Conclusion: the quantum uncertainty principle follows from an entropic lower bound &
+  Not with the von Neumann entropy (see ``Problems found''). From the bound of
+  Bia\l{}ynicki-Birula and Mycielski: \lean{heisenberg_of_entropicUncertainty}, and
+  \lean{sd_mul_sd_eq_hbar_div_two_iff}: equality iff $\rho_q, \rho_p$ are a.e.\ Gaussians with
+  $\sigma_q\sigma_p = \hbar/2$. From Lieb's bound on the Wehrl entropy:
+  \lean{heisenberg_of_wehrlBound}, and \lean{entropy_eq_one_of_wehrlBound}: at equality, at
+  $s = \sigma_q/\sigma_p$, $S_h[Q_s] = 1$ and $Q_s$ is a.e.\ a product of Gaussians \\
+(not in the brief) the classical counterpart &
+  \lean{log_le_entropy_marginalFst_add_entropy_marginalSnd}: under ZENT,
+  $S_1[\rho_q] + S_1[\rho_p] \ge \log h = \log(2\pi\hbar)$ for the marginals;
+  \lean{log_pi_exp_hbar_sub_log}: the quantum bound exceeds it by $\log(e/2)$;
+  \lean{uncertaintyPrinciple_of_lowerEntropicBound_marginal}: eq.~(3) by this route \\
+(used for the quantum case) the Gaussian bound for two densities on $\mathbb R$ &
+  \lean{exp_entropy_add_div_le_sd_mul_sd}:
+  $\sigma_q\sigma_p \ge e^{S_1[\rho_q] + S_1[\rho_p]}/(2\pi e)$, the bound for one DOF applied to
+  $\rho_q\rho_p$; \lean{sd_mul_sd_eq_exp_entropy_add_div_iff}: equality iff both are a.e.\
+  Gaussians \\
 (used for both equations) the Gaussian bound on any measure space &
   \lean{Hyp.hbar_div_exp_mul_exp_le}: $\sigma_f\sigma_g \ge (\hbar/e)e^{S_h[\rho] + E[\log J]}$
   for a weight $J > 0$ that turns every product of Gaussians in $(f, g)$ into a subprobability
@@ -219,10 +261,36 @@ Theorem~2, proof: then $\sigma_q\sigma_p = (\hbar/e)e^{S[\rho]}$ &
   $[L, L + \varepsilon]^2$ and $[-L - \varepsilon, -L]^2$, with $\varepsilon = \sqrt h/2$ and
   $L = \sqrt h$. Its entropy is $\log\frac12 < 0$ and $\sigma_q\sigma_p \ge h/2 \ge \hbar/e$.
   The brief instead correlates $q$ and $p$.
+\item For the quantum case, the brief points to the zero entropy of pure states. The
+  formalization instead takes two entropic bounds of quantum mechanics as hypotheses: that of
+  Bia\l{}ynicki-Birula and Mycielski (1975) on $S_1[|\psi|^2] + S_1[|\hat\psi|^2]$, and Lieb's
+  (1978) on the Wehrl entropy, the entropy of the Husimi function. Both rest on Beckner's sharp
+  Hausdorff--Young inequality, which is not in Mathlib, and are not proved here; nor are the
+  Fourier transform and the Husimi function of a wave function formed. Each, with the brief's
+  Gaussian bound, gives $\sigma_q\sigma_p \ge \hbar/2$:
+  \begin{itemize}
+  \item The bound of Bia\l{}ynicki-Birula and Mycielski is $S_1[\rho_q] + S_1[\rho_p] \ge
+    \log(\pi e\hbar)$, and the Gaussian bound for one DOF, applied to $\rho_q\rho_p$, gives
+    $\sigma_q\sigma_p \ge e^{S_1[\rho_q] + S_1[\rho_p]}/(2\pi e)$. Classically, ZENT and
+    subadditivity give only $S_1[\rho_q] + S_1[\rho_p] \ge \log(2\pi\hbar)$, and the same bound
+    gives CUP. The two principles differ by $\log(e/2)$ in this one inequality, the ratio of
+    $\hbar/2$ to $\hbar/e$.
+  \item Lieb's bound is $S_h[Q_s] \ge 1$, not $\ge 0$. With the variances of $Q_s$, the
+    Gaussian bound gives $(\sigma_q^2 + s\hbar/2)(\sigma_p^2 + \hbar/(2s)) \ge \hbar^2$ for every
+    $s > 0$, and at $s = \sigma_q/\sigma_p$ the left side is $(\sigma_q\sigma_p + \hbar/2)^2$.
+    This argument is due to Grabowski (Rep.\ Math.\ Phys.\ 20, 153 (1984)); we follow the
+    account in Ohya and Petz, \emph{Quantum Entropy and Its Use}, \S16, which goes through the
+    marginals of $Q_s$ instead. With $S_h[Q_s] \ge 0$ the same steps give only
+    $\sigma_q\sigma_p \ge (2/e - 1)\hbar/2 < 0$.
+  \end{itemize}
+  We checked the constants against Ohya--Petz and against the paper of Floerchinger, Haas and
+  M\"uller-Groeling, arXiv:\allowbreak 2103.07229. The original papers of
+  Bia\l{}ynicki-Birula--Mycielski, Lieb, Beckner and Grabowski could not be downloaded.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} The main claim (ZENT implies CUP, eqs.~(3) and (5)) is
-correct; the equality case is misstated.
+correct; the equality case is misstated, and the conclusion on the quantum case is not
+supported.
 \begin{itemize}
 \item CUP says that equality holds ``if and only if position and momentum are independent
   gaussian distributions'', and the proof ends the same way. Independent Gaussians satisfy
@@ -247,6 +315,16 @@ correct; the equality case is misstated.
   (for $h = 1$) and marginal $\rho_1$, whose entropy can be $-\infty$. Here the second moment
   of $y$ is infinite; finite second moments of all DOFs exclude this
   (\lean{isEnsemble_marginal}).
+\item The conclusion says that the lower bound on the entropy ``is already present in quantum
+  mechanics as pure states have zero entropy'', and that ``in general, the uncertainty principle
+  is a consequence of the entropic lower bound''. The von Neumann entropy is $\ge 0$ for every
+  state and $= 0$ for every pure state, whatever its $\sigma_q\sigma_p$, so this bound
+  constrains nothing; Heisenberg's principle follows from $[q, p] = i\hbar$ alone (Robertson; in
+  physlib \lean{LinearPMap.state_uncertainty_of_raw_commutator}).
+  A positive bound is needed even classically, since the brief's argument turns $S \ge 0$ into
+  $\hbar/e < \hbar/2$. The principle does follow from the two quantum entropic bounds above,
+  which are stronger than zero entropy: by $\log(e/2)$ for the marginals, and with $1$ in place of
+  $0$ for the Wehrl entropy.
 \end{itemize}
 
 \end{document}
