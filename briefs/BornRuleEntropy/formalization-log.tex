@@ -54,14 +54,32 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/BornRuleEntropy/BornRuleEntropy.lean}
 \item Library: \lean{BornRuleEntropy}
-\item Imports: \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture}
-\item New \lean{ForPhyslib} material:\newline
-  \lean{ForPhyslib/QuantumMechanics/VonNeumannEntropyMixture.lean}: a mixture
+\item Imports: \lean{ForMathlib.Analysis.Convex.AffineOnBall},
+  \lean{ForPhyslib.QuantumMechanics.Qubit.BlochBall},
+  \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture}
+\item New \lean{ForMathlib} material:
+  \lean{ForMathlib/Analysis/Convex/AffineOnBall.lean}: a real function on a real normed space that
+  is affine along every chord of the unit sphere is affine on the closed unit ball
+  (\lean{exists_linearMap_eq_of_chord}); in an inner product space, if moreover $f \le 1$ on the
+  sphere, $f(a) = 1$ and $f(-a) = 0$ for a unit vector $a$, then
+  $f(v) = (1 + \langle a, v\rangle)/2$ (\lean{eq_of_chord_of_le_one}).
+\item New \lean{ForPhyslib} material:
+\begin{itemize}
+\item \lean{ForPhyslib/QuantumMechanics/VonNeumannEntropyMixture.lean}: a mixture
   $\sum_i p_i\ket{\psi_i}\bra{\psi_i}$ of orthonormal pure states, in any dimension, is a density
   operator (\lean{isDensityOperator_tsum_smul_proj}) with entropy $\sum_i \eta(p_i)$,
   $\eta(x) = -x\log x$ (\lean{vonNeumannEntropy_tsum_smul_proj}); the entropy of an equal mixture
   of two pure states is $h((1 + |\braket{\psi|\phi}|)/2)$, $h$ the binary entropy
   (\lean{vonNeumannEntropy_mix_proj}).
+\item \lean{ForPhyslib/QuantumMechanics/Qubit/BlochBall.lean}: the Bloch ball of the plane spanned by
+  orthonormal $\psi, \chi$ in $E$. The point $r \in \mathbb R^3$ is the operator
+  $\tfrac12(\ket\psi\bra\psi + \ket\chi\bra\chi + r\cdot\sigma)$
+  (\lean{blochOperator}), affine in $r$; unit Bloch vectors are the pure states of the plane; the
+  Born probability of two of them is $(1 + a\cdot b)/2$, so orthogonal means antipodal; and every
+  point of the ball is the mixture of the ends of a diameter through it.
+\item \lean{ForPhyslib/QuantumMechanics/Qubit/Bloch.lean}: every unit vector of $\mathbb R^3$ is
+  the Bloch vector of a unit vector of $\mathbb C^2$ (\lean{exists_blochVector_eq}).
+\end{itemize}
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension. A pure state is
@@ -100,6 +118,15 @@ Proposition~3, eq.~(6), $S(\tfrac12\rho_\psi + \tfrac12\rho_\phi) = h\bigl((1 +
 Proposition~3, $p(\phi|\psi) = \lambda$ iff $S(\tfrac12\rho_\psi + \tfrac12\rho_\phi) =
   h((1 + \sqrt\lambda)/2)$ & \lean{norm_inner_sq_eq_iff}, for $\lambda \in [0, 1]$, with
   $p$ the Born rule \\
+Fig.~1, eq.~(4), a point of the Bloch ball is diagonal in the ends of the diameter through it &
+  \lean{Qubit.exists_blochOperator_eq} \\
+Eq.~(5), the Born rule is the squared cosine of the half-angle &
+  \lean{Qubit.norm_inner_planeVector_eq_cos} \\
+Eqs.~(4)--(5), the equal mixture is $\tfrac{1 + \sqrt\lambda}2\rho_+ +
+  \tfrac{1 - \sqrt\lambda}2\rho_-$ with $\rho_+ \perp \rho_-$ &
+  \lean{Qubit.exists_mix_proj_planeVector_eq} \\
+Proposition~3, eq.~(6), by the geometric diagonalization &
+  \lean{BlochBall.vonNeumannEntropy_mix_proj_eq} \\
 Fig.~2, the entropy is strictly decreasing in the Born probability &
   \lean{strictAntiOn_entropyOfBorn} \\
 Corollary~7, $\braket{\phi|\psi} = 0$ iff $S(\tfrac12\rho_\psi + \tfrac12\rho_\phi) = 1$ &
@@ -110,6 +137,10 @@ Theorem~9, BR-BORN and BR-ENT imply [B]MUTEX & \lean{MutualExclusivity.of_bornRu
 Theorem~9, BR-BORN and [B]MUTEX imply BR-ENT & \lean{IsVonNeumannEntropy.of_bornRule} \\
 Theorem~9, BR-ENT and [B]MUTEX imply BR-BORN & \lean{BornRule.of_isVonNeumannEntropy}, over
   EQST \\
+Theorem~9, BR-ENT and [B]MUTEX imply BR-BORN, on the Bloch ball (Fig.~3) &
+  \lean{BlochBall.BornRule.of_isVonNeumannEntropy}, over EQST \\
+Fig.~3, an affine function on the ball with maximum $1$ at $a$ and value $0$ at $-a$ is
+  $(1 + a\cdot r)/2$ & \lean{eq_of_chord_of_le_one} \\
 Theorem~9 & \lean{two_conditions_imply_third} \\
 (used for the last direction) orthogonal states are mutually exclusive &
   \lean{apply_eq_zero_of_inner_eq_zero} \\
@@ -130,16 +161,21 @@ Theorem~9 & \lean{two_conditions_imply_third} \\
   Shannon entropy of a countable family of weights can be infinite (see ``Problems found'').
 \item In EQST, affinity is assumed only for mixtures of two pure states, which is weaker than the
   brief's countable mixtures. EQST is used only for BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN,
-  and there only through $p(\psi|\psi) = 1$, $p \ge 0$ on pure states, and affinity for two pure
-  states. The other two directions do not use EQST. Corollary~8 is not formalized.
+  and there only through $p(\psi|\psi) = 1$, affinity for two pure states, and $p \ge 0$ on pure
+  states (the algebraic proof) or $p \le 1$ on pure states (the Bloch-ball proof). The other two directions do not use EQST. Corollary~8 is not formalized.
 \item The first argument of $p$ is the projection $\ket\psi\bra\psi$, so $p$ depends on the ray of
   $\psi$ only.
 \item In BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN, [B]MUTEX is used only for pairs of orthogonal
   states, and only in the direction ``Shannon entropy $\Rightarrow$ mutually exclusive''. In
   BR-BORN + [B]MUTEX $\Rightarrow$ BR-ENT only the other direction is used.
-\item The Bloch-ball argument for BR-BORN (Fig.~3) is replaced by an algebraic one in the qubit
-  spanned by $\psi$ and a unit $\chi \perp \psi$. With $f = p(\psi|\cdot)$, $f(\psi) = 1$ and
-  $f(\chi) = 0$, the convex identities
+\item BR-ENT + [B]MUTEX $\Rightarrow$ BR-BORN is proved twice. The first proof follows Fig.~3.
+  The states of the plane spanned by $\psi$ and a unit $\chi \perp \psi$ form a Bloch ball, on
+  which $f = p(\psi|\cdot)$ is affine along every chord, since the ends of a chord are pure states;
+  $f \le 1$, $f = 1$ at $\psi$ and $f = 0$ at the antipode $\chi$. Such a function is
+  $(1 + a\cdot r)/2$ with $a$ the Bloch vector of $\psi$ (\lean{eq_of_chord_of_le_one}): on a unit
+  $e \perp a$ its linear part vanishes, because otherwise $f$ would exceed $1$ on the sphere near
+  $a$. On the sphere $(1 + a\cdot b)/2$ is the Born rule. The second proof is algebraic, in the
+  same qubit. From $f(\psi) = 1$ and $f(\chi) = 0$, the convex identities
   $\ket u\bra u + s(r - s)\ket\chi\bra\chi =
   r(r - s)\ket\psi\bra\psi + 2rs\ket{e_\zeta}\bra{e_\zeta}$
   (for $r \ge s$, and symmetrically for $r \le s$), with $u = r\psi + s\bar\zeta\chi$ and
@@ -168,8 +204,13 @@ Theorem~9 & \lean{two_conditions_imply_third} \\
   values on $\psi$ and $\psi^\perp$. Therefore, $\psi$ and $\psi^\perp$ must be opposite points on
   the ball'' does not say why the affine function $p(\psi|\cdot)$ has its gradient along the axis
   through $\psi$ and $\psi^\perp$; that two orthogonal states are antipodal already holds in
-  the Bloch ball of EQST. The gradient is fixed because $p \ge 0$ near $\psi^\perp$, where
-  $p = 0$; the formalization makes this explicit (``Differences'', last item).
+  the Bloch ball of EQST. The missing step is that an affine function on the ball takes its
+  maximum only in the direction of its gradient, so $p \le 1$ with $p(\psi|\psi) = 1$ puts the
+  gradient along $\psi$ (\lean{eq_of_chord_of_le_one}). The brief also does not say why
+  $p(\psi|\cdot)$ is affine on the whole ball when EQST only makes it affine in mixtures of pure
+  states: every segment of the ball lies on a chord, whose ends are pure states
+  (\lean{exists_linearMap_eq_of_chord}). With these two steps the argument of Fig.~3 is
+  formalized as stated (``Differences'', last item).
 \end{itemize}
 
 \end{document}

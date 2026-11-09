@@ -5,6 +5,8 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
+public import ForMathlib.Analysis.Convex.AffineOnBall
+public import ForPhyslib.QuantumMechanics.Qubit.BlochBall
 public import ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture
 
 /-!
@@ -21,7 +23,9 @@ operators, the entropy `S` takes values in `[0, ∞]`, and logarithms are natura
 **Proposition 3.** The entropy of the equal mixture of two pure states is a strictly decreasing
 function of their Born probability `λ = |⟨ψ, ϕ⟩|²`, namely `h((1 + √λ) / 2)` with `h` the binary
 entropy (Fig. 2). Orthogonality is therefore the same as the mixture having entropy `log 2`
-(Corollary 7).
+(Corollary 7). A second proof follows the brief's geometric diagonalization (Fig. 1, eqs. (4)–(5)):
+the two states lie in a plane whose states form a Bloch ball, and the equal mixture, the midpoint of
+their Bloch vectors, is diagonal in the ends of the diameter through it.
 
 **Theorem 9.** Over the base condition EQST on the conditional probability `p`, any two of
 BR-BORN (`p` is the Born rule), BR-ENT (`S` is the von Neumann entropy) and [B]MUTEX (pairwise
@@ -35,11 +39,18 @@ spanned by `ψ, χ`, convex identities between pure states give
 `e_ζ = (ψ + ζ̄ χ) / √2`, and `f(e_ζ) + f(e_{-ζ}) = 1`. If `f(e_ζ) < ½`, the state with
 `r / s = ½ - f(e_ζ)` has `f < 0`; so `f(e_ζ) = ½` and `f(r ψ + s ζ̄ χ) = r²`, the Born rule.
 
+A second proof follows the brief's Fig. 3. The states of the plane form a Bloch ball, on which
+`f` is affine along every chord, at most `1`, `1` at `ψ` and `0` at the antipode `χ`. Such a
+function is `(1 + a · r) / 2` with `a` the Bloch vector of `ψ`, which on the sphere is the Born
+rule.
+
 ## ii. Key results
 
 - `BornRuleEntropy.entropyOfBorn`, `BornRuleEntropy.strictAntiOn_entropyOfBorn`: Fig. 2.
 - `BornRuleEntropy.vonNeumannEntropy_mix_proj_eq`, `BornRuleEntropy.norm_inner_sq_eq_iff`:
   Proposition 3.
+- `BornRuleEntropy.BlochBall.vonNeumannEntropy_mix_proj_eq`: eq. (6) by the geometric
+  diagonalization.
 - `BornRuleEntropy.inner_eq_zero_iff`: Corollary 7.
 - `BornRuleEntropy.EnsemblesAndStates`, `BornRuleEntropy.BornRule`,
   `BornRuleEntropy.IsVonNeumannEntropy`, `BornRuleEntropy.MutualExclusivity`: the conditions
@@ -47,6 +58,7 @@ spanned by `ψ, χ`, convex identities between pure states give
 - `BornRuleEntropy.MutualExclusivity.of_bornRule`: BR-BORN + BR-ENT ⇒ [B]MUTEX.
 - `BornRuleEntropy.IsVonNeumannEntropy.of_bornRule`: BR-BORN + [B]MUTEX ⇒ BR-ENT.
 - `BornRuleEntropy.BornRule.of_isVonNeumannEntropy`: BR-ENT + [B]MUTEX ⇒ BR-BORN.
+- `BornRuleEntropy.BlochBall.BornRule.of_isVonNeumannEntropy`: the same, on the Bloch ball.
 - `BornRuleEntropy.two_conditions_imply_third`: Theorem 9.
 
 ## iii. Table of contents
@@ -57,7 +69,8 @@ spanned by `ψ, χ`, convex identities between pure states give
 - D. BR-BORN and [B]MUTEX imply BR-ENT
 - E. Affine functions on a qubit
 - F. BR-ENT and [B]MUTEX imply BR-BORN
-- G. Theorem 9
+- G. BR-ENT and [B]MUTEX imply BR-BORN on the Bloch ball
+- H. Theorem 9
 
 ## iv. References
 
@@ -103,6 +116,55 @@ theorem vonNeumannEntropy_mix_proj_eq {ψ ϕ : E} (hψ : ‖ψ‖ = 1) (hϕ : �
     vonNeumannEntropy (mix (proj ψ) (proj ϕ)) =
       ENNReal.ofReal (entropyOfBorn (‖⟪ψ, ϕ⟫_ℂ‖ ^ 2)) := by
   rw [vonNeumannEntropy_mix_proj hψ hϕ, entropyOfBorn, Real.sqrt_sq (norm_nonneg _)]
+
+/-- **Proposition 3**, eq. (6), by the geometric diagonalization of Fig. 1 and eqs. (4)–(5).
+`ψ` and `ϕ` lie in a plane, whose states form a Bloch ball. There the equal mixture is
+`((1 + √λ) / 2) ρ₊ + ((1 - √λ) / 2) ρ₋` for two orthogonal pure states `ρ±`, the ends of the
+diameter through the midpoint of `ψ` and `ϕ` (`Qubit.exists_mix_proj_planeVector_eq`), so its
+entropy is `h((1 + √λ) / 2)`. -/
+theorem BlochBall.vonNeumannEntropy_mix_proj_eq {ψ ϕ : E} (hψ : ‖ψ‖ = 1) (hϕ : ‖ϕ‖ = 1) :
+    vonNeumannEntropy (mix (proj ψ) (proj ϕ)) =
+      ENNReal.ofReal (entropyOfBorn (‖⟪ψ, ϕ⟫_ℂ‖ ^ 2)) := by
+  rw [entropyOfBorn, Real.sqrt_sq (norm_nonneg _)]
+  rcases Qubit.eq_smul_or_exists_planeVector_eq hψ ϕ with ⟨c, rfl⟩ | ⟨χ, hχ, hψχ, u, rfl⟩
+  · have hc : ‖c‖ = 1 := by simpa [norm_smul, hψ] using hϕ
+    have hm : mix (proj ψ) (proj (c • ψ)) = proj ψ := by
+      rw [proj_smul, hc, one_pow, Complex.ofReal_one, one_smul, mix, ← add_smul]
+      norm_num
+    rw [hm, vonNeumannEntropy_proj hψ, inner_smul_right, norm_mul, hc, inner_self_eq_norm_sq_to_K,
+      hψ]
+    simp
+  set e : EuclideanSpace ℂ (Fin 2) := WithLp.toLp 2 ![1, 0]
+  have he : ‖e‖ = 1 := by simp [e, EuclideanSpace.norm_eq, Fin.sum_univ_two]
+  have hψe : Qubit.planeVector ψ χ e = ψ := by simp [e, Qubit.planeVector]
+  have hu : ‖u‖ = 1 := by rwa [Qubit.norm_planeVector hψ hχ hψχ] at hϕ
+  obtain ⟨u₁, u₂, h₁, h₂, h₁₂, hmix⟩ := Qubit.exists_mix_proj_planeVector_eq hψ hχ hψχ he hu
+  rw [hψe] at hmix
+  set c := ‖⟪ψ, Qubit.planeVector ψ χ u⟫_ℂ‖
+  have hc1 : c ≤ 1 := by
+    simpa [hψ, hϕ] using norm_inner_le_norm (𝕜 := ℂ) ψ (Qubit.planeVector ψ χ u)
+  have hc0 : 0 ≤ c := norm_nonneg _
+  set v : Fin 2 → E := ![Qubit.planeVector ψ χ u₁, Qubit.planeVector ψ χ u₂]
+  set q : Fin 2 → ℝ := ![(1 + c) / 2, (1 - c) / 2]
+  have hv : Orthonormal ℂ v := by
+    have n₁ := (Qubit.norm_planeVector hψ hχ hψχ u₁).trans h₁
+    have n₂ := (Qubit.norm_planeVector hψ hχ hψχ u₂).trans h₂
+    rw [orthonormal_iff_ite]
+    intro i j
+    fin_cases i <;> fin_cases j <;>
+      simp [v, h₁₂, inner_eq_zero_symm.mp h₁₂, inner_self_eq_norm_sq_to_K, n₁, n₂]
+  have hq0 : ∀ i, 0 ≤ q i := fun i => by fin_cases i <;> simp [q] <;> linarith
+  have hq : HasSum q 1 := by
+    convert hasSum_fintype q using 1
+    simp [q, Fin.sum_univ_two]
+    ring
+  have hρ : mix (proj ψ) (proj (Qubit.planeVector ψ χ u)) = ∑' i, (q i : ℂ) • proj (v i) := by
+    rw [tsum_fintype, Fin.sum_univ_two, hmix]
+    rfl
+  rw [hρ, vonNeumannEntropy_tsum_smul_proj hv hq0 hq, tsum_fintype, Fin.sum_univ_two,
+    binEntropy_eq_negMulLog_add_negMulLog_one_sub, show 1 - (1 + c) / 2 = (1 - c) / 2 by ring]
+  exact (ENNReal.ofReal_add (negMulLog_nonneg (hq0 0) (by simp [q]; linarith))
+    (negMulLog_nonneg (hq0 1) (by simp [q]; linarith))).symm
 
 omit [CompleteSpace E] in
 lemma norm_inner_sq_mem_Icc {ψ ϕ : E} (hψ : ‖ψ‖ = 1) (hϕ : ‖ϕ‖ = 1) :
@@ -495,7 +557,83 @@ theorem BornRule.of_isVonNeumannEntropy (hp : EnsemblesAndStates p)
   rw [hϕ', proj_smul, hζ, one_pow, Complex.ofReal_one, one_smul,
     apply_planeVec_eq hψ hχ hψχ hp h1 h0 (norm_nonneg c) hb.le hrs hζ]
 
-/-! ## G. Theorem 9 -/
+/-! ## G. BR-ENT and [B]MUTEX imply BR-BORN on the Bloch ball -/
+
+/-- BR-ENT and [B]MUTEX imply BR-BORN, over EQST, by the brief's argument of Fig. 3. `ψ` and `ϕ`
+lie in a plane, whose states form a Bloch ball. On it, `f(r) = p(ψ | ρ(r))` is affine along every
+chord, since the ends of a chord are pure states and EQST makes `p` affine in mixtures of two pure
+states. Also `f ≤ 1`, `f = 1` at `ψ`, and `f = 0` at the antipode `ψ⊥`, since orthogonal states
+are mutually exclusive. So `f(r) = (1 + a · r) / 2` with `a` the Bloch vector of `ψ`
+(`eq_of_chord_of_le_one`), and on the sphere this is `|⟨ψ|ϕ⟩|²`. -/
+theorem BlochBall.BornRule.of_isVonNeumannEntropy (hp : EnsemblesAndStates p)
+    (hS : IsVonNeumannEntropy S) (hM : MutualExclusivity S p) : BornRule p := by
+  intro ψ ϕ hψ hϕ
+  rcases Qubit.eq_smul_or_exists_planeVector_eq hψ ϕ with ⟨c, rfl⟩ | ⟨χ, hχ, hψχ, u, rfl⟩
+  · have hc : ‖c‖ = 1 := by simpa [norm_smul, hψ] using hϕ
+    rw [proj_smul, hc, one_pow, Complex.ofReal_one, one_smul, (hp.eq_one_iff hψ hψ).mpr rfl,
+      inner_smul_right, norm_mul, hc, inner_self_eq_norm_sq_to_K, hψ]
+    simp
+  set e : EuclideanSpace ℂ (Fin 2) := WithLp.toLp 2 ![1, 0]
+  have he : ‖e‖ = 1 := by simp [e, EuclideanSpace.norm_eq, Fin.sum_univ_two]
+  have hψe : Qubit.planeVector ψ χ e = ψ := by simp [e, Qubit.planeVector]
+  have hu : ‖u‖ = 1 := by rwa [Qubit.norm_planeVector hψ hχ hψχ] at hϕ
+  -- The Bloch ball as the unit ball of Euclidean `ℝ³`.
+  have hinner : ∀ x y : EuclideanSpace ℝ (Fin 3), ⟪x, y⟫_ℝ = x.ofLp ⬝ᵥ y.ofLp := fun x y => by
+    simp [PiLp.inner_apply, dotProduct, mul_comm]
+  have hdot : ∀ x : EuclideanSpace ℝ (Fin 3), ‖x‖ = 1 → x.ofLp ⬝ᵥ x.ofLp = 1 := fun x hx => by
+    rw [← hinner, real_inner_self_eq_norm_sq, hx, one_pow]
+  have hnorm : ∀ a : Fin 3 → ℝ, a ⬝ᵥ a = 1 → ‖WithLp.toLp 2 a‖ = 1 := fun a ha => by
+    rw [← pow_eq_one_iff_of_nonneg (norm_nonneg _) two_ne_zero, ← real_inner_self_eq_norm_sq,
+      hinner]
+    exact ha
+  -- A unit Bloch vector is a pure state of the plane.
+  have hpure : ∀ x : EuclideanSpace ℝ (Fin 3), ‖x‖ = 1 →
+      ∃ w : EuclideanSpace ℂ (Fin 2), ‖Qubit.planeVector ψ χ w‖ = 1 ∧
+        Qubit.blochVector w = x.ofLp ∧
+        Qubit.blochOperator ψ χ x.ofLp = proj (Qubit.planeVector ψ χ w) := fun x hx => by
+    obtain ⟨w, hw, hbw, hpw⟩ := Qubit.exists_proj_planeVector_eq (ψ := ψ) (χ := χ) (hdot x hx)
+    exact ⟨w, (Qubit.norm_planeVector hψ hχ hψχ w).trans hw, hbw, hpw.symm⟩
+  set f : EuclideanSpace ℝ (Fin 3) → ℝ := fun r => p (proj ψ) (Qubit.blochOperator ψ χ r.ofLp)
+  have hchord : ∀ x y : EuclideanSpace ℝ (Fin 3), ‖x‖ = 1 → ‖y‖ = 1 → ∀ t : ℝ, 0 ≤ t → t ≤ 1 →
+      f (t • x + (1 - t) • y) = t * f x + (1 - t) * f y := by
+    intro x y hx hy t ht0 ht1
+    obtain ⟨wx, hwx, -, hpx⟩ := hpure x hx
+    obtain ⟨wy, hwy, -, hpy⟩ := hpure y hy
+    simp only [f, WithLp.ofLp_add, WithLp.ofLp_smul, Qubit.blochOperator_convex, hpx, hpy]
+    exact hp.affine hψ hwx hwy ht0 ht1
+  have hle : ∀ x : EuclideanSpace ℝ (Fin 3), ‖x‖ = 1 → f x ≤ 1 := fun x hx => by
+    obtain ⟨w, hw, -, hpw⟩ := hpure x hx
+    simp only [f, hpw]
+    exact (hp.mem_Icc hψ (isDensityOperator_proj hw)).2
+  -- `ψ` and its antipode.
+  have hae : Qubit.blochVector e ⬝ᵥ Qubit.blochVector e = 1 := by
+    rw [Qubit.blochVector_dotProduct_self, he, one_pow]
+  set a : EuclideanSpace ℝ (Fin 3) := WithLp.toLp 2 (Qubit.blochVector e)
+  have ha : ‖a‖ = 1 := hnorm _ hae
+  have hfa : f a = 1 := by
+    simp only [f, a, ← Qubit.proj_planeVector he, hψe]
+    exact (hp.eq_one_iff hψ hψ).mpr rfl
+  have hfna : f (-a) = 0 := by
+    obtain ⟨w, hw, hbw, hpw⟩ := hpure (-a) (by rwa [norm_neg])
+    have hw' : ‖w‖ = 1 := by rwa [Qubit.norm_planeVector hψ hχ hψχ] at hw
+    have horth : ⟪ψ, Qubit.planeVector ψ χ w⟫_ℂ = 0 := by
+      have h := Qubit.inner_planeVector_eq_zero_iff hψ hχ hψχ he hw'
+      rw [hψe] at h
+      rw [h, hbw]
+      simp [a]
+    simp only [f, hpw]
+    exact apply_eq_zero_of_inner_eq_zero hS hM hψ hw horth
+  -- The affine function is `(1 + a · r) / 2`.
+  have hb : ‖(WithLp.toLp 2 (Qubit.blochVector u) : EuclideanSpace ℝ (Fin 3))‖ = 1 := by
+    refine hnorm _ ?_
+    rw [Qubit.blochVector_dotProduct_self, hu, one_pow]
+  have key := eq_of_chord_of_le_one hchord hle ha hfa hfna hb.le
+  simp only [f, a, hinner] at key
+  have hB := Qubit.norm_inner_planeVector_sq hψ hχ hψχ he hu
+  rw [hψe] at hB
+  rw [Qubit.proj_planeVector hu, key, hB]
+
+/-! ## H. Theorem 9 -/
 
 /-- **Theorem 9.** Over EQST, any two of BR-BORN, BR-ENT and [B]MUTEX imply the third. -/
 theorem two_conditions_imply_third (hp : EnsemblesAndStates p) :

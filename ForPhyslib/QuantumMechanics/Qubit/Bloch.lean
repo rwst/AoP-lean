@@ -30,6 +30,8 @@ Bloch vectors.
   they have the same Bloch vector.
 - `QuantumMechanics.Qubit.inner_eq_zero_iff`: two unit vectors are orthogonal if and only if
   their Bloch vectors are opposite.
+- `QuantumMechanics.Qubit.exists_blochVector_eq`: every unit vector of `ℝ³` is the Bloch vector of
+  a unit vector.
 -/
 
 @[expose] public noncomputable section
@@ -127,3 +129,39 @@ theorem inner_eq_zero_iff {χ ψ : EuclideanSpace ℂ (Fin 2)} (hχ : ‖χ‖ =
       rw [hi, h, neg_dotProduct, hb]
       norm_num
     simpa using h0
+
+/-- Every unit vector `a` of `ℝ³` is the Bloch vector of a unit vector of `ℂ²`: of `(0, 1)` if
+`a₃ = -1`, and otherwise of the normalization of `(1 + a₃, a₁ + i a₂)`. -/
+theorem exists_blochVector_eq {a : Fin 3 → ℝ} (ha : a ⬝ᵥ a = 1) :
+    ∃ ψ : EuclideanSpace ℂ (Fin 2), ‖ψ‖ = 1 ∧ blochVector ψ = a := by
+  simp only [dotProduct, Fin.sum_univ_three] at ha
+  by_cases h2 : a 2 = -1
+  · have h0 : a 0 = 0 := by nlinarith [sq_nonneg (a 0), sq_nonneg (a 1)]
+    have h1 : a 1 = 0 := by nlinarith [sq_nonneg (a 0), sq_nonneg (a 1)]
+    refine ⟨WithLp.toLp 2 ![0, 1], by simp [EuclideanSpace.norm_eq, Fin.sum_univ_two], ?_⟩
+    ext i
+    fin_cases i <;> simp [blochVector, h0, h1, h2]
+  · have h2' : 0 < 1 + a 2 := by
+      rcases (show -1 ≤ a 2 by nlinarith [sq_nonneg (a 0), sq_nonneg (a 1)]).lt_or_eq with h | h
+      · linarith
+      · exact absurd h.symm h2
+    set x : EuclideanSpace ℂ (Fin 2) := WithLp.toLp 2 ![1 + (a 2 : ℂ), a 0 + a 1 * I]
+    have hx : ‖x‖ ^ 2 = 2 * (1 + a 2) := by
+      rw [norm_sq]
+      simp [x, Complex.sq_norm, Complex.normSq_apply]
+      nlinarith
+    have hx0 : ‖x‖ ≠ 0 := fun h => by rw [h] at hx; linarith
+    refine ⟨(‖x‖ : ℂ)⁻¹ • x, ?_, ?_⟩
+    · rw [norm_smul, norm_inv, Complex.norm_real, Real.norm_of_nonneg (norm_nonneg _),
+        inv_mul_cancel₀ hx0]
+    · rw [blochVector_smul, norm_inv, Complex.norm_real, Real.norm_of_nonneg (norm_nonneg _),
+        inv_pow, hx]
+      ext i
+      fin_cases i
+      · simp [x, blochVector]
+        field_simp
+      · simp [x, blochVector]
+        field_simp
+      · simp [x, blochVector, Complex.sq_norm, Complex.normSq_apply]
+        field_simp
+        nlinarith
