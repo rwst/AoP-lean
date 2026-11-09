@@ -59,6 +59,13 @@ but never `0`: `b` with entropy `0` (BR-BORN only), `(1 + b) / 2` with the von N
 only, since no two states are mutually exclusive and no mixture of two has entropy `log 2`). In
 dimension at most one, EQST alone implies BR-BORN.
 
+The brief takes the entropy to be real-valued. In infinite dimension some density operators have
+von Neumann entropy `∞`, and some countable weights have Shannon entropy `∞`; so with an entropy
+that is never `∞`, BR-ENT fails, BR-BORN and [B]MUTEX exclude each other, and Theorem 9 holds only
+vacuously ([B]MUTEX alone can still hold). Restricting BR-ENT to the ensembles and [B]MUTEX to the
+weights of finite entropy repairs this: Theorem 9 then holds for a real-valued entropy, with the
+same proofs.
+
 ## ii. Key results
 
 - `BornRuleEntropy.entropyOfBorn`, `BornRuleEntropy.strictAntiOn_entropyOfBorn`: Fig. 2.
@@ -83,6 +90,11 @@ dimension at most one, EQST alone implies BR-BORN.
 - `BornRuleEntropy.CountablyAffine.apply_eq_re_inner`: the Born rule for ensembles.
 - `BornRuleEntropy.conditions_independent`: the conditions are independent over EQST.
 - `BornRuleEntropy.BornRule.of_rank_le_one`: in dimension at most one, EQST implies BR-BORN.
+- `BornRuleEntropy.not_two_conditions_of_ne_top`: with a real-valued entropy, in infinite
+  dimension no two of the conditions hold.
+- `BornRuleEntropy.IsVonNeumannEntropyOnFinite`, `BornRuleEntropy.MutualExclusivityOnFinite`:
+  BR-ENT and [B]MUTEX for a real-valued entropy, on finite entropy.
+- `BornRuleEntropy.two_conditions_imply_third_onFinite`: Theorem 9 for these.
 
 ## iii. Table of contents
 
@@ -96,6 +108,8 @@ dimension at most one, EQST alone implies BR-BORN.
 - H. Theorem 9
 - I. Countable affinity and Corollary 8
 - J. Independence of the conditions
+- K. Real-valued entropy in infinite dimension
+- L. Real-valued entropy on finite entropy
 
 ## iv. References
 
@@ -279,23 +293,28 @@ lemma exists_weights_mix {ι : Type*} (ψ : ι → E) {i j : ι} (hij : i ≠ j)
     ring_nf
   exact ⟨w, fun k => by simp only [w]; split_ifs <;> norm_num, hw, hmix, hent⟩
 
+omit [CompleteSpace E] in
+/-- Under BR-BORN, a mutually exclusive family of pure states is orthonormal. -/
+lemma orthonormal_of_bornRule (hB : BornRule p) {ι : Type*} {ψ : ι → E} (hψ : ∀ i, ‖ψ i‖ = 1)
+    (h : ∀ i j, i ≠ j → p (proj (ψ i)) (proj (ψ j)) = 0) : Orthonormal ℂ ψ := by
+  classical
+  rw [orthonormal_iff_ite]
+  intro i j
+  split_ifs with hij
+  · subst hij
+    rw [inner_self_eq_norm_sq_to_K, hψ]
+    simp
+  · have h' := hB (hψ i) (hψ j)
+    rw [h i j hij] at h'
+    exact norm_eq_zero.mp (pow_eq_zero_iff two_ne_zero |>.mp h'.symm)
+
 /-- BR-BORN and BR-ENT imply [B]MUTEX. -/
 theorem MutualExclusivity.of_bornRule (hB : BornRule p) (hS : IsVonNeumannEntropy S) :
     MutualExclusivity S p := by
   intro ι _ ψ hψ
   constructor
   · intro h w hw0 hw
-    have hon : Orthonormal ℂ ψ := by
-      classical
-      rw [orthonormal_iff_ite]
-      intro i j
-      split_ifs with hij
-      · subst hij
-        rw [inner_self_eq_norm_sq_to_K, hψ]
-        simp
-      · have h' := hB (hψ i) (hψ j)
-        rw [h i j hij] at h'
-        exact norm_eq_zero.mp (pow_eq_zero_iff two_ne_zero |>.mp h'.symm)
+    have hon := orthonormal_of_bornRule hB hψ h
     rw [hS _ (isDensityOperator_tsum_smul_proj hon hw0 hw),
       vonNeumannEntropy_tsum_smul_proj hon hw0 hw]
   · intro h i j hij
@@ -491,24 +510,29 @@ end Qubit
 
 /-! ## F. BR-ENT and [B]MUTEX imply BR-BORN -/
 
+omit [CompleteSpace E] in
+/-- Two orthogonal unit vectors, as an orthonormal family indexed by `ULift (Fin 2)`. -/
+lemma orthonormal_pair {ψ χ : E} (hψ : ‖ψ‖ = 1) (hχ : ‖χ‖ = 1) (hψχ : ⟪ψ, χ⟫_ℂ = 0) :
+    Orthonormal ℂ (fun k : ULift.{u} (Fin 2) => ![ψ, χ] k.down) := by
+  rw [orthonormal_iff_ite]
+  rintro ⟨i⟩ ⟨j⟩
+  have hχψ : ⟪χ, ψ⟫_ℂ = 0 := by rw [← inner_conj_symm, hψχ, map_zero]
+  fin_cases i <;> fin_cases j <;> simp [hψχ, hχψ, inner_self_eq_norm_sq_to_K, hψ, hχ]
+
 /-- Under BR-ENT and [B]MUTEX, orthogonal pure states are mutually exclusive. -/
 lemma apply_eq_zero_of_inner_eq_zero (hS : IsVonNeumannEntropy S) (hM : MutualExclusivity S p)
     {ψ χ : E} (hψ : ‖ψ‖ = 1) (hχ : ‖χ‖ = 1) (hψχ : ⟪ψ, χ⟫_ℂ = 0) :
     p (proj ψ) (proj χ) = 0 := by
-  set φ : ULift.{u} (Fin 2) → E := fun k => ![ψ, χ] k.down
-  have hφ : Orthonormal ℂ φ := by
-    rw [orthonormal_iff_ite]
-    rintro ⟨i⟩ ⟨j⟩
-    have hχψ : ⟪χ, ψ⟫_ℂ = 0 := by rw [← inner_conj_symm, hψχ, map_zero]
-    fin_cases i <;> fin_cases j <;> simp [φ, hψχ, hχψ, inner_self_eq_norm_sq_to_K, hψ, hχ]
-  have h := (hM _ φ hφ.1).mpr fun w hw0 hw => by
+  have hφ := orthonormal_pair hψ hχ hψχ
+  have h := (hM _ _ hφ.1).mpr fun w hw0 hw => by
     rw [hS _ (isDensityOperator_tsum_smul_proj hφ hw0 hw),
       vonNeumannEntropy_tsum_smul_proj hφ hw0 hw]
   exact h ⟨0⟩ ⟨1⟩ (by simp)
 
-/-- BR-ENT and [B]MUTEX imply BR-BORN, over EQST. -/
-theorem BornRule.of_isVonNeumannEntropy (hp : EnsemblesAndStates p)
-    (hS : IsVonNeumannEntropy S) (hM : MutualExclusivity S p) : BornRule p := by
+/-- Over EQST, if orthogonal pure states are mutually exclusive, then BR-BORN holds. -/
+theorem BornRule.of_apply_eq_zero (hp : EnsemblesAndStates p)
+    (h0 : ∀ {ψ χ : E}, ‖ψ‖ = 1 → ‖χ‖ = 1 → ⟪ψ, χ⟫_ℂ = 0 → p (proj ψ) (proj χ) = 0) :
+    BornRule p := by
   intro ψ ϕ hψ hϕ
   set c := ⟪ψ, ϕ⟫_ℂ with hc
   have h1 : p (proj ψ) (proj ψ) = 1 := (hp.eq_one_iff hψ hψ).mpr rfl
@@ -563,10 +587,14 @@ theorem BornRule.of_isVonNeumannEntropy (hp : EnsemblesAndStates p)
       show ζ * ((b : ℂ) * conj ζ) = b * (ζ * conj ζ) by ring, hζζ, mul_one]
     simp only [χ, smul_smul, mul_inv_cancel₀ hbc, one_smul, v]
     abel
-  have h0 := apply_eq_zero_of_inner_eq_zero hS hM hψ hχ hψχ
   have hrs : ‖c‖ ^ 2 + b ^ 2 = 1 := by rw [hv2]; ring
   rw [hϕ', proj_smul, hζ, one_pow, Complex.ofReal_one, one_smul,
-    apply_planeVec_eq hψ hχ hψχ hp h1 h0 (norm_nonneg c) hb.le hrs hζ]
+    apply_planeVec_eq hψ hχ hψχ hp h1 (h0 hψ hχ hψχ) (norm_nonneg c) hb.le hrs hζ]
+
+/-- BR-ENT and [B]MUTEX imply BR-BORN, over EQST. -/
+theorem BornRule.of_isVonNeumannEntropy (hp : EnsemblesAndStates p)
+    (hS : IsVonNeumannEntropy S) (hM : MutualExclusivity S p) : BornRule p :=
+  BornRule.of_apply_eq_zero hp fun hψ hχ => apply_eq_zero_of_inner_eq_zero hS hM hψ hχ
 
 /-! ## G. BR-ENT and [B]MUTEX imply BR-BORN on the Bloch ball -/
 
@@ -943,5 +971,161 @@ theorem BornRule.of_rank_le_one (hp : EnsemblesAndStates p) (hE : Module.rank �
     rw [norm_smul] at hψ hϕ
     linear_combination (‖b‖ * ‖v‖) * hψ + hϕ
   rw [(hp.eq_one_iff hψ hϕ).mpr (proj_eq_proj_of_norm_inner_eq_one hψ hϕ h1), h1, one_pow]
+
+/-! ## K. Real-valued entropy in infinite dimension -/
+
+/-- With a real-valued entropy (one that is never `∞`), BR-ENT fails in infinite dimension: some
+density operator has von Neumann entropy `∞`. -/
+theorem not_isVonNeumannEntropy_of_ne_top (hE : ¬ FiniteDimensional ℂ E) (hS : ∀ ρ, S ρ ≠ ∞) :
+    ¬ IsVonNeumannEntropy S := fun h => by
+  obtain ⟨ρ, hρ, htop⟩ := exists_isDensityOperator_vonNeumannEntropy_eq_top hE
+  exact hS ρ ((h ρ hρ).trans htop)
+
+omit [CompleteSpace E] in
+/-- With a real-valued entropy, BR-BORN and [B]MUTEX are incompatible in infinite dimension: a
+countable orthonormal family is mutually exclusive under BR-BORN, and some mixture of it has
+weights of Shannon entropy `∞`. -/
+theorem not_bornRule_and_mutualExclusivity_of_ne_top (hE : ¬ FiniteDimensional ℂ E)
+    (hS : ∀ ρ, S ρ ≠ ∞) : ¬ (BornRule p ∧ MutualExclusivity S p) := by
+  rintro ⟨hB, hM⟩
+  obtain ⟨ι, _, ψ, w, hψ, hw0, hw, hent⟩ := exists_orthonormal_tsum_negMulLog_eq_top hE
+  refine hS _ (((hM ι ψ hψ.1).mp (fun i j hij => ?_) w hw0 hw).trans hent)
+  rw [hB (hψ.1 i) (hψ.1 j), hψ.2 hij]
+  simp
+
+/-- **Theorem 9 with a real-valued entropy.** In infinite dimension, if `S` is never `∞`, no two of
+BR-BORN, BR-ENT and [B]MUTEX hold together, so Theorem 9 holds only vacuously. -/
+theorem not_two_conditions_of_ne_top (hE : ¬ FiniteDimensional ℂ E) (hS : ∀ ρ, S ρ ≠ ∞) :
+    ¬ (BornRule p ∧ IsVonNeumannEntropy S) ∧ ¬ (BornRule p ∧ MutualExclusivity S p) ∧
+      ¬ (IsVonNeumannEntropy S ∧ MutualExclusivity S p) :=
+  ⟨fun h => not_isVonNeumannEntropy_of_ne_top hE hS h.2,
+    not_bornRule_and_mutualExclusivity_of_ne_top hE hS,
+    fun h => not_isVonNeumannEntropy_of_ne_top hE hS h.1⟩
+
+/-- [B]MUTEX alone can hold with a real-valued entropy: `(1 + ⟨ψ, ρ ψ⟩) / 2` with entropy `0`. No
+two states are mutually exclusive, and no mixture of two has entropy `log 2`. -/
+theorem mutualExclusivity_zero : MutualExclusivity (0 : (E →L[ℂ] E) → ℝ≥0∞) halfBornProb := by
+  intro ι _ φ hφ
+  have hpos : ∀ i j, halfBornProb (proj (φ i)) (proj (φ j)) ≠ 0 := fun i j h => by
+    have := (bornProb_mem_Icc (hφ i) (isDensityOperator_proj (hφ j))).1
+    rw [halfBornProb] at h
+    linarith
+  constructor
+  · intro h0 w hw0 hw
+    have hsub : ∀ i j, i = j := fun i j => by_contra fun hij => hpos i j (h0 i j hij)
+    have hne : Nonempty ι := by
+      by_contra hne
+      have : IsEmpty ι := not_nonempty_iff.mp hne
+      exact one_ne_zero (hw.unique hasSum_empty)
+    obtain ⟨i⟩ := hne
+    have hwi : w i = 1 := (hasSum_single i fun j hj => absurd (hsub j i) hj).unique hw
+    rw [Pi.zero_apply, tsum_eq_single i fun j hj => absurd (hsub j i) hj, hwi]
+    simp
+  · intro hS i j hij
+    obtain ⟨w, hw0, hw, -, hent⟩ := exists_weights_mix φ hij
+    have h := hS w hw0 hw
+    rw [Pi.zero_apply, hent] at h
+    exact absurd h (ENNReal.ofReal_pos.mpr (Real.log_pos one_lt_two)).ne
+
+/-! ## L. Real-valued entropy on finite entropy -/
+
+/-- **Condition BR-ENT for a real-valued entropy**: `S(ρ) = -tr (ρ log ρ)` on the density
+operators of finite von Neumann entropy. -/
+def IsVonNeumannEntropyOnFinite (s : (E →L[ℂ] E) → ℝ) : Prop :=
+  ∀ ρ, IsDensityOperator ρ → vonNeumannEntropy ρ ≠ ∞ → s ρ = (vonNeumannEntropy ρ).toReal
+
+/-- **Condition [B]MUTEX for a real-valued entropy**, for the weights of finite Shannon entropy:
+a countable family of pure states is pairwise mutually exclusive iff every such mixture of it has
+the Shannon entropy of its weights. -/
+def MutualExclusivityOnFinite (s : (E →L[ℂ] E) → ℝ) (p : (E →L[ℂ] E) → (E →L[ℂ] E) → ℝ) :
+    Prop :=
+  ∀ (ι : Type u) [Countable ι] (ψ : ι → E), (∀ i, ‖ψ i‖ = 1) →
+    ((∀ i j, i ≠ j → p (proj (ψ i)) (proj (ψ j)) = 0) ↔
+      ∀ w : ι → ℝ, (∀ i, 0 ≤ w i) → HasSum w 1 → Summable (fun i => negMulLog (w i)) →
+        s (∑' i, (w i : ℂ) • proj (ψ i)) = ∑' i, negMulLog (w i))
+
+variable {s : (E →L[ℂ] E) → ℝ}
+
+lemma negMulLog_nonneg_of_hasSum {ι : Type*} {w : ι → ℝ} (hw0 : ∀ i, 0 ≤ w i) (hw : HasSum w 1)
+    (i : ι) : 0 ≤ negMulLog (w i) :=
+  negMulLog_nonneg (hw0 i) (le_hasSum hw i fun j _ => hw0 j)
+
+/-- The Shannon entropy of weights is finite iff `-wᵢ log wᵢ` is summable. -/
+lemma tsum_ofReal_negMulLog_ne_top_iff {ι : Type*} {w : ι → ℝ} (hw0 : ∀ i, 0 ≤ w i)
+    (hw : HasSum w 1) :
+    ∑' i, ENNReal.ofReal (negMulLog (w i)) ≠ ∞ ↔ Summable fun i => negMulLog (w i) :=
+  ⟨fun h => (ENNReal.summable_toReal h).congr fun i =>
+      ENNReal.toReal_ofReal (negMulLog_nonneg_of_hasSum hw0 hw i),
+    fun h => by
+      rw [← ENNReal.ofReal_tsum_of_nonneg (negMulLog_nonneg_of_hasSum hw0 hw) h]
+      exact ENNReal.ofReal_ne_top⟩
+
+lemma IsVonNeumannEntropyOnFinite.ofReal_eq (hS : IsVonNeumannEntropyOnFinite s)
+    {ρ : E →L[ℂ] E} (hρ : IsDensityOperator ρ) (h : vonNeumannEntropy ρ ≠ ∞) :
+    ENNReal.ofReal (s ρ) = vonNeumannEntropy ρ := by
+  rw [hS ρ hρ h, ENNReal.ofReal_toReal h]
+
+/-- Under BR-ENT on finite entropy, a mixture of orthonormal pure states with weights of finite
+Shannon entropy has that entropy. -/
+lemma IsVonNeumannEntropyOnFinite.apply_tsum_smul_proj (hS : IsVonNeumannEntropyOnFinite s)
+    {ι : Type*} {ψ : ι → E} {w : ι → ℝ} (hψ : Orthonormal ℂ ψ) (hw0 : ∀ i, 0 ≤ w i)
+    (hw : HasSum w 1) (hsum : Summable fun i => negMulLog (w i)) :
+    s (∑' i, (w i : ℂ) • proj (ψ i)) = ∑' i, negMulLog (w i) := by
+  have hent := vonNeumannEntropy_tsum_smul_proj hψ hw0 hw
+  rw [← ENNReal.ofReal_tsum_of_nonneg (negMulLog_nonneg_of_hasSum hw0 hw) hsum] at hent
+  rw [hS _ (isDensityOperator_tsum_smul_proj hψ hw0 hw) (by rw [hent]; exact ENNReal.ofReal_ne_top),
+    hent, ENNReal.toReal_ofReal (tsum_nonneg (negMulLog_nonneg_of_hasSum hw0 hw))]
+
+/-- BR-BORN and BR-ENT imply [B]MUTEX, for a real-valued entropy on finite entropy. -/
+theorem MutualExclusivityOnFinite.of_bornRule (hB : BornRule p)
+    (hS : IsVonNeumannEntropyOnFinite s) : MutualExclusivityOnFinite s p := by
+  intro ι _ ψ hψ
+  constructor
+  · intro h w hw0 hw hsum
+    exact hS.apply_tsum_smul_proj (orthonormal_of_bornRule hB hψ h) hw0 hw hsum
+  · intro h i j hij
+    obtain ⟨w, hw0, hw, hmix, hent⟩ := exists_weights_mix ψ hij
+    have hsum := (tsum_ofReal_negMulLog_ne_top_iff hw0 hw).mp
+      (by rw [hent]; exact ENNReal.ofReal_ne_top)
+    have hS2 := congrArg ENNReal.ofReal (h w hw0 hw hsum)
+    rw [ENNReal.ofReal_tsum_of_nonneg (negMulLog_nonneg_of_hasSum hw0 hw) hsum, hent, hmix,
+      hS.ofReal_eq ((isDensityOperator_proj (hψ i)).mix (isDensityOperator_proj (hψ j)))
+        (by rw [vonNeumannEntropy_mix_proj_eq (hψ i) (hψ j)]; exact ENNReal.ofReal_ne_top)] at hS2
+    rw [hB (hψ i) (hψ j), (inner_eq_zero_iff (hψ i) (hψ j)).mpr hS2]
+    simp
+
+/-- BR-BORN and [B]MUTEX imply BR-ENT, for a real-valued entropy on finite entropy. -/
+theorem IsVonNeumannEntropyOnFinite.of_bornRule (hB : BornRule p)
+    (hM : MutualExclusivityOnFinite s p) : IsVonNeumannEntropyOnFinite s := by
+  intro ρ hρ hfin
+  obtain ⟨ι, _, φ, w, hφ, hw0, hw, hρ'⟩ := hρ.exists_tsum_smul_proj
+  have hent := vonNeumannEntropy_tsum_smul_proj hφ hw0 hw
+  rw [hρ'] at hent
+  have hsum := (tsum_ofReal_negMulLog_ne_top_iff hw0 hw).mp (hent ▸ hfin)
+  have hM' := (hM ι φ hφ.1).mp (fun i j hij => by
+    rw [hB (hφ.1 i) (hφ.1 j), hφ.2 hij]
+    simp) w hw0 hw hsum
+  rw [hρ'] at hM'
+  rw [hM', hent, ← ENNReal.ofReal_tsum_of_nonneg (negMulLog_nonneg_of_hasSum hw0 hw) hsum,
+    ENNReal.toReal_ofReal (tsum_nonneg (negMulLog_nonneg_of_hasSum hw0 hw))]
+
+/-- BR-ENT and [B]MUTEX imply BR-BORN over EQST, for a real-valued entropy on finite entropy:
+orthogonal pure states are mutually exclusive, since their mixtures have finite entropy. -/
+theorem BornRule.of_isVonNeumannEntropyOnFinite (hp : EnsemblesAndStates p)
+    (hS : IsVonNeumannEntropyOnFinite s) (hM : MutualExclusivityOnFinite s p) : BornRule p :=
+  BornRule.of_apply_eq_zero hp fun hψ hχ hψχ =>
+    have hφ := orthonormal_pair hψ hχ hψχ
+    (hM _ _ hφ.1).mpr (fun _ hw0 hw hsum => hS.apply_tsum_smul_proj hφ hw0 hw hsum)
+      ⟨0⟩ ⟨1⟩ (by simp)
+
+/-- **Theorem 9 with a real-valued entropy on finite entropy.** Over EQST, if BR-ENT and [B]MUTEX
+are restricted to ensembles and weights of finite entropy, any two of BR-BORN, BR-ENT and
+[B]MUTEX imply the third. -/
+theorem two_conditions_imply_third_onFinite (hp : EnsemblesAndStates p) :
+    (BornRule p → IsVonNeumannEntropyOnFinite s → MutualExclusivityOnFinite s p) ∧
+      (BornRule p → MutualExclusivityOnFinite s p → IsVonNeumannEntropyOnFinite s) ∧
+      (IsVonNeumannEntropyOnFinite s → MutualExclusivityOnFinite s p → BornRule p) :=
+  ⟨MutualExclusivityOnFinite.of_bornRule, IsVonNeumannEntropyOnFinite.of_bornRule,
+    BornRule.of_isVonNeumannEntropyOnFinite hp⟩
 
 end BornRuleEntropy

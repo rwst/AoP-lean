@@ -5,6 +5,8 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
+public import ForMathlib.Analysis.InnerProductSpace.GramSchmidtOrtho
+public import ForMathlib.Analysis.SpecialFunctions.Log.NegMulLog
 public import ForPhyslib.QuantumMechanics.VonNeumannRelativeEntropy
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 
@@ -25,6 +27,9 @@ For two unit vectors `ψ`, `ϕ` with `c = ⟨ψ, ϕ⟩`, the equal mixture `½ |
 diagonal in the orthogonal vectors `ψ ± ω ϕ`, where the phase `ω` makes `ω c = |c|`; the
 eigenvalues are `(1 ± |c|) / 2`. Its entropy is the binary entropy `h((1 + |c|) / 2)`.
 
+In infinite dimension the entropy can be infinite: countably many orthonormal pure states, mixed
+with weights of infinite Shannon entropy, give a density operator `ρ` with `S(ρ) = ∞`.
+
 ## ii. Key results
 
 - `QuantumMechanics.isDensityOperator_tsum_smul_proj`: `∑ᵢ pᵢ |ψᵢ⟩⟨ψᵢ|` is a density operator.
@@ -32,11 +37,14 @@ eigenvalues are `(1 ± |c|) / 2`. Its entropy is the binary entropy `h((1 + |c|)
 - `QuantumMechanics.IsDensityOperator.exists_tsum_smul_proj`: every density operator is such a
   mixture, of countably many orthonormal pure states.
 - `QuantumMechanics.vonNeumannEntropy_mix_proj`: `S(½ |ψ⟩⟨ψ| + ½ |ϕ⟩⟨ϕ|) = h((1 + |⟨ψ, ϕ⟩|) / 2)`.
+- `QuantumMechanics.exists_isDensityOperator_vonNeumannEntropy_eq_top`: in infinite dimension,
+  some density operator has entropy `∞`.
 
 ## iii. Table of contents
 
 - A. Mixtures of orthonormal pure states
 - B. Equal mixtures of two pure states
+- C. Infinite entropy
 
 ## iv. References
 
@@ -310,5 +318,27 @@ theorem vonNeumannEntropy_mix_proj {ψ ϕ : E} (hψ : ‖ψ‖ = 1) (hϕ : ‖ϕ
     binEntropy_eq_negMulLog_add_negMulLog_one_sub]
   congr 3
   simp [q]; ring
+
+/-! ## C. Infinite entropy -/
+
+omit [CompleteSpace E] in
+/-- In infinite dimension, a countable orthonormal family with weights of infinite Shannon
+entropy. -/
+theorem exists_orthonormal_tsum_negMulLog_eq_top (hE : ¬ FiniteDimensional ℂ E) :
+    ∃ (ι : Type u) (_ : Countable ι) (ψ : ι → E) (p : ι → ℝ), Orthonormal ℂ ψ ∧
+      (∀ i, 0 ≤ p i) ∧ HasSum p 1 ∧ ∑' i, ENNReal.ofReal (negMulLog (p i)) = ∞ := by
+  obtain ⟨ι, _, w, hw0, hw, hent⟩ := exists_hasSum_one_tsum_negMulLog_eq_top
+  obtain ⟨ψ, hψ⟩ := exists_orthonormal_of_not_finiteDimensional (ι := ULift.{u} ι) hE
+  refine ⟨ULift.{u} ι, inferInstance, ψ, w ∘ ULift.down, hψ, fun i => hw0 _,
+    (Equiv.ulift.hasSum_iff (f := w)).mpr hw, ?_⟩
+  rw [← hent]
+  exact Equiv.ulift.tsum_eq fun i => ENNReal.ofReal (negMulLog (w i))
+
+/-- In infinite dimension, some density operator has infinite entropy. -/
+theorem exists_isDensityOperator_vonNeumannEntropy_eq_top (hE : ¬ FiniteDimensional ℂ E) :
+    ∃ ρ : E →L[ℂ] E, IsDensityOperator ρ ∧ vonNeumannEntropy ρ = ∞ := by
+  obtain ⟨ι, _, ψ, p, hψ, hp0, hp, hent⟩ := exists_orthonormal_tsum_negMulLog_eq_top hE
+  exact ⟨_, isDensityOperator_tsum_smul_proj hψ hp0 hp,
+    (vonNeumannEntropy_tsum_smul_proj hψ hp0 hp).trans hent⟩
 
 end QuantumMechanics

@@ -59,21 +59,31 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForPhyslib.QuantumMechanics.Qubit.BlochBall},
   \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture}
 \item New \lean{ForMathlib} material:
-  \lean{ForMathlib/Analysis/Convex/AffineOnBall.lean}: a real function on a real normed space that
-  is affine along every chord of the unit sphere is affine on the closed unit ball
+\begin{itemize}
+\item \lean{ForMathlib/Analysis/Convex/AffineOnBall.lean}: a real function on a real normed space
+  that is affine along every chord of the unit sphere is affine on the closed unit ball
   (\lean{exists_linearMap_eq_of_chord}); in an inner product space, if moreover $f \le 1$ on the
   sphere, $f(a) = 1$ and $f(-a) = 0$ for a unit vector $a$, then
   $f(v) = (1 + \langle a, v\rangle)/2$ (\lean{eq_of_chord_of_le_one}).
+\item \lean{ForMathlib/Analysis/InnerProductSpace/GramSchmidtOrtho.lean}: in an
+  infinite-dimensional inner product space, every countable index type carries an orthonormal
+  family (\lean{exists_orthonormal_of_not_finiteDimensional}).
+\item \lean{ForMathlib/Analysis/SpecialFunctions/Log/NegMulLog.lean}: there are countably many
+  weights $w_i \ge 0$ with $\sum_i w_i = 1$ and $\sum_i \eta(w_i) = \infty$
+  (\lean{Real.exists_hasSum_one_tsum_negMulLog_eq_top}); block $k$ has $2^{2^{k+1}}$ equal
+  weights of total $2^{-(k+1)}$ and adds at least $\log 2$.
+\end{itemize}
 \item New \lean{ForPhyslib} material:
 \begin{itemize}
-\item \lean{ForPhyslib/QuantumMechanics/VonNeumannEntropyMixture.lean}: a mixture
+\item \lean{ForPhyslib/QuantumMechanics/VonNeumannEntropyMixture.lean}:\newline a mixture
   $\sum_i p_i\ket{\psi_i}\bra{\psi_i}$ of orthonormal pure states, in any dimension, is a density
   operator (\lean{isDensityOperator_tsum_smul_proj}) with entropy $\sum_i \eta(p_i)$,
   $\eta(x) = -x\log x$ (\lean{vonNeumannEntropy_tsum_smul_proj}); the entropy of an equal mixture
   of two pure states is $h((1 + |\braket{\psi|\phi}|)/2)$, $h$ the binary entropy
   (\lean{vonNeumannEntropy_mix_proj}); every density operator is such a mixture, of countably many
   orthonormal pure states, its eigenvectors with nonzero eigenvalue
-  (\lean{IsDensityOperator.exists_tsum_smul_proj}).
+  (\lean{IsDensityOperator.exists_tsum_smul_proj}); in infinite dimension some density operator
+  has entropy $\infty$ (\lean{exists_isDensityOperator_vonNeumannEntropy_eq_top}).
 \item \lean{ForPhyslib/QuantumMechanics/Qubit/BlochBall.lean}: the Bloch ball of the plane spanned by
   orthonormal $\psi, \chi$ in $E$. The point $r \in \mathbb R^3$ is the operator
   $\tfrac12(\ket\psi\bra\psi + \ket\chi\bra\chi + r\cdot\sigma)$
@@ -110,7 +120,11 @@ $\psi$ having prepared $\rho$. The conditions are:
 \item \lean{CountablyAffine}~$p$ (the affinity of the brief's EQST): for every countable family
   $(\psi_i)$ of unit vectors and weights $w_i \ge 0$ with $\sum_i w_i = 1$,
   $\sum_i w_i\,p(\ket\phi\bra\phi, \ket{\psi_i}\bra{\psi_i})$ converges to
-  $p(\ket\phi\bra\phi, \sum_i w_i\ket{\psi_i}\bra{\psi_i})$.
+  $p(\ket\phi\bra\phi, \sum_i w_i\ket{\psi_i}\bra{\psi_i})$;
+\item \lean{IsVonNeumannEntropyOnFinite}~$s$ and \lean{MutualExclusivityOnFinite}~$s\ p$ (BR-ENT
+  and [B]MUTEX for a real-valued entropy $s$): $s(\rho) = $ \lean{vonNeumannEntropy}~$\rho$ for
+  density operators of finite entropy, and [B]MUTEX with $\sum_i \eta(w_i)$ a real sum, for the
+  weights with $\sum_i \eta(w_i) < \infty$.
 \end{itemize}
 
 \paragraph{Results.}
@@ -199,6 +213,34 @@ in dimension at most one, EQST implies BR-BORN & \lean{BornRule.of_rank_le_one} 
 \end{tabularx}
 \end{center}
 
+\noindent\begin{minipage}{\textwidth}
+Infinite entropy (not in the brief), for $E$ infinite-dimensional where stated:
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Statement & Lean \\
+\midrule
+in infinite dimension, some density operator has von Neumann entropy $\infty$ &
+  \lean{exists_isDensityOperator_vonNeumannEntropy_eq_top} \\
+with $S$ never $\infty$, in infinite dimension, BR-ENT fails &
+  \lean{not_isVonNeumannEntropy_of_ne_top} \\
+with $S$ never $\infty$, in infinite dimension, BR-BORN and [B]MUTEX exclude each other &
+  \lean{not_bornRule_and_mutualExclusivity_of_ne_top} \\
+with $S$ never $\infty$, in infinite dimension, no two of the conditions hold, so Theorem~9 holds
+  only vacuously & \lean{not_two_conditions_of_ne_top} \\
+{[B]MUTEX} alone holds with $S = 0$, $p = (1 + \braket{\psi|\rho|\psi})/2$ &
+  \lean{mutualExclusivity_zero} \\
+Theorem~9 for a real-valued entropy, with BR-ENT and [B]MUTEX on finite entropy &
+  \lean{two_conditions_imply_third_onFinite}, from \lean{MutualExclusivityOnFinite.of_bornRule},
+  \lean{IsVonNeumannEntropyOnFinite.of_bornRule}, \lean{BornRule.of_isVonNeumannEntropyOnFinite}
+  \\
+(used for the last direction, in both versions) over EQST, if orthogonal states are mutually
+  exclusive, BR-BORN holds & \lean{BornRule.of_apply_eq_zero} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{minipage}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item $E$ is a Hilbert space of any dimension; separability is not used. [B]MUTEX quantifies over
@@ -207,6 +249,9 @@ in dimension at most one, EQST implies BR-BORN & \lean{BornRule.of_rank_le_one} 
   family since the eigenvalues are summable.
 \item Entropies take values in $[0, \infty]$, not in $\mathbb{R}$: the von Neumann entropy and the
   Shannon entropy of a countable family of weights can be infinite (see ``Problems found'').
+  The brief's real-valued entropy is formalized as well, with BR-ENT and [B]MUTEX restricted to
+  finite entropy (\lean{IsVonNeumannEntropyOnFinite}, \lean{MutualExclusivityOnFinite}); Theorem~9
+  holds for it with the same proofs (\lean{two_conditions_imply_third_onFinite}).
 \item In \lean{EnsemblesAndStates}, affinity is assumed only for mixtures of two pure states,
   which is weaker than the brief's countable mixtures, so \lean{two_conditions_imply_third} is
   stronger than Theorem~9. The brief's countable affinity is \lean{CountablyAffine}; it implies
@@ -252,9 +297,12 @@ in dimension at most one, EQST implies BR-BORN & \lean{BornRule.of_rank_le_one} 
 \begin{itemize}
 \item EQST takes $S : \mathcal E(\mathcal H) \to \mathbb R$, but in infinite dimension the von
   Neumann entropy is $+\infty$ for some density operators, and $-\sum_i p_i\log p_i$ can be
-  $+\infty$ for countably many weights. With a real-valued $S$, BR-ENT and [B]MUTEX cannot hold in
-  infinite dimension, and Theorem~9 is true there only vacuously. The formalization uses
-  $[0, \infty]$.
+  $+\infty$ for countably many weights. With a real-valued $S$, BR-ENT fails and BR-BORN excludes
+  [B]MUTEX in infinite dimension, so Theorem~9 is true there only vacuously
+  (\lean{not_two_conditions_of_ne_top}). Two readings repair this, and Theorem~9 holds in both:
+  $S$ with values in $[0, \infty]$ (\lean{two_conditions_imply_third}), or $S$ real-valued with
+  BR-ENT and [B]MUTEX restricted to finite entropy (\lean{two_conditions_imply_third_onFinite}).
+  Which one the brief intends is for its authors to say.
 \item The units are not fixed: eq.~(2) writes $\log$, while Corollary~7 and Fig.~2 use entropy
   $1$ for two orthogonal states, which needs $\log_2$.
 \item BR-ENT calls $-\operatorname{tr}(\rho\log\rho)$ ``the Shannon entropy''.
