@@ -8,7 +8,7 @@
 \usepackage{lmodern}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
-\usepackage{booktabs,tabularx}
+\usepackage{booktabs,tabularx,xltabular}
 \usepackage{braket}
 \usepackage[hidelinks]{hyperref}
 
@@ -54,7 +54,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple.lean}
 \item Library: \lean{ClassicalUncertaintyPrinciple}
-\item Imports: four new \lean{ForMathlib} files (the first through the last):
+\item Imports: five new \lean{ForMathlib} files (the first through the fourth):
   \begin{itemize}
   \item \lean{ForMathlib/InformationTheory/GibbsInequality.lean}:\newline Gibbs' inequality
   $-\int\rho\log\rho \le -\int\rho\log G$ for a probability density $\rho$ and a positive $G$
@@ -72,7 +72,13 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   entropy if $\rho\log\gamma(y)$ and $\rho\log\gamma'(x)$ are integrable for positive $\gamma$,
   $\gamma'$ of integral at most~$1$
   (\lean{MeasureTheory.integrable_negMulLog_integral_prod}), and its moments are moments of
-  $\rho$ (\lean{MeasureTheory.integral_mul_integral_prod}).
+  $\rho$ (\lean{MeasureTheory.integral_mul_integral_prod})
+  \item \lean{ForMathlib/InformationTheory/ChangeOfVariables.lean}:\newline the density
+  \lean{MeasureTheory.pushDensity} in new variables $u = \Phi(x)$, for $\Phi$ injective and
+  differentiable with invertible derivative on a finite-dimensional space. Its moments are
+  moments of $\rho$ (\lean{MeasureTheory.integral_mul_pushDensity}), and its entropy is
+  $-\int\rho_\Phi\log\rho_\Phi = \int(-\rho\log\rho + \rho\log|\det\Phi'|)$
+  (\lean{MeasureTheory.integral_negMulLog_pushDensity}).
   \end{itemize}
 \end{itemize}
 
@@ -93,7 +99,10 @@ Fréchet derivatives. For the brief's own proof,
 \lean{lagrangian}~$h$~$\lambda_1$~$\lambda_2$~$S$~$\rho$ is
 $\sigma_q^2\sigma_p^2 + \lambda_1(\int\rho - 1) + \lambda_2(S_h[\rho] - S)$, varied along
 $\rho(1 + t\varphi)$ with $\varphi$ bounded and measurable, so $\delta\rho = \rho\varphi$, and
-\lean{eulerLagrange} is the bracket of its first variation.
+\lean{eulerLagrange} is the bracket of its first variation. New variables $(f, g)$
+(\lean{IsNewVariables}~$f$~$g$) are differentiable, with $(q, p) \mapsto (f, g)$ injective and
+$\{f, g\} \ne 0$; their density \lean{densityFG}~$f$~$g$~$\rho$ is $\rho/|\{f, g\}|$ at
+$(f, g)(q, p)$ and $0$ off the range of $(f, g)$.
 
 For several DOFs the phase space is $(\mathbb R^2)^{n+1}$ (\lean{Fin}~$(n + 1) \to \mathbb R
 \times \mathbb R$), and DOF $i$ is the pair $(q_i, p_i)$ of coordinates $i$. Its marginal
@@ -103,11 +112,17 @@ For several DOFs the phase space is $(\mathbb R^2)^{n+1}$ (\lean{Fin}~$(n + 1) \
 every $i$, with $\sigma$ under $\rho$).
 
 \paragraph{Results.}
-\begin{center}
-\begin{tabularx}{\textwidth}{@{}BL@{}}
+\begin{xltabular}{\textwidth}{@{}BL@{}}
 \toprule
 Brief & Lean \\
 \midrule
+\endfirsthead
+\toprule
+Brief & Lean \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
 Corollary~1, $S[\rho_U] = \log(\mu(U)/h^n)$ & \lean{entropy_uniform} (any measure space, any
   cell $c > 0$); \lean{entropy_uniform_phaseSpace} (phase space $(\mathbb R^2)^n$, $c = h^n$) \\
 Corollary~1, $S[\rho_U] = 0$ iff $\mu(U) = h^n$ & \lean{entropy_uniform_eq_zero_iff} \\
@@ -131,7 +146,22 @@ Eq.~(4), the Poisson bracket is the Jacobian determinant & \lean{det_prod};
 Theorem~2, eq.~(5), $\sigma_f\sigma_g \ge (\hbar/e)e^{E[\log|\{f,g\}|]}$ under ZENT &
   \lean{hbar_div_exp_mul_exp_le_sd_mul_sd}; for every ensemble
   $\sigma_f\sigma_g \ge (\hbar/e)e^{S_h[\rho] + E[\log|\{f,g\}|]}$:
-  \lean{hbar_div_exp_mul_exp_entropy_add_le} \\
+  \lean{hbar_div_exp_mul_exp_entropy_add_le}; by the brief's route through $\rho_{fg}$,
+  \lean{IsNewVariables.hbar_div_exp_mul_exp_le_sd_mul_sd} \\
+Eq.~(5), proof: $\rho_{qp} = \rho_{fg}|\{f, g\}|$ &
+  \lean{IsNewVariables.densityFG_mul_abs_poissonBracket};
+  \lean{IsNewVariables.isEnsemble_densityFG}: $\rho_{fg}$ is an ensemble \\
+Eq.~(5), proof: $S[\rho_{fg}] = S[\rho_{qp}] + E[\ln|\{f, g\}|]$, and under ZENT
+  $S[\rho_{fg}] \ge E[\ln|\{f, g\}|]$ & \lean{IsNewVariables.entropy_densityFG},
+  \lean{IsNewVariables.integral_mul_log_le_entropy_densityFG} \\
+Eq.~(5), proof: Gaussians minimize the uncertainty in $(f, g)$ &
+  \lean{IsNewVariables.hbar_div_exp_mul_exp_entropy_densityFG_le}:
+  $\sigma_f\sigma_g \ge (\hbar/e)e^{S_h[\rho_{fg}]}$; \lean{IsNewVariables.sd_mul_sd_eq_iff}:
+  equality iff $\rho_{fg}$ is a.e.\ a product of Gaussians \\
+Eq.~(5), equality case (not in the brief) &
+  \lean{IsNewVariables.sd_mul_sd_eq_hbar_div_exp_mul_exp_iff}: under ZENT, equality iff
+  $S_h[\rho] = 0$ and $\rho_{fg}$ is a.e.\ a product of Gaussians in $(f, g)$; then $(f, g)$ is
+  onto up to a null set (\lean{volume_compl_range_eq_zero}) \\
 Remark, CUP does not imply ZENT & \lean{exists_not_lowerEntropicBound} \\
 Theorem~2, proof: $\delta L = \int\delta\rho\,[(q - \mu_q)^2\sigma_p^2 + \sigma_q^2(p - \mu_p)^2
   + \lambda_1 - \lambda_2\ln(h\rho) - \lambda_2]$ & \lean{hasDerivAt_lagrangian} \\
@@ -146,9 +176,7 @@ Theorem~2, proof: then $\sigma_q\sigma_p = (\hbar/e)e^{S[\rho]}$ &
   \lean{Hyp.hbar_div_exp_mul_exp_le}: $\sigma_f\sigma_g \ge (\hbar/e)e^{S_h[\rho] + E[\log J]}$
   for a weight $J > 0$ that turns every product of Gaussians in $(f, g)$ into a subprobability
   density (\lean{IsGaussWeight}) \\
-\bottomrule
-\end{tabularx}
-\end{center}
+\end{xltabular}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
@@ -178,12 +206,15 @@ Theorem~2, proof: then $\sigma_q\sigma_p = (\hbar/e)e^{S[\rho]}$ &
   ensemble of finite entropy cannot have zero variance in any variable, since Gibbs' inequality
   against ever narrower Gaussians would bound its entropy by $-\infty$.
 \item For eq.~(5) the brief passes to the density $\rho_{fg}$ of $(f, g)$, with
-  $\rho_{qp} = \rho_{fg}\,|\{f, g\}|$. Here $\rho_{fg}$ is not formed. The Gaussian in $(f, g)$ is
-  pulled back to phase space with the weight $|\{f, g\}|$, and the change-of-variables formula
-  shows that its integral is at most $1$. This needs $f, g$ differentiable, $(q, p) \mapsto
-  (f, g)$ injective (not surjective, not orientation preserving), $\{f, g\} \ne 0$ everywhere,
-  and $\rho\log|\{f, g\}|$ integrable. $\sigma_f$ is the standard deviation of $f$ under $\rho$.
-  Physical units are not modelled, so the brief's assumption on them is not needed.
+  $\rho_{qp} = \rho_{fg}\,|\{f, g\}|$. Both routes are formalized. In the first, $\rho_{fg}$ is
+  not formed: the Gaussian in $(f, g)$ is pulled back to phase space with the weight
+  $|\{f, g\}|$, and the change-of-variables formula shows that its integral is at most $1$. In
+  the brief's, $\rho_{fg}$ is $\rho/|\{f, g\}|$ on the range of $(f, g)$ and $0$ off it, and the
+  bound for one DOF is applied to it; this also gives the equality case. Both need $f, g$
+  differentiable, $(q, p) \mapsto (f, g)$ injective (not surjective, not orientation
+  preserving), $\{f, g\} \ne 0$ everywhere, and $\rho\log|\{f, g\}|$ integrable. $\sigma_f$ is
+  the standard deviation of $f$ under $\rho$. Physical units are not modelled, so the brief's
+  assumption on them is not needed.
 \item The counterexample for the remark is a uniform distribution on two squares
   $[L, L + \varepsilon]^2$ and $[-L - \varepsilon, -L]^2$, with $\varepsilon = \sqrt h/2$ and
   $L = \sqrt h$. Its entropy is $\log\frac12 < 0$ and $\sigma_q\sigma_p \ge h/2 \ge \hbar/e$.

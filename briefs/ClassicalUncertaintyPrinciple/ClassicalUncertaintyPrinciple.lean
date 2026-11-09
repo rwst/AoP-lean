@@ -5,6 +5,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
+public import ForMathlib.InformationTheory.ChangeOfVariables
 public import ForMathlib.InformationTheory.EntropyVariation
 public import ForMathlib.InformationTheory.MarginalEntropy
 public import ForMathlib.Probability.Distributions.Gaussian.Real
@@ -56,6 +57,13 @@ second moments of the other DOFs give it finite entropy, by Gibbs' inequality ag
 Gaussian in the integrated variables. Its means and variances are those of `qᵢ, pᵢ` under `ρ`,
 so Theorem 2 for one DOF applies to each `ρᵢ`.
 
+The brief derives eq. (5) through the density `ρ_{fg}` of `(f, g)`, with
+`ρ_{qp} = ρ_{fg}(f, g) |{f, g}|`. This route is formalized too: `ρ_{fg}` is `ρ / |{f, g}|` on
+the range of `(f, g)` and `0` off it, and the change-of-variables formula gives
+`S_h[ρ_{fg}] = S_h[ρ] + E[log |{f, g}|]`. The bound for one DOF, applied to `ρ_{fg}`, gives
+eq. (5) and its equality case: under ZENT, equality holds exactly when `S_h[ρ] = 0` and `ρ_{fg}`
+is a product of Gaussians in `(f, g)`, which forces `(f, g)` to be onto up to a null set.
+
 ## ii. Key results
 
 - `ClassicalUncertaintyPrinciple.entropy_uniform`,
@@ -81,6 +89,12 @@ so Theorem 2 for one DOF applies to each `ρᵢ`.
 - `ClassicalUncertaintyPrinciple.uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace`,
   `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_iff_marginal`: Theorem 2 for several
   DOFs.
+- `ClassicalUncertaintyPrinciple.IsNewVariables.entropy_densityFG`:
+  `S_h[ρ_{fg}] = S_h[ρ] + E[log |{f, g}|]`.
+- `ClassicalUncertaintyPrinciple.IsNewVariables.hbar_div_exp_mul_exp_le_sd_mul_sd`: eq. (5),
+  by the brief's route.
+- `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_hbar_div_exp_mul_exp_iff`,
+  `ClassicalUncertaintyPrinciple.volume_compl_range_eq_zero`: the equality case of eq. (5).
 
 ## iii. Table of contents
 
@@ -91,6 +105,7 @@ so Theorem 2 for one DOF applies to each `ρᵢ`.
 - E. CUP does not imply ZENT
 - F. The Lagrange computation
 - G. Several degrees of freedom
+- H. Entropy in new variables
 -/
 
 open Real MeasureTheory ProbabilityTheory Set
@@ -1267,5 +1282,178 @@ theorem sd_mul_sd_eq_hbar_div_exp_iff_marginal (hh : 0 < h) (hρ : IsEnsemble ρ
     (integral_mul_marginal i (F := fun z => z.2 ^ 2) (hp i)).1 hZ
 
 end PhaseSpace
+
+/-! ### H. Entropy in new variables -/
+
+section NewVariables
+
+variable {ρ f g : ℝ × ℝ → ℝ} {h : ℝ}
+
+/-- New variables `(f, g)` for one DOF: differentiable, with `(q, p) ↦ (f, g)` injective and
+`{f, g} ≠ 0`. -/
+structure IsNewVariables (f g : ℝ × ℝ → ℝ) : Prop where
+  differentiable_fst : Differentiable ℝ f
+  differentiable_snd : Differentiable ℝ g
+  injective : Function.Injective fun x => (f x, g x)
+  poissonBracket_ne_zero : ∀ x, poissonBracket f g x ≠ 0
+
+/-- The density `ρ_{fg}` of `(f, g)`: `ρ_{fg}(f, g) = ρ / |{f, g}|` on the range of `(f, g)`,
+and `0` off it. -/
+def densityFG (f g ρ : ℝ × ℝ → ℝ) : ℝ × ℝ → ℝ :=
+  pushDensity (fun x => (f x, g x)) (fun x => (fderiv ℝ f x).prod (fderiv ℝ g x)) ρ
+
+lemma abs_det_prod_fderiv (x : ℝ × ℝ) :
+    |((fderiv ℝ f x).prod (fderiv ℝ g x)).det| = |poissonBracket f g x| := by
+  rw [det_prod]
+  rfl
+
+namespace IsNewVariables
+
+variable (H : IsNewVariables f g)
+include H
+
+lemma hasFDerivAt (x : ℝ × ℝ) :
+    HasFDerivAt (fun x => (f x, g x)) ((fderiv ℝ f x).prod (fderiv ℝ g x)) x :=
+  (H.differentiable_fst x).hasFDerivAt.prodMk (H.differentiable_snd x).hasFDerivAt
+
+lemma det_ne_zero (x : ℝ × ℝ) : ((fderiv ℝ f x).prod (fderiv ℝ g x)).det ≠ 0 := by
+  rw [det_prod]
+  exact H.poissonBracket_ne_zero x
+
+/-- `ρ_{qp} = ρ_{fg}(f, g) |{f, g}|`. -/
+lemma densityFG_mul_abs_poissonBracket (x : ℝ × ℝ) :
+    densityFG f g ρ (f x, g x) * |poissonBracket f g x| = ρ x := by
+  rw [← abs_det_prod_fderiv, mul_comm]
+  exact abs_det_mul_pushDensity H.injective H.det_ne_zero x
+
+lemma integrable_mul_densityFG_iff {φ : ℝ × ℝ → ℝ} :
+    Integrable (fun u => φ u * densityFG f g ρ u) ↔ Integrable fun x => φ (f x, g x) * ρ x :=
+  integrable_mul_pushDensity_iff H.hasFDerivAt H.injective H.det_ne_zero
+
+lemma integral_mul_densityFG {φ : ℝ × ℝ → ℝ} :
+    ∫ u, φ u * densityFG f g ρ u = ∫ x, φ (f x, g x) * ρ x :=
+  integral_mul_pushDensity H.hasFDerivAt H.injective H.det_ne_zero
+
+/-- `ρ_{fg}` is an ensemble. -/
+theorem isEnsemble_densityFG (hρ : IsEnsemble ρ)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|) :
+    IsEnsemble (densityFG f g ρ) where
+  nonneg u := by
+    by_cases hu : u ∈ range fun x => (f x, g x)
+    · obtain ⟨x, rfl⟩ := hu
+      rw [densityFG, pushDensity_apply H.injective]
+      exact div_nonneg (hρ.nonneg x) (abs_nonneg _)
+    · rw [densityFG, pushDensity_of_notMem_range hu]
+  integral_eq_one := by
+    simpa [hρ.integral_eq_one] using H.integral_mul_densityFG (ρ := ρ) (φ := fun _ => 1)
+  integrable_negMulLog :=
+    (integrable_negMulLog_pushDensity_iff H.hasFDerivAt H.injective H.det_ne_zero
+      (by simpa only [abs_det_prod_fderiv] using hlog)).2 hρ.integrable_negMulLog
+
+/-- **The entropy in new variables.** `S_h[ρ_{fg}] = S_h[ρ_{qp}] + E[log |{f, g}|]`. -/
+theorem entropy_densityFG (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|) :
+    entropy h (densityFG f g ρ) = entropy h ρ + ∫ x, ρ x * log |poissonBracket f g x| := by
+  rw [entropy_eq (H.isEnsemble_densityFG hρ hlog) hh, entropy_eq hρ hh, densityFG,
+    integral_negMulLog_pushDensity H.hasFDerivAt H.injective H.det_ne_zero]
+  simp_rw [abs_det_prod_fderiv]
+  rw [integral_add hρ.integrable_negMulLog hlog]
+  ring
+
+lemma mean_densityFG_fst : mean (densityFG f g ρ) Prod.fst = mean ρ f :=
+  H.integral_mul_densityFG (φ := Prod.fst)
+
+lemma mean_densityFG_snd : mean (densityFG f g ρ) Prod.snd = mean ρ g :=
+  H.integral_mul_densityFG (φ := Prod.snd)
+
+lemma sd_densityFG_fst : sd (densityFG f g ρ) Prod.fst = sd ρ f := by
+  have := H.integral_mul_densityFG (ρ := ρ) (φ := fun u => (u.1 - mean ρ f) ^ 2)
+  rw [sd, sd, var, var, H.mean_densityFG_fst]
+  exact congrArg _ this
+
+lemma sd_densityFG_snd : sd (densityFG f g ρ) Prod.snd = sd ρ g := by
+  have := H.integral_mul_densityFG (ρ := ρ) (φ := fun u => (u.2 - mean ρ g) ^ 2)
+  rw [sd, sd, var, var, H.mean_densityFG_snd]
+  exact congrArg _ this
+
+/-- **Theorem 2, eq. (5), the brief's route.** The Gaussian bound for `ρ_{fg}`:
+`σ_f σ_g ≥ (ħ / e) e^{S_h[ρ_{fg}]}`. -/
+theorem hbar_div_exp_mul_exp_entropy_densityFG_le (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|) :
+    hbar h / exp 1 * exp (entropy h (densityFG f g ρ)) ≤ sd ρ f * sd ρ g := by
+  have := hbar_div_exp_mul_exp_entropy_le hh (H.isEnsemble_densityFG hρ hlog)
+    ((H.integrable_mul_densityFG_iff (φ := fun u => u.1 ^ 2)).2 hf2)
+    ((H.integrable_mul_densityFG_iff (φ := fun u => u.2 ^ 2)).2 hg2)
+  rwa [H.sd_densityFG_fst, H.sd_densityFG_snd] at this
+
+/-- Under ZENT, `S_h[ρ_{fg}] ≥ E[log |{f, g}|]`. -/
+theorem integral_mul_log_le_entropy_densityFG (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|)
+    (hZ : LowerEntropicBound h ρ) :
+    ∫ x, ρ x * log |poissonBracket f g x| ≤ entropy h (densityFG f g ρ) := by
+  rw [H.entropy_densityFG hh hρ hlog]
+  exact le_add_of_nonneg_left hZ
+
+/-- **Theorem 2, eq. (5), the brief's route.** Under ZENT,
+`σ_f σ_g ≥ (ħ / e) e^{E[log |{f, g}|]}`. -/
+theorem hbar_div_exp_mul_exp_le_sd_mul_sd (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|)
+    (hZ : LowerEntropicBound h ρ) :
+    hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|) ≤ sd ρ f * sd ρ g :=
+  (mul_le_mul_of_nonneg_left
+    (exp_le_exp.2 (H.integral_mul_log_le_entropy_densityFG hh hρ hlog hZ))
+    (hbar_div_exp_pos hh).le).trans (H.hbar_div_exp_mul_exp_entropy_densityFG_le hh hρ hf2 hg2 hlog)
+
+/-- Equality in `σ_f σ_g ≥ (ħ / e) e^{S_h[ρ] + E[log |{f, g}|]}` holds exactly when `ρ_{fg}`
+is a product of Gaussians in `(f, g)`. -/
+theorem sd_mul_sd_eq_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|) :
+    sd ρ f * sd ρ g =
+        hbar h / exp 1 * exp (entropy h ρ + ∫ x, ρ x * log |poissonBracket f g x|) ↔
+      ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧ densityFG f g ρ =ᵐ[volume] gaussProd a v b w := by
+  rw [← H.entropy_densityFG hh hρ hlog, ← H.sd_densityFG_fst, ← H.sd_densityFG_snd]
+  exact ClassicalUncertaintyPrinciple.sd_mul_sd_eq_iff hh (H.isEnsemble_densityFG hρ hlog)
+    ((H.integrable_mul_densityFG_iff (φ := fun u => u.1 ^ 2)).2 hf2)
+    ((H.integrable_mul_densityFG_iff (φ := fun u => u.2 ^ 2)).2 hg2)
+
+/-- **Theorem 2, eq. (5), equality case.** Under ZENT,
+`σ_f σ_g = (ħ / e) e^{E[log |{f, g}|]}` exactly when `S_h[ρ] = 0` and `ρ_{fg}` is a product of
+Gaussians in `(f, g)`. Then `(f, g)` is onto up to a null set (`volume_compl_range_eq_zero`). -/
+theorem sd_mul_sd_eq_hbar_div_exp_mul_exp_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|)
+    (hZ : LowerEntropicBound h ρ) :
+    sd ρ f * sd ρ g = hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|) ↔
+      entropy h ρ = 0 ∧ ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧
+        densityFG f g ρ =ᵐ[volume] gaussProd a v b w := by
+  have hb := hbar_div_exp_mul_exp_entropy_add_le hh H.differentiable_fst H.differentiable_snd
+    H.injective H.poissonBracket_ne_zero hρ hf2 hg2 hlog
+  constructor
+  · intro heq
+    have hS : entropy h ρ = 0 := by
+      rw [heq] at hb
+      have := exp_le_exp.1 ((mul_le_mul_iff_right₀ (hbar_div_exp_pos hh)).1 hb)
+      exact le_antisymm (by linarith) hZ
+    refine ⟨hS, (H.sd_mul_sd_eq_iff hh hρ hf2 hg2 hlog).1 ?_⟩
+    rw [hS, zero_add, heq]
+  · rintro ⟨hS, hG⟩
+    rw [(H.sd_mul_sd_eq_iff hh hρ hf2 hg2 hlog).2 hG, hS, zero_add]
+
+end IsNewVariables
+
+/-- If `ρ_{fg}` is a.e. a product of Gaussians, then `(q, p) ↦ (f, g)` is onto up to a null
+set: `ρ_{fg}` vanishes off the range, the Gaussians nowhere. -/
+lemma volume_compl_range_eq_zero {a b : ℝ} {v w : ℝ≥0} (hv : v ≠ 0) (hw : w ≠ 0)
+    (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w) :
+    volume (range fun x => (f x, g x))ᶜ = 0 :=
+  measure_mono_null (fun u hu => by
+    change ¬densityFG f g ρ u = gaussProd a v b w u
+    rw [densityFG, pushDensity_of_notMem_range hu]
+    exact (gaussProd_pos hv hw u).ne) (ae_iff.1 hG)
+
+end NewVariables
 
 end ClassicalUncertaintyPrinciple
