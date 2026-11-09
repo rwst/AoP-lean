@@ -69,13 +69,16 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item New \lean{ForMathlib} material:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Trace.lean} (the operator norm of a positive
   operator is at most its trace).
-\item For the remark ``The qubit picture'', not imported by the brief's file:\newline
+\item For the remarks ``The qubit picture'' and ``The finite process is not unitary'', not
+  imported by the brief's file:\newline
   \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Cayley.lean} (the Cayley transform of
   $L$ and its Hilbert--Schmidt unitarity),\newline
   \lean{ForPhyslib/QuantumMechanics/Qubit/VonNeumannCayley.lean} (the resolvent of a qubit on
   Bloch vectors),\newline
   \lean{ForMathlib/LinearAlgebra/Matrix/Cayley.lean} (the Cayley transform of a skew-symmetric
-  matrix is special orthogonal).
+  matrix is special orthogonal),\newline
+  \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Irreversible.lean} (purity decreases,
+  and the inverse $1 - \tau L$ is not positive).
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a finite-dimensional complex Hilbert space, with density operators,
@@ -169,6 +172,14 @@ Sec.~5, $L$ skew and $\mathcal{C}_\tau$ orthogonal for the Hilbert--Schmidt inne
 Sec.~5, on the Bloch ball $\mathcal{C}_\tau$ is a rotation and $\Psi_\tau$ takes the midpoint &
   \lean{exists_vonNeumannCayley_blochOperator}, \lean{vonNeumannGenerator_blochOperator},
   \lean{exists_blochOperator_eq}, \lean{cayley_mem_specialOrthogonalGroup} \\
+Sec.~5, $\Psi_\tau$ maps pure ensembles to mixed ones &
+  \lean{re_trace_star_mul_self_eq_vonNeumannResolvent},
+  \lean{re_trace_star_mul_self_vonNeumannResolvent_lt}, \lean{not_isPure_vonNeumannResolvent} \\
+Sec.~5, $I - \tau L$ is not generally positive & \lean{not_nonneg_vonNeumannStep_proj},
+  \lean{vonNeumannGenerator_proj_ne_zero} \\
+Sec.~5, ``generally'': unless $K$ is a multiple of the identity &
+  \lean{exists_isPure_not_isPure_vonNeumannResolvent},
+  \lean{forall_isPure_vonNeumannResolvent_iff}, \lean{vonNeumannResolvent_eq_self_of_eq_smul} \\
 \bottomrule
 \end{xltabular}
 
@@ -223,6 +234,19 @@ Sec.~5, on the Bloch ball $\mathcal{C}_\tau$ is a rotation and $\Psi_\tau$ takes
   $a \in \mathbb{R}^3$, and every self-adjoint operator of trace one is some $\rho_a$; that the
   density operators are exactly the $\rho_a$ with $|a| \le 1$ is not formalized, and the
   midpoint picture does not need it. The rotation angle, $2\arctan(\tau|n|)$, is not formalized.
+\item The finite process is not unitary. ``Generally'' is read as: $\tau \ne 0$ and $K$ is not a
+  multiple of the identity. If $K$ is one, $L = 0$ and $\Psi_\tau = I$; otherwise some unit
+  vector $\psi$ is not an eigenvector of $K$, and then $L\ket{\psi}\bra{\psi} \ne 0$. ``Mixed''
+  is read as ``not pure'', through the purity $\operatorname{tr}\rho^2$: with $\sigma =
+  \Psi_\tau\rho$, the skewness of $L$ gives $\operatorname{tr}(\rho^\dagger\rho) =
+  \operatorname{tr}(\sigma^\dagger\sigma) + \tau^2\operatorname{tr}((L\sigma)^\dagger L\sigma)$,
+  so the purity strictly decreases unless $L\rho = 0$, and a pure state has purity one.
+  ``Irreversible'' is read as ``not undone by a positive map'': $\Psi_\tau$ is a linear bijection
+  with inverse $I - \tau L$, and $(I - \tau L)\ket{\psi}\bra{\psi}$ is not positive. For
+  $u = K\psi - \braket{\psi|K\psi}\psi \ne 0$ and $v = \psi - i(\tau\|u\|^2)^{-1}u$ its
+  expectation value in $v$ is $-1$. The proofs use neither the Cayley transform nor the spectral
+  theorem. That reconstruction uses $(I + \tau L)^{-1}$, and that only the limit is unitary, is
+  the reconstruction clause of DR-PROJ and Theorem~18 (\lean{drUnit_iff_drProj}).
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No errors in the statements. Gaps and implicit points:
@@ -267,7 +291,6 @@ Sec.~5, on the Bloch ball $\mathcal{C}_\tau$ is a rotation and $\Psi_\tau$ takes
   this, or it must be assumed.
 \item ``The phases of the implementing unitaries may be chosen'' is the lifting step already noted
   for the brief on the Schr\"odinger equation; it is filled in the same way.
-\item The remark ``The finite process is not unitary'' is not formalized.
 \end{itemize}
 
 \subsection{Hilbert spaces of any dimension}\label{sec:unitary-projective-any-dim}
