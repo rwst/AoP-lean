@@ -69,6 +69,13 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item New \lean{ForMathlib} material:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Trace.lean} (the operator norm of a positive
   operator is at most its trace).
+\item For the remark ``The qubit picture'', not imported by the brief's file:\newline
+  \lean{ForPhyslib/QuantumMechanics/VonNeumannResolvent/Cayley.lean} (the Cayley transform of
+  $L$ and its Hilbert--Schmidt unitarity),\newline
+  \lean{ForPhyslib/QuantumMechanics/Qubit/VonNeumannCayley.lean} (the resolvent of a qubit on
+  Bloch vectors),\newline
+  \lean{ForMathlib/LinearAlgebra/Matrix/Cayley.lean} (the Cayley transform of a skew-symmetric
+  matrix is special orthogonal).
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a finite-dimensional complex Hilbert space, with density operators,
@@ -154,6 +161,14 @@ Affinity of the limit, eqs.~(28)--(29), composition for all durations &
   \lean{IsProjectiveLimit.exists_eq_exp} ($\Phi_t = e^{tB}$ on density operators),
   \lean{IsProjectiveLimit.isEvolution}, \lean{DrProj.isEvolution} \\
 Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero} \\
+Sec.~5, $\Psi_\tau = (I + \mathcal{C}_\tau)/2$ &
+  \lean{vonNeumannCayley}, \lean{vonNeumannCayley_vonNeumannStep},
+  \lean{vonNeumannResolvent_eq_midpoint} \\
+Sec.~5, $L$ skew and $\mathcal{C}_\tau$ orthogonal for the Hilbert--Schmidt inner product &
+  \lean{trace_star_vonNeumannGenerator_mul}, \lean{trace_star_vonNeumannCayley_mul} \\
+Sec.~5, on the Bloch ball $\mathcal{C}_\tau$ is a rotation and $\Psi_\tau$ takes the midpoint &
+  \lean{exists_vonNeumannCayley_blochOperator}, \lean{vonNeumannGenerator_blochOperator},
+  \lean{exists_blochOperator_eq}, \lean{cayley_mem_specialOrthogonalGroup} \\
 \bottomrule
 \end{xltabular}
 
@@ -193,6 +208,21 @@ Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero} \\
   the common refinements are not needed. DR-PROJ says nothing about $\Phi_0$, which is assumed to
   be the identity: \lean{drUnit_iff_drProj_and_map_zero} is DR-UNIT $\Leftrightarrow$ DR-PROJ
   with $\Phi_0 = I$.
+\item The qubit picture. $\mathcal{C}_\tau = (1 + \tau L)\Psi_\tau$, which equals
+  $2\Psi_\tau - I$ by the resolvent identity, so $\Psi_\tau = (I + \mathcal{C}_\tau)/2$ holds
+  for every real $\tau$. Orthogonality is proved in the stronger complex form
+  $\operatorname{tr}((\mathcal{C}_\tau A)^\dagger\mathcal{C}_\tau B)
+  = \operatorname{tr}(A^\dagger B)$
+  for all operators: $\mathcal{C}_\tau$ is unitary for the complex Hilbert--Schmidt inner
+  product, hence orthogonal on the real space of self-adjoint operators. For a qubit with
+  $K = c + \frac12 n\cdot\sigma$, $L$ acts on the Bloch vector $a$ of
+  $\rho_a = \frac12(1 + a\cdot\sigma)$ as $a \mapsto n \times a$, a skew-symmetric matrix
+  $[n]_\times$. So $\mathcal{C}_\tau$ acts as the Cayley transform
+  $R = (1 + \tau[n]_\times)(1 - \tau[n]_\times)^{-1} \in SO(3)$, which fixes $n$, and
+  $\Psi_\tau\rho_a = \rho_b$ with $b$ the midpoint of $a$ and $Ra$. The statement holds for every
+  $a \in \mathbb{R}^3$, and every self-adjoint operator of trace one is some $\rho_a$; that the
+  density operators are exactly the $\rho_a$ with $|a| \le 1$ is not formalized, and the
+  midpoint picture does not need it. The rotation angle, $2\arctan(\tau|n|)$, is not formalized.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No errors in the statements. Gaps and implicit points:
@@ -237,8 +267,7 @@ Theorem~18 without \lean{IsEvolution} & \lean{drUnit_iff_drProj_and_map_zero} \\
   this, or it must be assumed.
 \item ``The phases of the implementing unitaries may be chosen'' is the lifting step already noted
   for the brief on the Schr\"odinger equation; it is filled in the same way.
-\item The remarks ``The qubit picture'' ($\Psi_\tau = \frac12(I + C_\tau)$ with the Cayley
-  transform $C_\tau$) and ``The finite process is not unitary'' are not formalized.
+\item The remark ``The finite process is not unitary'' is not formalized.
 \end{itemize}
 
 \subsection{Hilbert spaces of any dimension}\label{sec:unitary-projective-any-dim}
