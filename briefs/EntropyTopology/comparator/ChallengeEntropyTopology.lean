@@ -7,7 +7,7 @@ module
 
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
-public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 public import Mathlib.MeasureTheory.Measure.TotalVariation.Basic
 
 /-!
@@ -28,6 +28,7 @@ attribute [-instance] instT4SpaceOfMetrizableSpace
 attribute [-instance] instPerfectlyNormalSpaceOfPseudoMetrizableSpace
 attribute [-instance] instNormalSpaceOfPseudoMetrizableSpace
 public section
+open scoped ENNReal
 namespace Real
 lemma negMulLog_add_le {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     negMulLog (x + y) ≤ negMulLog x + negMulLog y := by
