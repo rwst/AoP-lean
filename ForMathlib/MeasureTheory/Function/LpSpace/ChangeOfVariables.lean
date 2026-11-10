@@ -5,9 +5,9 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import Mathlib.Analysis.Calculus.Deriv.Comp
 public import Mathlib.Analysis.Calculus.FDeriv.Measurable
 public import Mathlib.MeasureTheory.Function.JacobianOneDim
+public import ForMathlib.MeasureTheory.Function.L2Multiplication
 
 /-!
 # Change of variables on `L²(ℝ)`
@@ -22,7 +22,9 @@ the unitary `ψ ↦ √|g'| · (ψ ∘ g)`. The weight `√|g'|` makes the chang
   null sets when `g⁻¹` is differentiable;
 * `MeasureTheory.lintegral_abs_deriv_mul_comp`: the change of variables for `g`;
 * `MeasureTheory.eLpNorm_compDiffeo`: the weighted pullback preserves the `L²` norm;
-* `MeasureTheory.Lp.compDiffeo`: the unitary, and `MeasureTheory.Lp.coeFn_compDiffeo`.
+* `MeasureTheory.Lp.compDiffeo`: the unitary, and `MeasureTheory.Lp.coeFn_compDiffeo`;
+* `MeasureTheory.Lp.compDiffeo_mem_mulDomain_iff`, `MeasureTheory.Lp.compDiffeo_mulOp`: the unitary
+  carries multiplication by `a` to multiplication by `a ∘ g`.
 -/
 
 open Set Filter
@@ -151,6 +153,37 @@ def compDiffeo : Lp 𝕜 2 (volume : Measure ℝ) ≃ₗᵢ[𝕜] Lp 𝕜 2 (vol
 theorem coeFn_compDiffeo (ψ : Lp 𝕜 2 (volume : Measure ℝ)) :
     compDiffeo hg hg' ψ =ᵐ[volume] fun y => sqrtAbsDeriv g y * ψ (g y) :=
   coeFn_compDiffeoₗᵢ hg hg' ψ
+
+variable {a : ℝ → ℝ} (ha : Measurable a)
+include ha
+
+/-- `ψ ↦ √|g'| · (ψ ∘ g)` carries the domain of multiplication by `a` onto that of
+multiplication by `a ∘ g`. -/
+theorem compDiffeo_mem_mulDomain_iff {ψ : Lp ℂ 2 (volume : Measure ℝ)} :
+    compDiffeo hg hg' ψ ∈ L2.mulDomain (a ∘ g) ↔ ψ ∈ L2.mulDomain a := by
+  have hm : AEStronglyMeasurable (fun x => (a x : ℂ) * ψ x) volume :=
+    (Complex.continuous_ofReal.measurable.comp ha).aestronglyMeasurable.mul
+      (Lp.aestronglyMeasurable ψ)
+  have he : (fun y => ((a ∘ g) y : ℂ) * compDiffeo hg hg' ψ y) =ᵐ[volume]
+      fun y => sqrtAbsDeriv g y * (fun x => (a x : ℂ) * ψ x) (g y) := by
+    filter_upwards [coeFn_compDiffeo hg hg' ψ] with y hy
+    rw [hy, Function.comp_apply]
+    ring
+  rw [L2.mem_mulDomain, L2.mem_mulDomain, memLp_congr_ae he, memLp_iff, memLp_iff,
+    eLpNorm_compDiffeo hg hg' hm]
+
+/-- `U (a ψ) = (a ∘ g) (U ψ)` for `U ψ = √|g'| · (ψ ∘ g)`. -/
+theorem compDiffeo_mulOp (ψ : (L2.mulOp a : Lp ℂ 2 (volume : Measure ℝ) →ₗ.[ℂ] _).domain) :
+    compDiffeo hg hg' (L2.mulOp a ψ) =
+      L2.mulOp (a ∘ g) ⟨compDiffeo hg hg' ψ, (compDiffeo_mem_mulDomain_iff hg hg' ha).2 ψ.2⟩ := by
+  have hq := quasiMeasurePreserving_of_differentiable_symm g hg.continuous hg'
+  refine Lp.ext ?_
+  filter_upwards [coeFn_compDiffeo hg hg' (L2.mulOp a ψ), hq.ae_eq_comp (L2.coeFn_mulOp a ψ),
+    L2.coeFn_mulOp (a ∘ g) ⟨compDiffeo hg hg' ψ, (compDiffeo_mem_mulDomain_iff hg hg' ha).2 ψ.2⟩,
+    coeFn_compDiffeo hg hg' (ψ : Lp ℂ 2 (volume : Measure ℝ))] with y h1 h2 h3 h4
+  simp only [Function.comp_apply] at h2 h3 ⊢
+  rw [h1, h2, h3, h4]
+  ring
 
 end Lp
 

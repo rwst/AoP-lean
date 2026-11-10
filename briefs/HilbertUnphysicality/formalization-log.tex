@@ -67,9 +67,10 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   $\ell^2(\mathbb{N})$),\newline
   \lean{ForMathlib/MeasureTheory/Function/L2Space.lean} ($L^2$ is infinite-dimensional),\newline
   \lean{ForMathlib/MeasureTheory/Function/L2Multiplication.lean} (multiplication operators
-  on $L^2$ and their evolution),\newline
+  on $L^2$, their self-adjointness and their evolution),\newline
   \lean{ForMathlib/MeasureTheory/Function/LpSpace/ChangeOfVariables.lean} (the unitary of a
-  change of variables on $L^2(\mathbb{R})$),\newline
+  change of variables on $L^2(\mathbb{R})$, and how it transforms multiplication
+  operators),\newline
   \lean{ForMathlib/LinearAlgebra/LinearPMap.lean} (composition on the natural domain),\newline
   \lean{ForMathlib/Analysis/Normed/Algebra/Wielandt.lean} (the Wielandt--Wintner
   theorem),\newline
@@ -130,6 +131,13 @@ $\psi \in \mathcal{D}(X)$, $U\psi = \phi$, $U\psi \notin \mathcal{D}(Y)$ &
   \lean{gaussState_mem_positionDomain}, \lean{frameUnitary_gaussState},
   \lean{frameUnitary_gaussState_not_mem} \\
 the minimum form of [B]WDQ fails & \lean{not_forall_frameUnitary_mem_positionDomain} \\
+$X$ and $Y$, multiplication by the coordinate, are self-adjoint & \lean{positionOp},
+  \lean{isSelfAdjoint_positionOp} (from \lean{L2.isSelfAdjoint_mulOp}) \\
+$UXU^{-1}$ is multiplication by $g(y)$, with domain $U\,\mathcal{D}(X)$ &
+  \lean{conjLinearPMap_frameUnitary_positionOp} (from \lean{Lp.compDiffeo_mulOp}) \\
+$UXU^{-1}$ is self-adjoint, and $UXU^{-1} \ne Y$ &
+  \lean{isSelfAdjoint_conjLinearPMap_frameUnitary_positionOp},
+  \lean{conjLinearPMap_frameUnitary_positionOp_ne} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -171,6 +179,8 @@ $P = -i\,d/dx$, $\mathcal{D}(P) = \{\psi : \xi\hat\psi \in L^2\}$ & \lean{fourie
   \lean{momentumOp}, \lean{mem_domain_momentumOp} \\
 $P\psi$ need not be defined & \lean{roughState_not_mem_domain_momentumOp},
   \lean{domain_momentumOp_ne_top} \\
+$P$ and $H_0$ are self-adjoint & \lean{isSelfAdjoint_momentumOp},
+  \lean{isSelfAdjoint_freeHamiltonian} \\
 $\mathcal{D}(P) = H^1(\mathbb{R})$, so $\mathcal{F}^{-1}\phi \notin H^1$ &
   \lean{mem_domain_momentumOp_iff_memSobolev}, \lean{roughState_not_memSobolev} \\
 $H_0 = P^2/2$ and $e^{-itH_0}$, defined on all of $L^2(\mathbb{R})$ &
@@ -193,8 +203,7 @@ Brief & Lean \\
 no bounded $X$, $P$ with $[X,P] = i\hbar$ & \lean{not_exists_ccr_bounded} (from
   \lean{commutator_ne_algebraMap}) \\
 nor everywhere-defined symmetric ones & \lean{not_exists_ccr_symmetric} \\
-$X$, and $[X,P]$ on its natural domain & \lean{positionOp}, \lean{commutatorXP} (from
-  \lean{LinearPMap.compMax}) \\
+$[X,P]$ on its natural domain & \lean{commutatorXP} (from \lean{LinearPMap.compMax}) \\
 $[X,P]$ is not defined on all of $L^2(\mathbb{R})$ & \lean{domain_commutatorXP_ne_top} \\
 in $\mathcal{S}'$, $X$ is multiplication by $x$ and $P = -i\,d/dx$ &
   \lean{positionOp_toTemperedDistribution}, \lean{momentumOp_toTemperedDistribution} \\
@@ -245,14 +254,19 @@ all of the above & \lean{pointwise_values} \\
   (\lean{gaussState}) and $\phi = (1/(\pi(1+y^2)))^{1/2}$, as elements of
   $L^2(\mathbb{R})$. Both frames use the same space $L^2(\mathbb{R})$ with Lebesgue measure.
   The position operators are both multiplication by the coordinate, \lean{positionOp}, on
-  their common maximal domain \lean{positionDomain} $= \{\psi : x\psi \in L^2\}$; their
-  self-adjointness is not formalized. That $f$ is strictly increasing and onto
+  their common maximal domain \lean{positionDomain} $= \{\psi : x\psi \in L^2\}$. Their
+  self-adjointness is proved for every real measurable multiplication operator on $L^2(\mu)$
+  (\lean{L2.isSelfAdjoint_mulOp}, in \lean{ForMathlib}), by cutting off to the sets
+  $\{|a| \le n\}$. That $f$ is strictly increasing and onto
   $\mathbb{R}$, and that $g = f^{-1}$ has $g' > 0$, are proved; smoothness is not, only
   differentiability, which is all the unitary needs. The unitary $U$ is
   \lean{Lp.compDiffeo}, proved unitary for any bijection $g$ of $\mathbb{R}$ that is
   differentiable with a differentiable inverse, with weight $\sqrt{|g'|}$; its inverse $V$ is
-  the same construction for $g^{-1}$. The operator $UXU^{-1}$ and its domain are not
-  formalized. Mathlib has no error function; \lean{Real.erf} is defined in
+  the same construction for $g^{-1}$. The operator $UXU^{-1}$ is the conjugate
+  \lean{conjLinearPMap}, with domain $U\,\mathcal{D}(X)$ by definition; that it is
+  multiplication by $g(y)$ follows from $U(a\psi) = (a \circ g)\,U\psi$ for every measurable
+  $a$ (\lean{Lp.compDiffeo_mulOp}). It differs from $Y$ because $U\psi \in U\,\mathcal{D}(X)$
+  but $U\psi \notin \mathcal{D}(Y)$. Mathlib has no error function; \lean{Real.erf} is defined in
   \lean{ForMathlib}.
 \item \emph{Proposition~4.} The classification of separable infinite-dimensional Hilbert spaces
   is new in \lean{ForMathlib}. The positive integers $n, m$ appear as $n + 1, m + 1$.

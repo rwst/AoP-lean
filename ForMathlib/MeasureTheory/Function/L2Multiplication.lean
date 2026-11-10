@@ -13,11 +13,11 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 # Multiplication operators on `L²` and their unitary evolution
 
 For a measurable `a : α → ℝ`, the multiplication operator `f ↦ a f` on `L²(μ)` is defined on its
-maximal domain `{f | a f ∈ L²}`. The operators `U t f = e^{-i a t} f` are the unitary group
-`e^{-i t A}` it generates. Each `U t` is defined on the whole space, but the orbit `t ↦ U t f`
-solves the Schrödinger equation `d/dt (U t f) = -i A (U t f)` exactly when `f` lies in the
-domain of `A`: outside the domain the orbit is differentiable nowhere. This is the `L²(μ)`
-version of `lp.diagonalEvolution`.
+maximal domain `{f | a f ∈ L²}`, where it is self-adjoint. The operators `U t f = e^{-i a t} f`
+are the unitary group `e^{-i t A}` it generates. Each `U t` is defined on the whole space, but the
+orbit `t ↦ U t f` solves the Schrödinger equation `d/dt (U t f) = -i A (U t f)` exactly when `f`
+lies in the domain of `A`: outside the domain the orbit is differentiable nowhere. This is the
+`L²(μ)` version of `lp.diagonalEvolution`.
 
 ## Main definitions
 
@@ -32,10 +32,13 @@ version of `lp.diagonalEvolution`.
   `-i A (U t f)`;
 * `MeasureTheory.L2.not_differentiableAt_mulEvolution`: off the domain, it is not
   differentiable;
-* `MeasureTheory.L2.differentiableAt_mulEvolution_iff`: the two together.
+* `MeasureTheory.L2.differentiableAt_mulEvolution_iff`: the two together;
+* `MeasureTheory.L2.dense_mulDomain`: the maximal domain is dense;
+* `MeasureTheory.L2.isSelfAdjoint_mulOp`: the multiplication operator is self-adjoint.
 -/
 
 open Complex Filter Topology
+open scoped InnerProductSpace LinearPMap
 open lp (phase norm_phase phase_add phase_neg_mul_phase hasDerivAt_phase norm_phase_sub_one_le)
 
 @[expose] public noncomputable section
@@ -283,5 +286,138 @@ theorem differentiableAt_mulEvolution_iff {f : Lp ℂ 2 μ} (t : ℝ) :
     DifferentiableAt ℝ (fun s => mulEvolution ha s f) t ↔ f ∈ mulDomain a :=
   ⟨fun hd => by_contra fun hf => not_differentiableAt_mulEvolution ha hf t hd,
     fun hf => (hasDerivAt_mulEvolution ha hf t).differentiableAt⟩
+
+/-! ### Self-adjointness -/
+
+lemma measurableSet_cutoff (n : ℕ) : MeasurableSet (a ⁻¹' Set.Icc (-n : ℝ) n) :=
+  ha measurableSet_Icc
+
+/-- The cut-off `1_{|a| ≤ n} f`, as an element of `L²`. -/
+def cutoff (n : ℕ) (f : Lp ℂ 2 μ) : Lp ℂ 2 μ :=
+  ((Lp.memLp f).indicator (measurableSet_cutoff ha n).nullMeasurableSet).toLp
+
+lemma coeFn_cutoff (n : ℕ) (f : Lp ℂ 2 μ) :
+    cutoff ha n f =ᵐ[μ] (a ⁻¹' Set.Icc (-n) n).indicator f :=
+  MemLp.coeFn_toLp _
+
+lemma memLp_mul_indicator (n : ℕ) {f : α → ℂ} (hf : MemLp f 2 μ) :
+    MemLp (fun x => (a x : ℂ) * (a ⁻¹' Set.Icc (-n) n).indicator f x) 2 μ := by
+  have hm := (Complex.continuous_ofReal.measurable.comp ha).aestronglyMeasurable (μ := μ)
+  refine hf.of_le_mul (c := n)
+    (hm.mul (hf.indicator (measurableSet_cutoff ha n).nullMeasurableSet).aestronglyMeasurable)
+    (ae_of_all _ fun x => ?_)
+  by_cases hx : x ∈ a ⁻¹' Set.Icc (-n) n
+  · rw [Set.indicator_of_mem hx, norm_mul, norm_real, Real.norm_eq_abs]
+    exact mul_le_mul_of_nonneg_right (abs_le.2 hx) (norm_nonneg _)
+  · rw [Set.indicator_of_notMem hx, mul_zero, norm_zero]
+    positivity
+
+lemma cutoff_mem_mulDomain (n : ℕ) (f : Lp ℂ 2 μ) : cutoff ha n f ∈ mulDomain a := by
+  refine (memLp_mul_indicator ha n (Lp.memLp f)).ae_eq ?_
+  filter_upwards [coeFn_cutoff ha n f] with x hx
+  rw [hx]
+
+/-- The cut-offs `1_{|a| ≤ n} f` converge to `f` in `L²`. -/
+lemma tendsto_cutoff (f : Lp ℂ 2 μ) : Tendsto (fun n => cutoff ha n f) atTop (𝓝 f) := by
+  rw [tendsto_iff_norm_sub_tendsto_zero]
+  set G : ℕ → α → ℂ := fun n x => (a ⁻¹' Set.Icc (-n) n).indicator f x - f x
+  have hG (n : ℕ) : cutoff ha n f - f =ᵐ[μ] G n := by
+    filter_upwards [Lp.coeFn_sub (cutoff ha n f) f, coeFn_cutoff ha n f] with x h1 h2
+    rw [h1, Pi.sub_apply, h2]
+  have hsq : Tendsto (fun n => ‖cutoff ha n f - f‖ ^ 2) atTop (𝓝 0) := by
+    simp only [norm_sq_eq_integral]
+    have key : Tendsto (fun n => ∫ x, ‖G n x‖ ^ 2 ∂μ) atTop (𝓝 (∫ _, (0 : ℝ) ∂μ)) := by
+      refine tendsto_integral_of_dominated_convergence (fun x => ‖f x‖ ^ 2)
+        (fun n => ((Lp.aestronglyMeasurable _).congr (hG n)).norm.pow 2)
+        ((memLp_two_iff_integrable_sq_norm (Lp.aestronglyMeasurable f)).1 (Lp.memLp f))
+        (fun n => ae_of_all _ fun x => ?_) (ae_of_all _ fun x => ?_)
+      · simp only [G, Real.norm_eq_abs, abs_pow, abs_norm]
+        by_cases hx : x ∈ a ⁻¹' Set.Icc (-n) n
+        · rw [Set.indicator_of_mem hx, sub_self, norm_zero, zero_pow two_ne_zero]
+          positivity
+        · rw [Set.indicator_of_notMem hx, zero_sub, norm_neg]
+      · refine tendsto_const_nhds.congr' ?_
+        filter_upwards [eventually_ge_atTop ⌈|a x|⌉₊] with n hn
+        have hx : x ∈ a ⁻¹' Set.Icc (-n) n :=
+          abs_le.1 ((Nat.le_ceil _).trans (Nat.cast_le.2 hn))
+        simp only [G, Set.indicator_of_mem hx, sub_self, norm_zero]
+        norm_num
+    rw [integral_zero] at key
+    refine key.congr' (Eventually.of_forall fun n => ?_)
+    exact integral_congr_ae ((hG n).mono fun x hx => by simp only [hx])
+  have := hsq.sqrt
+  rw [Real.sqrt_zero] at this
+  exact this.congr fun n => Real.sqrt_sq (norm_nonneg _)
+
+/-- The maximal domain is dense: it contains the cut-offs `1_{|a| ≤ n} f`. -/
+theorem dense_mulDomain : Dense (mulDomain (μ := μ) a : Set (Lp ℂ 2 μ)) := fun f =>
+  mem_closure_of_tendsto (tendsto_cutoff ha f)
+    (Eventually.of_forall fun n => cutoff_mem_mulDomain ha n f)
+
+omit ha in
+lemma inner_mulOp_left (f g : (mulOp a : Lp ℂ 2 μ →ₗ.[ℂ] Lp ℂ 2 μ).domain) :
+    ⟪mulOp a f, (g : Lp ℂ 2 μ)⟫_ℂ = ⟪(f : Lp ℂ 2 μ), mulOp a g⟫_ℂ := by
+  rw [inner_def, inner_def]
+  refine integral_congr_ae ?_
+  filter_upwards [coeFn_mulOp a f, coeFn_mulOp a g] with x h1 h2
+  simp only [h1, h2, RCLike.inner_apply, map_mul, Complex.conj_ofReal]
+  ring
+
+/-- The multiplication operator by a real measurable function is self-adjoint on its maximal
+domain. -/
+theorem isSelfAdjoint_mulOp : IsSelfAdjoint (mulOp a : Lp ℂ 2 μ →ₗ.[ℂ] Lp ℂ 2 μ) := by
+  set T : Lp ℂ 2 μ →ₗ.[ℂ] Lp ℂ 2 μ := mulOp a
+  have hT : Dense (T.domain : Set (Lp ℂ 2 μ)) := dense_mulDomain ha
+  have hsym : T.IsFormalAdjoint T := inner_mulOp_left
+  -- `T† ≤ T`: on each set `|a| ≤ n`, test `T†` against `1_{|a| ≤ n} (a y - T† y)`.
+  have key (y : T†.domain) : ∀ᵐ x ∂μ, (a x : ℂ) * (y : Lp ℂ 2 μ) x = T† y x := by
+    set F : α → ℂ := fun x => (a x : ℂ) * (y : Lp ℂ 2 μ) x - T† y x
+    have hn (n : ℕ) : ∀ᵐ x ∂μ, (a ⁻¹' Set.Icc (-n) n).indicator F x = 0 := by
+      set s := a ⁻¹' Set.Icc (-n) n
+      have hF : MemLp (s.indicator F) 2 μ := by
+        have h := (memLp_mul_indicator ha n (Lp.memLp (y : Lp ℂ 2 μ))).sub
+          ((Lp.memLp (T† y)).indicator (measurableSet_cutoff ha n).nullMeasurableSet)
+        refine h.ae_eq (ae_of_all _ fun x => ?_)
+        by_cases hx : x ∈ s
+        · simp [F, s, Set.indicator_of_mem hx]
+        · simp [F, s, Set.indicator_of_notMem hx]
+      obtain ⟨w, hwF⟩ : ∃ w : Lp ℂ 2 μ, w =ᵐ[μ] s.indicator F := ⟨hF.toLp, hF.coeFn_toLp⟩
+      have hw : w ∈ T.domain := by
+        refine (memLp_mul_indicator ha n hF).ae_eq ?_
+        filter_upwards [hwF] with x hx
+        rw [hx, Set.indicator_indicator, Set.inter_self]
+      have h := LinearPMap.adjoint_isFormalAdjoint hT y ⟨w, hw⟩
+      have h0 : ⟪w, w⟫_ℂ = ⟪(y : Lp ℂ 2 μ), T ⟨w, hw⟩⟫_ℂ - ⟪T† y, w⟫_ℂ := by
+        have i1 := integrable_inner (𝕜 := ℂ) (y : Lp ℂ 2 μ) (T ⟨w, hw⟩)
+        have i2 := integrable_inner (𝕜 := ℂ) (T† y) w
+        rw [inner_def w w, inner_def (y : Lp ℂ 2 μ) (T ⟨w, hw⟩), inner_def (T† y) w,
+          ← integral_sub i1 i2]
+        refine integral_congr_ae ?_
+        filter_upwards [hwF, coeFn_mulOp a ⟨w, hw⟩] with x h1 h2
+        rw [show (T ⟨w, hw⟩ : Lp ℂ 2 μ) x = a x * w x from h2]
+        simp only [RCLike.inner_apply, h1]
+        by_cases hx : x ∈ s
+        · simp only [Set.indicator_of_mem hx, F, map_mul, map_sub, Complex.conj_ofReal]
+          ring
+        · simp [Set.indicator_of_notMem hx]
+      rw [h, sub_self] at h0
+      have hw0 : w = 0 := inner_self_eq_zero.1 h0
+      filter_upwards [hwF, Lp.coeFn_zero ℂ 2 μ] with x h1 h2
+      rw [← h1, hw0, h2, Pi.zero_apply]
+    filter_upwards [ae_all_iff.2 hn] with x hx
+    have hm : x ∈ a ⁻¹' Set.Icc (-(⌈|a x|⌉₊ : ℕ) : ℝ) ⌈|a x|⌉₊ := abs_le.1 (Nat.le_ceil _)
+    have := hx ⌈|a x|⌉₊
+    rw [Set.indicator_of_mem hm] at this
+    exact sub_eq_zero.1 this
+  have hdom (y : T†.domain) : (y : Lp ℂ 2 μ) ∈ T.domain :=
+    (Lp.memLp (T† y)).ae_eq ((key y).mono fun x hx => hx.symm)
+  have hle : T† ≤ T := by
+    refine ⟨fun y hy => hdom ⟨y, hy⟩, fun y z hyz => Lp.ext ?_⟩
+    obtain ⟨z, hz⟩ := z
+    simp only at hyz
+    subst hyz
+    filter_upwards [key y, coeFn_mulOp a ⟨_, hz⟩] with x h1 h2
+    rw [← h1, show (T ⟨_, hz⟩ : Lp ℂ 2 μ) x = a x * (y : Lp ℂ 2 μ) x from h2]
+  exact LinearPMap.isSelfAdjoint_def.mpr (le_antisymm hle (hsym.le_adjoint hT))
 
 end MeasureTheory.L2

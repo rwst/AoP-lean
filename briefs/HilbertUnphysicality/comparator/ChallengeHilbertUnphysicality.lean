@@ -5,15 +5,11 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.l2Space
-public import Mathlib.Analysis.InnerProductSpace.LinearPMap
-public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
-public import Mathlib.Analysis.Normed.Group.Tannery
-public import Mathlib.MeasureTheory.Function.L2Space
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 public import Mathlib.Analysis.Distribution.TemperedDistribution
 public import Mathlib.Analysis.Distribution.Sobolev
 public import Mathlib.MeasureTheory.Measure.SeparableMeasure
+public import Mathlib.Analysis.InnerProductSpace.LinearPMap
+public import Mathlib.Analysis.Normed.Group.Tannery
 public import Mathlib.Analysis.CStarAlgebra.ContinuousLinearMap
 public import Mathlib.Analysis.InnerProductSpace.StarOrder
 public import Mathlib.Analysis.InnerProductSpace.Trace

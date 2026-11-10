@@ -51,6 +51,12 @@ Proposition 3, used for [B]WDQ (quantities well defined in all frames):
 * `gaussState`, `gaussState_mem_positionDomain`, `frameUnitary_gaussState`,
   `frameUnitary_gaussState_not_mem`  `ψ ∈ D(X)`, `Uψ = ϕ` a.e., and `Uψ ∉ D(Y)`;
 * `not_forall_frameUnitary_mem_positionDomain`  so the minimum form of [B]WDQ fails.
+* `positionOp`, `isSelfAdjoint_positionOp`  `X` and `Y` are multiplication by the coordinate on
+  `positionDomain`, and self-adjoint (`L2.isSelfAdjoint_mulOp`, in `ForMathlib`);
+* `conjLinearPMap_frameUnitary_positionOp`  `U X U⁻¹` is multiplication by `g(y)` on `U D(X)`
+  (`Lp.compDiffeo_mulOp`, in `ForMathlib`);
+* `isSelfAdjoint_conjLinearPMap_frameUnitary_positionOp`  it is self-adjoint;
+* `conjLinearPMap_frameUnitary_positionOp_ne`  and it is not `Y`: `Uψ ∈ U D(X)`, `Uψ ∉ D(Y)`.
 
 Proposition 4, used for [B]STDIST (distinguishability of systems):
 * `L2_euclidean_iso`  `L²(ℝⁿ⁺¹) ≃ₗᵢ L²(ℝᵐ⁺¹)` for all `n, m`, from the classification of
@@ -77,6 +83,7 @@ Sec. 5, the domain of the Schrödinger equation (an additional remark, not part 
 
 Sec. 5 in position space, on `L²(ℝ)` with Mathlib's Fourier transform `fourierL2`:
 * `momentumOp`, `mem_domain_momentumOp`  `P = 𝓕⁻¹ (2πξ) 𝓕` on `D(P) = {ψ | ξ 𝓕ψ ∈ L²}`;
+* `isSelfAdjoint_momentumOp`, `isSelfAdjoint_freeHamiltonian`  `P` and `H₀` are self-adjoint;
 * `roughState_not_mem_domain_momentumOp`, `domain_momentumOp_ne_top`  `𝓕⁻¹ ϕ ∉ D(P)`;
 * `mem_domain_momentumOp_iff_memSobolev`, `roughState_not_memSobolev`  `D(P) = H¹(ℝ)`, so
   `𝓕⁻¹ ϕ` is not in `H¹`;
@@ -90,7 +97,7 @@ Sec. 5, commutator relations (`ħ = 1` on `L²(ℝ)`):
 * `not_exists_ccr_bounded`, `not_exists_ccr_symmetric`  `[X, P] = iħ` has no solution in
   bounded operators (Wielandt–Wintner, `commutator_ne_algebraMap` in `ForMathlib`), nor, by
   Hellinger–Toeplitz, in everywhere-defined symmetric ones;
-* `positionOp`, `commutatorXP`  `X` on `D(X)`, and `[X, P] = X P - P X` on its natural domain
+* `commutatorXP`  `[X, P] = X P - P X` on its natural domain
   (`LinearPMap.compMax`, in `ForMathlib`);
 * `domain_commutatorXP_ne_top`  `[X, P]` is not defined on all of `L²(ℝ)`;
 * `positionOp_toTemperedDistribution`, `momentumOp_toTemperedDistribution`  in `𝓢'(ℝ)`, `X` is
@@ -110,7 +117,6 @@ Sec. 5, point-wise values (on `L²(ℝ)`):
   of a continuous linear functional on `L²(ℝ)`, so no choice of point values is continuous in `ψ`;
 * `pointwise_values`  the above together.
 -/
-public import ForMathlib.MeasureTheory.Function.L2Multiplication
 public import ForMathlib.Analysis.Distribution.TemperedDistribution
 public import ForMathlib.Analysis.Normed.Algebra.Wielandt
 public import ForMathlib.LinearAlgebra.LinearPMap
@@ -534,6 +540,60 @@ theorem not_forall_frameUnitary_mem_positionDomain :
     ¬ ∀ ψ ∈ positionDomain, frameUnitary ψ ∈ positionDomain :=
   fun h => frameUnitary_gaussState_not_mem (h _ gaussState_mem_positionDomain)
 
+/-! The position operators. `X` on `L²(ℝ, dx)` and `Y` on `L²(ℝ, dy)` are both multiplication by
+the coordinate on `positionDomain`, while `U X U⁻¹` is multiplication by `g(y)` on `U D(X)`. -/
+
+section PositionOperators
+
+open QuantumMechanics
+
+/-- The position operator `X`, multiplication by `x`, on its maximal domain. In the coordinate
+`y` it is `Y`. -/
+def positionOp : L2R →ₗ.[ℂ] L2R := L2.mulOp fun x : ℝ => x
+
+theorem coe_domain_positionOp : (positionOp.domain : Set L2R) = positionDomain := rfl
+
+lemma coeFn_positionOp (ψ : positionOp.domain) :
+    positionOp ψ =ᵐ[volume] fun x => (x : ℂ) * (ψ : L2R) x :=
+  L2.coeFn_mulOp _ ψ
+
+/-- `X` and `Y` are self-adjoint on `positionDomain`. -/
+theorem isSelfAdjoint_positionOp : IsSelfAdjoint positionOp :=
+  L2.isSelfAdjoint_mulOp measurable_id
+
+/-- `U X U⁻¹` is multiplication by `g(y)`, with domain `U D(X)` (Proposition 3). -/
+theorem conjLinearPMap_frameUnitary_positionOp :
+    conjLinearPMap frameUnitary positionOp = L2.mulOp fun y => frameEquiv y := by
+  have hmem (ψ : L2R) :
+      frameUnitary ψ ∈ L2.mulDomain (fun y => frameEquiv y) ↔ ψ ∈ positionOp.domain :=
+    Lp.compDiffeo_mem_mulDomain_iff (a := fun x : ℝ => x) differentiable_frameIso_symm
+      differentiable_frameChange measurable_id
+  refine LinearPMap.ext (Submodule.ext fun ψ => ?_) fun ψ _ _ => ?_
+  · rw [mem_domain_conjLinearPMap, ← hmem, LinearIsometryEquiv.apply_symm_apply]
+    rfl
+  · rw [conjLinearPMap_apply]
+    refine (Lp.compDiffeo_mulOp (a := fun x : ℝ => x) differentiable_frameIso_symm
+      differentiable_frameChange measurable_id _).trans ?_
+    congr 1
+    exact Subtype.ext (LinearIsometryEquiv.apply_symm_apply _ _)
+
+/-- `U X U⁻¹` is self-adjoint on `U D(X)`. -/
+theorem isSelfAdjoint_conjLinearPMap_frameUnitary_positionOp :
+    IsSelfAdjoint (conjLinearPMap frameUnitary positionOp) :=
+  isSelfAdjoint_positionOp.conjLinearPMap
+
+/-- `U X U⁻¹` is not `Y`: `Uψ` lies in `U D(X)` but not in `D(Y)`. -/
+theorem conjLinearPMap_frameUnitary_positionOp_ne :
+    conjLinearPMap frameUnitary positionOp ≠ positionOp := by
+  intro h
+  have hm : frameUnitary gaussState ∈ (conjLinearPMap frameUnitary positionOp).domain := by
+    rw [mem_domain_conjLinearPMap, LinearIsometryEquiv.symm_apply_apply]
+    exact gaussState_mem_positionDomain
+  rw [h] at hm
+  exact frameUnitary_gaussState_not_mem hm
+
+end PositionOperators
+
 end WDQ
 
 /-! ### Proposition 4 ([B]STDIST): all separable infinite-dimensional Hilbert spaces are
@@ -734,6 +794,10 @@ theorem roughState_not_mem_domain_momentumOp : roughState ∉ momentumOp.domain 
 theorem domain_momentumOp_ne_top : momentumOp.domain ≠ ⊤ := fun h =>
   roughState_not_mem_domain_momentumOp (h ▸ Submodule.mem_top)
 
+/-- `P` is self-adjoint: it is unitarily equivalent to multiplication by `2πξ`. -/
+theorem isSelfAdjoint_momentumOp : IsSelfAdjoint momentumOp :=
+  (L2.isSelfAdjoint_mulOp (by fun_prop)).conjLinearPMap
+
 open TemperedDistribution in
 /-- `D(P)` is the Sobolev space `H¹(ℝ)`, which Mathlib defines through the Fourier transform
 (`MemSobolev 1 2`, of the `L²` function as a tempered distribution). So `roughState` is a
@@ -818,6 +882,10 @@ domain. -/
 def freeHamiltonian : L2R →ₗ.[ℂ] L2R :=
   conjLinearPMap fourierL2.symm (L2.mulOp fun ξ : ℝ => 2 * π ^ 2 * ξ ^ 2)
 
+/-- `H₀` is self-adjoint: it is unitarily equivalent to multiplication by `2π²ξ²`. -/
+theorem isSelfAdjoint_freeHamiltonian : IsSelfAdjoint freeHamiltonian :=
+  (L2.isSelfAdjoint_mulOp measurable_kinetic).conjLinearPMap
+
 /-- The free evolution `e^{-itH₀} = 𝓕⁻¹ e^{-2iπ²ξ²t} 𝓕`, defined on all of `L²(ℝ)`. -/
 def freeEvolution (t : ℝ) : L2R ≃ₗᵢ[ℂ] L2R :=
   fourierL2.trans ((L2.mulEvolution measurable_kinetic t).trans fourierL2.symm)
@@ -883,15 +951,6 @@ section Commutator
 
 open QuantumMechanics FourierTransform LinearPMap LineDeriv TemperedDistribution
 open scoped SchwartzMap
-
-/-- The position operator `X`, multiplication by `x`, on its maximal domain. -/
-def positionOp : L2R →ₗ.[ℂ] L2R := L2.mulOp fun x : ℝ => x
-
-theorem coe_domain_positionOp : (positionOp.domain : Set L2R) = positionDomain := rfl
-
-lemma coeFn_positionOp (ψ : positionOp.domain) :
-    positionOp ψ =ᵐ[volume] fun x => (x : ℂ) * (ψ : L2R) x :=
-  L2.coeFn_mulOp _ ψ
 
 /-- The commutator `[X, P] = X P - P X` (`ħ = 1`), on its natural domain: the `ψ` in
 `D(X) ∩ D(P)` with `Pψ ∈ D(X)` and `Xψ ∈ D(P)` (`LinearPMap.compMax`, in `ForMathlib`). -/

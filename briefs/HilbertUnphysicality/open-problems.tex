@@ -60,13 +60,6 @@ precise first.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \textbf{The position operators.} The unitary $U$ between the two frames, its inverse,
-  and the common domain $\{\psi : x\psi \in L^2\}$ of $X$ and $Y$ are formalized, and
-  $\psi \in \mathcal{D}(X)$, $U\psi = \phi$, $U\psi \notin \mathcal{D}(Y)$ are checked, and
-  so is the operator of multiplication by the coordinate on this domain. The self-adjointness
-  of $X$ and $Y$, and the operator $UXU^{-1}$ of multiplication by $g(y)$ with domain
-  $U\,\mathcal{D}(X)$, are not formalized. (Brief, Sec.~2, Proposition~3; Log,
-  ``Differences''.)
 \item \textbf{The Schr\"odinger equation with a potential.} The remark on the domain of the
   Schr\"odinger equation is checked for the oscillator in the number basis, $H = N$ on
   $\ell^2(\mathbb{N})$, and in position space for the free particle, $H_0 = P^2/2$ on
@@ -127,7 +120,11 @@ for [B]WDQ, and two systems with different numbers of continuous degrees of free
 \item Each observer measures position with the multiplication operator by their own
   coordinate, on its maximal domain: $X$ on $L^2(\mathbb{R}, dx)$ and $Y$ on
   $L^2(\mathbb{R}, dy)$. The brief now says this, and notes that $UXU^{-1}$ is the different
-  operator of multiplication by $g(y)$, with domain $U\,\mathcal{D}(X)$.
+  operator of multiplication by $g(y)$, with domain $U\,\mathcal{D}(X)$. It is checked
+  that $X$ and $Y$ are self-adjoint (\lean{isSelfAdjoint_positionOp}), that $UXU^{-1}$ is
+  multiplication by $g(y)$ (\lean{conjLinearPMap_frameUnitary_positionOp}) and self-adjoint
+  (\lean{isSelfAdjoint_conjLinearPMap_frameUnitary_positionOp}), and that $UXU^{-1} \ne Y$
+  (\lean{conjLinearPMap_frameUnitary_positionOp_ne}).
 \item A normalized state has \emph{finite variance} for an observable $O$ if it lies in
   $\mathcal{D}(O)$, that is, if $\|O\psi\|^2 < \infty$ (Sec.~4).
 \item [B]WDQ, minimum form: for every change of frame and every state $\psi$,
