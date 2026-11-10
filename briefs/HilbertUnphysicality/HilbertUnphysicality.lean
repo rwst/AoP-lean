@@ -100,11 +100,21 @@ Sec. 5, commutator relations (`ħ = 1` on `L²(ℝ)`):
 * `toLp_mem_domain_commutatorXP`, `dense_domain_commutatorXP`  Schwartz functions lie in
   `D([X, P])`, so it is dense;
 * `commutator_relations`  the above together.
+
+Sec. 5, point-wise values (on `L²(ℝ)`):
+* `exists_representative_apply_eq`, `exists_representatives_ne`  a vector `ψ` of `L²(ℝ)` has
+  representatives with any prescribed value at any point, so two of them differ there
+  (`MeasureTheory.update_ae_eq`, in `ForMathlib`);
+* `exists_representative_density_eq`  so the density `|ψ(x)|²` takes any value `r ≥ 0` at `x`;
+* `not_exists_continuous_eval`  even on Schwartz functions, `φ ↦ φ(x₀)` is not the restriction
+  of a continuous linear functional on `L²(ℝ)`, so no choice of point values is continuous in `ψ`;
+* `pointwise_values`  the above together.
 -/
 public import ForMathlib.MeasureTheory.Function.L2Multiplication
 public import ForMathlib.Analysis.Distribution.TemperedDistribution
 public import ForMathlib.Analysis.Normed.Algebra.Wielandt
 public import ForMathlib.LinearAlgebra.LinearPMap
+public import ForMathlib.MeasureTheory.Measure.Typeclasses.NullSingletonClass
 public import Mathlib.Analysis.Distribution.Sobolev
 public import ForMathlib.Analysis.InnerProductSpace.l2Space
 public import ForMathlib.Analysis.SpecialFunctions.Gaussian.Erf
@@ -1048,5 +1058,87 @@ theorem commutator_relations :
     dense_domain_commutatorXP, commutatorXP_apply⟩
 
 end Commutator
+
+/-! ### Sec. 5: point-wise values -/
+
+section PointwiseValues
+
+open scoped SchwartzMap
+
+/-- A vector of `L²(ℝ)` has a representative with any value `c` at any point `x`: changing a
+function at one point does not change its class. -/
+theorem exists_representative_apply_eq (ψ : L2R) (x : ℝ) (c : ℂ) :
+    ∃ f : ℝ → ℂ, f =ᵐ[volume] ψ ∧ f x = c :=
+  MeasureTheory.exists_ae_eq_apply_eq _ x c
+
+/-- So the value of `ψ` at a point is not well defined: two representatives differ there. -/
+theorem exists_representatives_ne (ψ : L2R) (x : ℝ) :
+    ∃ f g : ℝ → ℂ, f =ᵐ[volume] ψ ∧ g =ᵐ[volume] ψ ∧ f x ≠ g x := by
+  obtain ⟨f, hf, hfx⟩ := exists_representative_apply_eq ψ x 0
+  obtain ⟨g, hg, hgx⟩ := exists_representative_apply_eq ψ x 1
+  exact ⟨f, g, hf, hg, by rw [hfx, hgx]; exact zero_ne_one⟩
+
+/-- Nor is the probability density `|ψ(x)|²`: it takes any value `r ≥ 0` at `x`. -/
+theorem exists_representative_density_eq (ψ : L2R) (x : ℝ) {r : ℝ} (hr : 0 ≤ r) :
+    ∃ f : ℝ → ℂ, f =ᵐ[volume] ψ ∧ ‖f x‖ ^ 2 = r := by
+  obtain ⟨f, hf, hfx⟩ := exists_representative_apply_eq ψ x (√r : ℝ)
+  refine ⟨f, hf, ?_⟩
+  rw [hfx, Complex.norm_real, Real.norm_eq_abs, sq_abs, Real.sq_sqrt hr]
+
+/-- Point evaluation at `x₀` is not continuous in the `L²` norm, even on Schwartz functions: no
+continuous linear functional on `L²(ℝ)` agrees with `φ ↦ φ(x₀)` there. The witnesses are bumps
+of value `1` at `x₀` and support of length `2r`, so of norm at most `√(2r)`. -/
+theorem not_exists_continuous_eval (x₀ : ℝ) :
+    ¬ ∃ ℓ : L2R →L[ℂ] ℂ, ∀ φ : 𝓢(ℝ, ℂ), ℓ (φ.toLp 2 volume) = φ x₀ := by
+  rintro ⟨ℓ, hℓ⟩
+  set r : ℝ := 1 / (4 * (‖ℓ‖ ^ 2 + 1)) with hr
+  have hr0 : 0 < r := by positivity
+  let b : ContDiffBump x₀ := ⟨r / 2, r, half_pos hr0, half_lt_self hr0⟩
+  have hb : HasCompactSupport (Complex.ofRealCLM ∘ b) := b.hasCompactSupport.comp_left rfl
+  let φ : 𝓢(ℝ, ℂ) := hb.toSchwartzMap (Complex.ofRealCLM.contDiff.comp b.contDiff)
+  have hφ : φ x₀ = 1 := by
+    simp [φ, b.one_of_mem_closedBall (Metric.mem_closedBall_self (half_pos hr0).le)]
+  have hint : ∫ x, ‖φ x‖ ^ (2 : ℝ) ≤ 2 * r := by
+    calc ∫ x, ‖φ x‖ ^ (2 : ℝ) ≤ ∫ x, (Metric.ball x₀ r).indicator 1 x := by
+          refine integral_mono_of_nonneg (ae_of_all _ fun _ => by positivity) ?_
+            (ae_of_all _ fun x => ?_)
+          · exact (integrable_indicator_iff measurableSet_ball).2
+              (integrableOn_const measure_ball_lt_top.ne)
+          · by_cases hx : x ∈ Metric.ball x₀ r
+            · rw [indicator_of_mem hx]
+              have h0 := b.nonneg' x
+              simp [φ, abs_of_nonneg h0]
+              exact b.le_one
+            · rw [indicator_of_notMem hx]
+              have : b x = 0 := by
+                rwa [← Function.notMem_support, b.support_eq]
+              simp [φ, this]
+      _ = 2 * r := by
+          rw [integral_indicator_one measurableSet_ball, Measure.real, Real.volume_ball,
+            ENNReal.toReal_ofReal (by positivity)]
+  have hN := SchwartzMap.norm_toLp' (f := φ) (p := 2) (μ := volume) two_ne_zero
+    ENNReal.ofNat_ne_top
+  rw [ENNReal.toReal_ofNat, show (2⁻¹ : ℝ) = 1 / 2 by norm_num, ← Real.sqrt_eq_rpow] at hN
+  have hN2 : ‖φ.toLp 2 volume‖ ^ 2 ≤ 2 * r := by
+    rw [hN, Real.sq_sqrt (integral_nonneg fun _ => by positivity)]
+    exact hint
+  have h1 : (1 : ℝ) ≤ ‖ℓ‖ * ‖φ.toLp 2 volume‖ := by
+    have := ℓ.le_opNorm (φ.toLp 2 volume)
+    rwa [hℓ, hφ, norm_one] at this
+  have hr1 : r * (4 * (‖ℓ‖ ^ 2 + 1)) = 1 := by
+    rw [hr]
+    field_simp
+  nlinarith [mul_le_mul_of_nonneg_left hN2 (sq_nonneg ‖ℓ‖), mul_self_le_mul_self zero_le_one h1,
+    norm_nonneg ℓ, norm_nonneg (φ.toLp 2 volume)]
+
+/-- The point-wise values of Sec. 5 together: every value at every point is taken by a
+representative of every `ψ ∈ L²(ℝ)`, and point evaluation does not extend continuously from
+Schwartz functions to `L²(ℝ)`. -/
+theorem pointwise_values :
+    (∀ (ψ : L2R) (x : ℝ) (c : ℂ), ∃ f : ℝ → ℂ, f =ᵐ[volume] ψ ∧ f x = c) ∧
+    ∀ x₀ : ℝ, ¬ ∃ ℓ : L2R →L[ℂ] ℂ, ∀ φ : 𝓢(ℝ, ℂ), ℓ (φ.toLp 2 volume) = φ x₀ :=
+  ⟨exists_representative_apply_eq, not_exists_continuous_eval⟩
+
+end PointwiseValues
 
 end HilbertUnphysicality

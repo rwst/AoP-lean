@@ -57,7 +57,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item Imports: \lean{InconsistentConvergence}, one new \lean{ForPhyslib} file:\newline
   \lean{ForPhyslib/QuantumMechanics/UnitaryEquivalence.lean} (a unitary carries the quantum
   model),\newline
-  and ten new \lean{ForMathlib} files:\newline
+  and eleven new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2Diagonal.lean} (diagonal operators on
   $\ell^2$),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2DiagonalEvolution.lean} (their
@@ -74,7 +74,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForMathlib/Analysis/Normed/Algebra/Wielandt.lean} (the Wielandt--Wintner
   theorem),\newline
   \lean{ForMathlib/Analysis/Distribution/TemperedDistribution.lean} (the Leibniz rule in
-  $\mathcal{S}'$)
+  $\mathcal{S}'$),\newline
+  \lean{ForMathlib/MeasureTheory/Measure/Typeclasses/NullSingletonClass.lean} (changing a
+  function at a point)
 \end{itemize}
 
 \paragraph{Setting.} Theorem~5 says that the Hilbert-space formulation QSTO:H is inconsistent
@@ -83,9 +85,9 @@ then argues each part of Theorem~5 from one of them (Sec.~4). The propositions a
 Lean, and Theorem~5 is stated and proved as \lean{theorem5}, with each condition in its
 minimum form (see the open problems, ``Precise readings''). Of the additional remarks of
 Sec.~5, the one on the domain of the Schr\"odinger equation is checked too, for the harmonic
-oscillator in the number basis and for the free particle in position space, and so is the one
-on commutator relations, for position and momentum on $L^2(\mathbb{R})$ (see
-``Differences'').
+oscillator in the number basis and for the free particle in position space, and so are the
+ones on commutator relations, for position and momentum on $L^2(\mathbb{R})$, and on
+point-wise values, in $L^2(\mathbb{R})$ (see ``Differences'').
 
 \paragraph{Results.}
 \begin{center}
@@ -205,6 +207,24 @@ all of the above & \lean{commutator_relations} \\
 \end{tabularx}
 \end{center}
 
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Sec.~5, point-wise values}} \\
+$\psi \in L^2$ has representatives with any value at any point &
+  \lean{exists_representative_apply_eq} (from \lean{MeasureTheory.update_ae_eq}) \\
+so the values of $\psi$ at a point are not uniquely defined &
+  \lean{exists_representatives_ne} \\
+nor is the density $|\psi(x)|^2$ & \lean{exists_representative_density_eq} \\
+point evaluation is not continuous in $L^2$, even on $\mathcal{S}(\mathbb{R})$ &
+  \lean{not_exists_continuous_eval} \\
+all of the above & \lean{pointwise_values} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item \emph{Proposition~1.} Both parts are stated for linear maps, without Mathlib's partially
@@ -272,8 +292,8 @@ all of the above & \lean{commutator_relations} \\
   Proposition~3. The Schr\"odinger equation is checked in position space for the free
   particle, $H_0 = \mathcal{F}^{-1}(2\pi^2\xi^2)\mathcal{F}$ (mass~1); that $H_0 = P^2/2$ as
   partially defined operators is not proved. For a potential $V \ne 0$, see the open
-  problems. For the potential part, $V(y) = y^2$ and the state $\phi = U\psi$ of Proposition~3 are used:
-  $\phi \in L^2$, but $V\phi \notin L^2$; for $V(y) = y$ this is
+  problems. For the potential part, $V(y) = y^2$ and the state $\phi = U\psi$ of Proposition~3 are
+  used: $\phi \in L^2$, but $V\phi \notin L^2$; for $V(y) = y$ this is
   \lean{frameUnitary_gaussState_not_mem}.
 \item \emph{Sec.~5, commutator relations.} The brief says that $[X,P]/(i\hbar) = I$ cannot
   hold on the whole of $\mathcal{H}$, since the left side is unbounded, and must be restricted
@@ -294,7 +314,17 @@ all of the above & \lean{commutator_relations} \\
   embedding $L^2 \to \mathcal{S}'$ is injective. Schwartz functions lie in
   $\mathcal{D}([X,P])$, so it is dense. Closures and self-adjoint extensions are not
   considered.
-\item The other additional remark of Section~5, on point-wise values, is not formalized.
+\item \emph{Sec.~5, point-wise values.} The brief says that a vector of $L^2$ is a class of
+  functions that agree up to a null set, so its values at a point, and the density
+  $|\psi(x)|^2$, are not uniquely defined. This is proved for $L^2(\mathbb{R})$: since points
+  are null, changing a representative at one point gives another representative
+  (\lean{MeasureTheory.update_ae_eq}, in \lean{ForMathlib}), so every value at every point is
+  taken, by $\psi$ and by $|\psi|^2$. Beyond the brief, the value at a point cannot be fixed
+  by a continuous choice either: no continuous linear functional on $L^2(\mathbb{R})$ agrees
+  with $\varphi \mapsto \varphi(x_0)$ on the Schwartz functions
+  (\lean{not_exists_continuous_eval}). The witnesses are smooth bumps of value $1$ at $x_0$
+  whose $L^2$ norm tends to $0$. That $|\psi(x)|^2$ is ``conceptually uniquely defined'' is the
+  physical intuition the brief contrasts with, and is not a mathematical claim.
 \end{itemize}
 
 \paragraph{Problems found in the brief.}
