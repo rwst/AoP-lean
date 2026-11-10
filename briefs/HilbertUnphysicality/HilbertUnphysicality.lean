@@ -74,8 +74,20 @@ Sec. 5, the domain of the Schrödinger equation (an additional remark, not part 
   the initial state lies in `D(N)`, and is differentiable nowhere otherwise;
 * `not_memLp_sq_mul_frameUnitary_gaussState`  the potential `V(y) = y²` takes the state
   `ϕ ∈ L²(ℝ)` of Proposition 3 out of `L²`.
+
+Sec. 5 in position space, on `L²(ℝ)` with Mathlib's Fourier transform `fourierL2`:
+* `momentumOp`, `mem_domain_momentumOp`  `P = 𝓕⁻¹ (2πξ) 𝓕` on `D(P) = {ψ | ξ 𝓕ψ ∈ L²}`;
+* `roughState_not_mem_domain_momentumOp`, `domain_momentumOp_ne_top`  `𝓕⁻¹ ϕ ∉ D(P)`;
+* `mem_domain_momentumOp_iff_memSobolev`, `roughState_not_memSobolev`  `D(P) = H¹(ℝ)`, so
+  `𝓕⁻¹ ϕ` is not in `H¹`;
+* `freeHamiltonian`, `freeEvolution`  `H₀ = P²/2 = 𝓕⁻¹ (2π²ξ²) 𝓕` and `e^{-itH₀}`, defined on
+  all of `L²(ℝ)` (`L2.mulOp`, `L2.mulEvolution`, in `ForMathlib`);
+* `hasDerivAt_freeEvolution`, `not_differentiableAt_freeEvolution`,
+  `differentiableAt_freeEvolution_iff`  its orbit solves the free Schrödinger equation exactly
+  when the initial state lies in `D(H₀)`, and is differentiable nowhere otherwise.
 -/
-public import ForMathlib.Analysis.InnerProductSpace.l2DiagonalEvolution
+public import ForMathlib.MeasureTheory.Function.L2Multiplication
+public import Mathlib.Analysis.Distribution.Sobolev
 public import ForMathlib.Analysis.InnerProductSpace.l2Space
 public import ForMathlib.Analysis.SpecialFunctions.Gaussian.Erf
 public import ForMathlib.MeasureTheory.Function.L2Space
@@ -629,5 +641,193 @@ theorem not_memLp_sq_mul_frameUnitary_gaussState :
   nlinarith [norm_nonneg (ϕ y)]
 
 end Schrodinger
+
+/-! ### Sec. 5 in position space: the momentum operator and the free particle -/
+
+section PositionSpace
+
+open QuantumMechanics FourierTransform
+open scoped SchwartzMap
+
+/-- The Fourier transform, a unitary of `L²(ℝ)` (Plancherel), with Mathlib's convention
+`𝓕ψ(ξ) = ∫ e^{-2πixξ} ψ(x) dx`. -/
+abbrev fourierL2 : L2R ≃ₗᵢ[ℂ] L2R := Lp.fourierTransformₗᵢ ℝ ℂ
+
+/-- The momentum operator `P = -i d/dx` (`ħ = 1`) on its maximal domain. The Fourier transform
+takes `d/dx` to multiplication by `2πiξ`, so `P = 𝓕⁻¹ (2πξ) 𝓕`. -/
+def momentumOp : L2R →ₗ.[ℂ] L2R :=
+  conjLinearPMap fourierL2.symm (L2.mulOp fun ξ : ℝ => 2 * π * ξ)
+
+/-- `ψ ∈ D(P)` iff `ξ 𝓕ψ ∈ L²`, that is, iff `𝓕ψ` lies in the domain of the position
+operator. -/
+theorem mem_domain_momentumOp {ψ : L2R} :
+    ψ ∈ momentumOp.domain ↔ fourierL2 ψ ∈ positionDomain := by
+  rw [momentumOp, mem_domain_conjLinearPMap, LinearIsometryEquiv.symm_symm, L2.domain_mulOp,
+    L2.mem_mulDomain]
+  change _ ↔ MemLp (fun ξ : ℝ => (ξ : ℂ) * fourierL2 ψ ξ) 2 volume
+  have h2π : (2 * π : ℂ) ≠ 0 := by exact_mod_cast (by positivity : (2 * π : ℝ) ≠ 0)
+  constructor
+  · intro h
+    refine (h.const_mul (2 * π : ℂ)⁻¹).ae_eq (ae_of_all _ fun ξ => ?_)
+    push_cast
+    field_simp
+  · intro h
+    refine (h.const_mul (2 * π : ℂ)).ae_eq (ae_of_all _ fun ξ => ?_)
+    push_cast
+    ring
+
+/-- A state outside `D(P)`: `𝓕⁻¹ ϕ` for the Cauchy packet `ϕ` of Proposition 3. -/
+def roughState : L2R := fourierL2.symm (frameUnitary gaussState)
+
+theorem roughState_not_mem_domain_momentumOp : roughState ∉ momentumOp.domain := by
+  rw [mem_domain_momentumOp, roughState, LinearIsometryEquiv.apply_symm_apply]
+  exact frameUnitary_gaussState_not_mem
+
+/-- So `P` is not defined on the whole of `L²(ℝ)`. -/
+theorem domain_momentumOp_ne_top : momentumOp.domain ≠ ⊤ := fun h =>
+  roughState_not_mem_domain_momentumOp (h ▸ Submodule.mem_top)
+
+open TemperedDistribution in
+/-- `D(P)` is the Sobolev space `H¹(ℝ)`, which Mathlib defines through the Fourier transform
+(`MemSobolev 1 2`, of the `L²` function as a tempered distribution). So `roughState` is a
+vector of `L²(ℝ)` outside `H¹`, on which `P` is not defined. -/
+theorem mem_domain_momentumOp_iff_memSobolev {ψ : L2R} :
+    ψ ∈ momentumOp.domain ↔ MemSobolev 1 2 (ψ : 𝓢'(ℝ, ℂ)) := by
+  rw [mem_domain_momentumOp, memSobolev_iff_exists_smulLeftCLM_fourier,
+    Lp.fourier_toTemperedDistribution_eq]
+  set g : L2R := 𝓕 ψ
+  change MemLp (fun ξ : ℝ => (ξ : ℂ) * g ξ) 2 volume ↔ _
+  set W : ℝ → ℂ := fun x => (((1 + ‖x‖ ^ 2) ^ ((1 : ℝ) / 2) : ℝ) : ℂ)
+  set V : ℝ → ℂ := fun x => (((1 + ‖x‖ ^ 2) ^ (-(1 : ℝ) / 2) : ℝ) : ℂ)
+  have hW : W.HasTemperateGrowth := by fun_prop
+  have hV : V.HasTemperateGrowth := by fun_prop
+  have hpos (x : ℝ) : 0 < 1 + ‖x‖ ^ 2 := by positivity
+  -- `|x| ≤ (1 + x²)^{1/2} ≤ 1 + |x|`.
+  have hsqrt (x : ℝ) : (1 + ‖x‖ ^ 2) ^ ((1 : ℝ) / 2) = √(1 + x ^ 2) := by
+    rw [Real.sqrt_eq_rpow, Real.norm_eq_abs, sq_abs]
+  have hle (x : ℝ) : |x| ≤ √(1 + x ^ 2) := Real.abs_le_sqrt (by linarith [sq_nonneg x])
+  have hge (x : ℝ) : √(1 + x ^ 2) ≤ 1 + |x| :=
+    Real.sqrt_le_iff.2 ⟨by positivity, by nlinarith [abs_nonneg x, sq_abs x]⟩
+  have hWn (x : ℝ) : ‖W x‖ = √(1 + x ^ 2) := by
+    change ‖(((1 + ‖x‖ ^ 2) ^ ((1 : ℝ) / 2) : ℝ) : ℂ)‖ = _
+    rw [Complex.norm_real, Real.norm_of_nonneg (by positivity), hsqrt]
+  constructor
+  · intro h
+    have hm : AEStronglyMeasurable (fun x => W x * g x) volume :=
+      hW.1.continuous.aestronglyMeasurable.mul (Lp.aestronglyMeasurable g)
+    have hWg : MemLp (fun x => W x * g x) 2 volume := by
+      refine ((Lp.memLp g).norm.add h.norm).of_le hm (ae_of_all _ fun x => ?_)
+      rw [norm_mul, hWn, Pi.add_apply, Real.norm_of_nonneg (by positivity), norm_mul,
+        Complex.norm_real, Real.norm_eq_abs]
+      nlinarith [hge x, norm_nonneg (g x)]
+    refine ⟨hWg.toLp _, ?_⟩
+    ext u
+    simp only [smulLeftCLM_apply_apply, Lp.toTemperedDistribution_apply,
+      SchwartzMap.smulLeftCLM_apply_apply hW]
+    refine integral_congr_ae ?_
+    filter_upwards [hWg.coeFn_toLp] with x hx
+    rw [hx, smul_eq_mul, smul_eq_mul, smul_eq_mul]
+    ring
+  · rintro ⟨f', hf'⟩
+    have hVW : W * V = fun _ => (1 : ℂ) := by
+      funext x
+      simp only [W, V, Pi.mul_apply, ← Complex.ofReal_mul]
+      rw [← Real.rpow_add (hpos x)]
+      norm_num
+    have hVn (x : ℝ) : ‖V x‖ = (1 + ‖x‖ ^ 2) ^ (-(1 : ℝ) / 2) := by
+      change ‖(((1 + ‖x‖ ^ 2) ^ (-(1 : ℝ) / 2) : ℝ) : ℂ)‖ = _
+      rw [Complex.norm_real, Real.norm_of_nonneg (by positivity)]
+    have hVb (x : ℝ) : ‖V x‖ ≤ 1 := by
+      rw [hVn]
+      exact Real.rpow_le_one_of_one_le_of_nonpos (le_add_of_nonneg_right (by positivity))
+        (by norm_num)
+    have hVmem : MemLp V ⊤ volume :=
+      memLp_top_of_bound hV.1.continuous.aestronglyMeasurable 1 (ae_of_all _ hVb)
+    have h1 : (g : 𝓢'(ℝ, ℂ)) = ((hVmem.toLp _ • f' : L2R) : 𝓢'(ℝ, ℂ)) := by
+      rw [Lp.toTemperedDistribution_smul_eq hV hVmem, ← hf', smulLeftCLM_smulLeftCLM_apply hW hV,
+        hVW, smulLeftCLM_const, one_smul]
+    have hinj := LinearMap.ker_eq_bot.mp
+      (Lp.ker_toTemperedDistributionCLM_eq_bot (F := ℂ) (μ := (volume : Measure ℝ)) (p := 2))
+    have hg : g = (hVmem.toLp _ • f' : L2R) := hinj h1
+    refine (Lp.memLp f').of_le (Complex.continuous_ofReal.aestronglyMeasurable.mul
+      (Lp.aestronglyMeasurable g)) ?_
+    rw [hg]
+    filter_upwards [Lp.coeFn_lpSMul (r := 2) (hVmem.toLp _) f', hVmem.coeFn_toLp] with x h2 h3
+    rw [h2, Pi.smul_apply', h3, smul_eq_mul, norm_mul, norm_mul, Complex.norm_real,
+      Real.norm_eq_abs, ← mul_assoc]
+    refine mul_le_of_le_one_left (norm_nonneg _) ?_
+    rw [hVn, neg_div, Real.rpow_neg (hpos x).le, hsqrt]
+    rw [← div_eq_mul_inv]
+    exact div_le_one_of_le₀ (hle x) (Real.sqrt_nonneg _)
+
+theorem roughState_not_memSobolev : ¬ TemperedDistribution.MemSobolev 1 2
+    (roughState : 𝓢'(ℝ, ℂ)) :=
+  fun h => roughState_not_mem_domain_momentumOp (mem_domain_momentumOp_iff_memSobolev.2 h)
+
+lemma measurable_kinetic : Measurable fun ξ : ℝ => 2 * π ^ 2 * ξ ^ 2 := by fun_prop
+
+/-- The free Hamiltonian `H₀ = P²/2` (mass `1`, `ħ = 1`), as `𝓕⁻¹ (2π²ξ²) 𝓕` on its maximal
+domain. -/
+def freeHamiltonian : L2R →ₗ.[ℂ] L2R :=
+  conjLinearPMap fourierL2.symm (L2.mulOp fun ξ : ℝ => 2 * π ^ 2 * ξ ^ 2)
+
+/-- The free evolution `e^{-itH₀} = 𝓕⁻¹ e^{-2iπ²ξ²t} 𝓕`, defined on all of `L²(ℝ)`. -/
+def freeEvolution (t : ℝ) : L2R ≃ₗᵢ[ℂ] L2R :=
+  fourierL2.trans ((L2.mulEvolution measurable_kinetic t).trans fourierL2.symm)
+
+lemma freeEvolution_apply (t : ℝ) (ψ : L2R) :
+    freeEvolution t ψ = fourierL2.symm (L2.mulEvolution measurable_kinetic t (fourierL2 ψ)) :=
+  rfl
+
+lemma mem_domain_freeHamiltonian {ψ : L2R} :
+    ψ ∈ freeHamiltonian.domain ↔ fourierL2 ψ ∈ L2.mulDomain fun ξ : ℝ => 2 * π ^ 2 * ξ ^ 2 := by
+  rw [freeHamiltonian, mem_domain_conjLinearPMap, LinearIsometryEquiv.symm_symm]
+  rfl
+
+lemma freeHamiltonian_apply (ψ : freeHamiltonian.domain) :
+    freeHamiltonian ψ = fourierL2.symm (L2.mulOp (fun ξ : ℝ => 2 * π ^ 2 * ξ ^ 2)
+      ⟨fourierL2 ψ, mem_domain_freeHamiltonian.1 ψ.2⟩) :=
+  conjLinearPMap_apply ψ
+
+lemma freeEvolution_mem_domain_iff (t : ℝ) {ψ : L2R} :
+    freeEvolution t ψ ∈ freeHamiltonian.domain ↔ ψ ∈ freeHamiltonian.domain := by
+  rw [mem_domain_freeHamiltonian, mem_domain_freeHamiltonian, freeEvolution_apply,
+    LinearIsometryEquiv.apply_symm_apply, L2.mulEvolution_mem_mulDomain_iff]
+
+/-- On `D(H₀)`, the orbit of `ψ` solves the free Schrödinger equation
+`i d/dt (U t ψ) = H₀ (U t ψ)`. -/
+theorem hasDerivAt_freeEvolution {ψ : L2R} (hψ : ψ ∈ freeHamiltonian.domain) (t : ℝ) :
+    HasDerivAt (fun s => freeEvolution s ψ)
+      (-(Complex.I • freeHamiltonian ⟨freeEvolution t ψ,
+        (freeEvolution_mem_domain_iff t).2 hψ⟩)) t := by
+  have h := ((fourierL2.symm.toContinuousLinearEquiv : L2R →L[ℂ] L2R).restrictScalars
+    ℝ).hasFDerivAt.comp_hasDerivAt t
+    (L2.hasDerivAt_mulEvolution measurable_kinetic (mem_domain_freeHamiltonian.1 hψ) t)
+  convert h using 1
+  · rfl
+  rw [ContinuousLinearMap.coe_restrictScalars', ContinuousLinearEquiv.coe_coe,
+    LinearIsometryEquiv.coe_toContinuousLinearEquiv, map_neg, map_smul, freeHamiltonian_apply]
+  congr 4
+  exact Subtype.ext (LinearIsometryEquiv.apply_symm_apply _ _)
+
+/-- Off `D(H₀)`, the orbit is differentiable nowhere. -/
+theorem not_differentiableAt_freeEvolution {ψ : L2R} (hψ : ψ ∉ freeHamiltonian.domain)
+    (t : ℝ) : ¬ DifferentiableAt ℝ (fun s => freeEvolution s ψ) t := by
+  intro hd
+  have h := ((fourierL2.toContinuousLinearEquiv : L2R →L[ℂ] L2R).restrictScalars
+    ℝ).differentiableAt.comp t hd
+  refine L2.not_differentiableAt_mulEvolution measurable_kinetic
+    (mt mem_domain_freeHamiltonian.2 hψ) t ?_
+  convert h using 1
+  funext s
+  simp [freeEvolution_apply]
+
+/-- The free Schrödinger equation holds along the orbit of `ψ` exactly on the domain of `H₀`. -/
+theorem differentiableAt_freeEvolution_iff {ψ : L2R} (t : ℝ) :
+    DifferentiableAt ℝ (fun s => freeEvolution s ψ) t ↔ ψ ∈ freeHamiltonian.domain :=
+  ⟨fun hd => by_contra fun hψ => not_differentiableAt_freeEvolution hψ t hd,
+    fun hψ => (hasDerivAt_freeEvolution hψ t).differentiableAt⟩
+
+end PositionSpace
 
 end HilbertUnphysicality

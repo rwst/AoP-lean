@@ -57,7 +57,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item Imports: \lean{InconsistentConvergence}, one new \lean{ForPhyslib} file:\newline
   \lean{ForPhyslib/QuantumMechanics/UnitaryEquivalence.lean} (a unitary carries the quantum
   model),\newline
-  and six new \lean{ForMathlib} files:\newline
+  and seven new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2Diagonal.lean} (diagonal operators on
   $\ell^2$),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2DiagonalEvolution.lean} (their
@@ -66,6 +66,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForMathlib/Analysis/InnerProductSpace/l2Space.lean} (separable Hilbert spaces are
   $\ell^2(\mathbb{N})$),\newline
   \lean{ForMathlib/MeasureTheory/Function/L2Space.lean} ($L^2$ is infinite-dimensional),\newline
+  \lean{ForMathlib/MeasureTheory/Function/L2Multiplication.lean} (multiplication operators
+  on $L^2$ and their evolution),\newline
   \lean{ForMathlib/MeasureTheory/Function/LpSpace/ChangeOfVariables.lean} (the unitary of a
   change of variables on $L^2(\mathbb{R})$)
 \end{itemize}
@@ -76,7 +78,8 @@ then argues each part of Theorem~5 from one of them (Sec.~4). The propositions a
 Lean, and Theorem~5 is stated and proved as \lean{theorem5}, with each condition in its
 minimum form (see the open problems, ``Precise readings''). Of the additional remarks of
 Sec.~5, the one on the domain of the Schr\"odinger equation is checked too, for the harmonic
-oscillator (see ``Differences'').
+oscillator in the number basis and for the free particle in position space (see
+``Differences'').
 
 \paragraph{Results.}
 \begin{center}
@@ -155,6 +158,20 @@ off $\mathcal{D}(H)$ it holds at no time & \lean{not_differentiableAt_numberEvol
   \lean{differentiableAt_numberEvolution_iff} \\
 $V(x)\psi(x)$ need not be square-integrable & \lean{not_memLp_sq_mul_frameUnitary_gaussState},
   \lean{frameUnitary_gaussState_not_mem} \\
+\multicolumn{2}{@{}l}{\emph{Sec.~5, in position space}} \\
+$P = -i\,d/dx$, $\mathcal{D}(P) = \{\psi : \xi\hat\psi \in L^2\}$ & \lean{fourierL2},
+  \lean{momentumOp}, \lean{mem_domain_momentumOp} \\
+$P\psi$ need not be defined & \lean{roughState_not_mem_domain_momentumOp},
+  \lean{domain_momentumOp_ne_top} \\
+$\mathcal{D}(P) = H^1(\mathbb{R})$, so $\mathcal{F}^{-1}\phi \notin H^1$ &
+  \lean{mem_domain_momentumOp_iff_memSobolev}, \lean{roughState_not_memSobolev} \\
+$H_0 = P^2/2$ and $e^{-itH_0}$, defined on all of $L^2(\mathbb{R})$ &
+  \lean{freeHamiltonian}, \lean{freeEvolution} (from \lean{L2.mulOp},
+  \lean{L2.mulEvolution}) \\
+on $\mathcal{D}(H_0)$ the Schr\"odinger equation holds & \lean{hasDerivAt_freeEvolution}
+  (from \lean{L2.hasDerivAt_mulEvolution}) \\
+off $\mathcal{D}(H_0)$ it holds at no time & \lean{not_differentiableAt_freeEvolution},
+  \lean{differentiableAt_freeEvolution_iff} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -214,10 +231,19 @@ $V(x)\psi(x)$ need not be square-integrable & \lean{not_memLp_sq_mul_frameUnitar
   differentiable at no time otherwise. It is proved for the harmonic oscillator in the number
   basis, $H = N$ on $\ell^2(\mathbb{N})$, in units with $\hbar\omega = 1$ and without the
   zero-point energy, which only adds a global phase. The general statement is proved for every
-  real diagonal operator on $\ell^2$ (\lean{lp.diagonalEvolution}, in \lean{ForMathlib}). The
-  position-space form $H = P^2/2m + V(x)$ is not formalized, since it needs weak derivatives
-  on $L^2(\mathbb{R})$; the momentum part of the remark is covered only through $N$. For the
-  potential part, $V(y) = y^2$ and the state $\phi = U\psi$ of Proposition~3 are used:
+  real diagonal operator on $\ell^2$ (\lean{lp.diagonalEvolution}, in \lean{ForMathlib}), and
+  for every real multiplication operator on $L^2(\mu)$ (\lean{L2.mulEvolution}). In position
+  space, the momentum operator is $P = \mathcal{F}^{-1}(2\pi\xi)\mathcal{F}$ with Mathlib's
+  unitary Fourier transform on $L^2(\mathbb{R})$, whose convention
+  $\hat\psi(\xi) = \int e^{-2\pi i x\xi}\psi(x)\,dx$ gives the factor $2\pi$ ($\hbar = 1$).
+  Its maximal domain is identified with $H^1(\mathbb{R})$ in Mathlib's definition
+  (\lean{MemSobolev}~1~2, through the Bessel potential); that this is the space of $L^2$
+  functions whose distributional derivative is in $L^2$ is not proved here. The state outside
+  $\mathcal{D}(P)$ is $\mathcal{F}^{-1}\phi$, for the Cauchy packet $\phi$ of
+  Proposition~3. The Schr\"odinger equation is checked in position space for the free
+  particle, $H_0 = \mathcal{F}^{-1}(2\pi^2\xi^2)\mathcal{F}$ (mass~1); that $H_0 = P^2/2$ as
+  partially defined operators is not proved. For a potential $V \ne 0$, see the open
+  problems. For the potential part, $V(y) = y^2$ and the state $\phi = U\psi$ of Proposition~3 are used:
   $\phi \in L^2$, but $V\phi \notin L^2$; for $V(y) = y$ this is
   \lean{frameUnitary_gaussState_not_mem}.
 \item The other additional remarks of Section~5, on point-wise values and on commutator

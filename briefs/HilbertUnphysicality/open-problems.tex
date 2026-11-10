@@ -71,12 +71,14 @@ precise first.
 \item \textbf{Commutator relations.} That $[X,P]/(i\hbar) = I$ cannot hold on the whole of
   $\mathcal{H}$ and must be restricted to a domain is not formalized. (Brief, Sec.~5; Log,
   ``Differences''.)
-\item \textbf{The Schr\"odinger equation in position space.} The remark on the domain of the
+\item \textbf{The Schr\"odinger equation with a potential.} The remark on the domain of the
   Schr\"odinger equation is checked for the oscillator in the number basis, $H = N$ on
-  $\ell^2(\mathbb{N})$. The position-space form $H = P^2/2m + V(x)$ on $L^2(\mathbb{R})$ is not
-  formalized. That includes its domain, and that $\psi \notin \mathcal{D}(P)$ when $\psi$ is
-  not weakly differentiable with derivative in $L^2$, since this needs weak derivatives on
-  $L^2(\mathbb{R})$. (Brief, Sec.~5; Log, ``Differences''.)
+  $\ell^2(\mathbb{N})$, and in position space for the free particle, $H_0 = P^2/2$ on
+  $L^2(\mathbb{R})$, with $\mathcal{D}(P) = H^1(\mathbb{R})$. For $H = P^2/2m + V(x)$ with a
+  potential, the domain and self-adjointness of $H$ and its evolution $e^{-itH}$ are not
+  formalized. They need results such as the Kato--Rellich theorem and Stone's theorem, which
+  Mathlib does not have; the oscillator in position space would also need the Hermite
+  functions as a basis of $L^2(\mathbb{R})$. (Brief, Sec.~5; Log, ``Differences''.)
 \end{enumerate}
 
 \noindent
