@@ -57,9 +57,14 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item Imports: \lean{InconsistentConvergence}, one new \lean{ForPhyslib} file:\newline
   \lean{ForPhyslib/QuantumMechanics/UnitaryEquivalence.lean} (a unitary carries the quantum
   model),\newline
+  the existing \lean{ForPhyslib/QuantumMechanics/Stone.lean} (Stone's theorem in
+  Schr\"odinger form, extended here by the differentiable orbits),\newline
+  two TauCeti files, the Hermite functions and their Hilbert basis of $L^2(\mathbb{R})$:\newline
+  \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/HilbertBasis.lean},\newline
+  \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/Oscillator.lean},\newline
   and eleven new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2Diagonal.lean} (diagonal operators on
-  $\ell^2$),\newline
+  $\ell^2$, and their characterization by eigenvectors),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2DiagonalEvolution.lean} (their
   evolution),\newline
   \lean{ForMathlib/Analysis/SpecialFunctions/Gaussian/Erf.lean} (the error function),\newline
@@ -85,8 +90,9 @@ with three physical conditions. The brief proves four mathematical propositions 
 then argues each part of Theorem~5 from one of them (Sec.~4). The propositions are checked in
 Lean, and Theorem~5 is stated and proved as \lean{theorem5}, with each condition in its
 minimum form (see the open problems, ``Precise readings''). Of the additional remarks of
-Sec.~5, the one on the domain of the Schr\"odinger equation is checked too, for the harmonic
-oscillator in the number basis and for the free particle in position space, and so are the
+Sec.~5, the one on the domain of the Schr\"odinger equation is checked too, for every
+self-adjoint Hamiltonian and in detail for the harmonic oscillator, in the number basis and in
+position space, and for the free particle in position space, and so are the
 ones on commutator relations, for position and momentum on $L^2(\mathbb{R})$, and on
 point-wise values, in $L^2(\mathbb{R})$ (see ``Differences'').
 
@@ -172,8 +178,21 @@ on $\mathcal{D}(H)$ the Schr\"odinger equation holds & \lean{hasDerivAt_numberEv
   (from \lean{lp.hasDerivAt_diagonalEvolution}) \\
 off $\mathcal{D}(H)$ it holds at no time & \lean{not_differentiableAt_numberEvolution},
   \lean{differentiableAt_numberEvolution_iff} \\
+this evolution is that of Stone's theorem & \lean{numberEvolution_eq_schrodingerPropagator} \\
+the same for every self-adjoint $H$ unbounded on its domain & \lean{schrodinger_only_on_domain}
+  (from \lean{schrodingerPropagator},
+  \lean{differentiableAt_schrodingerPropagator_iff}) \\
 $V(x)\psi(x)$ need not be square-integrable & \lean{not_memLp_sq_mul_frameUnitary_gaussState},
   \lean{frameUnitary_gaussState_not_mem} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
 \multicolumn{2}{@{}l}{\emph{Sec.~5, in position space}} \\
 $P = -i\,d/dx$, $\mathcal{D}(P) = \{\psi : \xi\hat\psi \in L^2\}$ & \lean{fourierL2},
   \lean{momentumOp}, \lean{mem_domain_momentumOp} \\
@@ -190,6 +209,28 @@ on $\mathcal{D}(H_0)$ the Schr\"odinger equation holds & \lean{hasDerivAt_freeEv
   (from \lean{L2.hasDerivAt_mulEvolution}) \\
 off $\mathcal{D}(H_0)$ it holds at no time & \lean{not_differentiableAt_freeEvolution},
   \lean{differentiableAt_freeEvolution_iff} \\
+this evolution is that of Stone's theorem & \lean{freeEvolution_eq_schrodingerPropagator} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Sec.~5, the harmonic oscillator in position space}} \\
+$H = P^2/2 + X^2/2$, diagonal in the Hermite basis & \lean{hermiteUnitary},
+  \lean{oscillatorHamiltonian} (from \lean{TauCeti.hermiteHilbertBasis}) \\
+$H$ is self-adjoint, $H\psi_n = (n + \tfrac12)\psi_n$ &
+  \lean{isSelfAdjoint_oscillatorHamiltonian}, \lean{oscillatorHamiltonian_hermiteFunctionLp} \\
+$H\psi_n = \tfrac12(-\psi_n'' + x^2\psi_n)$ & \lean{oscillatorHamiltonian_hermiteFunctionLp_ae}
+  (from \lean{TauCeti.hermiteFunction_oscillator}) \\
+the only self-adjoint operator with these eigenvectors & \lean{eq_oscillatorHamiltonian}
+  (from \lean{lp.eq_diagonal}) \\
+$\mathcal{D}(H) \ne L^2(\mathbb{R})$, and the Schr\"odinger equation holds only on
+  $\mathcal{D}(H)$ & \lean{exists_lt_norm_oscillatorHamiltonian},
+  \lean{oscillator_schrodinger_only_on_domain} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -291,11 +332,21 @@ all of the above & \lean{pointwise_values} \\
   equation is valid only on $\mathcal{D}(H)$. This is read dynamically: the evolution
   $e^{-itH}$ is defined on all of $\mathcal{H}$, but its orbit $t \mapsto e^{-itH}\psi$
   satisfies $i\,\tfrac{d}{dt}\psi(t) = H\psi(t)$ exactly when $\psi \in \mathcal{D}(H)$, and is
-  differentiable at no time otherwise. It is proved for the harmonic oscillator in the number
+  differentiable at no time otherwise. It is proved for every self-adjoint $H$ that is
+  unbounded on its domain (\lean{schrodinger_only_on_domain}): $\mathcal{D}(H) \ne \mathcal{H}$
+  by Hellinger--Toeplitz, and $e^{-itH/\hbar}$ is the evolution of Stone's theorem
+  (\lean{schrodingerPropagator}, in \lean{ForPhyslib}, from PhyslibAlpha's spectral theorem for
+  unbounded self-adjoint operators), whose orbits are differentiable exactly when they start in
+  $\mathcal{D}(H)$ (\lean{differentiableAt_schrodingerPropagator_iff}, new in
+  \lean{ForPhyslib}). This covers every potential $V$ for which $P^2/2m + V$ is self-adjoint;
+  that it is, is proved here for $V = 0$ and for the oscillator, $V(x) = x^2/2$. The evolution
+  is also built explicitly, and
+  shown to be the one of Stone's theorem, for the harmonic oscillator in the number
   basis, $H = N$ on $\ell^2(\mathbb{N})$, in units with $\hbar\omega = 1$ and without the
-  zero-point energy, which only adds a global phase. The general statement is proved for every
-  real diagonal operator on $\ell^2$ (\lean{lp.diagonalEvolution}, in \lean{ForMathlib}), and
-  for every real multiplication operator on $L^2(\mu)$ (\lean{L2.mulEvolution}). In position
+  zero-point energy, which only adds a global phase. The explicit evolution and the statement
+  are proved for every real diagonal operator on $\ell^2$ (\lean{lp.diagonalEvolution}, in
+  \lean{ForMathlib}), and for every real multiplication operator on $L^2(\mu)$
+  (\lean{L2.mulEvolution}). In position
   space, the momentum operator is $P = \mathcal{F}^{-1}(2\pi\xi)\mathcal{F}$ with Mathlib's
   unitary Fourier transform on $L^2(\mathbb{R})$, whose convention
   $\hat\psi(\xi) = \int e^{-2\pi i x\xi}\psi(x)\,dx$ gives the factor $2\pi$ ($\hbar = 1$).
@@ -305,10 +356,18 @@ all of the above & \lean{pointwise_values} \\
   $\mathcal{D}(P)$ is $\mathcal{F}^{-1}\phi$, for the Cauchy packet $\phi$ of
   Proposition~3. The Schr\"odinger equation is checked in position space for the free
   particle, $H_0 = \mathcal{F}^{-1}(2\pi^2\xi^2)\mathcal{F}$ (mass~1); that $H_0 = P^2/2$ as
-  partially defined operators is not proved. For a potential $V \ne 0$, see the open
-  problems. For the potential part, $V(y) = y^2$ and the state $\phi = U\psi$ of Proposition~3 are
-  used: $\phi \in L^2$, but $V\phi \notin L^2$; for $V(y) = y$ this is
-  \lean{frameUnitary_gaussState_not_mem}.
+  partially defined operators is not proved. The harmonic oscillator in position space
+  ($m = \omega = \hbar = 1$) is $H = \sum_n (n + \tfrac12)\ket{\psi_n}\bra{\psi_n}$ on its
+  maximal domain, with TauCeti's Hermite functions $\psi_n$ and their Hilbert basis of
+  $L^2(\mathbb{R})$. It is tied to the differential expression $\tfrac12(-\psi'' + x^2\psi)$
+  by $H\psi_n = \tfrac12(-\psi_n'' + x^2\psi_n)$, and by uniqueness: $H$ is the only
+  self-adjoint operator with these eigenvectors and eigenvalues (\lean{eq_oscillatorHamiltonian},
+  from \lean{lp.eq_diagonal}, new in \lean{ForMathlib}). That $H = H_0 + X^2/2$ as a sum of
+  partially defined operators, or that $H$ acts as the differential expression on every
+  Schwartz function, is not proved. For the self-adjointness of $P^2/2m + V$ with other
+  potentials, see the open problems. For the potential part, $V(y) = y^2$ and the
+  state $\phi = U\psi$ of Proposition~3 are used: $\phi \in L^2$, but $V\phi \notin L^2$; for
+  $V(y) = y$ this is \lean{frameUnitary_gaussState_not_mem}.
 \item \emph{Sec.~5, commutator relations.} The brief says that $[X,P]/(i\hbar) = I$ cannot
   hold on the whole of $\mathcal{H}$, since the left side is unbounded, and must be restricted
   to a domain. Both halves are proved, with $\hbar = 1$. The commutator \lean{commutatorXP} is

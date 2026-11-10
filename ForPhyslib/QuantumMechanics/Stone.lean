@@ -36,6 +36,8 @@ theorem (`schrodingerPropagator`). On the domain both `t ↦ U t ψ` and `t ↦ 
   a strongly continuous unitary group has a self-adjoint Hamiltonian.
 - `QuantumMechanics.schrodingerPropagator`: `e^{-itH/ħ}` for a self-adjoint `H`, by the spectral
   theorem.
+- `QuantumMechanics.differentiableAt_schrodingerPropagator_iff`: an orbit of `e^{-itH/ħ}` is
+  differentiable exactly when it starts in the domain of `H`.
 - `QuantumMechanics.SolvesSchrodinger.eq_schrodingerPropagator`: a solution with `U 0 = 1` is
   `e^{-itH/ħ}`.
 - `QuantumMechanics.exists_stronglyContinuousUnitaryGroup_of_solvesSchrodinger`: a solution with
@@ -139,6 +141,15 @@ theorem solvesSchrodinger_schrodingerPropagator {ħ : ℝ} (hħ : ħ ≠ 0) {H :
   have h := hasDerivAt_expUnitaryGroup_apply D ψ t
   rw [← inv_I_mul_smul_apply hħ H _ hmem] at h
   exact h
+
+/-- The orbit `t ↦ e^{-itH/ħ} ψ` is differentiable at a time `t` exactly when `ψ` lies in the
+domain of `H`; off the domain it is differentiable at no time. -/
+theorem differentiableAt_schrodingerPropagator_iff {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E}
+    (hH : IsSelfAdjoint H) (ψ : E) (t : ℝ) :
+    DifferentiableAt ℝ (fun s => schrodingerPropagator hħ hH s ψ) t ↔ ψ ∈ H.domain := by
+  set D := unboundedSpectralTheorem _ (isSelfAdjoint_neg_inv_smul hħ hH)
+  have h := D.mem_domain_iff_expUnitaryGroup_hasDerivAt ψ t
+  exact ⟨fun hd => h.2 ⟨_, hd.hasDerivAt⟩, fun hψ => (h.1 hψ).choose_spec.differentiableAt⟩
 
 lemma schrodingerPropagator_zero {ħ : ℝ} (hħ : ħ ≠ 0) {H : E →ₗ.[ℂ] E} (hH : IsSelfAdjoint H) :
     schrodingerPropagator hħ hH 0 = 1 := by

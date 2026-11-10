@@ -60,14 +60,17 @@ precise first.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \textbf{The Schr\"odinger equation with a potential.} The remark on the domain of the
-  Schr\"odinger equation is checked for the oscillator in the number basis, $H = N$ on
-  $\ell^2(\mathbb{N})$, and in position space for the free particle, $H_0 = P^2/2$ on
-  $L^2(\mathbb{R})$, with $\mathcal{D}(P) = H^1(\mathbb{R})$. For $H = P^2/2m + V(x)$ with a
-  potential, the domain and self-adjointness of $H$ and its evolution $e^{-itH}$ are not
-  formalized. They need results such as the Kato--Rellich theorem and Stone's theorem, which
-  Mathlib does not have; the oscillator in position space would also need the Hermite
-  functions as a basis of $L^2(\mathbb{R})$. (Brief, Sec.~5; Log, ``Differences''.)
+\item \textbf{The Schr\"odinger equation with a potential.} The remark that the
+  Schr\"odinger equation holds only on $\mathcal{D}(H)$ is checked for every self-adjoint
+  Hamiltonian $H$ that is unbounded on its domain, with the evolution $e^{-itH/\hbar}$ of
+  Stone's theorem (\lean{schrodinger_only_on_domain}). It is checked in detail for $H = N$ on
+  $\ell^2(\mathbb{N})$, for $H_0 = P^2/2$ on $L^2(\mathbb{R})$, and for the harmonic oscillator
+  $P^2/2 + X^2/2$ on $L^2(\mathbb{R})$, built from the Hermite basis
+  (\lean{oscillator_schrodinger_only_on_domain}). For other potentials $V \ne 0$, it is not
+  formalized that $H = P^2/2m + V(x)$ is self-adjoint, nor on which domain. This needs results
+  such as the Kato--Rellich theorem, which Mathlib, TauCeti and Physlib do not have. For the
+  oscillator, that its Hamiltonian is the sum $H_0 + X^2/2$ of partially defined operators is
+  not proved either. (Brief, Sec.~5; Log, ``Differences''.)
 \end{enumerate}
 
 \noindent

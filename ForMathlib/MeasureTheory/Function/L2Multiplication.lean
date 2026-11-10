@@ -162,6 +162,11 @@ lemma coeFn_mulEvolution (t : ℝ) (f : Lp ℂ 2 μ) :
     mulEvolution ha t f =ᵐ[μ] fun x => phase (a x) t * f x :=
   coeFn_mulPhase ha t f
 
+@[simp]
+lemma mulEvolution_zero : mulEvolution ha 0 = LinearIsometryEquiv.refl ℂ (Lp ℂ 2 μ) :=
+  LinearIsometryEquiv.ext fun f => Lp.ext <| (coeFn_mulEvolution ha 0 f).trans <|
+    Eventually.of_forall fun x => by simp
+
 /-- `U t` preserves the domain of the multiplication operator. -/
 theorem mulEvolution_mem_mulDomain_iff (t : ℝ) {f : Lp ℂ 2 μ} :
     mulEvolution ha t f ∈ mulDomain a ↔ f ∈ mulDomain a := by

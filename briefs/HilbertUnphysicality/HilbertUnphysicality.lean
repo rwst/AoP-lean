@@ -78,6 +78,10 @@ Sec. 5, the domain of the Schrödinger equation (an additional remark, not part 
 * `hasDerivAt_numberEvolution`, `not_differentiableAt_numberEvolution`,
   `differentiableAt_numberEvolution_iff`  its orbit solves the Schrödinger equation exactly when
   the initial state lies in `D(N)`, and is differentiable nowhere otherwise;
+* `schrodinger_only_on_domain`  the same for every self-adjoint Hamiltonian that is unbounded on
+  its domain, with the evolution `e^{-itH/ħ}` of Stone's theorem (`schrodingerPropagator`, in
+  `ForPhyslib`), whatever the potential;
+* `numberEvolution_eq_schrodingerPropagator`  `numberEvolution` is that evolution for `N`;
 * `not_memLp_sq_mul_frameUnitary_gaussState`  the potential `V(y) = y²` takes the state
   `ϕ ∈ L²(ℝ)` of Proposition 3 out of `L²`.
 
@@ -91,7 +95,22 @@ Sec. 5 in position space, on `L²(ℝ)` with Mathlib's Fourier transform `fourie
   all of `L²(ℝ)` (`L2.mulOp`, `L2.mulEvolution`, in `ForMathlib`);
 * `hasDerivAt_freeEvolution`, `not_differentiableAt_freeEvolution`,
   `differentiableAt_freeEvolution_iff`  its orbit solves the free Schrödinger equation exactly
-  when the initial state lies in `D(H₀)`, and is differentiable nowhere otherwise.
+  when the initial state lies in `D(H₀)`, and is differentiable nowhere otherwise;
+* `freeEvolution_eq_schrodingerPropagator`  `freeEvolution` is the evolution of Stone's theorem
+  for `H₀`.
+
+Sec. 5, the harmonic oscillator in position space (`m = ω = ħ = 1`), with the Hermite functions
+`ψₙ` and their Hilbert basis of `L²(ℝ)` from TauCeti (`TauCeti.hermiteHilbertBasis`):
+* `hermiteUnitary`, `oscillatorHamiltonian`  `H = P²/2 + X²/2` as the operator that is diagonal
+  in the Hermite basis with entries `n + 1/2`;
+* `isSelfAdjoint_oscillatorHamiltonian`, `oscillatorHamiltonian_hermiteFunctionLp`  `H` is
+  self-adjoint, with the eigenvectors `ψₙ` and eigenvalues `n + 1/2`;
+* `oscillatorHamiltonian_hermiteFunctionLp_ae`  `H ψₙ = (-ψₙ'' + x²ψₙ)/2` point by point;
+* `eq_oscillatorHamiltonian`  `H` is the only self-adjoint operator with these eigenvectors and
+  eigenvalues (`lp.eq_diagonal`, in `ForMathlib`);
+* `exists_lt_norm_oscillatorHamiltonian`, `oscillator_schrodinger_only_on_domain`  `H` is
+  unbounded, so with the potential `V(x) = x²/2` the Schrödinger equation holds only on
+  `D(H) ≠ L²(ℝ)`.
 
 Sec. 5, commutator relations (`ħ = 1` on `L²(ℝ)`):
 * `not_exists_ccr_bounded`, `not_exists_ccr_symmetric`  `[X, P] = iħ` has no solution in
@@ -126,6 +145,9 @@ public import ForMathlib.Analysis.InnerProductSpace.l2Space
 public import ForMathlib.Analysis.SpecialFunctions.Gaussian.Erf
 public import ForMathlib.MeasureTheory.Function.L2Space
 public import ForMathlib.MeasureTheory.Function.LpSpace.ChangeOfVariables
+public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.HilbertBasis
+public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.Oscillator
+public import ForPhyslib.QuantumMechanics.Stone
 public import ForPhyslib.QuantumMechanics.UnitaryEquivalence
 public import Mathlib.Analysis.PSeries
 public import InconsistentConvergence
@@ -680,7 +702,7 @@ theorem theorem5 :
 
 section Schrodinger
 
-open InconsistentConvergence
+open InconsistentConvergence QuantumMechanics
 
 /-- `N` is not defined on the whole of `ℓ²`, by Hellinger–Toeplitz. -/
 theorem domain_numberOp_ne_top : numberOp.domain ≠ ⊤ := by
@@ -728,6 +750,32 @@ theorem not_differentiableAt_numberEvolution {x : H} (hx : x ∉ numberOp.domain
 theorem differentiableAt_numberEvolution_iff {x : H} (t : ℝ) :
     DifferentiableAt ℝ (fun s => numberEvolution s x) t ↔ x ∈ numberOp.domain :=
   lp.differentiableAt_diagonalEvolution_iff _ t
+
+/-- `numberEvolution` is the propagator `e^{-itN}` that Stone's theorem gives for `N`
+(`schrodingerPropagator`, in `ForPhyslib`), with `ħ = 1`. -/
+theorem numberEvolution_eq_schrodingerPropagator (t : ℝ) :
+    ((numberEvolution t).toContinuousLinearEquiv : H →L[ℂ] H) =
+      schrodingerPropagator one_ne_zero isSelfAdjoint_numberOp t := by
+  refine SolvesSchrodinger.eq_schrodingerPropagator (U := fun t =>
+    ((numberEvolution t).toContinuousLinearEquiv : H →L[ℂ] H)) (fun ψ s => ?_) one_ne_zero
+    isSelfAdjoint_numberOp (ContinuousLinearMap.ext fun x => by simp [numberEvolution]) t
+  refine ⟨(lp.diagonalEvolution_mem_diagonalDomain_iff _ s).2 ψ.2, ?_⟩
+  rw [Complex.ofReal_one, mul_one, Complex.inv_I, neg_smul]
+  exact hasDerivAt_numberEvolution ψ.2 s
+
+/-- The remark for every Hamiltonian, with Stone's theorem (`schrodingerPropagator`, in
+`ForPhyslib`): if `T` is self-adjoint and unbounded on its domain, then `D(T)` is not the whole
+space; the evolution `e^{-itT/ħ}` is defined on the whole space, its orbits solve the
+Schrödinger equation on `D(T)`, and off `D(T)` they are differentiable at no time. -/
+theorem schrodinger_only_on_domain {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+    [CompleteSpace E] {ħ : ℝ} (hħ : ħ ≠ 0) {T : E →ₗ.[ℂ] E} (hT : IsSelfAdjoint T)
+    (hu : ∀ C : ℝ, ∃ x : T.domain, C * ‖(x : E)‖ < ‖T x‖) :
+    T.domain ≠ ⊤ ∧ SolvesSchrodinger ħ T (schrodingerPropagator hħ hT) ∧
+      ∀ ψ ∉ T.domain, ∀ t, ¬ DifferentiableAt ℝ (fun s => schrodingerPropagator hħ hT s ψ) t := by
+  refine ⟨domain_ne_top_of_unbounded ?_ hu, solvesSchrodinger_schrodingerPropagator hħ hT,
+    fun ψ hψ t hd => hψ ((differentiableAt_schrodingerPropagator_iff hħ hT ψ t).1 hd)⟩
+  have h := LinearPMap.adjoint_isFormalAdjoint hT.dense_domain
+  rwa [LinearPMap.isSelfAdjoint_def.mp hT] at h
 
 /-- The potential `V(y) = y²` of the oscillator, up to constants, does not map `L²` into
 itself: `ϕ = Uψ` is in `L²`, but `Vϕ` is not. For the linear potential `V(y) = y` this is
@@ -943,7 +991,124 @@ theorem differentiableAt_freeEvolution_iff {ψ : L2R} (t : ℝ) :
   ⟨fun hd => by_contra fun hψ => not_differentiableAt_freeEvolution hψ t hd,
     fun hψ => (hasDerivAt_freeEvolution hψ t).differentiableAt⟩
 
+/-- `freeEvolution` is the propagator `e^{-itH₀}` that Stone's theorem gives for `H₀`
+(`schrodingerPropagator`, in `ForPhyslib`), with `ħ = 1`. -/
+theorem freeEvolution_eq_schrodingerPropagator (t : ℝ) :
+    ((freeEvolution t).toContinuousLinearEquiv : L2R →L[ℂ] L2R) =
+      schrodingerPropagator one_ne_zero isSelfAdjoint_freeHamiltonian t := by
+  refine SolvesSchrodinger.eq_schrodingerPropagator (U := fun t =>
+    ((freeEvolution t).toContinuousLinearEquiv : L2R →L[ℂ] L2R)) (fun ψ s => ?_) one_ne_zero
+    isSelfAdjoint_freeHamiltonian
+    (ContinuousLinearMap.ext fun ψ => by simp [freeEvolution_apply]) t
+  refine ⟨(freeEvolution_mem_domain_iff s).2 ψ.2, ?_⟩
+  rw [Complex.ofReal_one, mul_one, Complex.inv_I, neg_smul]
+  exact hasDerivAt_freeEvolution ψ.2 s
+
 end PositionSpace
+
+/-! ### Sec. 5: the harmonic oscillator in position space -/
+
+section Oscillator
+
+open QuantumMechanics TauCeti
+open scoped lp
+
+/-- The oscillator's energies `n + 1/2` (`m = ω = ħ = 1`). -/
+def oscillatorEnergy (n : ℕ) : ℝ := n + 1 / 2
+
+/-- The unitary `ℓ²(ℕ) ≃ L²(ℝ)` of the Hermite basis (`TauCeti.hermiteHilbertBasis`): it sends
+the `n`-th basis sequence to the Hermite function `ψₙ`. -/
+def hermiteUnitary : ℓ²(ℕ, ℂ) ≃ₗᵢ[ℂ] L2R := (hermiteHilbertBasis ℂ).repr.symm
+
+lemma hermiteUnitary_single (n : ℕ) :
+    hermiteUnitary (lp.single 2 n 1) = hermiteFunctionLp ℂ n := by
+  rw [hermiteUnitary, HilbertBasis.repr_symm_single, coe_hermiteHilbertBasis]
+
+/-- The oscillator Hamiltonian `H = P²/2 + X²/2` (`m = ω = ħ = 1`) on `L²(ℝ)`, as the operator
+that is diagonal in the Hermite basis with entries `n + 1/2`, on its maximal domain. -/
+def oscillatorHamiltonian : L2R →ₗ.[ℂ] L2R :=
+  conjLinearPMap hermiteUnitary (lp.diagonal oscillatorEnergy)
+
+/-- `H` is self-adjoint: it is unitarily equivalent to a real diagonal operator. -/
+theorem isSelfAdjoint_oscillatorHamiltonian : IsSelfAdjoint oscillatorHamiltonian :=
+  (lp.isSelfAdjoint_diagonal _).conjLinearPMap
+
+lemma hermiteFunctionLp_mem_domain (n : ℕ) :
+    hermiteFunctionLp ℂ n ∈ oscillatorHamiltonian.domain := by
+  rw [oscillatorHamiltonian, mem_domain_conjLinearPMap, ← hermiteUnitary_single,
+    LinearIsometryEquiv.symm_apply_apply]
+  exact lp.single_mem_diagonalDomain _ n 1
+
+/-- The Hermite functions are the eigenvectors of `H`, with eigenvalues `n + 1/2`. -/
+theorem oscillatorHamiltonian_hermiteFunctionLp (n : ℕ) :
+    oscillatorHamiltonian ⟨_, hermiteFunctionLp_mem_domain n⟩ =
+      (oscillatorEnergy n : ℂ) • hermiteFunctionLp ℂ n := by
+  refine (conjLinearPMap_apply (e := hermiteUnitary) (T := lp.diagonal oscillatorEnergy)
+    ⟨_, hermiteFunctionLp_mem_domain n⟩).trans ?_
+  rw [← LinearIsometryEquiv.eq_symm_apply, map_smul]
+  conv_rhs => rw [← hermiteUnitary_single, LinearIsometryEquiv.symm_apply_apply]
+  refine lp.ext <| funext fun i => ?_
+  rw [lp.diagonal_apply, lp.coeFn_smul, Pi.smul_apply]
+  simp only [← hermiteUnitary_single, LinearIsometryEquiv.symm_apply_apply]
+  by_cases h : i = n
+  · subst h; simp
+  · simp [Pi.single_eq_of_ne h]
+
+/-- `H ψₙ` is the differential expression `(-ψ'' + x²ψ)/2` of the oscillator applied to the
+Hermite function `ψₙ`, point by point (`TauCeti.hermiteFunction_oscillator`). -/
+theorem oscillatorHamiltonian_hermiteFunctionLp_ae (n : ℕ) :
+    oscillatorHamiltonian ⟨_, hermiteFunctionLp_mem_domain n⟩ =ᵐ[volume] fun x =>
+      (((-deriv (deriv (hermiteFunction n)) x + x ^ 2 * hermiteFunction n x) / 2 : ℝ) : ℂ) := by
+  rw [oscillatorHamiltonian_hermiteFunctionLp]
+  filter_upwards [Lp.coeFn_smul (oscillatorEnergy n : ℂ) (hermiteFunctionLp ℂ n),
+    coeFn_hermiteFunctionLp (𝕜 := ℂ) n] with x h1 h2
+  rw [h1, Pi.smul_apply, h2, hermiteFunction_oscillator, oscillatorEnergy]
+  simp only [Complex.coe_algebraMap, smul_eq_mul]
+  push_cast
+  ring
+
+/-- `H` is the only self-adjoint operator on `L²(ℝ)` that has the Hermite functions as
+eigenvectors with eigenvalues `n + 1/2`, as the differential expression does. -/
+theorem eq_oscillatorHamiltonian {T : L2R →ₗ.[ℂ] L2R} (hT : IsSelfAdjoint T)
+    (h : ∀ n, ∃ hn : hermiteFunctionLp ℂ n ∈ T.domain,
+      T ⟨_, hn⟩ = (oscillatorEnergy n : ℂ) • hermiteFunctionLp ℂ n) :
+    T = oscillatorHamiltonian := by
+  have hT' : conjLinearPMap hermiteUnitary.symm T = lp.diagonal oscillatorEnergy := by
+    refine lp.eq_diagonal _ hT.conjLinearPMap fun n => ?_
+    obtain ⟨hn, he⟩ := h n
+    have hm : lp.single 2 n (1 : ℂ) ∈ (conjLinearPMap hermiteUnitary.symm T).domain := by
+      rwa [mem_domain_conjLinearPMap, LinearIsometryEquiv.symm_symm, hermiteUnitary_single]
+    refine ⟨hm, ?_⟩
+    rw [conjLinearPMap_apply]
+    simp_rw [LinearIsometryEquiv.symm_symm, hermiteUnitary_single, he, map_smul,
+      ← hermiteUnitary_single, LinearIsometryEquiv.symm_apply_apply]
+    rfl
+  rw [← conjLinearPMap_symm_conjLinearPMap (e := hermiteUnitary.symm) T, hT']
+  rfl
+
+/-- `H` is unbounded on its domain. -/
+theorem exists_lt_norm_oscillatorHamiltonian (C : ℝ) :
+    ∃ ψ : oscillatorHamiltonian.domain, C * ‖(ψ : L2R)‖ < ‖oscillatorHamiltonian ψ‖ := by
+  obtain ⟨n, hn⟩ := exists_nat_gt C
+  refine ⟨⟨_, hermiteFunctionLp_mem_domain n⟩, ?_⟩
+  rw [oscillatorHamiltonian_hermiteFunctionLp, norm_smul, norm_hermiteFunctionLp,
+    Complex.norm_real, Real.norm_of_nonneg (by unfold oscillatorEnergy; positivity),
+    oscillatorEnergy]
+  linarith
+
+/-- The remark of Sec. 5 for the potential `V(x) = x²/2`: `D(H) ≠ L²(ℝ)`, the evolution
+`e^{-itH}` of Stone's theorem solves the Schrödinger equation on `D(H)`, and off `D(H)` its
+orbit is differentiable nowhere. -/
+theorem oscillator_schrodinger_only_on_domain :
+    oscillatorHamiltonian.domain ≠ ⊤ ∧
+      SolvesSchrodinger 1 oscillatorHamiltonian
+        (schrodingerPropagator one_ne_zero isSelfAdjoint_oscillatorHamiltonian) ∧
+      ∀ ψ ∉ oscillatorHamiltonian.domain, ∀ t, ¬ DifferentiableAt ℝ
+        (fun s => schrodingerPropagator one_ne_zero isSelfAdjoint_oscillatorHamiltonian s ψ) t :=
+  schrodinger_only_on_domain one_ne_zero isSelfAdjoint_oscillatorHamiltonian
+    exists_lt_norm_oscillatorHamiltonian
+
+end Oscillator
 
 /-! ### Sec. 5: commutator relations -/
 

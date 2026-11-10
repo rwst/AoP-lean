@@ -44,6 +44,9 @@ def phase (r t : ℝ) : ℂ := exp (((-(r * t) : ℝ) : ℂ) * I)
 
 lemma norm_phase (r t : ℝ) : ‖phase r t‖ = 1 := norm_exp_ofReal_mul_I _
 
+@[simp]
+lemma phase_zero (r : ℝ) : phase r 0 = 1 := by simp [phase]
+
 lemma phase_add (r t h : ℝ) : phase r (t + h) = phase r t * phase r h := by
   rw [phase, phase, phase, ← exp_add]
   congr 1
@@ -100,6 +103,10 @@ def diagonalEvolution (t : ℝ) : ℓ²(ι, ℂ) ≃ₗᵢ[ℂ] ℓ²(ι, ℂ) w
 lemma diagonalEvolution_apply (t : ℝ) (x : ℓ²(ι, ℂ)) (i : ι) :
     diagonalEvolution a t x i = phase (a i) t * x i :=
   rfl
+
+@[simp]
+lemma diagonalEvolution_zero : diagonalEvolution a 0 = LinearIsometryEquiv.refl ℂ ℓ²(ι, ℂ) :=
+  LinearIsometryEquiv.ext fun x => lp.ext <| funext fun i => by simp
 
 /-- `U t` preserves the domain of the diagonal operator. -/
 theorem diagonalEvolution_mem_diagonalDomain_iff (t : ℝ) {x : ℓ²(ι, ℂ)} :
