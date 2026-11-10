@@ -56,8 +56,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item Library: \lean{EntropyTopology}
 \item Imports: \lean{Mathlib.Analysis.SpecialFunctions.BinaryEntropy},\newline
   \lean{Mathlib.Analysis.SpecialFunctions.Log.Base},\newline
-  \lean{Mathlib.MeasureTheory.Integral.DominatedConvergence},\newline
   \lean{ForMathlib.Analysis.SpecialFunctions.Log.NegMulLog},\newline
+  \lean{ForMathlib.MeasureTheory.Integral.DominatedConvergence},\newline
+  \lean{ForMathlib.MeasureTheory.Measure.DisjointSeq},\newline
   \lean{ForMathlib.MeasureTheory.Measure.TotalVariation.Basic}
 \end{itemize}
 
@@ -76,6 +77,18 @@ open. For a metric they agree; in general the second is finer. With $D = \mathrm
 \lean{jsdTopology} and \lean{jsdBallTopology}; \lean{tvTopology} is \lean{divTopology} of
 $\mathrm{tvDist}(p_\sigma, p_\rho)$. The $L^1(\mu)$ topology \lean{l1Topology} is induced by
 $\rho \mapsto [\rho] \in L^1(\mu)$ (\lean{Density.toL1}).
+
+Two results go beyond the brief and answer the questions it leaves open. A measure \emph{has a
+disjoint sequence} (\lean{Measure.HasDisjointSeq}, ForMathlib) if there are pairwise disjoint
+measurable sets $A_n$, $n \in \mathbb{N}$, with $0 < \mu(A_n) < \infty$. A topology on $P_\mu$
+is \emph{admissible} (\lean{Admissible}) if mixing
+$[0, 1] \times P_\mu \times P_\mu \to P_\mu$ (with the product topology) and $S$ are continuous.
+The \emph{entropy topology} \lean{entropyTopology} is induced by
+$\rho \mapsto ([\rho], S(\rho)) \in L^1(\mu) \times \mathbb{R}$ (\lean{entropyEmbedding}), i.e.\
+by the pseudometric $\max(d_1(\rho, \sigma), |S(\rho) - S(\sigma)|)$; the type synonym
+\lean{EntropyDensity} carries this pseudometric. The skew Jensen--Shannon divergence
+$\mathrm{JS}_\lambda(\rho, \sigma) = S(\lambda\rho + (1-\lambda)\sigma) - \lambda S(\rho)
+- (1-\lambda) S(\sigma)$ is \lean{skewJsd}, written as one integral.
 
 \paragraph{Results.}
 \begin{xltabular}{\textwidth}{@{}BL@{}}
@@ -129,6 +142,47 @@ Theorem~46, with the brief's hypothesis & \lean{eventually_jsd_lt_of_mixture},
 Theorem~46 for topologies (second proof) & \lean{le_jsdBallTopology},
   \lean{le_l1Topology}, \lean{le_tvTopology}: $\tau$ is finer; \lean{_of_mixture} forms with
   the brief's hypothesis \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Beyond the brief: when is $S$ $L^1$-continuous? (Sec.~5)}} \\*
+mixing bounds, integrated: $\lambda S(\rho) + (1-\lambda)S(\sigma) \le S(\text{mixture}) \le
+  {}$that ${} + h_2(\lambda)/\ln 2$ & \lean{entropy_mixture_bounds};
+  \lean{l1dist_mixture_le}: $d_1(\lambda\sigma + (1-\lambda)\rho, \rho) \le 2\lambda$ \\
+sets of arbitrarily large finite measure (\emph{spreading}, as in Theorem~21): every $\rho$ is
+  an $L^1$ limit with $S \to +\infty$ & \lean{exists_tendsto_entropy_atTop} \\
+sets of arbitrarily small positive measure (\emph{concentration}): every $\rho$ is an $L^1$
+  limit with $S \to -\infty$ & \lean{exists_tendsto_entropy_atBot} \\
+a disjoint sequence gives spreading or concentration, and conversely &
+  \lean{Measure.hasDisjointSeq_iff} (ForMathlib) \\
+Theorem~21's hypothesis gives a disjoint sequence & \lean{Thm21Hyp.hasDisjointSeq} \\
+with a disjoint sequence, $S$ is $L^1$-discontinuous at every point &
+  \lean{not_continuousAt_entropy} \\
+without one, every density is $\le M\,1_U$ a.e., for one set $U$ of finite measure and one
+  $M$ & \lean{exists_le_indicator_of_not_hasDisjointSeq}, from
+  \lean{Measure.exists_measure_sdiff_eq_zero} and \lean{Measure.exists_le_measure}
+  (ForMathlib) \\
+$S$ is $L^1$-continuous iff there is no disjoint sequence & \lean{continuous_entropy_iff} \\
+$S$ is $L^1$-continuous everywhere or nowhere &
+  \lean{continuous_entropy_or_forall_not_continuousAt} \\
+Lebesgue measure on $[0, 1]$ (not treated in the brief): $S$ is discontinuous at every point
+  & \lean{not_continuousAt_entropy_Icc}, with $\mu$ the restriction of Lebesgue measure on
+  $\mathbb{R}$ to $[0, 1]$ \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Beyond the brief: the coarsest admissible topology (Sec.~1,
+  Theorem~46, Sec.~5)}} \\*
+$S(\lambda\rho + (1-\lambda)\sigma) = \lambda S(\rho) + (1-\lambda)S(\sigma) +
+  \mathrm{JS}_\lambda(\rho, \sigma)$ & \lean{entropy_mixture_eq}; \lean{skewJsd_half}:
+  $\mathrm{JS}_{1/2} = \mathrm{JSD}$ \\
+$\mathrm{JS}_\lambda(\rho, \sigma)$ is jointly continuous in $\lambda$ and in $\rho, \sigma$ in
+  $L^1$ & \lean{tendsto_skewJsd} \\
+mixing is continuous for the entropy topology & \lean{continuous_mixture_entropyDensity},
+  \lean{admissible_entropyTopology} \\
+every admissible topology is finer than the entropy topology & \lean{le_entropyTopology} \\
+the entropy topology is the coarsest admissible topology & \lean{isGreatest_entropyTopology} \\
+its pseudometric vanishes exactly on densities equal a.e. &
+  \lean{dist_toEntropyDensity_eq_zero_iff} \\
+it is the $L^1$ topology iff there is no disjoint sequence, so strictly finer under
+  Theorem~21's hypothesis & \lean{entropyTopology_eq_l1Topology_iff},
+  \lean{entropyTopology_lt_l1Topology} \\
 \end{xltabular}
 
 \paragraph{Differences from the brief.}
@@ -166,9 +220,44 @@ Theorem~46 for topologies (second proof) & \lean{le_jsdBallTopology},
   mixing (e.g.\ $(\lambda, \rho, \sigma) \mapsto \lambda\rho + (1-\lambda)\sigma$)'' as this
   map $[0, 1] \times P_\mu \times P_\mu \to P_\mu$ (\lean{Density.mixture}), with the product
   topology. They follow by fixing $\lambda = \tfrac12$.
+\item The brief asks for ``the appropriate'' topology on $P_\mu$; which properties make a
+  topology appropriate is a modelling choice and is not formalized. The mathematical part is:
+  admissible topologies exist, there is a coarsest one, and it is Hausdorff on $L^1$ classes.
+  Its pseudometric uses $\max$; the sum $d_1 + |\Delta S|$ gives the same topology.
+\item The characterization of $L^1$-continuity is stated with disjoint sequences rather than
+  with dimension. A disjoint sequence exists iff $L^1(\mu)$ is infinite-dimensional (the
+  indicators $1_{A_n}$ are linearly independent; conversely, without a disjoint sequence the
+  finite part of $\mu$ consists of finitely many atoms). This equivalence is not formalized.
+\item Literature on discontinuity. Ho and Yeung (``On the discontinuity of the Shannon
+  information measures'', IEEE Trans.\ Inf.\ Theory 55 (2009) 5362, Theorem~2) show that for
+  every distribution $P^0$ of finite entropy on a countably infinite alphabet, including finitely
+  supported ones, and every $c \in (0, \infty]$, there are $P_n$ with
+  $\chi^2(P^0 \,\|\, P_n) \to 0$ and $H(P_n) \to H(P^0) + c$. This is the counting-measure case of
+  \lean{not_continuousAt_entropy}, in a stronger mode of convergence and with any prescribed
+  jump. Counting measure has spreading but no concentration, and discrete entropy is lower
+  semicontinuous (their Sec.~I), so only upward jumps occur there. Wehrl (Rev.\ Mod.\ Phys.\ 50
+  (1978) 221), cited there, treats the quantum analogue: von Neumann entropy is discontinuous in
+  infinite dimension. Harremoës (``Information topologies with applications'', in
+  \emph{Entropy, Search, Complexity}, Springer 2007, Theorem~21) shows that for discrete
+  distributions under convergence in information divergence, which is finer than $L^1$, the
+  entropy is continuous at power-dominated distributions and discontinuous at hyperbolic ones;
+  so finer topologies do have continuity points. Piera and Parada (arXiv:0710.1275) give
+  sufficient conditions, such as bounded densities, for convergence of differential entropy; the
+  continuous case here is of this kind, with a uniform bound.
+\item Literature on the entropy topology. For discrete distributions it already appears in Ho
+  and Yeung (Sec.~VI). With $\Psi(P, Q) = H(\tfrac12 P + \tfrac12 Q) - \sqrt{H(P) H(Q)}$,
+  $\sqrt\Psi$ is a metric (their Theorem~10), and $\Psi(P_n, Q) \to 0$ iff $H(P_n) \to H(Q)$ and
+  $d_1(P_n, Q) \to 0$ (their Theorem~9). Both topologies are first countable, so on a countable
+  alphabet the topology of $\sqrt\Psi$ is the entropy topology. They also use
+  $D(Q \,\|\, P) + |H(Q) - H(P)|$. Their motivation is typicality, not mixing, and $\Psi$ needs
+  $H \ge 0$, so it does not extend to densities. The pseudometric
+  $\max(d_1, |\Delta S|)$ works for every $\mu$. We found no prior characterization of the
+  entropy topology as the coarsest topology making mixing and entropy continuous
+  (\lean{isGreatest_entropyTopology}).
 \end{itemize}
 
-\paragraph{Problems found in the brief.} No mathematical errors. One notational ambiguity:
+\paragraph{Problems found in the brief.} No mathematical errors. One notational ambiguity and
+one understatement:
 \begin{itemize}
 \item Eq.~(2), $\|p_\rho - p_\sigma\|_{\mathrm{TV}} = \tfrac12\|\rho - \sigma\|_{L^1(\mu)}$, does
   not say which total variation is meant. With the usual total variation norm
@@ -176,6 +265,13 @@ Theorem~46 for topologies (second proof) & \lean{le_jsdBallTopology},
   $|p_\rho - p_\sigma|(X) = \|\rho - \sigma\|_{L^1(\mu)}$ (\lean{tvDist_prob}). The factor is
   right for the distance $\sup_A |p_\rho(A) - p_\sigma(A)|$ (\lean{isGreatest_abs_prob_sub}).
   Nothing downstream depends on the constant, since only convergence is used.
+\item The conclusion extends the failure of $L^1$-continuity to ``typical infinite-dimensional
+  spaces''. In fact it fails at every point of every $P_\mu$ for which $\mu$ has a
+  disjoint sequence, i.e.\ $L^1(\mu)$ is infinite-dimensional (\lean{not_continuousAt_entropy}),
+  and holds otherwise
+  (\lean{continuous_entropy_iff}). Theorem~21 covers only spreading. Lebesgue measure on
+  $[0, 1]$, where every set has finite measure, is a concentration case: mixing in a little of
+  the uniform density on a short interval sends $S$ to $-\infty$.
 \end{itemize}
 Gaps the formalization had to fill:
 \begin{itemize}
@@ -196,7 +292,10 @@ Gaps the formalization had to fill:
   $\sigma_n \to \sigma$ in $L^1$, a subsequence converges a.e.\ (via convergence in measure).
   The integrand $g_n$ is split into $\min(g_n, G)$, with $G = \tfrac{\ln 2}{2}(\sigma + \rho)$,
   which converges by dominated convergence, and the excess $g_n - \min(g_n, G)$, which is at
-  most $\tfrac{\ln 2}{2}|\sigma_n - \sigma|$ by eq.~(17) (\lean{tendsto_integral_jsdDensity}).
+  most $\tfrac{\ln 2}{2}|\sigma_n - \sigma|$ by eq.~(17). This is the generalized dominated
+  convergence theorem, with dominating functions $\tfrac{\ln 2}{2}(\sigma_n + \rho)$ converging
+  in $L^1$ (\lean{MeasureTheory.tendsto_integral_of_dominated_of_tendsto_L1}, ForMathlib;
+  \lean{tendsto_integral_jsdDensity}).
 \item In Theorem~21, $\varepsilon_n = 1/\log_2\mu(A_n) \in (0, 1)$ needs $\mu(A_n) > 2$, not
   $\mu(A_n) > 1$. The brief's ``passing to a tail'' covers this.
 \end{itemize}

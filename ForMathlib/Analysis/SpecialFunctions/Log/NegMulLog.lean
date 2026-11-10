@@ -13,6 +13,7 @@ public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 ## Main statements
 
 * `Real.negMulLog_add_le`: `negMulLog (x + y) ≤ negMulLog x + negMulLog y` for `x, y ≥ 0`.
+* `Real.abs_negMulLog_le`: `|negMulLog x| ≤ 1 + x ^ 2` for `x ≥ 0`.
 * `Real.exists_hasSum_one_tsum_negMulLog_eq_top`: there are countably many weights `wᵢ ≥ 0`
   with `∑ᵢ wᵢ = 1` and Shannon entropy `∑ᵢ -wᵢ log wᵢ = ∞`. Block `k` has `2 ^ 2 ^ (k + 1)`
   equal weights of total `2⁻¹ ^ (k + 1)`, and contributes at least `log 2` to the entropy.
@@ -34,6 +35,15 @@ lemma negMulLog_add_le {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
   have h2 : log y ≤ log (x + y) := log_le_log hy' (by linarith)
   simp only [negMulLog]
   nlinarith [mul_le_mul_of_nonneg_left h1 hx, mul_le_mul_of_nonneg_left h2 hy]
+
+lemma abs_negMulLog_le {x : ℝ} (hx : 0 ≤ x) : |negMulLog x| ≤ 1 + x ^ 2 := by
+  rcases le_or_gt x 1 with h1 | h1
+  · rw [abs_of_nonneg (negMulLog_nonneg hx h1)]
+    nlinarith [negMulLog_le_one_sub_self hx]
+  · have hl := log_le_sub_one_of_pos (by linarith : 0 < x)
+    have h0 : 0 ≤ x * log x := mul_log_nonneg h1.le
+    rw [negMulLog_eq_neg, abs_neg, abs_of_nonneg h0]
+    nlinarith
 
 theorem exists_hasSum_one_tsum_negMulLog_eq_top :
     ∃ (ι : Type) (_ : Countable ι) (w : ι → ℝ), (∀ i, 0 ≤ w i) ∧ HasSum w 1 ∧

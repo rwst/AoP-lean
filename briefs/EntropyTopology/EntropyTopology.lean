@@ -37,15 +37,30 @@ Formalized here:
   total variation topology are the `L¹(μ)` topology `l1Topology`;
 * `continuous_jsd_left`  `σ ↦ JSD(σ, ρ)` is `L¹`-continuous, which the second reading needs;
 * `le_jsdBallTopology`, `le_l1Topology`, `le_tvTopology`  Thm. 46 for topologies, a second proof:
-  `τ` is finer than these topologies; `le_*_of_mixture` with the brief's hypothesis.
+  `τ` is finer than these topologies; `le_*_of_mixture` with the brief's hypothesis;
+* `continuous_entropy_iff`, `not_continuousAt_entropy`,
+  `continuous_entropy_or_forall_not_continuousAt`  beyond the brief: the entropy is
+  `L¹`-continuous iff `μ` has no disjoint sequence of sets of finite positive measure
+  (`Measure.HasDisjointSeq`), and otherwise discontinuous at every point, by spreading
+  (`exists_tendsto_entropy_atTop`, `S → +∞`) or concentration (`exists_tendsto_entropy_atBot`,
+  `S → -∞`);
+* `not_continuousAt_entropy_Icc`  Lebesgue measure on `[0, 1]`, left open by the brief, is a
+  concentration case;
+* `isGreatest_entropyTopology`  beyond the brief: the entropy topology, induced by
+  `ρ ↦ ([ρ], S(ρ)) ∈ L¹(μ) × ℝ`, is the coarsest topology making mixing and entropy continuous;
+  `dist_toEntropyDensity_eq_zero_iff`: its pseudometric separates `L¹` classes;
+  `entropyTopology_eq_l1Topology_iff`, `entropyTopology_lt_l1Topology`: it is strictly finer
+  than the `L¹` topology iff there is a disjoint sequence, in particular under Thm. 21's
+  hypothesis.
 
 Densities are functions `X → ℝ`, not `L¹` classes, and are required to be measurable and
 pointwise nonnegative. Logarithms are natural inside proofs; `entropy` and `jsd` are in bits.
 -/
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
-public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 public import ForMathlib.Analysis.SpecialFunctions.Log.NegMulLog
+public import ForMathlib.MeasureTheory.Integral.DominatedConvergence
+public import ForMathlib.MeasureTheory.Measure.DisjointSeq
 public import ForMathlib.MeasureTheory.Measure.TotalVariation.Basic
 
 open Real MeasureTheory Filter Topology Set
@@ -1034,65 +1049,50 @@ theorem tvTopology_eq : tvTopology μ = l1Topology μ :=
   divTopology_eq_l1Topology (fun ρ ε hε => ⟨ε, hε, fun σ hσ => by rwa [← tvDist_prob σ.2 ρ.2]⟩)
     fun ρ ε hε => ⟨ε, hε, fun σ hσ => by rwa [tvDist_prob σ.2 ρ.2]⟩
 
-/-- `JSD(·, ρ)` is continuous along `L¹`-convergent, a.e.-convergent sequences. The integrand
-`g` is split into `min g G`, dominated by `G = (ln 2/2)(σ + ρ)`, and the excess `g - min g G`,
-which is at most `(ln 2/2)|τₙ - σ|`. -/
+/-- `JSD(·, ρ)` is continuous along `L¹`-convergent, a.e.-convergent sequences: the integrand
+`jsdDensity (τₙ x) (ρ x)` is dominated by `(ln 2/2)(τₙ + ρ)`, which converges in `L¹`. -/
 lemma tendsto_integral_jsdDensity {τ : ℕ → X → ℝ} (hτ : ∀ n, IsDensity μ (τ n))
     (hσ : IsDensity μ σ) (hρ : IsDensity μ ρ)
     (hl1 : Tendsto (fun n => l1dist μ (τ n) σ) atTop (𝓝 0))
     (hae : ∀ᵐ x ∂μ, Tendsto (fun n => τ n x) atTop (𝓝 (σ x))) :
     Tendsto (fun n => ∫ x, jsdDensity (τ n x) (ρ x) ∂μ) atTop
       (𝓝 (∫ x, jsdDensity (σ x) (ρ x) ∂μ)) := by
-  set c := log 2 / 2 with hc_def
+  set c := log 2 / 2
   have hc : 0 ≤ c := by have := log_pos one_lt_two; positivity
-  set G : X → ℝ := fun x => c * (σ x + ρ x) with hG_def
-  have hG : Integrable G μ := (hσ.integrable.add hρ.integrable).const_mul c
-  have hG0 : ∀ x, 0 ≤ G x := fun x => mul_nonneg hc (add_nonneg (hσ.nonneg x) (hρ.nonneg x))
-  have hj0 : ∀ {a b : ℝ}, 0 ≤ a → 0 ≤ b → 0 ≤ jsdDensity a b := fun ha hb =>
-    le_trans (by positivity) (jsdDensity_bounds ha hb).1
   have hcont : Continuous fun p : ℝ × ℝ => jsdDensity p.1 p.2 :=
     ((continuous_negMulLog.comp ((continuous_fst.add continuous_snd).div_const 2)).sub
       ((continuous_negMulLog.comp continuous_fst).div_const 2)).sub
       ((continuous_negMulLog.comp continuous_snd).div_const 2)
-  have hgi : ∀ n, Integrable (fun x => jsdDensity (τ n x) (ρ x)) μ := fun n =>
-    integrable_jsdDensity (hτ n) hρ
-  have hmi : ∀ n, Integrable (fun x => min (jsdDensity (τ n x) (ρ x)) (G x)) μ := fun n =>
-    (hgi n).inf hG
-  have h1 : Tendsto (fun n => ∫ x, min (jsdDensity (τ n x) (ρ x)) (G x) ∂μ) atTop
-      (𝓝 (∫ x, jsdDensity (σ x) (ρ x) ∂μ)) := by
-    have hmin : ∀ x, min (jsdDensity (σ x) (ρ x)) (G x) = jsdDensity (σ x) (ρ x) := fun x =>
-      min_eq_left ((jsdDensity_bounds (hσ.nonneg x) (hρ.nonneg x)).2.trans
-        (mul_le_mul_of_nonneg_left (abs_sub_le_add (hσ.nonneg x) (hρ.nonneg x)) hc))
-    rw [← integral_congr_ae (ae_of_all _ hmin)]
-    refine tendsto_integral_of_dominated_convergence G (fun n => (hmi n).aestronglyMeasurable)
-      hG (fun n => ae_of_all _ fun x => ?_) ?_
-    · rw [Real.norm_eq_abs, abs_of_nonneg (le_min (hj0 ((hτ n).nonneg x) (hρ.nonneg x)) (hG0 x))]
-      exact min_le_right _ _
-    · filter_upwards [hae] with x hx
-      exact (((hcont.tendsto _).comp (hx.prodMk_nhds tendsto_const_nhds))).min tendsto_const_nhds
-  have h2 : Tendsto (fun n => ∫ x, (jsdDensity (τ n x) (ρ x) -
-      min (jsdDensity (τ n x) (ρ x)) (G x)) ∂μ) atTop (𝓝 0) := by
-    refine squeeze_zero (fun n => integral_nonneg fun x => sub_nonneg.2 (min_le_left _ _))
-      (fun n => ?_) (by simpa using hl1.const_mul c)
+  refine tendsto_integral_of_dominated_of_tendsto_L1 (H := fun n x => c * (τ n x + ρ x))
+    (h := fun x => c * (σ x + ρ x)) (fun n => (integrable_jsdDensity (hτ n) hρ).1)
+    (fun n => ((hτ n).integrable.add hρ.integrable).const_mul c)
+    ((hσ.integrable.add hρ.integrable).const_mul c) (fun n => ae_of_all _ fun x => ?_)
+    (hae.mono fun x hx => (hcont.tendsto _).comp (hx.prodMk_nhds tendsto_const_nhds))
+    (hae.mono fun x hx => (hx.add_const _).const_mul c) ?_
+  · have hb := jsdDensity_bounds ((hτ n).nonneg x) (hρ.nonneg x)
+    rw [abs_of_nonneg (le_trans (by have := (hτ n).nonneg x; have := hρ.nonneg x; positivity)
+      hb.1)]
+    exact hb.2.trans (mul_le_mul_of_nonneg_left
+      (abs_sub_le_add ((hτ n).nonneg x) (hρ.nonneg x)) hc)
+  · refine (by simpa using hl1.const_mul c : Tendsto (fun n => c * l1dist μ (τ n) σ) atTop
+      (𝓝 0)).congr fun n => ?_
     rw [l1dist, ← integral_const_mul]
-    refine integral_mono ((hgi n).sub (hmi n))
-      (((hτ n).integrable.sub hσ.integrable).abs.const_mul c) fun x => ?_
-    have hb : jsdDensity (τ n x) (ρ x) ≤ c * |τ n x - ρ x| :=
-      (jsdDensity_bounds ((hτ n).nonneg x) (hρ.nonneg x)).2
-    have h3 : |τ n x - ρ x| ≤ |τ n x - σ x| + (σ x + ρ x) := by
-      have := abs_sub_le_add ((hτ n).nonneg x) (hρ.nonneg x)
-      have := le_abs_self (τ n x - σ x)
-      linarith
-    have h4 := mul_le_mul_of_nonneg_left h3 hc
-    rcases min_cases (jsdDensity (τ n x) (ρ x)) (G x) with ⟨h, -⟩ | ⟨h, -⟩ <;> rw [h]
-    · simpa using mul_nonneg hc (abs_nonneg (τ n x - σ x))
-    · simp only [hG_def]
-      linarith
-  have := h1.add h2
-  rw [add_zero] at this
-  refine this.congr fun n => ?_
-  refine (integral_add (hmi n) ((hgi n).sub (hmi n))).symm.trans ?_
-  exact integral_congr_ae (ae_of_all _ fun x => by simp)
+    congr 1 with x
+    rw [← mul_sub, abs_mul, abs_of_nonneg hc, add_sub_add_right_eq_sub]
+
+/-- `L¹` convergence of densities implies convergence in measure. -/
+lemma tendstoInMeasure_of_l1dist {τ : ℕ → X → ℝ} (hτ : ∀ n, IsDensity μ (τ n))
+    (hσ : IsDensity μ σ) (hl1 : Tendsto (fun n => l1dist μ (τ n) σ) atTop (𝓝 0)) :
+    TendstoInMeasure μ τ atTop σ := by
+  refine tendstoInMeasure_of_tendsto_eLpNorm one_ne_zero ?_
+  have e : ∀ n, eLpNorm (τ n - σ) 1 μ = ENNReal.ofReal (l1dist μ (τ n) σ) := by
+    intro n
+    rw [eLpNorm_one_eq_lintegral_enorm, l1dist,
+      ← ofReal_integral_norm_eq_lintegral_enorm ((hτ _).integrable.sub hσ.integrable)]
+    · rfl
+    · exact ((hτ _).integrable.sub hσ.integrable).aestronglyMeasurable
+  simp_rw [e]
+  simpa using ENNReal.tendsto_ofReal hl1
 
 /-- `L¹` convergence of densities implies convergence of `JSD(·, ρ)`. -/
 lemma tendsto_jsd_of_tendsto_l1dist {τ : ℕ → X → ℝ} (hτ : ∀ n, IsDensity μ (τ n))
@@ -1102,30 +1102,35 @@ lemma tendsto_jsd_of_tendsto_l1dist {τ : ℕ → X → ℝ} (hτ : ∀ n, IsDen
   simp only [jsd_eq_integral (hτ _) hρ, jsd_eq_integral hσ hρ]
   refine Tendsto.div_const (tendsto_of_subseq_tendsto fun ns hns => ?_) _
   have hl1' := hl1.comp hns
-  have hm : TendstoInMeasure μ (fun n => τ (ns n)) atTop σ := by
-    refine tendstoInMeasure_of_tendsto_eLpNorm one_ne_zero ?_
-    have e : ∀ n, eLpNorm (τ (ns n) - σ) 1 μ = ENNReal.ofReal (l1dist μ (τ (ns n)) σ) := by
-      intro n
-      rw [eLpNorm_one_eq_lintegral_enorm, l1dist,
-        ← ofReal_integral_norm_eq_lintegral_enorm ((hτ _).integrable.sub hσ.integrable)]
-      · rfl
-      · exact ((hτ _).integrable.sub hσ.integrable).aestronglyMeasurable
-    simp_rw [e]
-    simpa using ENNReal.tendsto_ofReal hl1'
+  have hm := tendstoInMeasure_of_l1dist (fun n => hτ (ns n)) hσ hl1'
   obtain ⟨ms, hms, hae⟩ := hm.exists_seq_tendsto_ae
   exact ⟨ms, tendsto_integral_jsdDensity (fun n => hτ _) hσ hρ (hl1'.comp hms.tendsto_atTop) hae⟩
 
-/-- `σ ↦ JSD(σ, ρ)` is continuous in the `L¹` topology. The brief does not prove this; the
-bounds of Prop. 10 only make Jensen–Shannon balls `L¹` neighbourhoods, not `L¹`-open. -/
-theorem continuous_jsd_left (ρ : Density μ) :
-    Continuous[l1Topology μ, _] fun σ : Density μ => jsd μ σ.1 ρ.1 := by
+/-- A map on `P_μ` is `L¹`-continuous if it is continuous along `L¹`-convergent sequences. -/
+lemma continuous_l1Topology {Y : Type*} [TopologicalSpace Y] {f : Density μ → Y}
+    (h : ∀ (τ : ℕ → Density μ) (σ : Density μ),
+      Tendsto (fun n => l1dist μ (τ n).1 σ.1) atTop (𝓝 0) →
+        Tendsto (fun n => f (τ n)) atTop (𝓝 (f σ))) :
+    Continuous[l1Topology μ, _] f := by
   refine @continuous_iff_continuousAt _ _ (l1Topology μ) _ _ |>.2 fun σ => ?_
   change Tendsto _ (@nhds _ (l1Topology μ) σ) _
   rw [nhds_l1Topology, tendsto_iff_seq_tendsto]
   intro x hx
   have hd := tendsto_iff_dist_tendsto_zero.1 (tendsto_comap_iff.1 hx)
   simp only [Function.comp_def, dist_toL1] at hd
-  exact tendsto_jsd_of_tendsto_l1dist (fun n => (x n).2) σ.2 ρ.2 hd
+  exact h x σ hd
+
+/-- `L¹`-convergent sequences converge in the `L¹` topology. -/
+lemma tendsto_l1Topology {τ : ℕ → Density μ} {σ : Density μ}
+    (h : Tendsto (fun n => l1dist μ (τ n).1 σ.1) atTop (𝓝 0)) :
+    Tendsto τ atTop (@nhds _ (l1Topology μ) σ) :=
+  (hasBasis_nhds_l1Topology σ).tendsto_right_iff.2 fun _ hε => h.eventually (gt_mem_nhds hε)
+
+/-- `σ ↦ JSD(σ, ρ)` is continuous in the `L¹` topology. The brief does not prove this; the
+bounds of Prop. 10 only make Jensen–Shannon balls `L¹` neighbourhoods, not `L¹`-open. -/
+theorem continuous_jsd_left (ρ : Density μ) :
+    Continuous[l1Topology μ, _] fun σ : Density μ => jsd μ σ.1 ρ.1 :=
+  continuous_l1Topology fun τ σ hd => tendsto_jsd_of_tendsto_l1dist (fun n => (τ n).2) σ.2 ρ.2 hd
 
 /-- Prop. 10 for topologies, second reading: the topology generated by the Jensen–Shannon balls
 is the `L¹` topology. -/
@@ -1176,5 +1181,510 @@ theorem le_tvTopology_of_mixture [τ : TopologicalSpace (Density μ)]
       Density.mixture p.1 p.2.1 p.2.2)
     (hS : Continuous fun ρ : Density μ => entropy μ ρ.1) : τ ≤ tvTopology μ :=
   le_tvTopology (continuous_mid_of_continuous_mixture hmix) hS
+
+/-! ### When is the entropy `L¹`-continuous?
+
+The answer is a dichotomy in terms of `Measure.HasDisjointSeq`: pairwise disjoint measurable sets
+`Aₙ`, `n ∈ ℕ`, with `0 < μ(Aₙ) < ∞`. With such a sequence, there are sets of arbitrarily large
+finite measure (*spreading*, as in Thm. 21) or of arbitrarily small positive measure
+(*concentration*), and either makes `S` discontinuous at every `ρ ∈ P_μ`. Without one, all
+densities are bounded by one multiple of the indicator of one set of finite measure, and `S` is
+`L¹`-continuous by dominated convergence. Lebesgue measure on `[0, 1]` is a concentration case. -/
+
+/-- Integrated mixing bounds: `S(λρ + (1-λ)σ)` lies between `λS(ρ) + (1-λ)S(σ)` and that plus
+`h₂(λ)/ln 2 ≤ 1`. -/
+lemma entropy_mixture_bounds (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht1 : t ≤ 1) :
+    t * entropy μ ρ + (1 - t) * entropy μ σ ≤ entropy μ (mixture t ρ σ) ∧
+      entropy μ (mixture t ρ σ) ≤
+        t * entropy μ ρ + (1 - t) * entropy μ σ + binEntropy t / log 2 := by
+  have h2 : (0 : ℝ) < log 2 := log_pos one_lt_two
+  set Iρ := ∫ x, negMulLog (ρ x) ∂μ
+  set Iσ := ∫ x, negMulLog (σ x) ∂μ
+  have hm := (isDensity_mixture hρ hσ ht0 ht1).integrable_negMulLog
+  have hl : Integrable (fun x => t * negMulLog (ρ x) + (1 - t) * negMulLog (σ x)) μ :=
+    (hρ.integrable_negMulLog.const_mul t).add (hσ.integrable_negMulLog.const_mul (1 - t))
+  have hr : Integrable (fun x => negMulLog t * ρ x + negMulLog (1 - t) * σ x) μ :=
+    (hρ.integrable.const_mul _).add (hσ.integrable.const_mul _)
+  have el : ∫ x, (t * negMulLog (ρ x) + (1 - t) * negMulLog (σ x)) ∂μ = t * Iρ + (1 - t) * Iσ := by
+    rw [integral_add (hρ.integrable_negMulLog.const_mul t)
+      (hσ.integrable_negMulLog.const_mul (1 - t)), integral_const_mul, integral_const_mul]
+  have eu : ∫ x, (t * negMulLog (ρ x) + (1 - t) * negMulLog (σ x) +
+      (negMulLog t * ρ x + negMulLog (1 - t) * σ x)) ∂μ = t * Iρ + (1 - t) * Iσ + binEntropy t := by
+    rw [integral_add hl hr, el, integral_add (hρ.integrable.const_mul _)
+      (hσ.integrable.const_mul _), integral_const_mul, integral_const_mul, hρ.integral_eq_one,
+      hσ.integral_eq_one, binEntropy_eq_negMulLog_add_negMulLog_one_sub]
+    ring
+  have hb := fun x => negMulLog_mixture_bounds (hρ.nonneg x) (hσ.nonneg x) ht0 ht1
+  have i1 := el.symm.trans_le (integral_mono hl hm fun x => (hb x).1)
+  have i2 := (integral_mono hm (hl.add hr) fun x => (hb x).2).trans_eq eu
+  simp only [entropy]
+  constructor
+  · calc t * (Iρ / log 2) + (1 - t) * (Iσ / log 2) = (t * Iρ + (1 - t) * Iσ) / log 2 := by ring
+      _ ≤ _ := div_le_div_of_nonneg_right i1 h2.le
+  · calc (∫ x, negMulLog (mixture t ρ σ x) ∂μ) / log 2
+        ≤ (t * Iρ + (1 - t) * Iσ + binEntropy t) / log 2 := div_le_div_of_nonneg_right i2 h2.le
+      _ = _ := by ring
+
+/-- Mixing in `λ` of `σ` moves `ρ` by at most `2λ` in `L¹`. -/
+lemma l1dist_mixture_le (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ) {t : ℝ} (ht0 : 0 ≤ t) :
+    l1dist μ (mixture t σ ρ) ρ ≤ 2 * t := by
+  calc l1dist μ (mixture t σ ρ) ρ ≤ ∫ x, t * (σ x + ρ x) ∂μ := by
+        refine integral_mono_of_nonneg (ae_of_all _ fun x => abs_nonneg _)
+          ((hσ.integrable.add hρ.integrable).const_mul t) (ae_of_all _ fun x => ?_)
+        simp only [mixture]
+        rw [show t * σ x + (1 - t) * ρ x - ρ x = t * (σ x - ρ x) by ring, abs_mul,
+          abs_of_nonneg ht0]
+        exact mul_le_mul_of_nonneg_left (abs_sub_le_add (hσ.nonneg x) (hρ.nonneg x)) ht0
+    _ = 2 * t := by
+        rw [integral_const_mul, integral_add hσ.integrable hρ.integrable, hσ.integral_eq_one,
+          hρ.integral_eq_one]
+        ring
+
+omit [MeasurableSpace X] in
+lemma weights_facts :
+    (∀ n : ℕ, 0 ≤ ((n : ℝ) + 1)⁻¹) ∧ (∀ n : ℕ, ((n : ℝ) + 1)⁻¹ ≤ 1) ∧
+      Tendsto (fun n : ℕ => ((n : ℝ) + 1)⁻¹) atTop (𝓝 0) :=
+  ⟨fun n => by positivity, fun n => inv_le_one_of_one_le₀ (by simp),
+    by simpa using tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)⟩
+
+/-- Spreading: with sets of arbitrarily large finite measure, every `ρ ∈ P_μ` is the `L¹` limit
+of densities `(1-εₙ)ρ + εₙ u_{Vₙ}` whose entropy tends to `+∞`. -/
+theorem exists_tendsto_entropy_atTop
+    (hV : ∀ M : ℝ, ∃ V, MeasurableSet V ∧ μ V ≠ ⊤ ∧ M < μ.real V) (hρ : IsDensity μ ρ) :
+    ∃ ρs : ℕ → X → ℝ, (∀ n, IsDensity μ (ρs n)) ∧
+      Tendsto (fun n => l1dist μ (ρs n) ρ) atTop (𝓝 0) ∧
+      Tendsto (fun n => entropy μ (ρs n)) atTop atTop := by
+  choose V hVm hVtop hVM using fun n : ℕ => hV ((2 : ℝ) ^ (((n : ℝ) + 1) ^ 2))
+  obtain ⟨hε0, hε1, hεt⟩ := weights_facts
+  set ε : ℕ → ℝ := fun n => ((n : ℝ) + 1)⁻¹
+  have hpos : ∀ n, 0 < μ.real (V n) := fun n => (rpow_pos_of_pos two_pos _).trans (hVM n)
+  have hu := fun n => isDensity_unif (hVm n) (hVtop n) (hpos n)
+  refine ⟨fun n => mixture (ε n) (unif μ (V n)) ρ,
+    fun n => isDensity_mixture (hu n) hρ (hε0 n) (hε1 n), ?_, ?_⟩
+  · exact squeeze_zero (fun n => integral_nonneg fun x => abs_nonneg _)
+      (fun n => l1dist_mixture_le hρ (hu n) (hε0 n)) (by simpa using hεt.const_mul 2)
+  · have hlow : ∀ n, (1 - ε n) * entropy μ ρ + ((n : ℝ) + 1) ≤
+        entropy μ (mixture (ε n) (unif μ (V n)) ρ) := by
+      intro n
+      have h := (entropy_mixture_bounds (hu n) hρ (hε0 n) (hε1 n)).1
+      rw [entropy_unif (hVm n) (hpos n)] at h
+      have hL : ((n : ℝ) + 1) ^ 2 < logb 2 (μ.real (V n)) :=
+        (lt_logb_iff_rpow_lt one_lt_two (hpos n)).2 (hVM n)
+      have : (n : ℝ) + 1 ≤ ε n * logb 2 (μ.real (V n)) := by
+        simp only [ε]
+        rw [le_inv_mul_iff₀ (by positivity)]
+        nlinarith
+      linarith
+    refine tendsto_atTop_mono hlow ?_
+    have h1 : Tendsto (fun n => (1 - ε n) * entropy μ ρ) atTop (𝓝 (entropy μ ρ)) := by
+      simpa using ((tendsto_const_nhds (x := (1 : ℝ))).sub hεt).mul_const (entropy μ ρ)
+    exact h1.add_atTop (tendsto_natCast_atTop_atTop.atTop_add tendsto_const_nhds)
+
+/-- Concentration: with sets of arbitrarily small positive measure, every `ρ ∈ P_μ` is the `L¹`
+limit of densities `(1-εₙ)ρ + εₙ u_{Vₙ}` whose entropy tends to `-∞`. -/
+theorem exists_tendsto_entropy_atBot
+    (hV : ∀ δ > 0, ∃ V, MeasurableSet V ∧ 0 < μ.real V ∧ μ.real V < δ) (hρ : IsDensity μ ρ) :
+    ∃ ρs : ℕ → X → ℝ, (∀ n, IsDensity μ (ρs n)) ∧
+      Tendsto (fun n => l1dist μ (ρs n) ρ) atTop (𝓝 0) ∧
+      Tendsto (fun n => entropy μ (ρs n)) atTop atBot := by
+  have h2 : (0 : ℝ) < log 2 := log_pos one_lt_two
+  choose V hVm hpos hVδ using fun n : ℕ =>
+    hV ((2 : ℝ) ^ (-((n : ℝ) + 1) ^ 2)) (rpow_pos_of_pos two_pos _)
+  obtain ⟨hε0, hε1, hεt⟩ := weights_facts
+  set ε : ℕ → ℝ := fun n => ((n : ℝ) + 1)⁻¹
+  have hVtop : ∀ n, μ (V n) ≠ ⊤ := fun n => (ENNReal.toReal_pos_iff.mp (hpos n)).2.ne
+  have hu := fun n => isDensity_unif (hVm n) (hVtop n) (hpos n)
+  refine ⟨fun n => mixture (ε n) (unif μ (V n)) ρ,
+    fun n => isDensity_mixture (hu n) hρ (hε0 n) (hε1 n), ?_, ?_⟩
+  · exact squeeze_zero (fun n => integral_nonneg fun x => abs_nonneg _)
+      (fun n => l1dist_mixture_le hρ (hu n) (hε0 n)) (by simpa using hεt.const_mul 2)
+  · have hup : ∀ n, entropy μ (mixture (ε n) (unif μ (V n)) ρ) ≤
+        (1 - ε n) * entropy μ ρ + 1 + -((n : ℝ) + 1) := by
+      intro n
+      have h := (entropy_mixture_bounds (hu n) hρ (hε0 n) (hε1 n)).2
+      rw [entropy_unif (hVm n) (hpos n)] at h
+      have hL : logb 2 (μ.real (V n)) < -((n : ℝ) + 1) ^ 2 :=
+        (logb_lt_iff_lt_rpow one_lt_two (hpos n)).2 (hVδ n)
+      have : ε n * logb 2 (μ.real (V n)) ≤ -((n : ℝ) + 1) := by
+        simp only [ε]
+        rw [inv_mul_le_iff₀ (by positivity)]
+        nlinarith
+      have hb : binEntropy (ε n) / log 2 ≤ 1 := div_le_one_of_le₀ binEntropy_le_log_two h2.le
+      linarith
+    refine tendsto_atBot_mono hup ?_
+    have h1 : Tendsto (fun n => (1 - ε n) * entropy μ ρ + 1) atTop (𝓝 (entropy μ ρ + 1)) := by
+      simpa using (((tendsto_const_nhds (x := (1 : ℝ))).sub hεt).mul_const
+        (entropy μ ρ)).add_const 1
+    exact h1.add_atBot (tendsto_neg_atTop_atBot.comp
+      (tendsto_natCast_atTop_atTop.atTop_add tendsto_const_nhds))
+
+/-- Theorem 21's hypothesis gives a disjoint sequence. -/
+lemma Thm21Hyp.hasDisjointSeq (h : Thm21Hyp μ As B) : μ.HasDisjointSeq := by
+  refine Measure.hasDisjointSeq_iff.2 (Or.inl fun M hM => ?_)
+  obtain ⟨n, hn⟩ := (h.tendsto_A.eventually_gt_atTop M.toReal).exists
+  exact ⟨As n, h.measurableSet_A n, (ENNReal.toReal_lt_toReal hM (h.finite_A n)).1 hn,
+    h.finite_A n⟩
+
+/-- With a disjoint sequence, the entropy is `L¹`-discontinuous at every `ρ ∈ P_μ`. -/
+theorem not_continuousAt_entropy (h : μ.HasDisjointSeq) (ρ : Density μ) :
+    ¬ @ContinuousAt _ _ (l1Topology μ) _ (fun σ : Density μ => entropy μ σ.1) ρ := by
+  intro hc
+  have key : ∀ ρs : ℕ → X → ℝ, (∀ n, IsDensity μ (ρs n)) →
+      Tendsto (fun n => l1dist μ (ρs n) ρ.1) atTop (𝓝 0) →
+        Tendsto (fun n => entropy μ (ρs n)) atTop (𝓝 (entropy μ ρ.1)) := fun ρs hd hl1 =>
+    (show Tendsto _ (@nhds _ (l1Topology μ) ρ) _ from hc).comp
+      (tendsto_l1Topology (τ := fun n => ⟨ρs n, hd n⟩) hl1)
+  rcases h.large_or_small with hl | hs
+  · obtain ⟨ρs, hd, hl1, hS⟩ := exists_tendsto_entropy_atTop (fun M => by
+      obtain ⟨V, hVm, hlt, hVtop⟩ := hl (ENNReal.ofReal (max M 0)) ENNReal.ofReal_ne_top
+      refine ⟨V, hVm, hVtop, (le_max_left M 0).trans_lt ?_⟩
+      exact (ENNReal.ofReal_lt_iff_lt_toReal (le_max_right M 0) hVtop).1 hlt) ρ.2
+    exact not_tendsto_nhds_of_tendsto_atTop hS _ (key ρs hd hl1)
+  · obtain ⟨ρs, hd, hl1, hS⟩ := exists_tendsto_entropy_atBot (fun δ hδ => by
+      obtain ⟨V, hVm, hV0, hlt⟩ := hs (ENNReal.ofReal δ) (ENNReal.ofReal_pos.2 hδ).ne'
+      exact ⟨V, hVm, ENNReal.toReal_pos hV0 (ne_top_of_lt hlt),
+        ENNReal.toReal_lt_of_lt_ofReal hlt⟩) ρ.2
+    exact not_tendsto_nhds_of_tendsto_atBot hS _ (key ρs hd hl1)
+
+/-- Without a disjoint sequence, there are a set `U` of finite measure and a bound `M` with
+`ρ ≤ M 1_U` a.e. for every `ρ ∈ P_μ`. Here `U` contains almost all of every set of finite
+measure, and positive measures are at least some `c > 0`; Markov's inequality makes
+`{ρ ≥ 2/c}` null, and `{ρ > 0}`, a countable union of sets of finite measure, lies a.e. in `U`. -/
+lemma exists_le_indicator_of_not_hasDisjointSeq (h : ¬ μ.HasDisjointSeq) :
+    ∃ U, MeasurableSet U ∧ μ U ≠ ⊤ ∧ ∃ M : ℝ, 0 ≤ M ∧
+      ∀ ρ, IsDensity μ ρ → ∀ᵐ x ∂μ, ρ x ≤ U.indicator (fun _ => M) x := by
+  obtain ⟨U, hUm, hUtop, hU⟩ := Measure.exists_measure_sdiff_eq_zero h
+  obtain ⟨c, hc, hle⟩ := Measure.exists_le_measure h
+  set c' := (min c 1).toReal
+  have hc' : 0 < c' := ENNReal.toReal_pos (by simp [hc]) (by simp)
+  have hnull : ∀ A, MeasurableSet A → μ A ≠ ⊤ → μ.real A < c' → μ A = 0 := by
+    intro A hA htop hlt
+    by_contra h0
+    exact hlt.not_ge (ENNReal.toReal_mono htop ((min_le_left c 1).trans (hle A hA h0)))
+  refine ⟨U, hUm, hUtop, 2 / c', by positivity, fun ρ hρ => ?_⟩
+  have hfin : ∀ {t : ℝ}, 0 < t → μ {x | t ≤ ρ x} ≠ ⊤ := fun ht => by
+    have := (hρ.integrable.measure_norm_ge_lt_top ht).ne
+    simpa only [Real.norm_of_nonneg (hρ.nonneg _)] using this
+  have hm : ∀ t : ℝ, MeasurableSet {x | t ≤ ρ x} := fun t =>
+    measurableSet_le measurable_const hρ.measurable
+  have hbig : μ {x | 2 / c' ≤ ρ x} = 0 := by
+    refine hnull _ (hm _) (hfin (by positivity)) ?_
+    have := mul_meas_ge_le_integral_of_nonneg (ae_of_all _ hρ.nonneg) hρ.integrable (2 / c')
+    rw [hρ.integral_eq_one] at this
+    have h0 := measureReal_nonneg (μ := μ) (s := {x | 2 / c' ≤ ρ x})
+    rw [div_mul_eq_mul_div, div_le_one hc'] at this
+    linarith
+  have hsupp : μ ({x | 0 < ρ x} \ U) = 0 := by
+    have e : {x | 0 < ρ x} = ⋃ k : ℕ, {x | 1 / ((k : ℝ) + 1) ≤ ρ x} := by
+      ext x
+      simp only [mem_ofPred_eq, mem_iUnion]
+      exact ⟨fun hx => (exists_nat_one_div_lt hx).imp fun _ hk => hk.le,
+        fun ⟨k, hk⟩ => (by positivity : (0 : ℝ) < 1 / ((k : ℝ) + 1)).trans_le hk⟩
+    rw [e, iUnion_sdiff]
+    exact measure_iUnion_null fun k => hU _ (hm _) (hfin (by positivity))
+  filter_upwards [measure_eq_zero_iff_ae_notMem.1 hbig, measure_eq_zero_iff_ae_notMem.1 hsupp]
+    with x h1 h2
+  by_cases hx : x ∈ U
+  · rw [indicator_of_mem hx]
+    exact (not_le.1 h1).le
+  · rw [indicator_of_notMem hx]
+    exact not_lt.1 fun h => h2 ⟨h, hx⟩
+
+/-- Without a disjoint sequence, `L¹` convergence of densities implies convergence of the
+entropy. -/
+lemma tendsto_entropy_of_not_hasDisjointSeq (h : ¬ μ.HasDisjointSeq) {τ : ℕ → X → ℝ}
+    (hτ : ∀ n, IsDensity μ (τ n)) (hσ : IsDensity μ σ)
+    (hl1 : Tendsto (fun n => l1dist μ (τ n) σ) atTop (𝓝 0)) :
+    Tendsto (fun n => entropy μ (τ n)) atTop (𝓝 (entropy μ σ)) := by
+  obtain ⟨U, hUm, hUtop, M, hM0, hM⟩ := exists_le_indicator_of_not_hasDisjointSeq h
+  refine Tendsto.div_const (tendsto_of_subseq_tendsto fun ns hns => ?_) _
+  obtain ⟨ms, hms, hae⟩ :=
+    (tendstoInMeasure_of_l1dist (fun n => hτ (ns n)) hσ (hl1.comp hns)).exists_seq_tendsto_ae
+  refine ⟨ms, tendsto_integral_of_dominated_convergence (U.indicator fun _ => 1 + M ^ 2)
+    (fun n => (measurable_negMulLog_comp (hτ _).measurable).aestronglyMeasurable)
+    (integrable_indicator_const' hUm hUtop _) (fun n => ?_) ?_⟩
+  · filter_upwards [hM _ (hτ (ns (ms n)))] with x hx
+    have h0 := (hτ (ns (ms n))).nonneg x
+    rw [Real.norm_eq_abs]
+    by_cases hxU : x ∈ U
+    · rw [indicator_of_mem hxU] at hx ⊢
+      exact (abs_negMulLog_le h0).trans ((add_le_add_iff_left 1).2 (pow_le_pow_left₀ h0 hx 2))
+    · rw [indicator_of_notMem hxU] at hx ⊢
+      rw [le_antisymm hx h0]
+      simp
+  · filter_upwards [hae] with x hx
+    exact (continuous_negMulLog.tendsto _).comp hx
+
+/-- The entropy is `L¹`-continuous on `P_μ` iff `μ` has no disjoint sequence. -/
+theorem continuous_entropy_iff :
+    Continuous[l1Topology μ, _] (fun ρ : Density μ => entropy μ ρ.1) ↔ ¬ μ.HasDisjointSeq := by
+  refine ⟨fun hc h => ?_, fun h => continuous_l1Topology fun τ σ hd =>
+    tendsto_entropy_of_not_hasDisjointSeq h (fun n => (τ n).2) σ.2 hd⟩
+  obtain ⟨A, -, hA⟩ := id h
+  have hu := isDensity_unif (hA 0).1 (hA 0).2.2 (ENNReal.toReal_pos (hA 0).2.1 (hA 0).2.2)
+  exact not_continuousAt_entropy h ⟨_, hu⟩ (@Continuous.continuousAt _ _ (l1Topology μ) _ _ _ hc)
+
+/-- The dichotomy: the entropy is `L¹`-continuous everywhere on `P_μ` or nowhere. -/
+theorem continuous_entropy_or_forall_not_continuousAt :
+    Continuous[l1Topology μ, _] (fun ρ : Density μ => entropy μ ρ.1) ∨
+      ∀ ρ : Density μ,
+        ¬ @ContinuousAt _ _ (l1Topology μ) _ (fun σ : Density μ => entropy μ σ.1) ρ :=
+  by_cases (fun h => Or.inr (not_continuousAt_entropy h))
+    fun h => Or.inl (continuous_entropy_iff.2 h)
+
+/-- Lebesgue measure on `[0, 1]`, which the brief leaves open, has sets of arbitrarily small
+positive measure; so the entropy is `L¹`-discontinuous at every point. -/
+theorem not_continuousAt_entropy_Icc (ρ : Density (volume.restrict (Icc (0 : ℝ) 1))) :
+    ¬ @ContinuousAt _ _ (l1Topology (volume.restrict (Icc (0 : ℝ) 1))) _
+      (fun σ : Density (volume.restrict (Icc (0 : ℝ) 1)) =>
+        entropy (volume.restrict (Icc (0 : ℝ) 1)) σ.1) ρ := by
+  refine not_continuousAt_entropy (Measure.hasDisjointSeq_iff.2 (Or.inr fun c hc => ?_)) ρ
+  obtain ⟨r, -, hr0, hrc⟩ := ENNReal.lt_iff_exists_real_btwn.1 (pos_iff_ne_zero.2 hc)
+  have hr : 0 < r := ENNReal.ofReal_pos.1 hr0
+  have hs : Icc (0 : ℝ) (min r 1) ⊆ Icc 0 1 := Icc_subset_Icc le_rfl (min_le_right _ _)
+  refine ⟨Icc 0 (min r 1), measurableSet_Icc, ?_, ?_⟩ <;>
+    rw [Measure.restrict_apply measurableSet_Icc, inter_eq_left.2 hs, Real.volume_Icc, sub_zero]
+  · exact (ENNReal.ofReal_pos.2 (lt_min hr one_pos)).ne'
+  · exact (ENNReal.ofReal_le_ofReal (min_le_left _ _)).trans_lt hrc
+
+/-! ### The coarsest admissible topology
+
+A topology on `P_μ` is *admissible* if mixing `(λ, ρ, σ) ↦ λρ + (1-λ)σ` and the entropy are
+continuous. Every admissible topology is finer than the `L¹` topology (Thm. 46), and the entropy
+is continuous for it, so it is finer than the *entropy topology*: the topology induced by
+`ρ ↦ ([ρ], S(ρ)) ∈ L¹(μ) × ℝ`, i.e. by the pseudometric `‖ρ - σ‖₁ ⊔ |S(ρ) - S(σ)|`. The entropy
+topology is itself admissible, by `S(λρ + (1-λ)σ) = λS(ρ) + (1-λ)S(σ) + JS_λ(ρ, σ)` and the
+joint continuity of the skew Jensen–Shannon divergence `JS_λ`. It is the `L¹` topology iff `μ`
+has no disjoint sequence. For discrete distributions it is the topology of Ho and Yeung's metric
+`√Ψ`, `Ψ(P, Q) = H(P/2 + Q/2) - √(H(P) H(Q))` (IEEE Trans. Inf. Theory 55 (2009), Thms. 9–10). -/
+
+/-- The integrand of the skew Jensen–Shannon divergence. -/
+def skewDensity (t a b : ℝ) : ℝ :=
+  negMulLog (t * a + (1 - t) * b) - t * negMulLog a - (1 - t) * negMulLog b
+
+/-- The skew Jensen–Shannon divergence `JS_λ(ρ, σ)`, with `t` for `λ`. -/
+def skewJsd (μ : Measure X) (t : ℝ) (ρ σ : X → ℝ) : ℝ :=
+  (∫ x, skewDensity t (ρ x) (σ x) ∂μ) / log 2
+
+lemma continuous_skewDensity : Continuous fun p : ℝ × ℝ × ℝ => skewDensity p.1 p.2.1 p.2.2 := by
+  unfold skewDensity
+  fun_prop
+
+lemma abs_skewDensity_le {t a b : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    |skewDensity t a b| ≤ a + b := by
+  have h := negMulLog_mixture_bounds ha hb ht0 ht1
+  have h1 := negMulLog_le_one_sub_self ht0
+  have h2 := negMulLog_le_one_sub_self (by linarith : 0 ≤ 1 - t)
+  rw [abs_of_nonneg (by unfold skewDensity; linarith)]
+  unfold skewDensity
+  nlinarith
+
+/-- Mixing and entropy: `S(λρ + (1-λ)σ) = λS(ρ) + (1-λ)S(σ) + JS_λ(ρ, σ)`. -/
+lemma entropy_mixture_eq (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ) {t : ℝ} (ht0 : 0 ≤ t)
+    (ht1 : t ≤ 1) :
+    entropy μ (mixture t ρ σ) = t * entropy μ ρ + (1 - t) * entropy μ σ + skewJsd μ t ρ σ := by
+  have hm : Integrable (fun x => negMulLog (t * ρ x + (1 - t) * σ x)) μ :=
+    (isDensity_mixture hρ hσ ht0 ht1).integrable_negMulLog
+  have e : ∫ x, skewDensity t (ρ x) (σ x) ∂μ = ∫ x, negMulLog (mixture t ρ σ x) ∂μ -
+      t * ∫ x, negMulLog (ρ x) ∂μ - (1 - t) * ∫ x, negMulLog (σ x) ∂μ := by
+    have hA : Integrable (fun x => negMulLog (t * ρ x + (1 - t) * σ x) - t * negMulLog (ρ x)) μ :=
+      hm.sub (hρ.integrable_negMulLog.const_mul t)
+    simp only [skewDensity]
+    rw [integral_sub hA (hσ.integrable_negMulLog.const_mul _),
+      integral_sub hm (hρ.integrable_negMulLog.const_mul t), integral_const_mul, integral_const_mul]
+    rfl
+  simp only [entropy, skewJsd, e]
+  ring
+
+lemma skewJsd_half (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ) :
+    skewJsd μ (1 / 2) ρ σ = jsd μ ρ σ := by
+  rw [jsd_eq_integral hρ hσ, skewJsd]
+  congr 1
+  refine integral_congr_ae (ae_of_all _ fun x => ?_)
+  simp only [skewDensity, jsdDensity]
+  rw [show 1 / 2 * ρ x + (1 - 1 / 2) * σ x = (ρ x + σ x) / 2 by ring]
+  ring
+
+/-- `JS_λ(ρ, σ)` is jointly continuous in `λ ∈ [0, 1]` and `ρ, σ ∈ L¹`. -/
+lemma tendsto_skewJsd {ts : ℕ → ℝ} {t : ℝ} (hts : ∀ n, ts n ∈ Icc (0 : ℝ) 1)
+    (ht : Tendsto ts atTop (𝓝 t)) {ρs σs : ℕ → X → ℝ} (hρs : ∀ n, IsDensity μ (ρs n))
+    (hσs : ∀ n, IsDensity μ (σs n)) (hρ : IsDensity μ ρ) (hσ : IsDensity μ σ)
+    (hlρ : Tendsto (fun n => l1dist μ (ρs n) ρ) atTop (𝓝 0))
+    (hlσ : Tendsto (fun n => l1dist μ (σs n) σ) atTop (𝓝 0)) :
+    Tendsto (fun n => skewJsd μ (ts n) (ρs n) (σs n)) atTop (𝓝 (skewJsd μ t ρ σ)) := by
+  refine Tendsto.div_const (tendsto_of_subseq_tendsto fun ns hns => ?_) _
+  obtain ⟨ms₁, hms₁, hae₁⟩ :=
+    (tendstoInMeasure_of_l1dist (fun n => hρs (ns n)) hρ (hlρ.comp hns)).exists_seq_tendsto_ae
+  obtain ⟨ms₂, hms₂, hae₂⟩ := (tendstoInMeasure_of_l1dist (fun n => hσs (ns (ms₁ n))) hσ
+    ((hlσ.comp hns).comp hms₁.tendsto_atTop)).exists_seq_tendsto_ae
+  have hk : Tendsto (fun n => ns (ms₁ (ms₂ n))) atTop atTop :=
+    (hns.comp hms₁.tendsto_atTop).comp hms₂.tendsto_atTop
+  refine ⟨ms₁ ∘ ms₂, tendsto_integral_of_dominated_of_tendsto_L1
+    (F := fun n x => skewDensity (ts (ns (ms₁ (ms₂ n)))) (ρs (ns (ms₁ (ms₂ n))) x)
+      (σs (ns (ms₁ (ms₂ n))) x))
+    (H := fun n x => ρs (ns (ms₁ (ms₂ n))) x + σs (ns (ms₁ (ms₂ n))) x)
+    (f := fun x => skewDensity t (ρ x) (σ x)) (h := fun x => ρ x + σ x)
+    (fun n => (continuous_skewDensity.measurable.comp (measurable_const.prodMk
+      ((hρs _).measurable.prodMk (hσs _).measurable))).aestronglyMeasurable)
+    (fun n => (hρs _).integrable.add (hσs _).integrable) (hρ.integrable.add hσ.integrable)
+    (fun n => ae_of_all _ fun x => abs_skewDensity_le (hts _).1 (hts _).2 ((hρs _).nonneg x)
+      ((hσs _).nonneg x)) ?_ ?_ ?_⟩
+  · filter_upwards [hae₁, hae₂] with x h1 h2
+    exact (continuous_skewDensity.tendsto _).comp
+      ((ht.comp hk).prodMk_nhds ((h1.comp hms₂.tendsto_atTop).prodMk_nhds h2))
+  · filter_upwards [hae₁, hae₂] with x h1 h2
+    exact (h1.comp hms₂.tendsto_atTop).add h2
+  · refine squeeze_zero (fun n => integral_nonneg fun x => abs_nonneg _) (fun n => ?_)
+      (by simpa using (hlρ.comp hk).add (hlσ.comp hk))
+    have i1 := ((hρs (ns (ms₁ (ms₂ n)))).integrable.sub hρ.integrable).abs
+    have i2 := ((hσs (ns (ms₁ (ms₂ n)))).integrable.sub hσ.integrable).abs
+    refine (integral_mono (((hρs _).integrable.add (hσs _).integrable).sub
+      (hρ.integrable.add hσ.integrable)).abs (i1.add i2) fun x => ?_).trans_eq
+      (integral_add i1 i2)
+    simp only [Pi.add_apply, Pi.sub_apply]
+    rw [add_sub_add_comm]
+    exact abs_add_le _ _
+
+lemma Density.toL1_mixture (t : unitInterval) (ρ σ : Density μ) :
+    Density.toL1 (Density.mixture t ρ σ) =
+      (t : ℝ) • Density.toL1 ρ + (1 - (t : ℝ)) • Density.toL1 σ := by
+  have := Integrable.toL1_add _ _ (ρ.2.integrable.smul (t : ℝ))
+    (σ.2.integrable.smul (1 - (t : ℝ)))
+  rw [Integrable.toL1_smul', Integrable.toL1_smul'] at this
+  exact this
+
+/-- `P_μ` with the entropy pseudometric `‖ρ - σ‖₁ ⊔ |S(ρ) - S(σ)|`. -/
+def EntropyDensity (μ : Measure X) := Density μ
+
+/-- A density as an element of `EntropyDensity μ`. -/
+def Density.toEntropyDensity (ρ : Density μ) : EntropyDensity μ := ρ
+
+/-- The entropy embedding `ρ ↦ ([ρ], S(ρ))` of `P_μ` into `L¹(μ) × ℝ`. -/
+def entropyEmbedding (ρ : EntropyDensity μ) : (X →₁[μ] ℝ) × ℝ :=
+  (Density.toL1 ρ, entropy μ (ρ : Density μ).1)
+
+instance : PseudoMetricSpace (EntropyDensity μ) :=
+  PseudoMetricSpace.induced (entropyEmbedding (μ := μ)) inferInstance
+
+lemma isometry_entropyEmbedding : Isometry (entropyEmbedding (μ := μ)) :=
+  Isometry.of_dist_eq fun _ _ => rfl
+
+/-- The entropy topology on `P_μ`, induced by `ρ ↦ ([ρ], S(ρ)) ∈ L¹(μ) × ℝ`. -/
+@[instance_reducible]
+def entropyTopology (μ : Measure X) : TopologicalSpace (Density μ) :=
+  (inferInstance : TopologicalSpace (EntropyDensity μ))
+
+lemma entropyTopology_eq : entropyTopology μ =
+    TopologicalSpace.induced (entropyEmbedding (μ := μ)) inferInstance :=
+  rfl
+
+lemma dist_toEntropyDensity (ρ σ : Density μ) :
+    dist ρ.toEntropyDensity σ.toEntropyDensity =
+      max (l1dist μ ρ.1 σ.1) |entropy μ ρ.1 - entropy μ σ.1| := by
+  change max (dist (Density.toL1 ρ) (Density.toL1 σ)) (dist (entropy μ ρ.1) (entropy μ σ.1)) = _
+  rw [dist_toL1, Real.dist_eq]
+
+/-- The entropy pseudometric separates `L¹` classes: `d(ρ, σ) = 0` iff `ρ = σ` a.e. -/
+theorem dist_toEntropyDensity_eq_zero_iff (ρ σ : Density μ) :
+    dist ρ.toEntropyDensity σ.toEntropyDensity = 0 ↔ ρ.1 =ᵐ[μ] σ.1 := by
+  have hl : l1dist μ ρ.1 σ.1 = 0 ↔ ρ.1 =ᵐ[μ] σ.1 := by
+    rw [l1dist, integral_eq_zero_iff_of_nonneg (f := fun x => |ρ.1 x - σ.1 x|)
+      (fun x => abs_nonneg _) (ρ.2.integrable.sub σ.2.integrable).abs]
+    exact ⟨fun h => h.mono fun x hx => sub_eq_zero.1 (abs_eq_zero.1 hx),
+      fun h => h.mono fun x hx => by simp [hx]⟩
+  rw [dist_toEntropyDensity, ← hl]
+  constructor
+  · intro h
+    exact le_antisymm (h ▸ le_max_left _ _) (integral_nonneg fun x => abs_nonneg _)
+  · intro h
+    have hae : (fun x => negMulLog (ρ.1 x)) =ᵐ[μ] fun x => negMulLog (σ.1 x) :=
+      (hl.1 h).mono fun x hx => by simp only [hx]
+    have he : entropy μ ρ.1 = entropy μ σ.1 := by
+      rw [entropy, entropy, integral_congr_ae hae]
+    rw [h, he, sub_self, abs_zero, max_self]
+
+lemma continuous_toL1_entropyDensity :
+    Continuous fun ρ : EntropyDensity μ => Density.toL1 ρ :=
+  continuous_fst.comp isometry_entropyEmbedding.continuous
+
+lemma continuous_entropy_entropyDensity :
+    Continuous fun ρ : EntropyDensity μ => entropy μ (ρ : Density μ).1 :=
+  continuous_snd.comp isometry_entropyEmbedding.continuous
+
+/-- Mixing is continuous for the entropy topology. -/
+theorem continuous_mixture_entropyDensity :
+    Continuous fun p : unitInterval × EntropyDensity μ × EntropyDensity μ =>
+      (Density.mixture p.1 p.2.1 p.2.2).toEntropyDensity := by
+  have hL := continuous_toL1_entropyDensity (μ := μ)
+  have hS := continuous_entropy_entropyDensity (μ := μ)
+  have ht : Continuous fun p : unitInterval × EntropyDensity μ × EntropyDensity μ => (p.1 : ℝ) :=
+    continuous_subtype_val.comp continuous_fst
+  have h1 : Continuous fun p : unitInterval × EntropyDensity μ × EntropyDensity μ => p.2.1 :=
+    continuous_fst.comp continuous_snd
+  have h2 : Continuous fun p : unitInterval × EntropyDensity μ × EntropyDensity μ => p.2.2 :=
+    continuous_snd.comp continuous_snd
+  have hd : ∀ {ρs : ℕ → EntropyDensity μ} {ρ : EntropyDensity μ}, Tendsto ρs atTop (𝓝 ρ) →
+      Tendsto (fun n => l1dist μ (ρs n : Density μ).1 (ρ : Density μ).1) atTop (𝓝 0) :=
+    fun h => (tendsto_iff_dist_tendsto_zero.1 ((hL.tendsto _).comp h)).congr fun n =>
+      dist_toL1 _ _
+  have hJ : Continuous fun p : unitInterval × EntropyDensity μ × EntropyDensity μ =>
+      skewJsd μ p.1 (p.2.1 : Density μ).1 (p.2.2 : Density μ).1 := by
+    refine continuous_iff_seqContinuous.2 fun x p hx => ?_
+    exact tendsto_skewJsd (fun n => (x n).1.2) ((ht.tendsto p).comp hx)
+      (fun n => (x n).2.1.2) (fun n => (x n).2.2.2) p.2.1.2 p.2.2.2
+      (hd ((h1.tendsto p).comp hx)) (hd ((h2.tendsto p).comp hx))
+  refine isometry_entropyEmbedding.isUniformInducing.isInducing.continuous_iff.2
+    (Continuous.prodMk ?_ ?_)
+  · exact ((ht.smul (hL.comp h1)).add ((continuous_const.sub ht).smul (hL.comp h2))).congr
+      fun p => (Density.toL1_mixture p.1 p.2.1 p.2.2).symm
+  · exact (((ht.mul (hS.comp h1)).add ((continuous_const.sub ht).mul (hS.comp h2))).add hJ).congr
+      fun p => (entropy_mixture_eq p.2.1.2 p.2.2.2 p.1.2.1 p.1.2.2).symm
+
+/-- A topology on `P_μ` is admissible if mixing and the entropy are continuous for it. -/
+def Admissible (τ : TopologicalSpace (Density μ)) : Prop :=
+  (letI := τ; Continuous fun p : unitInterval × Density μ × Density μ =>
+    Density.mixture p.1 p.2.1 p.2.2) ∧ Continuous[τ, _] fun ρ : Density μ => entropy μ ρ.1
+
+theorem admissible_entropyTopology : Admissible (entropyTopology μ) :=
+  ⟨continuous_mixture_entropyDensity, continuous_entropy_entropyDensity⟩
+
+/-- Every admissible topology is finer than the entropy topology. -/
+theorem le_entropyTopology {τ : TopologicalSpace (Density μ)} (h : Admissible τ) :
+    τ ≤ entropyTopology μ := by
+  have hL : Continuous[τ, _] fun ρ : Density μ => Density.toL1 ρ :=
+    continuous_iff_le_induced.2 (@le_l1Topology_of_mixture _ _ μ τ h.1 h.2)
+  exact continuous_iff_le_induced.1 (@Continuous.prodMk _ _ _ _ _ τ _ _ hL h.2)
+
+/-- The entropy topology is the coarsest admissible topology: the greatest in Mathlib's order,
+in which finer topologies are smaller. -/
+theorem isGreatest_entropyTopology : IsGreatest {τ | Admissible τ} (entropyTopology μ) :=
+  ⟨admissible_entropyTopology, fun _ h => le_entropyTopology h⟩
+
+/-- The entropy topology is finer than the `L¹` topology. -/
+lemma entropyTopology_le_l1Topology : entropyTopology μ ≤ l1Topology μ :=
+  continuous_iff_le_induced.1 continuous_toL1_entropyDensity
+
+/-- The entropy topology is the `L¹` topology iff `μ` has no disjoint sequence; otherwise it is
+strictly finer. -/
+theorem entropyTopology_eq_l1Topology_iff :
+    entropyTopology μ = l1Topology μ ↔ ¬ μ.HasDisjointSeq := by
+  rw [← continuous_entropy_iff]
+  constructor
+  · intro h
+    rw [← h]
+    exact continuous_entropy_entropyDensity
+  · intro h
+    refine le_antisymm entropyTopology_le_l1Topology ?_
+    have hL : Continuous[l1Topology μ, _] fun ρ : Density μ => Density.toL1 ρ :=
+      continuous_induced_dom
+    exact continuous_iff_le_induced.1 (@Continuous.prodMk _ _ _ _ _ (l1Topology μ) _ _ hL h)
+
+/-- Under Thm. 21's hypothesis, the entropy topology is strictly finer than the `L¹`
+topology. -/
+theorem entropyTopology_lt_l1Topology (h : Thm21Hyp μ As B) :
+    entropyTopology μ < l1Topology μ :=
+  lt_of_le_of_ne entropyTopology_le_l1Topology fun he =>
+    entropyTopology_eq_l1Topology_iff.1 he h.hasDisjointSeq
 
 end EntropyTopology
