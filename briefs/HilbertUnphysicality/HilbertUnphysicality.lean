@@ -19,7 +19,8 @@ form.
 Proposition 1 (unbounded self-adjoint operators):
 * `not_continuous_of_unbounded`  an unbounded linear map on a normed space, such as `D(A)` with
   the inherited norm, is not continuous;
-* `bounded_of_isSymmetric`, `not_isSymmetric_of_unbounded`  Hellinger–Toeplitz, so `D(A) ≠ H`.
+* `bounded_of_isSymmetric`, `not_isSymmetric_of_unbounded`  Hellinger–Toeplitz, so `D(A) ≠ H`;
+* `domain_ne_top_of_unbounded`  the same for a partially defined symmetric operator.
 
 Proposition 2, used for [B]COBS (continuity of measurable quantities):
 * `numberDomain`, `expN`  the domain `D(N)` and the expectation `E_N(x) = ⟨x, N x⟩ / ‖x‖²` of
@@ -62,13 +63,25 @@ Proposition 4, used for [B]STDIST (distinguishability of systems):
 Theorem 5:
 * `theorem5`  the three conjuncts above, for the oscillator, one spatial degree of freedom, and
   any two numbers of continuous degrees of freedom.
+
+Sec. 5, the domain of the Schrödinger equation (an additional remark, not part of Theorem 5):
+* `domain_numberOp_ne_top`, `harmonicState_not_mem_numberDomain`  `D(N) ≠ ℓ²`, by
+  Hellinger–Toeplitz and by the explicit state `xₙ = 1/n`;
+* `numberEvolution`  the oscillator's unitary evolution `e^{-i t N}`, defined on all of `ℓ²`
+  (`lp.diagonalEvolution`, in `ForMathlib`);
+* `hasDerivAt_numberEvolution`, `not_differentiableAt_numberEvolution`,
+  `differentiableAt_numberEvolution_iff`  its orbit solves the Schrödinger equation exactly when
+  the initial state lies in `D(N)`, and is differentiable nowhere otherwise;
+* `not_memLp_sq_mul_frameUnitary_gaussState`  the potential `V(y) = y²` takes the state
+  `ϕ ∈ L²(ℝ)` of Proposition 3 out of `L²`.
 -/
-public import ForMathlib.Analysis.InnerProductSpace.l2Diagonal
+public import ForMathlib.Analysis.InnerProductSpace.l2DiagonalEvolution
 public import ForMathlib.Analysis.InnerProductSpace.l2Space
 public import ForMathlib.Analysis.SpecialFunctions.Gaussian.Erf
 public import ForMathlib.MeasureTheory.Function.L2Space
 public import ForMathlib.MeasureTheory.Function.LpSpace.ChangeOfVariables
 public import ForPhyslib.QuantumMechanics.UnitaryEquivalence
+public import Mathlib.Analysis.PSeries
 public import InconsistentConvergence
 
 open Real MeasureTheory Filter Topology Set
@@ -102,6 +115,18 @@ theorem bounded_of_isSymmetric {T : H →ₗ[ℂ] H} (hT : T.IsSymmetric) :
 /-- So an unbounded observable cannot be an everywhere-defined symmetric operator. -/
 theorem not_isSymmetric_of_unbounded {T : H →ₗ[ℂ] H} (hT : ∀ C : ℝ, ∃ x, C * ‖x‖ < ‖T x‖) :
     ¬ T.IsSymmetric := fun h => not_continuous_of_unbounded T hT h.continuous
+
+/-- The same for a partially defined operator: a symmetric operator that is unbounded on its
+domain is not defined on the whole space. -/
+theorem domain_ne_top_of_unbounded {T : H →ₗ.[ℂ] H} (hT : T.IsFormalAdjoint T)
+    (hu : ∀ C : ℝ, ∃ x : T.domain, C * ‖(x : H)‖ < ‖T x‖) : T.domain ≠ ⊤ := by
+  intro htop
+  let e : H ≃ₗ[ℂ] T.domain := (LinearEquiv.ofTop T.domain htop).symm
+  have he (x : T.domain) : e x = x := Subtype.ext (by simp [e])
+  refine not_isSymmetric_of_unbounded (T := T.toFun ∘ₗ e.toLinearMap) (fun C => ?_)
+    fun x y => by simpa [e] using hT (e x) (e y)
+  obtain ⟨x, hx⟩ := hu C
+  exact ⟨x, by simpa [he] using hx⟩
 
 end Prop1
 
@@ -531,5 +556,78 @@ theorem theorem5 :
   ⟨⟨isSelfAdjoint_numberOp, coe_domain_numberOp, expN_eq_inner, not_continuousOn_expN⟩,
     ⟨gaussState_mem_positionDomain, frameUnitary_gaussState, frameUnitary_gaussState_not_mem⟩,
     exists_carriesQSTO⟩
+
+/-! ### Sec. 5: the domain of the Schrödinger equation -/
+
+section Schrodinger
+
+open InconsistentConvergence
+
+/-- `N` is not defined on the whole of `ℓ²`, by Hellinger–Toeplitz. -/
+theorem domain_numberOp_ne_top : numberOp.domain ≠ ⊤ := by
+  have hd : Dense (numberOp.domain : Set H) := lp.dense_diagonalDomain _
+  have hT : numberOp.IsFormalAdjoint numberOp := by
+    have h := LinearPMap.adjoint_isFormalAdjoint hd
+    rwa [LinearPMap.isSelfAdjoint_def.mp isSelfAdjoint_numberOp] at h
+  exact domain_ne_top_of_unbounded hT exists_lt_norm_numberOp
+
+/-- An explicit state outside `D(N)`: `xₙ = 1/n` for `n ≥ 1`, with `x₀ = 0`. -/
+def harmonicState : H :=
+  ⟨fun n : ℕ => Complex.ofReal (n : ℝ)⁻¹, by
+    change Memℓp (fun n : ℕ => Complex.ofReal (n : ℝ)⁻¹) 2
+    rw [memℓp_gen_iff (by norm_num)]
+    simp⟩
+
+theorem harmonicState_not_mem_numberDomain : harmonicState ∉ numberDomain := by
+  intro h
+  have h1 := h.tendsto_atTop_zero
+  refine one_ne_zero (tendsto_nhds_unique (tendsto_const_nhds.congr' ?_) h1)
+  filter_upwards [eventually_ge_atTop 1] with n hn
+  have : (n : ℝ) ≠ 0 := by positivity
+  change 1 = (n : ℝ) ^ 2 * ‖Complex.ofReal (n : ℝ)⁻¹‖ ^ 2
+  rw [Complex.norm_real, Real.norm_eq_abs, sq_abs]
+  field_simp
+
+/-- The oscillator's unitary evolution `U t = e^{-i t N}` on `ℓ²`, in units with `ħω = 1` and
+without the zero-point energy, which only adds a global phase. It is defined on all of `ℓ²`. -/
+def numberEvolution (t : ℝ) : H ≃ₗᵢ[ℂ] H := lp.diagonalEvolution (fun n : ℕ => (n : ℝ)) t
+
+/-- On `D(N)`, the orbit of `x` solves the Schrödinger equation `i d/dt (U t x) = N (U t x)`. -/
+theorem hasDerivAt_numberEvolution {x : H} (hx : x ∈ numberOp.domain) (t : ℝ) :
+    HasDerivAt (fun s => numberEvolution s x)
+      (-(Complex.I • numberOp ⟨numberEvolution t x,
+        (lp.diagonalEvolution_mem_diagonalDomain_iff _ t).2 hx⟩)) t :=
+  lp.hasDerivAt_diagonalEvolution _ hx t
+
+/-- Off `D(N)`, the orbit is differentiable nowhere, so the Schrödinger equation fails at every
+time. -/
+theorem not_differentiableAt_numberEvolution {x : H} (hx : x ∉ numberOp.domain) (t : ℝ) :
+    ¬ DifferentiableAt ℝ (fun s => numberEvolution s x) t :=
+  lp.not_differentiableAt_diagonalEvolution _ hx t
+
+/-- The Schrödinger equation holds along the orbit of `x` exactly on the domain of `N`. -/
+theorem differentiableAt_numberEvolution_iff {x : H} (t : ℝ) :
+    DifferentiableAt ℝ (fun s => numberEvolution s x) t ↔ x ∈ numberOp.domain :=
+  lp.differentiableAt_diagonalEvolution_iff _ t
+
+/-- The potential `V(y) = y²` of the oscillator, up to constants, does not map `L²` into
+itself: `ϕ = Uψ` is in `L²`, but `Vϕ` is not. For the linear potential `V(y) = y` this is
+`frameUnitary_gaussState_not_mem`. -/
+theorem not_memLp_sq_mul_frameUnitary_gaussState :
+    ¬ MemLp (fun y : ℝ => (y : ℂ) ^ 2 * frameUnitary gaussState y) 2 volume := by
+  intro h
+  apply frameUnitary_gaussState_not_mem
+  set ϕ := frameUnitary gaussState
+  have hg : MemLp (fun y => ‖ϕ y‖ + ‖(y : ℂ) ^ 2 * ϕ y‖) 2 volume :=
+    (Lp.memLp ϕ).norm.add h.norm
+  show MemLp (fun y : ℝ => (y : ℂ) * ϕ y) 2 volume
+  refine hg.of_le (Complex.continuous_ofReal.aestronglyMeasurable.mul
+    (Lp.aestronglyMeasurable ϕ)) (ae_of_all _ fun y => ?_)
+  rw [Real.norm_eq_abs, abs_of_nonneg (by positivity), norm_mul, norm_mul, norm_pow,
+    Complex.norm_real, Real.norm_eq_abs]
+  have : |y| ≤ 1 + |y| ^ 2 := by nlinarith [abs_nonneg y]
+  nlinarith [norm_nonneg (ϕ y)]
+
+end Schrodinger
 
 end HilbertUnphysicality

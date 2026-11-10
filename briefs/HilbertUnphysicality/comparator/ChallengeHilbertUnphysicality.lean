@@ -7,6 +7,8 @@ module
 
 public import Mathlib.Analysis.InnerProductSpace.l2Space
 public import Mathlib.Analysis.InnerProductSpace.LinearPMap
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
+public import Mathlib.Analysis.Normed.Group.Tannery
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.MeasureTheory.Measure.SeparableMeasure
@@ -17,6 +19,7 @@ public import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.Rpo
 public import PhyslibAlpha.ProbabilisticTheory.HilbertSpace.TraceClass.Basic
 public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 public import Mathlib.LinearAlgebra.Projectivization.Basic
+public import Mathlib.Analysis.PSeries
 
 /-!
 # HilbertUnphysicality: the statements of record
