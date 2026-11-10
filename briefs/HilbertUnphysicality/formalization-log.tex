@@ -57,7 +57,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item Imports: \lean{InconsistentConvergence}, one new \lean{ForPhyslib} file:\newline
   \lean{ForPhyslib/QuantumMechanics/UnitaryEquivalence.lean} (a unitary carries the quantum
   model),\newline
-  and seven new \lean{ForMathlib} files:\newline
+  and ten new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2Diagonal.lean} (diagonal operators on
   $\ell^2$),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2DiagonalEvolution.lean} (their
@@ -69,7 +69,12 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForMathlib/MeasureTheory/Function/L2Multiplication.lean} (multiplication operators
   on $L^2$ and their evolution),\newline
   \lean{ForMathlib/MeasureTheory/Function/LpSpace/ChangeOfVariables.lean} (the unitary of a
-  change of variables on $L^2(\mathbb{R})$)
+  change of variables on $L^2(\mathbb{R})$),\newline
+  \lean{ForMathlib/LinearAlgebra/LinearPMap.lean} (composition on the natural domain),\newline
+  \lean{ForMathlib/Analysis/Normed/Algebra/Wielandt.lean} (the Wielandt--Wintner
+  theorem),\newline
+  \lean{ForMathlib/Analysis/Distribution/TemperedDistribution.lean} (the Leibniz rule in
+  $\mathcal{S}'$)
 \end{itemize}
 
 \paragraph{Setting.} Theorem~5 says that the Hilbert-space formulation QSTO:H is inconsistent
@@ -78,7 +83,8 @@ then argues each part of Theorem~5 from one of them (Sec.~4). The propositions a
 Lean, and Theorem~5 is stated and proved as \lean{theorem5}, with each condition in its
 minimum form (see the open problems, ``Precise readings''). Of the additional remarks of
 Sec.~5, the one on the domain of the Schr\"odinger equation is checked too, for the harmonic
-oscillator in the number basis and for the free particle in position space (see
+oscillator in the number basis and for the free particle in position space, and so is the one
+on commutator relations, for position and momentum on $L^2(\mathbb{R})$ (see
 ``Differences'').
 
 \paragraph{Results.}
@@ -176,6 +182,29 @@ off $\mathcal{D}(H_0)$ it holds at no time & \lean{not_differentiableAt_freeEvol
 \end{tabularx}
 \end{center}
 
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Sec.~5, commutator relations}} \\
+no bounded $X$, $P$ with $[X,P] = i\hbar$ & \lean{not_exists_ccr_bounded} (from
+  \lean{commutator_ne_algebraMap}) \\
+nor everywhere-defined symmetric ones & \lean{not_exists_ccr_symmetric} \\
+$X$, and $[X,P]$ on its natural domain & \lean{positionOp}, \lean{commutatorXP} (from
+  \lean{LinearPMap.compMax}) \\
+$[X,P]$ is not defined on all of $L^2(\mathbb{R})$ & \lean{domain_commutatorXP_ne_top} \\
+in $\mathcal{S}'$, $X$ is multiplication by $x$ and $P = -i\,d/dx$ &
+  \lean{positionOp_toTemperedDistribution}, \lean{momentumOp_toTemperedDistribution} \\
+$[X,P]\psi = i\psi$ on $\mathcal{D}([X,P])$ & \lean{commutatorXP_apply} (from
+  \lean{TemperedDistribution.lineDerivOp_smulLeftCLM}) \\
+$\mathcal{D}([X,P])$ contains the Schwartz functions, so is dense &
+  \lean{toLp_mem_domain_commutatorXP}, \lean{dense_domain_commutatorXP} \\
+all of the above & \lean{commutator_relations} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item \emph{Proposition~1.} Both parts are stated for linear maps, without Mathlib's partially
@@ -195,9 +224,9 @@ off $\mathcal{D}(H_0)$ it holds at no time & \lean{not_differentiableAt_freeEvol
 \item \emph{Proposition~3.} The wave functions are $\psi = (e^{-x^2}/\sqrt\pi)^{1/2}$
   (\lean{gaussState}) and $\phi = (1/(\pi(1+y^2)))^{1/2}$, as elements of
   $L^2(\mathbb{R})$. Both frames use the same space $L^2(\mathbb{R})$ with Lebesgue measure.
-  The position operators are represented by their common maximal domain
-  \lean{positionDomain} $= \{\psi : x\psi \in L^2\}$; the operators themselves, and their
-  self-adjointness, are not formalized. That $f$ is strictly increasing and onto
+  The position operators are both multiplication by the coordinate, \lean{positionOp}, on
+  their common maximal domain \lean{positionDomain} $= \{\psi : x\psi \in L^2\}$; their
+  self-adjointness is not formalized. That $f$ is strictly increasing and onto
   $\mathbb{R}$, and that $g = f^{-1}$ has $g' > 0$, are proved; smoothness is not, only
   differentiability, which is all the unitary needs. The unitary $U$ is
   \lean{Lp.compDiffeo}, proved unitary for any bijection $g$ of $\mathbb{R}$ that is
@@ -246,8 +275,26 @@ off $\mathcal{D}(H_0)$ it holds at no time & \lean{not_differentiableAt_freeEvol
   problems. For the potential part, $V(y) = y^2$ and the state $\phi = U\psi$ of Proposition~3 are used:
   $\phi \in L^2$, but $V\phi \notin L^2$; for $V(y) = y$ this is
   \lean{frameUnitary_gaussState_not_mem}.
-\item The other additional remarks of Section~5, on point-wise values and on commutator
-  relations, are not formalized.
+\item \emph{Sec.~5, commutator relations.} The brief says that $[X,P]/(i\hbar) = I$ cannot
+  hold on the whole of $\mathcal{H}$, since the left side is unbounded, and must be restricted
+  to a domain. Both halves are proved, with $\hbar = 1$. The commutator \lean{commutatorXP} is
+  $XP - PX$ on its natural domain $\{\psi \in \mathcal{D}(X) \cap \mathcal{D}(P) : P\psi \in
+  \mathcal{D}(X),\ X\psi \in \mathcal{D}(P)\}$. Mathlib composes partially defined operators
+  only when the range of one lies in the domain of the other, so the composition on the
+  natural domain is new in \lean{ForMathlib} (\lean{LinearPMap.compMax}). That the relation
+  cannot hold everywhere is proved in two forms: $\mathcal{D}([X,P]) \ne L^2(\mathbb{R})$;
+  and, on any nonzero Hilbert space, no everywhere-defined symmetric $X$, $P$ satisfy
+  $XP - PX = i\hbar I$. The second form is the Wielandt--Wintner theorem (in a nontrivial
+  normed algebra no commutator is a nonzero scalar, \lean{commutator_ne_algebraMap}, in
+  \lean{ForMathlib}) combined with Hellinger--Toeplitz. That the restricted relation holds is
+  proved on all of $\mathcal{D}([X,P])$: in the tempered distributions, $X$ is
+  multiplication by $x$ and $P = -i\,d/dx$, the Leibniz rule
+  $\tfrac{d}{dx}(xu) = u + x\tfrac{du}{dx}$ holds
+  (\lean{TemperedDistribution.lineDerivOp_smulLeftCLM}, in \lean{ForMathlib}), and the
+  embedding $L^2 \to \mathcal{S}'$ is injective. Schwartz functions lie in
+  $\mathcal{D}([X,P])$, so it is dense. Closures and self-adjoint extensions are not
+  considered.
+\item The other additional remark of Section~5, on point-wise values, is not formalized.
 \end{itemize}
 
 \paragraph{Problems found in the brief.}

@@ -85,8 +85,26 @@ Sec. 5 in position space, on `L²(ℝ)` with Mathlib's Fourier transform `fourie
 * `hasDerivAt_freeEvolution`, `not_differentiableAt_freeEvolution`,
   `differentiableAt_freeEvolution_iff`  its orbit solves the free Schrödinger equation exactly
   when the initial state lies in `D(H₀)`, and is differentiable nowhere otherwise.
+
+Sec. 5, commutator relations (`ħ = 1` on `L²(ℝ)`):
+* `not_exists_ccr_bounded`, `not_exists_ccr_symmetric`  `[X, P] = iħ` has no solution in
+  bounded operators (Wielandt–Wintner, `commutator_ne_algebraMap` in `ForMathlib`), nor, by
+  Hellinger–Toeplitz, in everywhere-defined symmetric ones;
+* `positionOp`, `commutatorXP`  `X` on `D(X)`, and `[X, P] = X P - P X` on its natural domain
+  (`LinearPMap.compMax`, in `ForMathlib`);
+* `domain_commutatorXP_ne_top`  `[X, P]` is not defined on all of `L²(ℝ)`;
+* `positionOp_toTemperedDistribution`, `momentumOp_toTemperedDistribution`  in `𝓢'(ℝ)`, `X` is
+  multiplication by `x` and `P = -i d/dx`;
+* `commutatorXP_apply`  `[X, P] ψ = iψ` for every `ψ ∈ D([X, P])`, from the Leibniz rule in `𝓢'`
+  (`TemperedDistribution.lineDerivOp_smulLeftCLM`, in `ForMathlib`);
+* `toLp_mem_domain_commutatorXP`, `dense_domain_commutatorXP`  Schwartz functions lie in
+  `D([X, P])`, so it is dense;
+* `commutator_relations`  the above together.
 -/
 public import ForMathlib.MeasureTheory.Function.L2Multiplication
+public import ForMathlib.Analysis.Distribution.TemperedDistribution
+public import ForMathlib.Analysis.Normed.Algebra.Wielandt
+public import ForMathlib.LinearAlgebra.LinearPMap
 public import Mathlib.Analysis.Distribution.Sobolev
 public import ForMathlib.Analysis.InnerProductSpace.l2Space
 public import ForMathlib.Analysis.SpecialFunctions.Gaussian.Erf
@@ -139,6 +157,25 @@ theorem domain_ne_top_of_unbounded {T : H →ₗ.[ℂ] H} (hT : T.IsFormalAdjoin
     fun x y => by simpa [e] using hT (e x) (e y)
   obtain ⟨x, hx⟩ := hu C
   exact ⟨x, by simpa [he] using hx⟩
+
+omit [CompleteSpace H] in
+/-- Sec. 5: the canonical commutation relation `[X, P] = iħ` has no solution in bounded
+operators on a nonzero space (Wielandt–Wintner, in `ForMathlib`). -/
+theorem not_exists_ccr_bounded [Nontrivial H] {ħ : ℝ} (hħ : ħ ≠ 0) :
+    ¬ ∃ X P : H →L[ℂ] H, X * P - P * X = (Complex.I * ħ) • 1 := by
+  rintro ⟨X, P, h⟩
+  refine commutator_ne_algebraMap X P (c := Complex.I * ħ) (by simp [hħ]) ?_
+  rw [h, Algebra.algebraMap_eq_smul_one]
+
+/-- So, by Hellinger–Toeplitz, no everywhere-defined symmetric `X` and `P` satisfy it either:
+the relation cannot hold on the whole of the Hilbert space. -/
+theorem not_exists_ccr_symmetric [Nontrivial H] {ħ : ℝ} (hħ : ħ ≠ 0) :
+    ¬ ∃ X P : H →ₗ[ℂ] H, X.IsSymmetric ∧ P.IsSymmetric ∧
+      X ∘ₗ P - P ∘ₗ X = (Complex.I * ħ) • LinearMap.id := by
+  rintro ⟨X, P, hX, hP, h⟩
+  refine not_exists_ccr_bounded hħ ⟨⟨X, hX.continuous⟩, ⟨P, hP.continuous⟩, ?_⟩
+  ext x
+  exact LinearMap.congr_fun h x
 
 end Prop1
 
@@ -829,5 +866,187 @@ theorem differentiableAt_freeEvolution_iff {ψ : L2R} (t : ℝ) :
     fun hψ => (hasDerivAt_freeEvolution hψ t).differentiableAt⟩
 
 end PositionSpace
+
+/-! ### Sec. 5: commutator relations -/
+
+section Commutator
+
+open QuantumMechanics FourierTransform LinearPMap LineDeriv TemperedDistribution
+open scoped SchwartzMap
+
+/-- The position operator `X`, multiplication by `x`, on its maximal domain. -/
+def positionOp : L2R →ₗ.[ℂ] L2R := L2.mulOp fun x : ℝ => x
+
+theorem coe_domain_positionOp : (positionOp.domain : Set L2R) = positionDomain := rfl
+
+lemma coeFn_positionOp (ψ : positionOp.domain) :
+    positionOp ψ =ᵐ[volume] fun x => (x : ℂ) * (ψ : L2R) x :=
+  L2.coeFn_mulOp _ ψ
+
+/-- The commutator `[X, P] = X P - P X` (`ħ = 1`), on its natural domain: the `ψ` in
+`D(X) ∩ D(P)` with `Pψ ∈ D(X)` and `Xψ ∈ D(P)` (`LinearPMap.compMax`, in `ForMathlib`). -/
+def commutatorXP : L2R →ₗ.[ℂ] L2R :=
+  positionOp.compMax momentumOp - momentumOp.compMax positionOp
+
+theorem domain_commutatorXP_le :
+    commutatorXP.domain ≤ positionOp.domain ⊓ momentumOp.domain :=
+  le_inf (inf_le_right.trans (compMax_domain_le _ _)) (inf_le_left.trans (compMax_domain_le _ _))
+
+/-- `[X, P]` is not defined on the whole of `L²(ℝ)`, while the identity is: the Cauchy packet
+`ϕ` of Proposition 3 is not in `D(X)`. -/
+theorem domain_commutatorXP_ne_top : commutatorXP.domain ≠ ⊤ := by
+  intro h
+  have hm : frameUnitary gaussState ∈ commutatorXP.domain := h ▸ Submodule.mem_top
+  exact frameUnitary_gaussState_not_mem (domain_commutatorXP_le hm).1
+
+/-! The relation on the natural domain, computed in the tempered distributions `𝓢'(ℝ)`. -/
+
+lemma injective_toTemperedDistribution :
+    Function.Injective (Lp.toTemperedDistributionCLM ℂ (volume : Measure ℝ) 2) :=
+  LinearMap.ker_eq_bot.mp Lp.ker_toTemperedDistributionCLM_eq_bot
+
+/-- In `𝓢'`, a multiplication operator acts by `smulLeftCLM`. -/
+lemma toTemperedDistribution_mulOp {a : ℝ → ℝ} (ha : (fun x => (a x : ℂ)).HasTemperateGrowth)
+    (ψ : (L2.mulOp a : L2R →ₗ.[ℂ] L2R).domain) :
+    ((L2.mulOp a ψ : L2R) : 𝓢'(ℝ, ℂ)) =
+      smulLeftCLM ℂ (fun x => (a x : ℂ)) ((ψ : L2R) : 𝓢'(ℝ, ℂ)) := by
+  ext u
+  simp only [smulLeftCLM_apply_apply, Lp.toTemperedDistribution_apply,
+    SchwartzMap.smulLeftCLM_apply_apply ha]
+  refine integral_congr_ae ?_
+  filter_upwards [L2.coeFn_mulOp a ψ] with x hx
+  rw [hx, smul_eq_mul, smul_eq_mul, smul_eq_mul]
+  ring
+
+lemma hasTemperateGrowth_ofReal : (fun x : ℝ => (x : ℂ)).HasTemperateGrowth := by fun_prop
+
+/-- In `𝓢'`, `X` is multiplication by `x`. -/
+theorem positionOp_toTemperedDistribution (ψ : positionOp.domain) :
+    ((positionOp ψ : L2R) : 𝓢'(ℝ, ℂ)) =
+      smulLeftCLM ℂ (fun x : ℝ => (x : ℂ)) ((ψ : L2R) : 𝓢'(ℝ, ℂ)) :=
+  toTemperedDistribution_mulOp hasTemperateGrowth_ofReal ψ
+
+lemma mem_domain_momentumOp' {ψ : L2R} :
+    ψ ∈ momentumOp.domain ↔ fourierL2 ψ ∈ (L2.mulOp fun ξ : ℝ => 2 * π * ξ).domain := by
+  rw [momentumOp, mem_domain_conjLinearPMap, LinearIsometryEquiv.symm_symm]
+
+lemma momentumOp_apply (ψ : momentumOp.domain) :
+    momentumOp ψ = fourierL2.symm (L2.mulOp (fun ξ : ℝ => 2 * π * ξ)
+      ⟨fourierL2 ψ, mem_domain_momentumOp'.1 ψ.2⟩) :=
+  conjLinearPMap_apply ψ
+
+/-- `2πξ 𝓕u = 𝓕(-i ∂u)` in `𝓢'(ℝ)`. -/
+lemma smulLeftCLM_fourier (u : 𝓢'(ℝ, ℂ)) :
+    smulLeftCLM ℂ (fun ξ : ℝ => ((2 * π * ξ : ℝ) : ℂ)) (𝓕 u) =
+      𝓕 ((-Complex.I) • ∂_{(1 : ℝ)} u) := by
+  have hi : (fun ξ : ℝ => ((inner ℝ ξ (1 : ℝ) : ℝ) : ℂ)).HasTemperateGrowth := by fun_prop
+  have hf : (fun ξ : ℝ => ((2 * π * ξ : ℝ) : ℂ)) =
+      (2 * π : ℂ) • fun ξ : ℝ => ((inner ℝ ξ (1 : ℝ) : ℝ) : ℂ) := by
+    funext ξ
+    simp
+  rw [fourier_smul, TemperedDistribution.fourier_lineDerivOp_eq, hf, smulLeftCLM_smul hi,
+    _root_.smul_apply, smul_smul]
+  congr 1
+  linear_combination (2 * π : ℂ) * Complex.I_sq
+
+/-- In `𝓢'`, `P` is `-i d/dx`. -/
+theorem momentumOp_toTemperedDistribution (ψ : momentumOp.domain) :
+    ((momentumOp ψ : L2R) : 𝓢'(ℝ, ℂ)) = (-Complex.I) • ∂_{(1 : ℝ)} ((ψ : L2R) : 𝓢'(ℝ, ℂ)) := by
+  rw [momentumOp_apply]
+  change ((𝓕⁻ (L2.mulOp (fun ξ : ℝ => 2 * π * ξ) _ : L2R) : L2R) : 𝓢'(ℝ, ℂ)) = _
+  rw [← Lp.fourierInv_toTemperedDistribution_eq, toTemperedDistribution_mulOp (by fun_prop)]
+  change 𝓕⁻ (smulLeftCLM ℂ _ ((𝓕 (ψ : L2R) : L2R) : 𝓢'(ℝ, ℂ))) = _
+  rw [← Lp.fourier_toTemperedDistribution_eq, smulLeftCLM_fourier, fourierInv_fourier_eq]
+
+/-- The product rule `d/dx (x u) = u + x du/dx` in `𝓢'(ℝ)`, from the Leibniz rule
+`TemperedDistribution.lineDerivOp_smulLeftCLM` in `ForMathlib`. -/
+lemma lineDerivOp_smulLeftCLM_ofReal (u : 𝓢'(ℝ, ℂ)) :
+    ∂_{(1 : ℝ)} (smulLeftCLM ℂ (fun x : ℝ => (x : ℂ)) u) =
+      u + smulLeftCLM ℂ (fun x : ℝ => (x : ℂ)) (∂_{(1 : ℝ)} u) := by
+  have hd : (fun x : ℝ => fderiv ℝ (fun x : ℝ => (x : ℂ)) x 1) = fun _ => (1 : ℂ) := by
+    funext x
+    rw [show (fun x : ℝ => (x : ℂ)) = ⇑Complex.ofRealCLM from rfl,
+      Complex.ofRealCLM.hasFDerivAt.fderiv]
+    simp
+  rw [TemperedDistribution.lineDerivOp_smulLeftCLM hasTemperateGrowth_ofReal
+    (by rw [hd]; fun_prop), hd, smulLeftCLM_const, one_smul]
+
+/-- **`[X, P] = i`** on the natural domain of `[X, P]`: the commutation relation holds once it is
+restricted to `D([X, P])`. -/
+theorem commutatorXP_apply (ψ : commutatorXP.domain) : commutatorXP ψ = Complex.I • (ψ : L2R) := by
+  obtain ⟨hP, hXP⟩ := mem_domain_compMax.1 ψ.2.1
+  obtain ⟨hX, hPX⟩ := mem_domain_compMax.1 ψ.2.2
+  have e : commutatorXP ψ = positionOp ⟨momentumOp ⟨ψ, hP⟩, hXP⟩ -
+      momentumOp ⟨positionOp ⟨ψ, hX⟩, hPX⟩ := rfl
+  apply injective_toTemperedDistribution
+  rw [e, _root_.map_sub, _root_.map_smul]
+  simp only [Lp.toTemperedDistributionCLM_apply]
+  rw [positionOp_toTemperedDistribution, momentumOp_toTemperedDistribution,
+    momentumOp_toTemperedDistribution, positionOp_toTemperedDistribution,
+    lineDerivOp_smulLeftCLM_ofReal, _root_.map_smul]
+  module
+
+/-! The relation on Schwartz functions, a dense subspace of `D([X, P])`. -/
+
+lemma toLp_mem_positionDomain (φ : 𝓢(ℝ, ℂ)) : φ.toLp 2 volume ∈ positionDomain := by
+  refine ((SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => (x : ℂ)) φ).memLp 2 volume).ae_eq ?_
+  filter_upwards [φ.coeFn_toLp 2 volume] with x hx
+  rw [SchwartzMap.smulLeftCLM_apply_apply hasTemperateGrowth_ofReal, hx, smul_eq_mul]
+
+lemma positionOp_toLp (φ : 𝓢(ℝ, ℂ)) :
+    positionOp ⟨φ.toLp 2 volume, toLp_mem_positionDomain φ⟩ =
+      (SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => (x : ℂ)) φ).toLp 2 volume := by
+  refine Lp.ext ?_
+  filter_upwards [coeFn_positionOp ⟨φ.toLp 2 volume, toLp_mem_positionDomain φ⟩,
+    φ.coeFn_toLp 2 volume,
+    (SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => (x : ℂ)) φ).coeFn_toLp 2 volume] with x h1 h2 h3
+  rw [h1, h3, h2, SchwartzMap.smulLeftCLM_apply_apply hasTemperateGrowth_ofReal, smul_eq_mul]
+
+lemma toLp_mem_domain_momentumOp (φ : 𝓢(ℝ, ℂ)) : φ.toLp 2 volume ∈ momentumOp.domain := by
+  rw [mem_domain_momentumOp]
+  change 𝓕 (φ.toLp 2) ∈ positionDomain
+  rw [SchwartzMap.toLp_fourier_eq]
+  exact toLp_mem_positionDomain _
+
+lemma momentumOp_toLp (φ : 𝓢(ℝ, ℂ)) :
+    momentumOp ⟨φ.toLp 2 volume, toLp_mem_domain_momentumOp φ⟩ =
+      ((-Complex.I) • ∂_{(1 : ℝ)} φ).toLp 2 volume := by
+  apply injective_toTemperedDistribution
+  simp only [Lp.toTemperedDistributionCLM_apply]
+  rw [momentumOp_toTemperedDistribution]
+  simp only [Lp.toTemperedDistribution_toLp_eq, lineDerivOp_toTemperedDistributionCLM_eq,
+    _root_.map_smul]
+
+/-- Schwartz functions lie in the natural domain of `[X, P]`. -/
+theorem toLp_mem_domain_commutatorXP (φ : 𝓢(ℝ, ℂ)) : φ.toLp 2 volume ∈ commutatorXP.domain := by
+  refine ⟨mem_domain_compMax.2 ⟨toLp_mem_domain_momentumOp φ, ?_⟩,
+    mem_domain_compMax.2 ⟨toLp_mem_positionDomain φ, ?_⟩⟩
+  · rw [momentumOp_toLp]
+    exact toLp_mem_positionDomain _
+  · rw [positionOp_toLp]
+    exact toLp_mem_domain_momentumOp _
+
+/-- So `D([X, P])` is dense in `L²(ℝ)`, and `[X, P] = i` there. -/
+theorem dense_domain_commutatorXP : Dense (commutatorXP.domain : Set L2R) :=
+  (SchwartzMap.denseRange_toLpCLM (F := ℂ) (p := 2) (μ := (volume : Measure ℝ))
+    ENNReal.ofNat_ne_top).mono (by
+      rintro _ ⟨φ, rfl⟩
+      exact toLp_mem_domain_commutatorXP φ)
+
+/-- The commutator relations of Sec. 5 together: `[X, P]` is not defined on all of `L²(ℝ)`, no
+everywhere-defined symmetric operators satisfy `[X, P] = i` on a nonzero Hilbert space, and on
+the natural domain of `[X, P]`, which is dense, the relation holds. -/
+theorem commutator_relations :
+    commutatorXP.domain ≠ ⊤ ∧
+    ¬ (∃ X P : L2R →ₗ[ℂ] L2R, X.IsSymmetric ∧ P.IsSymmetric ∧
+      X ∘ₗ P - P ∘ₗ X = (Complex.I * (1 : ℝ)) • LinearMap.id) ∧
+    Dense (commutatorXP.domain : Set L2R) ∧
+    ∀ ψ : commutatorXP.domain, commutatorXP ψ = Complex.I • (ψ : L2R) := by
+  have : Nontrivial L2R := nontrivial_of_ne (frameUnitary gaussState) 0 fun h =>
+    frameUnitary_gaussState_not_mem (by rw [h]; exact positionOp.domain.zero_mem)
+  exact ⟨domain_commutatorXP_ne_top, not_exists_ccr_symmetric one_ne_zero,
+    dense_domain_commutatorXP, commutatorXP_apply⟩
+
+end Commutator
 
 end HilbertUnphysicality
