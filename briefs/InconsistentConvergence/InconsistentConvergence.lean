@@ -27,6 +27,10 @@ The brief's Prop. 1 indexes sequences from `1`, with `a` at `i = 1`; here indice
 matching the oscillator of Section 3. The divergence in eq. (3) is the same up to this shift.
 The expectations are written as weighted sums, since `N` is diagonal in the basis `|n⟩`; they
 are only evaluated on finitely supported states.
+
+For the reading as the oscillator, see the module `InconsistentConvergence.Oscillator`: the unitary
+`ℓ²(ℕ) ≃ L²(ℝ)` of the Hermite basis sends `|n⟩` to the `n`-th oscillator eigenfunction, and `S(ℕ)`
+onto the Schwartz space `𝓢(ℝ)`, with its topology. There `eʲ` has no limit in `𝓢(ℝ)`.
 -/
 public import Mathlib.Analysis.Normed.Lp.lpSpace
 

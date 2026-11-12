@@ -48,18 +48,15 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \textbf{The space $S(\mathbb{N})$.} The Schwartz sequence space and its topology are not
-  constructed. Only unboundedness of the seminorm $\sum_n n^2|e^j_n|^2$ is proved, not that
-  $e^j$ (or $b^j$) has no limit in $S(\mathbb{N})$. (Log, ``Differences from the brief'', ``No
-  limit in $S(\mathbb{N})$''.)
+\item \textbf{The space $S(\mathbb{N})$.} The Schwartz sequence space is not constructed as a
+  topological space. It is described by its seminorms and identified with
+  $\mathcal{S}(\mathbb{R})$ through the Hermite basis, where $Ue^j$ has no limit; the sequences
+  $b^j$ are not treated. (Log, ``Differences from the brief'', ``No limit in
+  $S(\mathbb{N})$''.)
 \item \textbf{The number operator.} $\braket{N}$ is a weighted sum $\sum_n n\,|x_n|^2$ on all of
   $\ell^2$, with a default value outside the domain of $N$. The unbounded self-adjoint operator
   $N = a^\dagger a$, its domain, and the agreement of $\braket{x|N|x}$ with the weighted sum on
   that domain are not formalized. (Log, ``Differences from the brief'', third item.)
-\item \textbf{The oscillator.} $\ell^2(\mathbb{N})$ with $\ket{n} = \delta_n$ is only read as the
-  harmonic oscillator. The unitary identification with $L^2(\mathbb{R})$ through the Hermite
-  functions, under which $S(\mathbb{N})$ becomes the Schwartz space of functions, is not
-  formalized. (Log, ``Setting''.)
 \end{enumerate}
 
 \end{document}

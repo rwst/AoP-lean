@@ -120,6 +120,7 @@ srcDir = "briefs/NonLinearQuantum/comparator"
 [[lean_lib]]
 name = "InconsistentConvergence"
 srcDir = "briefs/InconsistentConvergence"
+globs = ["InconsistentConvergence.*"]
 
 # Its comparator lane (not default targets; see COMPARATOR.md).
 [[lean_lib]]

@@ -55,6 +55,17 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item File: \lean{briefs/InconsistentConvergence/InconsistentConvergence.lean}
 \item Library: \lean{InconsistentConvergence}
 \item Imports: \lean{Mathlib.Analysis.Normed.Lp.lpSpace}
+\item Second file, for the oscillator: module \lean{InconsistentConvergence.Oscillator}, in the
+  subdirectory \lean{InconsistentConvergence/}. It is separate from the main file, so that the
+  comparator lane, which certifies the main file, is unchanged. Its imports:
+  \begin{itemize}
+  \item \lean{InconsistentConvergence};
+  \item \lean{ForMathlib.Analysis.Distribution.SchwartzSpace.HermiteReal};
+  \item \lean{TauCeti.Analysis.SpecialFunctions.Hermite.Function.Oscillator}.
+  \end{itemize}
+  The \lean{ForMathlib} file identifies $\mathcal{S}(\mathbb{R})$, with its topology, with the
+  rapidly decreasing Hermite series. It transfers the multi-index Hermite expansions on
+  $\mathbb{R}^1$, in the same directory, to $\mathbb{R}$.
 \end{itemize}
 
 \paragraph{Setting.} $H = \ell^2(\mathbb{N})$ (\texttt{lp (fun \_ : }$\mathbb{N}$\texttt{ => }$\mathbb{C}$\texttt{) 2}), with
@@ -62,6 +73,10 @@ $\ket{n} = \delta_n$ the oscillator eigenstates and
 \[
   \ket{e^j} = \sqrt{\tfrac{j-1}{j}}\,\ket{0} + \sqrt{\tfrac{1}{j}}\,\ket{j}.
 \]
+In the oscillator file, $U$ is the unitary $\ell^2(\mathbb{N}) \to L^2(\mathbb{R})$ of the
+Hermite basis (\lean{TauCeti.hermiteHilbertBasis}), with $U\ket{n} = \psi_n$, the $n$-th
+Hermite function ($m = \omega = \hbar = 1$). $S(\mathbb{N})$ is described by its seminorms
+$\sup_n (n+1)^K |x_n|$, $K \in \mathbb{N}$.
 
 \paragraph{Results.}
 \begin{center}
@@ -79,14 +94,40 @@ eq.~(5), the inconsistency & \lean{not_continuousAt_numberExp}: $\langle N\rangl
 \end{tabularx}
 \end{center}
 
+\paragraph{Results: the oscillator.}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+$U\ket{n} = \psi_n$ & \lean{hermiteUnitary_level}; the coordinates of $U^{-1} g$ are
+  $\braket{\psi_n|g}$ (\lean{hermiteUnitary_symm_apply}) \\
+$\ket{n}$ is the oscillator eigenstate with $n$ quanta & \lean{oscillator_level}:
+  $-\psi_n''/2 + x^2\psi_n/2 = (n + \tfrac12)\psi_n$ \\
+$S(\mathbb{N})$ is the Schwartz space & \lean{exists_schwartz_iff}: $Ux \in
+  \mathcal{S}(\mathbb{R})$ iff $\sup_n (n+1)^K |x_n| < \infty$ for every $K$ \\
+and has its topology & \lean{tendsto_schwartz_iff}: $f_j \to g$ in $\mathcal{S}(\mathbb{R})$
+  iff $U^{-1}f_j \to U^{-1}g$ in every seminorm of $S(\mathbb{N})$ \\
+the $e^j$ are Schwartz states & \lean{exists_schwartz_e}: $Ue^j \in
+  \mathcal{S}(\mathbb{R})$ \\
+$e^j \to \ket{0}$, but not in $S(\mathbb{N})$ & \lean{tendsto_hermiteUnitary_e}: $Ue^j \to
+  \psi_0$ in $L^2(\mathbb{R})$; \lean{not_tendsto_schwartz_e}: $Ue^j$ has no limit in
+  $\mathcal{S}(\mathbb{R})$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item Indexing. Proposition~1 indexes sequences from $1$, with the ground term at $i = 1$. The
   formalization indexes from $0$, matching the oscillator of Section~3. The divergence is the
   same; with the brief's indexing the sum is $(j-1)/j + j$ instead of $j$.
-\item No limit in $S(\mathbb{N})$. What is proved is that the seminorm
+\item No limit in $S(\mathbb{N})$. In the main file, what is proved is that the seminorm
   $\sum_n n^2 |x_n|^2$ is unbounded along $e^j$, which is the brief's argument. The Schwartz
-  sequence space $S(\mathbb{N})$ and its topology are not constructed.
+  sequence space $S(\mathbb{N})$ is not constructed as a topological space. The oscillator
+  file describes it by its seminorms $\sup_n (n+1)^K |x_n|$, identifies it with
+  $\mathcal{S}(\mathbb{R})$ through $U$, and proves that $Ue^j$ has no limit in
+  $\mathcal{S}(\mathbb{R})$.
 \item $\langle N\rangle$ is defined on all of $\ell^2$ as the weighted sum
   $\sum_n n\,|x_n|^2$, which has a default value outside the domain of $N$. The discontinuity
   is still meaningful, because every $e^j$ is finitely supported.
