@@ -111,8 +111,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   It is kept out of the comparator lane for the same reason.
 \end{itemize}
 
-\paragraph{Setting.} Theorem~5 says that the Hilbert-space formulation QSTO:H is inconsistent
-with three physical conditions. The brief proves four mathematical propositions (Sec.~2) and
+\paragraph{Setting.} Theorem~5 says that three physical conditions are not guaranteed over
+the Hilbert-space formulation QSTO:H. The brief proves four mathematical propositions (Sec.~2) and
 then argues each part of Theorem~5 from one of them (Sec.~4). The propositions are checked in
 Lean, and Theorem~5 is stated and proved as \lean{theorem5}, with each condition in its
 minimum form (see the open problems, ``Precise readings''). Of the additional remarks of
@@ -194,7 +194,7 @@ and preserves the Born rule and the entropy & \lean{born_map},
 $L^2(\mathbb{R}^{n+1})$ and $L^2(\mathbb{R}^{m+1})$ carry the same QSTO:H model &
   \lean{carriesQSTO}, \lean{exists_carriesQSTO} \\
 \multicolumn{2}{@{}l}{\emph{Theorem~5}} \\
-QSTO:H is inconsistent with [B]COBS, [B]WDQ and [B]STDIST & \lean{theorem5} \\
+over QSTO:H, [B]COBS, [B]WDQ and [B]STDIST are not guaranteed & \lean{theorem5} \\
 \multicolumn{2}{@{}l}{\emph{Sec.~5, the domain of the Schr\"odinger equation}} \\
 $\mathcal{D}(H) \ne \mathcal{H}$ for the oscillator & \lean{domain_numberOp_ne_top},
   \lean{harmonicState_not_mem_numberDomain} ($x_n = 1/n$) \\
@@ -436,8 +436,10 @@ all of the above & \lean{pointwise_values} \\
 \item \emph{Theorem~5.} Stated as \lean{theorem5}, a conjunction of three parts, one per
   condition, each for one particular system: the oscillator (Proposition~2), one spatial
   degree of freedom (Proposition~3), and any two numbers $n+1$, $m+1$ of continuous degrees
-  of freedom (Proposition~4). ``Inconsistent'' is read as the failure of the minimum form of
-  the condition for that system. The [B]COBS part states that $N$ is self-adjoint on
+  of freedom (Proposition~4). ``Not guaranteed'' (``inconsistent'' in the previous version of
+  the brief) is read as the failure of the minimum form of the condition for that system. For
+  [B]STDIST, which has no minimum form in the current brief, it is the one of the previous
+  version, as the proof uses it. The [B]COBS part states that $N$ is self-adjoint on
   $\mathcal{D}(N)$, that $E_N(x) = \operatorname{Re}\braket{x|Nx}/\|x\|^2$ there, and that
   $E_N$ is not continuous on $\mathcal{D}(N)\setminus\{0\}$. The [B]WDQ part states
   $\psi \in \mathcal{D}(X)$, $U\psi = \phi$ a.e.\ and $U\psi \notin \mathcal{D}(Y)$, for the
@@ -602,8 +604,13 @@ all of the above & \lean{pointwise_values} \\
 \item ``Schwartz spaces present the same problem'' is asserted without proof, and without
   saying which structure on $\mathcal{S}(\mathbb{R}^n)$ is meant (see the open problems).
 \item QSTO:H still allows any separable Hilbert space, finite-dimensional ones included. This
-  no longer affects Theorem~5, whose proof reads the inconsistency as the failure of a
-  condition for one particular system, but the brief could say so.
+  does not affect Theorem~5, which only claims that the conditions are not guaranteed, that is,
+  that each fails for some system.
+\item The current brief states [B]STDIST as ``Systems with a different number of degrees of
+  freedom are distinct'', which does not say in what sense they are distinct. The minimum form
+  of the previous version, that they ``should not have the same mathematical
+  representation'', was dropped, but the proof of Theorem~5 still concludes that they have
+  ``the same mathematical representation''. The formalization keeps that minimum form.
 \end{itemize}
 
 \end{document}

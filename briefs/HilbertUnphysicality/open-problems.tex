@@ -59,11 +59,14 @@ precise first.
 \end{enumerate}
 
 \noindent
-The blocker of the previous version of the brief, that the conditions and the inconsistency
-were informal, is resolved. The revised brief adds a minimum form to each condition (Sec.~3)
-and reads the inconsistency as the failure of a condition for one particular system
-(Sec.~4). The previous open problem on the expectations of a general unbounded observable is
-no longer raised: the [B]COBS part now rests on the number operator alone (Proposition~2).
+The blocker of an earlier version of the brief, that the conditions and the inconsistency
+were informal, is resolved. The brief gives [B]COBS and [B]WDQ a minimum form (Sec.~3). Its
+current version states Theorem~5 as ``Over QSTO:H, conditions [B]COBS, [B]WDQ and [B]STDIST
+are not guaranteed'', which is shown by a condition failing for one particular system
+(Sec.~4). The current version also drops the minimum form of [B]STDIST, but the proof still
+fixes its meaning (see ``Precise readings''). An earlier open problem, on the expectations of
+a general unbounded observable, is no longer raised: the [B]COBS part now rests on the number
+operator alone (Proposition~2).
 The formalization gap ``Theorem~5 itself'' is closed: Theorem~5 is stated and proved in Lean
 as \lean{theorem5}, in the readings of the next section.
 The formalization gap ``the Schr\"odinger equation with a potential'' is closed too. The remark
@@ -80,11 +83,13 @@ theorems are reached through a private import: TauCeti and Physlib both declare
 
 \section*{Precise readings}
 
-The revised brief confirms the readings proposed for its previous version, with the changes
+The brief confirms the readings proposed for its earlier versions, with the changes
 below. They are the readings in which Theorem~5 is stated in Lean (\lean{theorem5}).
 
-\paragraph{Inconsistency.} ``QSTO:H is inconsistent with C'' means: there is a quantum system
-to which QSTO:H applies whose QSTO:H model fails condition C. The systems are the
+\paragraph{Not guaranteed.} ``Over QSTO:H, condition C is not guaranteed'' means: there is a
+quantum system to which QSTO:H applies whose QSTO:H model fails condition C. The current brief
+uses these words in place of ``QSTO:H is inconsistent with C'', which was read in the same
+way. The systems are the
 one-dimensional harmonic oscillator for [B]COBS, a system with one spatial degree of freedom
 for [B]WDQ, and two systems with different numbers of continuous degrees of freedom for
 [B]STDIST. Under this reading finite-dimensional Hilbert spaces do not need to be excluded.
@@ -146,6 +151,11 @@ for [B]WDQ, and two systems with different numbers of continuous degrees of free
   $P_1, \dots, P_n$ are not part of the representation.
 \item Two systems have the \emph{same} representation if a unitary
   $\mathcal{H}_n \to \mathcal{H}_m$ carries one onto the other.
+\item The current brief states [B]STDIST as ``Systems with a different number of degrees of
+  freedom are distinct'', without saying in what sense. Its previous version had the minimum
+  form ``physical systems with a different number of degrees of freedom should not have the
+  same mathematical representation''. The proof of Theorem~5 still ends with the systems
+  having ``the same mathematical representation'', so that minimum form is used.
 \item [B]STDIST, minimum form: for $n \ne m$ there is no unitary
   $\mathcal{H}_n \to \mathcal{H}_m$.
 \item Claim to be proved: for all $n, m \ge 1$ there is one (Proposition~4;

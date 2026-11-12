@@ -10,8 +10,8 @@ Unphysicality of Hilbert spaces for quantum mechanics.
 Technical brief by G. Carcassi for the Assumptions of Physics collaboration,
 https://assumptionsofphysics.org/resources/briefs
 
-Theorem 5 of the brief says that the Hilbert-space formulation is inconsistent with three
-physical conditions. The brief proves four mathematical propositions (Sec. 2) and argues each
+Theorem 5 of the brief says that three physical conditions are not guaranteed over the
+Hilbert-space formulation. The brief proves four mathematical propositions (Sec. 2) and argues each
 part of Theorem 5 from one of them (Sec. 4). The propositions are checked here, and
 Theorem 5 is stated and proved as `theorem5`, one conjunct per condition, each in its minimum
 form.
@@ -714,7 +714,7 @@ theorem exists_carriesQSTO (n m : ℕ) :
 /-! ### Theorem 5 -/
 
 open InconsistentConvergence in
-/-- **Theorem 5.** QSTO:H is inconsistent with [B]COBS, [B]WDQ and [B]STDIST: for each
+/-- **Theorem 5.** Over QSTO:H, [B]COBS, [B]WDQ and [B]STDIST are not guaranteed: for each
 condition, a system to which QSTO:H applies fails its minimum form.
 * [B]COBS, the harmonic oscillator: the number operator `N` is self-adjoint on `D(N)`, and the
   expectation `E_N(x) = ⟨x, N x⟩ / ‖x‖²` is not continuous on `D(N) ∖ {0}`;
