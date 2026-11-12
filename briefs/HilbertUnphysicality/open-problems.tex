@@ -70,13 +70,15 @@ precise first.
   $H_0 + X^2/2$ on $\mathcal{D}(H_0) \cap \mathcal{D}(X^2)$
   (\lean{oscillatorHamiltonian_eq_add}). For bounded measurable $V$, $H = H_0 + V$ is
   self-adjoint on $\mathcal{D}(H_0)$ and the remark is checked for it
-  (\lean{bounded_schrodinger_only_on_domain}). For unbounded potentials other than the
-  oscillator, it is not formalized that $H = P^2/2m + V(x)$ is self-adjoint, nor on which
-  domain. The next class, $V \in L^2 + L^\infty$, follows from the Kato--Rellich theorem and the
-  bound $\|\psi\|_\infty \le \varepsilon\|H_0\psi\| + C_\varepsilon\|\psi\|$ on
-  $\mathcal{D}(H_0)$, which is not formalized. TauCeti has the Kato--Rellich theorem, but it
-  cannot be imported here together with Physlib's unbounded operators: both declare
-  \lean{LinearPMap.adjoint_smul}. (Brief, Sec.~5; Log, ``Differences''.)
+  (\lean{bounded_schrodinger_only_on_domain}), and so for $V \in L^2 + L^\infty$, by the
+  Kato--Rellich theorem (\lean{memLp_schrodinger_only_on_domain}). For potentials outside
+  $L^2 + L^\infty$ other than the oscillator, such as growing ones ($|x|^\beta$, $\beta \ne 2$)
+  or ones too singular for an operator bound, it is not formalized that $H = P^2/2m + V(x)$ is
+  self-adjoint, nor on which domain. These need other methods, such as quadratic forms (KLMN)
+  or limit point/limit circle criteria. The Kato--Rellich results are in a module of their own
+  outside the comparator lane, because TauCeti's theorem is reached through a private import:
+  TauCeti and Physlib both declare \lean{LinearPMap.adjoint_smul}.
+  (Brief, Sec.~5; Log, ``Differences''.)
 \end{enumerate}
 
 \noindent

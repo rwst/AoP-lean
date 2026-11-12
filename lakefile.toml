@@ -162,6 +162,7 @@ srcDir = "briefs/EntropyTopology/comparator"
 [[lean_lib]]
 name = "HilbertUnphysicality"
 srcDir = "briefs/HilbertUnphysicality"
+globs = ["HilbertUnphysicality.*"]
 
 # Its comparator lane (not default targets; see COMPARATOR.md).
 [[lean_lib]]

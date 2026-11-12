@@ -90,6 +90,15 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   $\mathcal{S}'$),\newline
   \lean{ForMathlib/MeasureTheory/Measure/Typeclasses/NullSingletonClass.lean} (changing a
   function at a point)
+\item Second file, for potentials in $L^2 + L^\infty$:\newline
+  \lean{briefs/HilbertUnphysicality/HilbertUnphysicality/KatoRellich.lean}\newline
+  (module \lean{HilbertUnphysicality.KatoRellich}). It imports the main file and two new
+  \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/KatoRellich.lean}\newline (TauCeti's
+  Kato--Rellich theorem, behind a private import),\newline
+  \lean{ForMathlib/Analysis/Fourier/LpSpace.lean} (the Fourier transform on $L^2$ of integrable
+  functions, and the $L^1$ bound on $\mathbb{R}$).\newline
+  It is kept out of the comparator lane: see ``Differences''.
 \end{itemize}
 
 \paragraph{Setting.} Theorem~5 says that the Hilbert-space formulation QSTO:H is inconsistent
@@ -287,6 +296,32 @@ $e^{-itH}$ solves the Schr\"odinger equation exactly on $\mathcal{D}(H) \ne L^2(
 \toprule
 Brief & Lean \\
 \midrule
+\multicolumn{2}{@{}l}{\emph{Sec.~5, potentials in $L^2 + L^\infty$ ($|V| \le |W| + C$ a.e.,
+  $W \in L^2$)}} \\
+on $L^2(\mathbb{R})$, $\mathcal{F}^{-1}f$ is the Fourier integral for integrable $f$ &
+  \lean{Lp.fourierInv_coeFn_eq_of_integrable}, \lean{Lp.ae_norm_fourierInv_le_of_integrable} \\
+$\int|f| \le \varepsilon\|\xi^2 f\|_2 + C_\varepsilon\|f\|_2$ &
+  \lean{Lp.integral_norm_le_of_ae_eq_sq_mul}, \lean{Lp.exists_integral_norm_le_of_ae_eq_sq_mul} \\
+$|\psi| \le \varepsilon\|H_0\psi\| + C_\varepsilon\|\psi\|$ a.e.\ on $\mathcal{D}(H_0)$ &
+  \lean{exists_ae_norm_le_freeHamiltonian} \\
+$\mathcal{D}(H_0) \subseteq \mathcal{D}(V)$, $\|V\psi\| \le a\|\psi\| + \tfrac12\|H_0\psi\|$ &
+  \lean{exists_norm_mulOp_le_freeHamiltonian} \\
+Kato--Rellich: $H = H_0 + V$ is self-adjoint, $\mathcal{D}(H) = \mathcal{D}(H_0)$ &
+  \lean{isSelfAdjoint_schrodingerHamiltonian_of_memLp},
+  \lean{domain_schrodingerHamiltonian_of_memLp} (from
+  \lean{IsSelfAdjoint.add_of_relativeBound}) \\
+$e^{-itH}$ solves the Schr\"odinger equation exactly on $\mathcal{D}(H) \ne L^2(\mathbb{R})$ &
+  \lean{exists_lt_norm_schrodingerHamiltonian_of_memLp},
+  \lean{memLp_schrodinger_only_on_domain} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
 \multicolumn{2}{@{}l}{\emph{Sec.~5, commutator relations}} \\
 no bounded $X$, $P$ with $[X,P] = i\hbar$ & \lean{not_exists_ccr_bounded} (from
   \lean{commutator_ne_algebraMap}) \\
@@ -386,8 +421,8 @@ all of the above & \lean{pointwise_values} \\
   unbounded self-adjoint operators), whose orbits are differentiable exactly when they start in
   $\mathcal{D}(H)$ (\lean{differentiableAt_schrodingerPropagator_iff}, new in
   \lean{ForPhyslib}). This covers every potential $V$ for which $P^2/2m + V$ is self-adjoint;
-  that it is, is proved here for $V = 0$, for bounded measurable $V$, and for the oscillator,
-  $V(x) = x^2/2$. The evolution
+  that it is, is proved here for $V = 0$, for bounded measurable $V$, for $V \in L^2 + L^\infty$,
+  and for the oscillator, $V(x) = x^2/2$. The evolution
   is also built explicitly, and
   shown to be the one of Stone's theorem, for the harmonic oscillator in the number
   basis, $H = N$ on $\ell^2(\mathbb{N})$, in units with $\hbar\omega = 1$ and without the
@@ -425,12 +460,35 @@ all of the above & \lean{pointwise_values} \\
   (\lean{isSelfAdjoint_schrodingerHamiltonian}). This is the bounded case of the Kato--Rellich
   theorem, proved directly: multiplication by $V$ is defined on all of $L^2$ and symmetric, and
   a self-adjoint operator plus an everywhere defined symmetric one is self-adjoint
-  (\lean{IsSelfAdjoint.add_of_domain_eq_top}, new in \lean{ForMathlib}). TauCeti has the full
-  Kato--Rellich theorem (\lean{IsSelfAdjoint.add_of_isRelativelyBounded}), but its module
-  cannot be imported together with Physlib's unbounded operators, which Stone's theorem here
-  uses: both declare \lean{LinearPMap.adjoint_smul}. Since $H_0$ is unbounded on its domain
+  (\lean{IsSelfAdjoint.add_of_domain_eq_top}, new in \lean{ForMathlib}). Since $H_0$ is unbounded on its domain
   (\lean{exists_lt_norm_freeHamiltonian}), so is $H_0 + V$, and the remark holds for it
-  (\lean{bounded_schrodinger_only_on_domain}). For the self-adjointness of $P^2/2m + V$ with
+  (\lean{bounded_schrodinger_only_on_domain}).
+
+  More generally, let $|V| \le |W| + C$ almost everywhere with $W \in L^2$, that is
+  $V \in L^2 + L^\infty$; this includes singular potentials such as $|x|^{-\alpha}$ near $0$ for
+  $\alpha < \tfrac12$. Then $H_0 + V$ is self-adjoint on $\mathcal{D}(H_0)$
+  (\lean{isSelfAdjoint_schrodingerHamiltonian_of_memLp}), by the Kato--Rellich theorem. The
+  relative bound comes from the one-dimensional Sobolev bound: for $\psi \in \mathcal{D}(H_0)$,
+  $f = \mathcal{F}\psi$ and $\xi^2 f$ are in $L^2$, so by Cauchy--Schwarz with
+  $(\lambda + \xi^2)^{-1} \in L^2$, $\int|f| \le \sqrt{\pi/\lambda}\,(\lambda\|f\|_2 +
+  \|\xi^2 f\|_2)$ for $\lambda \ge 1$ (\lean{Lp.integral_norm_le_of_ae_eq_sq_mul}). Mathlib's
+  $L^2$ Fourier transform is defined by extension from Schwartz functions; that on an
+  integrable $f$ the inverse transform is the Fourier integral is new
+  (\lean{Lp.fourierInv_coeFn_eq_of_integrable}, through tempered distributions and the
+  uniqueness of distributions given by locally integrable functions). Hence
+  $|\psi| \le \int|f| \le \varepsilon\|H_0\psi\| + C_\varepsilon\|\psi\|$ almost everywhere,
+  and $\|V\psi\| \le \|W\|_2\,\|\psi\|_\infty + C\|\psi\| \le a\|\psi\| + \tfrac12\|H_0\psi\|$.
+  The remark of Sec.~5 follows as for bounded $V$ (\lean{memLp_schrodinger_only_on_domain}).
+
+  TauCeti has the Kato--Rellich theorem (\lean{IsSelfAdjoint.add_of_isRelativelyBounded}), but
+  its module cannot be imported together with Physlib's unbounded operators, which Stone's
+  theorem here uses: both declare \lean{LinearPMap.adjoint_smul}. The theorem is reached through
+  \lean{ForMathlib/Analysis/InnerProductSpace/KatoRellich.lean}, which restates it with
+  Mathlib's notions only (\lean{IsSelfAdjoint.add_of_relativeBound}) and imports TauCeti
+  privately; modules importing it do not load TauCeti. Files that load private imports, such as
+  non-module files and the exporter of \texttt{lake comparator}, still see the clash, so these
+  results are in the separate module \lean{HilbertUnphysicality.KatoRellich}, which the
+  comparator lane does not import. For the self-adjointness of $P^2/2m + V$ with
   other potentials, see the open problems. For the potential part, $V(y) = y^2$ and the
   state $\phi = U\psi$ of Proposition~3 are used: $\phi \in L^2$, but $V\phi \notin L^2$; for
   $V(y) = y$ this is \lean{frameUnitary_gaussState_not_mem}.

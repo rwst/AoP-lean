@@ -155,6 +155,10 @@ Sec. 5, bounded potentials (on `L²(ℝ)`, `V` measurable with `|V| ≤ C` a.e.)
 * `bounded_schrodinger_only_on_domain`  the remark of Sec. 5 for `H₀ + V`: `e^{-itH}` solves the
   Schrödinger equation exactly on `D(H₀) ≠ L²(ℝ)`.
 
+For potentials in `L² + L^∞`, by the Kato–Rellich theorem, see the module
+`HilbertUnphysicality.KatoRellich`. It is separate because TauCeti's Kato–Rellich theorem is
+reached through a private import, which the comparator's exporter cannot load next to Physlib.
+
 Sec. 5, point-wise values (on `L²(ℝ)`):
 * `exists_representative_apply_eq`, `exists_representatives_ne`  a vector `ψ` of `L²(ℝ)` has
   representatives with any prescribed value at any point, so two of them differ there
