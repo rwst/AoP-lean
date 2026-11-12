@@ -33,7 +33,9 @@ For the reading as the oscillator, see the module `InconsistentConvergence.Oscil
 onto the Schwartz space `𝓢(ℝ)`, with its topology. There `eʲ` has no limit in `𝓢(ℝ)`.
 
 For the operators, see the module `InconsistentConvergence.NumberOperator`: the number operator
-`N = a† a` is self-adjoint on its maximal domain, and `⟨x|N|x⟩ = numberExp x` there.
+`N = a† a` is self-adjoint on its maximal domain, and `⟨x|N|x⟩ = numberExp x` there. For `S(ℕ)` as
+a topological space, see the module `InconsistentConvergence.SchwartzSequences`: there `eʲ` and
+the `|j⟩` have no limit in `S(ℕ)`, and `S(ℕ) ≃ 𝓢(ℝ)` as topological vector spaces.
 -/
 public import Mathlib.Analysis.Normed.Lp.lpSpace
 

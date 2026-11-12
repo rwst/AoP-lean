@@ -26,7 +26,8 @@
 
 \noindent
 Open problems raised by the technical brief in this directory, and by its Lean formalization
-(see \lean{formalization-log.tex}).
+(see \lean{formalization-log.tex}). Items marked \emph{research} are open research questions,
+not needed to check the brief.
 
 \section*{From the brief}
 \begin{enumerate}
@@ -40,19 +41,10 @@ Open problems raised by the technical brief in this directory, and by its Lean f
   the Schwartz topology, would not allow this kind of convergence.'' That $\braket{N}$, and
   expectations of polynomial observables in general, are continuous on $S(\mathbb{N})$ is not
   proved. (Brief, Sec.~3, last paragraph.)
-\item \textbf{A criterion of physical convergence.} The brief concludes that the $\ell^2$ topology
+\item \textbf{A criterion of physical convergence.} \emph{Research.} The brief concludes that the $\ell^2$ topology
   ``is too weak to take into account all conditions for a meaningful criterion of physical
   convergence''. Which topology is the right one, and whether it is the Schwartz topology, is
   left open. (Brief, Sec.~4.)
-\end{enumerate}
-
-\section*{From the formalization}
-\begin{enumerate}
-\item \textbf{The space $S(\mathbb{N})$.} The Schwartz sequence space is not constructed as a
-  topological space. It is described by its seminorms and identified with
-  $\mathcal{S}(\mathbb{R})$ through the Hermite basis, where $Ue^j$ has no limit; the sequences
-  $b^j$ are not treated. (Log, ``Differences from the brief'', ``No limit in
-  $S(\mathbb{N})$''.)
 \end{enumerate}
 
 \end{document}

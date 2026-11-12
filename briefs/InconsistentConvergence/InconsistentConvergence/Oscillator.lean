@@ -23,8 +23,10 @@ basis of `L²(ℝ)` (`TauCeti.hermiteHilbertBasis`).
 * Under `U`, `S(ℕ)`, the sequences with `sup_n (n + 1)^K |xₙ| < ∞` for every `K`, becomes the
   Schwartz space: `U x` is a Schwartz function iff `x` is rapidly decreasing
   (`exists_schwartz_iff`), and Schwartz functions converge in `𝓢(ℝ)` iff their coefficient
-  sequences converge in every seminorm `sup_n (n + 1)^K |xₙ|` (`tendsto_schwartz_iff`). The
-  space `S(ℕ)` is described by these seminorms; it is not constructed as a topological space.
+  sequences converge in every seminorm `sup_n (n + 1)^K |xₙ|` (`tendsto_schwartz_iff`). As a
+  topological space, `S(ℕ)` is constructed in the module
+  `InconsistentConvergence.SchwartzSequences`, where `U` becomes a continuous linear equivalence
+  `S(ℕ) ≃ 𝓢(ℝ)`.
 * So the states of the brief are Schwartz functions, `U eʲ ∈ 𝓢(ℝ)` (`exists_schwartz_e`), and
   `U eʲ → ψ₀` in `L²(ℝ)` (`tendsto_hermiteUnitary_e`), but the Schwartz functions `U eʲ` have no
   limit in `𝓢(ℝ)` (`not_tendsto_schwartz_e`).

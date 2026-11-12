@@ -75,6 +75,14 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \end{itemize}
   The \lean{ForMathlib} files provide the diagonal operators on $\ell^2$, self-adjoint on their
   maximal domains, and the composition of unbounded operators on its natural domain.
+\item Fourth file, for the Schwartz sequence space, in the same subdirectory and separate from
+  the main file for the same reason: module \lean{InconsistentConvergence.SchwartzSequences}.
+  Its imports:
+  \begin{itemize}
+  \item \lean{InconsistentConvergence.Oscillator};
+  \item \lean{ForMathlib.Analysis.Normed.Lp.SchwartzSeq}.
+  \end{itemize}
+  The \lean{ForMathlib} file constructs $S(\mathbb{N})$ as a topological vector space.
 \end{itemize}
 
 \paragraph{Setting.} $H = \ell^2(\mathbb{N})$ (\texttt{lp (fun \_ : }$\mathbb{N}$\texttt{ => }$\mathbb{C}$\texttt{) 2}), with
@@ -84,8 +92,9 @@ $\ket{n} = \delta_n$ the oscillator eigenstates and
 \]
 In the oscillator file, $U$ is the unitary $\ell^2(\mathbb{N}) \to L^2(\mathbb{R})$ of the
 Hermite basis (\lean{TauCeti.hermiteHilbertBasis}), with $U\ket{n} = \psi_n$, the $n$-th
-Hermite function ($m = \omega = \hbar = 1$). $S(\mathbb{N})$ is described by its seminorms
-$\sup_n (n+1)^K |x_n|$, $K \in \mathbb{N}$.
+Hermite function ($m = \omega = \hbar = 1$). The oscillator file describes $S(\mathbb{N})$ by the
+seminorms $\sup_n (n+1)^K |x_n|$, $K \in \mathbb{N}$; the fourth file constructs it as a
+topological vector space, with the brief's seminorms.
 
 \paragraph{Results.}
 \begin{center}
@@ -150,17 +159,42 @@ eq.~(4) for the operator & \lean{inner_numberOp_e}: $e^j \in D(N)$ and
 \end{tabularx}
 \end{center}
 
+\paragraph{Results: the Schwartz sequence space.} In the fourth file, $S(\mathbb{N})$ is the
+type \lean{SchwartzSeq} of sequences with $((n+1)^k x_n)_n \in \ell^2$ for every $k$, with the
+topology of the seminorms $\|((n+1)^k x_n)_n\|$.
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+$S(\mathbb{N}) \subset \ell^2$, with the topology of its seminorms
+  & \lean{SchwartzSeq.withSeminorms}; the inclusion into $\ell^2$ is continuous
+  (\lean{SchwartzSeq.continuous_toLp}) \\
+Prop.~1: $e^j \to a$ in $\ell^2$, but $e^j$ does not converge in $S(\mathbb{N})$
+  & \lean{tendsto_toLp_eS}, \lean{not_tendsto_eS}: $\|((n+1)\,e^j_n)_n\| \ge \sqrt{j}$
+  (\lean{sqrt_le_seminorm_eS}) \\
+each $b^j$ is in $S(\mathbb{N})$, but the sequence has no limit in $S(\mathbb{N})$
+  & \lean{levelS}, \lean{not_tendsto_levelS} \\
+$S(\mathbb{N})$ is the Schwartz space of the oscillator & \lean{hermiteSchwartzEquiv}:
+  $S(\mathbb{N}) \cong \mathcal{S}(\mathbb{R})$ as topological vector spaces, given by $U$
+  (\lean{toLp_hermiteSchwartzEquiv}), with $\ket{n} \mapsto \psi_n$
+  (\lean{toLp_hermiteSchwartzEquiv_levelS}) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item Indexing. Proposition~1 indexes sequences from $1$, with the ground term at $i = 1$. The
   formalization indexes from $0$, matching the oscillator of Section~3. The divergence is the
   same; with the brief's indexing the sum is $(j-1)/j + j$ instead of $j$.
 \item No limit in $S(\mathbb{N})$. In the main file, what is proved is that the seminorm
-  $\sum_n n^2 |x_n|^2$ is unbounded along $e^j$, which is the brief's argument. The Schwartz
-  sequence space $S(\mathbb{N})$ is not constructed as a topological space. The oscillator
-  file describes it by its seminorms $\sup_n (n+1)^K |x_n|$, identifies it with
-  $\mathcal{S}(\mathbb{R})$ through $U$, and proves that $Ue^j$ has no limit in
-  $\mathcal{S}(\mathbb{R})$.
+  $\sum_n n^2 |x_n|^2$ is unbounded along $e^j$, which is the brief's argument. That $e^j$ has
+  no limit in the topology of $S(\mathbb{N})$ is proved in the fourth file.
+\item Seminorms of $S(\mathbb{N})$. The brief's seminorms $\sum_i |i^k x_i|^2$, with $i \ge 1$,
+  are the squares of $\|((n+1)^k x_n)_n\|$ with indices from $0$. The oscillator file uses the
+  seminorms $\sup_n (n+1)^K |x_n|$, which define the same space and the same topology
+  (\lean{SchwartzSeq.mem_submodule_iff}, \lean{SchwartzSeq.tendsto_iff}).
 \item In the main file, $\langle N\rangle$ is defined on all of $\ell^2$ as the weighted sum
   $\sum_n n\,|x_n|^2$, which has a default value outside the domain of $N$. The discontinuity
   is still meaningful, because every $e^j$ is finitely supported. The operator file constructs
