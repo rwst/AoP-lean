@@ -45,12 +45,6 @@ the brief.
   better reflect the physical requirements''. A replacement for QSTO:H that satisfies [B]COBS,
   [B]WDQ and [B]STDIST is not given here; one candidate is the brief ``Physical vector spaces
   for quantum mechanics''. (Brief, Sec.~6.)
-\item \textbf{Classical cutoffs.} For [B]COBS and [B]WDQ the brief says that in classical
-  mechanics ``one can, in principle, put a cutoff on all variables and work only with joint
-  probability distributions in that compact region'', which ``bound all moments'', while
-  ``Quantum mechanics does not allow that''. Neither half is made precise. For the quantum half,
-  one reading is that a nonzero wave function and its Fourier transform cannot both have
-  compact support. (Brief, Sec.~4, proof of Theorem~5.)
 \end{enumerate}
 
 \noindent
@@ -80,7 +74,11 @@ The former item ``Schwartz spaces'', on the closing remark of the proof of Theor
 for all $n, m \ge 1$ a unitary $L^2(\mathbb{R}^n) \to L^2(\mathbb{R}^m)$ carries the QSTO:H
 model and restricts to an isomorphism of topological vector spaces
 $\mathcal{S}(\mathbb{R}^n) \cong \mathcal{S}(\mathbb{R}^m)$ (\lean{schwartz_stdist}, in a
-module of its own as well). No open problem now blocks verification.
+module of its own as well). The former item ``Classical cutoffs'', on the remarks of the proof
+of Theorem~5 that classical mechanics allows a cutoff on all variables and quantum mechanics
+does not, is closed in the reading of the next section (\lean{classical_cutoff_cobs},
+\lean{classical_cutoff_wdq}, \lean{quantum_no_cutoff}, in a module of its own too). No open
+problem now blocks verification.
 
 \section*{Precise readings}
 
@@ -169,6 +167,30 @@ for [B]WDQ, and two systems with different numbers of continuous degrees of free
   topological vector spaces (\lean{schwartz_stdist}, checked). The weaker reading, that
   $\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ are isomorphic as topological
   vector spaces, follows (\lean{nonempty_schwartzEquiv}).
+\end{itemize}
+
+\paragraph{Classical cutoffs.} The proof of Theorem~5 says that in classical mechanics ``one
+can, in principle, put a cutoff on all variables and work only with joint probability
+distributions in that compact region'', and, for [B]WDQ, with ``joint probability distributions
+with compact support, which bound all moments'', while ``Quantum mechanics does not allow
+that''.
+\begin{itemize}
+\item \emph{Classical states with a cutoff} are the probability measures on the phase space
+  $\mathbb{R}^n \times \mathbb{R}^n$ that give no mass to the complement of a fixed compact
+  set $K$, with the topology of weak convergence. \emph{Observables} are the continuous real
+  functions on phase space, the moments of positions and momenta among them.
+\item Claim, [B]COBS: every observable has a finite expectation, and the expectation is
+  continuous on these states (\lean{classical_cutoff_cobs}, checked).
+\item Claim, [B]WDQ: a \emph{change of frame} is a continuous map $\varphi$ of phase space. It
+  maps a state with a cutoff to one concentrated on the compact set $\varphi(K)$, for which every
+  observable is again integrable, so all variances stay finite (\lean{classical_cutoff_wdq},
+  checked).
+\item ``Quantum mechanics does not allow that'' is read, for one degree of freedom, as: no
+  nonzero wave function $\psi \in L^2(\mathbb{R})$ vanishes outside a bounded set while its
+  momentum wave function $\mathcal{F}\psi$ (an integral, as $\psi$ is then integrable) also
+  vanishes outside a bounded set (\lean{quantum_no_cutoff}, checked). A cutoff on position
+  alone is allowed: smooth compactly supported states have finite moments of all orders in
+  position and momentum.
 \end{itemize}
 
 \end{document}

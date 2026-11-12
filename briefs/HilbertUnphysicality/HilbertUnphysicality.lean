@@ -72,7 +72,9 @@ Theorem 5:
 
 For the last sentence of the proof of Theorem 5, that Schwartz spaces present the same problem,
 see the module `HilbertUnphysicality.SchwartzSpaces`: the unitary can be chosen to restrict to
-an isomorphism `𝓢(ℝⁿ⁺¹) ≃ 𝓢(ℝᵐ⁺¹)` of topological vector spaces.
+an isomorphism `𝓢(ℝⁿ⁺¹) ≃ 𝓢(ℝᵐ⁺¹)` of topological vector spaces. For the remarks that classical
+mechanics allows a cutoff on all variables and quantum mechanics does not, see the module
+`HilbertUnphysicality.ClassicalCutoffs`.
 
 Sec. 5, the domain of the Schrödinger equation (an additional remark, not part of Theorem 5):
 * `domain_numberOp_ne_top`, `harmonicState_not_mem_numberDomain`  `D(N) ≠ ℓ²`, by

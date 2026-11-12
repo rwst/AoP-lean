@@ -129,6 +129,18 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{TauCeti/Analysis/SpecialFunctions/Gaussian/Schwartz.lean},\newline
   \lean{TauCeti/Analysis/InnerProductSpace/Parseval.lean}.\newline
   It is kept out of the comparator lane, which stays unchanged.
+\item Fifth file, for classical cutoffs:\newline
+  \lean{briefs/HilbertUnphysicality/HilbertUnphysicality/ClassicalCutoffs.lean}\newline
+  (module \lean{HilbertUnphysicality.ClassicalCutoffs}). It does not import the main file. It
+  imports two new \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/MeasureTheory/Measure/ProbabilityMeasure/CompactSupport.lean}\newline (measures
+  concentrated on a compact set: integrability, continuity of expectations, images),\newline
+  \lean{ForMathlib/Analysis/Fourier/PaleyWiener.lean} (a function and its Fourier transform
+  cannot both have bounded support),\newline
+  the second with the TauCeti file
+  \lean{TauCeti/Analysis/Fourier/SineSeries.lean} (uniqueness of Fourier coefficients on an
+  interval).\newline
+  It is kept out of the comparator lane, which stays unchanged.
 \end{itemize}
 
 \paragraph{Setting.} Theorem~5 says that three physical conditions are not guaranteed over
@@ -141,7 +153,9 @@ self-adjoint Hamiltonian and in detail for the harmonic oscillator, in the numbe
 position space, and for the free particle in position space, and so are the
 ones on commutator relations, for position and momentum on $L^2(\mathbb{R})$, and on
 point-wise values, in $L^2(\mathbb{R})$ (see ``Differences''). The closing remark of the proof
-of Theorem~5, that Schwartz spaces present the same problem, is checked as well.
+of Theorem~5, that Schwartz spaces present the same problem, is checked as well, and so are
+its remarks that classical mechanics allows a cutoff on all variables and quantum mechanics
+does not, in the readings of the open problems.
 
 \paragraph{Results.}
 \begin{center}
@@ -259,6 +273,31 @@ a unitary $L^2(\mathbb{R}^{n+1}) \to L^2(\mathbb{R}^{m+1})$ that restricts to
   \lean{SchwartzMap.exists_unitary_schwartzEquiv} \\
 it carries the QSTO:H model, so ``Schwartz spaces present the same problem'' &
   \lean{schwartz_stdist}, \lean{nonempty_schwartzEquiv} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Theorem~5, proof: classical cutoffs}} \\
+a continuous function is integrable for a finite measure concentrated on a compact set &
+  \lean{MeasureTheory.integrable_of_isCompact} \\
+on the probability measures concentrated on a compact set, expectations are continuous for
+  weak convergence & \lean{MeasureTheory.ProbabilityMeasure.continuousOn_integral_of_isCompact} \\
+a continuous map keeps a measure concentrated on a compact set &
+  \lean{MeasureTheory.Measure.map_compl_image_eq_zero} \\
+{[B]COBS}: with a cutoff on all variables, expectations are finite and continuous &
+  \lean{classical_cutoff_cobs} \\
+{[B]WDQ}: changes of frame keep the cutoff, ``which bound all moments'' &
+  \lean{classical_cutoff_wdq} \\
+if $f \in L^2$ vanishes outside a bounded interval and $\mathcal{F}f$ vanishes on a nonempty
+  open set, then $f = 0$ & \lean{Real.ae_eq_zero_of_fourier_eqOn_zero},
+  \lean{Real.ae_eq_zero_of_fourier_eq_zero_of_lt_abs} \\
+``Quantum mechanics does not allow that'': no nonzero state has a cutoff on position and
+  momentum & \lean{quantum_no_cutoff} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -499,8 +538,7 @@ all of the above & \lean{pointwise_values} \\
   entropy is proved for any unitary between complex Hilbert spaces (\lean{carriesQSTO}).
   Rays are elements of \lean{Projectivization}; density operators and the entropy are those
   of \lean{ForPhyslib} (positive, trace class, trace one; entropy in $[0,\infty]$);
-  self-adjoint operators are partially defined (\lean{LinearPMap}). The closing remark on
-  classical cutoffs is not formalized.
+  self-adjoint operators are partially defined (\lean{LinearPMap}).
 \item \emph{Theorem~5, Schwartz spaces.} ``Schwartz spaces present the same problem'' is read
   in its strongest form: for all $n, m \ge 1$ there is a unitary $U\colon L^2(\mathbb{R}^n)
   \to L^2(\mathbb{R}^m)$ that carries the QSTO:H model and maps $\mathcal{S}(\mathbb{R}^n)$
@@ -517,6 +555,23 @@ all of the above & \lean{pointwise_values} \\
   $h_\alpha \mapsto h_{\sigma(\alpha)}$, by a bijection $\sigma\colon \mathbb{N}^n \to
   \mathbb{N}^m$ built from iterated Cantor pairings, for which $1 + |\sigma(\alpha)|$ and
   $1 + |\alpha|$ are polynomially bounded by each other.
+\item \emph{Theorem~5, classical cutoffs.} The brief contrasts [B]COBS and [B]WDQ with
+  classical mechanics, where ``one can, in principle, put a cutoff on all variables'' and work
+  with ``joint probability distributions with compact support, which bound all moments'', while
+  ``Quantum mechanics does not allow that''. Classically the states are read as the probability
+  measures on phase space $\mathbb{R}^n \times \mathbb{R}^n$ concentrated on a compact set
+  $K$, with the topology of weak convergence. Every continuous observable then has a finite
+  expectation, continuous in the state (\lean{classical_cutoff_cobs}): it agrees on $K$ with a
+  bounded continuous function, obtained by clamping. A continuous change of frame $\varphi$
+  maps such a state to one concentrated on the compact set $\varphi(K)$, so all moments stay
+  finite (\lean{classical_cutoff_wdq}). In quantum mechanics a cutoff on all variables cuts off
+  position and momentum, and the only such state is zero (\lean{quantum_no_cutoff}, for one
+  degree of freedom): if $\psi \in L^2(\mathbb{R})$ vanishes outside $(a, b]$, then
+  $G(z) = \int_a^b e^{-2\pi i x z} \psi(x)\,dx$ is entire and agrees with $\mathcal{F}\psi$ on
+  $\mathbb{R}$; if $\mathcal{F}\psi$ also vanishes outside a bounded set, the identity theorem
+  gives $G = 0$, so all Fourier coefficients of $\psi$ on $[a, b]$ vanish, and $\psi = 0$ by
+  Parseval's identity. A cutoff on position alone is allowed, and is not formalized: smooth
+  compactly supported states have finite moments of all orders in position and momentum.
 \item \emph{Sec.~5, the domain of the Schr\"odinger equation.} The brief says that the
   equation is valid only on $\mathcal{D}(H)$. This is read dynamically: the evolution
   $e^{-itH}$ is defined on all of $\mathcal{H}$, but its orbit $t \mapsto e^{-itH}\psi$
@@ -677,6 +732,10 @@ all of the above & \lean{pointwise_values} \\
   of the previous version, that they ``should not have the same mathematical
   representation'', was dropped, but the proof of Theorem~5 still concludes that they have
   ``the same mathematical representation''. The formalization keeps that minimum form.
+\item The remarks on classical cutoffs in the proof of Theorem~5 are informal: neither the
+  classical states with a cutoff nor the sense in which quantum mechanics does not allow one
+  is specified. The formalization proves both in the readings of the open problems (see
+  ``Differences'').
 \end{itemize}
 
 \end{document}
