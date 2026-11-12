@@ -70,6 +70,10 @@ Theorem 5:
 * `theorem5`  the three conjuncts above, for the oscillator, one spatial degree of freedom, and
   any two numbers of continuous degrees of freedom.
 
+For the last sentence of the proof of Theorem 5, that Schwartz spaces present the same problem,
+see the module `HilbertUnphysicality.SchwartzSpaces`: the unitary can be chosen to restrict to
+an isomorphism `𝓢(ℝⁿ⁺¹) ≃ 𝓢(ℝᵐ⁺¹)` of topological vector spaces.
+
 Sec. 5, the domain of the Schrödinger equation (an additional remark, not part of Theorem 5):
 * `domain_numberOp_ne_top`, `harmonicState_not_mem_numberDomain`  `D(N) ≠ ℓ²`, by
   Hellinger–Toeplitz and by the explicit state `xₙ = 1/n`;

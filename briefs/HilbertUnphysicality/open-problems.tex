@@ -45,12 +45,6 @@ the brief.
   better reflect the physical requirements''. A replacement for QSTO:H that satisfies [B]COBS,
   [B]WDQ and [B]STDIST is not given here; one candidate is the brief ``Physical vector spaces
   for quantum mechanics''. (Brief, Sec.~6.)
-\item \textbf{Schwartz spaces.} ``This third failure is not related to the problems of
-  continuity, as Schwartz spaces present the same problem.'' Presumably this means that
-  $\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ are isomorphic as topological
-  vector spaces, as both are isomorphic to the space $s$ of rapidly decreasing sequences
-  through the Hermite functions. This is not shown, and it is not said which structure the
-  isomorphism has to carry. (Brief, Sec.~4, proof of Theorem~5, last paragraph.)
 \item \textbf{Classical cutoffs.} For [B]COBS and [B]WDQ the brief says that in classical
   mechanics ``one can, in principle, put a cutoff on all variables and work only with joint
   probability distributions in that compact region'', which ``bound all moments'', while
@@ -80,7 +74,13 @@ $\mathcal{D}(H_0)$ (Kato--Rellich, \lean{memLp_schrodinger_only_on_domain}), and
 such $H$.
 These results are in modules of their own, outside the comparator lane, because TauCeti's
 theorems are reached through a private import: TauCeti and Physlib both declare
-\lean{LinearPMap.adjoint_smul}. No open problem now blocks verification.
+\lean{LinearPMap.adjoint_smul}.
+The former item ``Schwartz spaces'', on the closing remark of the proof of Theorem~5 that
+``Schwartz spaces present the same problem'', is closed in the reading of the next section:
+for all $n, m \ge 1$ a unitary $L^2(\mathbb{R}^n) \to L^2(\mathbb{R}^m)$ carries the QSTO:H
+model and restricts to an isomorphism of topological vector spaces
+$\mathcal{S}(\mathbb{R}^n) \cong \mathcal{S}(\mathbb{R}^m)$ (\lean{schwartz_stdist}, in a
+module of its own as well). No open problem now blocks verification.
 
 \section*{Precise readings}
 
@@ -162,6 +162,13 @@ for [B]WDQ, and two systems with different numbers of continuous degrees of free
 \item Claim to be proved: for all $n, m \ge 1$ there is one (Proposition~4;
   \lean{L2_euclidean_iso}), and it carries the QSTO:H structure (\lean{carriesQSTO},
   \lean{exists_carriesQSTO}). Both are checked.
+\item ``Schwartz spaces present the same problem'' is read as: the same holds for the rigged
+  Hilbert spaces $\mathcal{S}(\mathbb{R}^n) \subseteq \mathcal{H}_n$. For all $n, m \ge 1$
+  there is a unitary $\mathcal{H}_n \to \mathcal{H}_m$ that carries the QSTO:H structure and
+  maps $\mathcal{S}(\mathbb{R}^n)$ onto $\mathcal{S}(\mathbb{R}^m)$, as an isomorphism of
+  topological vector spaces (\lean{schwartz_stdist}, checked). The weaker reading, that
+  $\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ are isomorphic as topological
+  vector spaces, follows (\lean{nonempty_schwartzEquiv}).
 \end{itemize}
 
 \end{document}

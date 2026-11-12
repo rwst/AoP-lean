@@ -109,6 +109,26 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   import),\newline
   \lean{ForMathlib/MeasureTheory/Function/L2Conj.lean} (complex conjugation on $L^2$).\newline
   It is kept out of the comparator lane for the same reason.
+\item Fourth file, for Schwartz spaces:\newline
+  \lean{briefs/HilbertUnphysicality/HilbertUnphysicality/SchwartzSpaces.lean}\newline
+  (module \lean{HilbertUnphysicality.SchwartzSpaces}). It imports the main file and five new
+  \lean{ForMathlib} files, in \lean{ForMathlib/Analysis/Distribution/SchwartzSpace/}:\newline
+  \lean{Hermite.lean} (the Hermite functions $h_\alpha$ on $\mathbb{R}^n$ as Schwartz
+  functions, their Hilbert basis of $L^2(\mathbb{R}^n)$ and the ladder relations for the
+  coefficients),\newline
+  \lean{HermiteCoeff.lean} (the coefficients of a Schwartz function decay rapidly),\newline
+  \lean{HermiteSeminorm.lean} (the Schwartz seminorms are bounded by the coefficients),\newline
+  \lean{HermiteSeries.lean} (rapidly decreasing coefficients sum to a Schwartz
+  function),\newline
+  \lean{HermiteEquiv.lean} (the isomorphism $\mathcal{S}(\mathbb{R}^n) \cong
+  \mathcal{S}(\mathbb{R}^m)$),\newline
+  with the existing \lean{ForMathlib/Analysis/Distribution/SchwartzSpace/SupNorm.lean} (a
+  Sobolev bound for the values) and four TauCeti files:\newline
+  \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/Pi/Basis.lean},\newline
+  \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/Ladder.lean},\newline
+  \lean{TauCeti/Analysis/SpecialFunctions/Gaussian/Schwartz.lean},\newline
+  \lean{TauCeti/Analysis/InnerProductSpace/Parseval.lean}.\newline
+  It is kept out of the comparator lane, which stays unchanged.
 \end{itemize}
 
 \paragraph{Setting.} Theorem~5 says that three physical conditions are not guaranteed over
@@ -120,7 +140,8 @@ Sec.~5, the one on the domain of the Schr\"odinger equation is checked too, for 
 self-adjoint Hamiltonian and in detail for the harmonic oscillator, in the number basis and in
 position space, and for the free particle in position space, and so are the
 ones on commutator relations, for position and momentum on $L^2(\mathbb{R})$, and on
-point-wise values, in $L^2(\mathbb{R})$ (see ``Differences'').
+point-wise values, in $L^2(\mathbb{R})$ (see ``Differences''). The closing remark of the proof
+of Theorem~5, that Schwartz spaces present the same problem, is checked as well.
 
 \paragraph{Results.}
 \begin{center}
@@ -210,6 +231,34 @@ the same for every self-adjoint $H$ unbounded on its domain & \lean{schrodinger_
   \lean{differentiableAt_schrodingerPropagator_iff}) \\
 $V(x)\psi(x)$ need not be square-integrable & \lean{not_memLp_sq_mul_frameUnitary_gaussState},
   \lean{frameUnitary_gaussState_not_mem} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Theorem~5, proof, last paragraph: Schwartz spaces}} \\
+the Hermite functions $h_\alpha(x) = \prod_i \psi_{\alpha_i}(x_i)$ are Schwartz functions, and
+  a Hilbert basis of $L^2(\mathbb{R}^n)$ &
+  \lean{SchwartzMap.hermitePi}, \lean{SchwartzMap.hermitePiBasis},
+  \lean{SchwartzMap.toLp_hermitePi} \\
+ladder relations for the coefficients $c_\alpha(f) = \braket{h_\alpha|f}$ &
+  \lean{SchwartzMap.hermiteCoeff_coordMulCLM}, \lean{SchwartzMap.hermiteCoeff_coordDerivCLM} \\
+the coefficients of $f \in \mathcal{S}$ decay rapidly, with bounds by seminorms &
+  \lean{SchwartzMap.exists_hermiteNorm_le_seminorm} \\
+the seminorms of $f$ are bounded by the coefficients &
+  \lean{SchwartzMap.exists_seminorm_le_hermiteNorm} \\
+rapidly decreasing coefficients sum to a Schwartz function & \lean{SchwartzMap.hermiteSeries},
+  \lean{SchwartzMap.hermiteCoeff_hermiteSeries},
+  \lean{SchwartzMap.exists_seminorm_hermiteSeries_le} \\
+a unitary $L^2(\mathbb{R}^{n+1}) \to L^2(\mathbb{R}^{m+1})$ that restricts to
+  $\mathcal{S}(\mathbb{R}^{n+1}) \cong \mathcal{S}(\mathbb{R}^{m+1})$ &
+  \lean{SchwartzMap.exists_unitary_schwartzEquiv} \\
+it carries the QSTO:H model, so ``Schwartz spaces present the same problem'' &
+  \lean{schwartz_stdist}, \lean{nonempty_schwartzEquiv} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -450,8 +499,24 @@ all of the above & \lean{pointwise_values} \\
   entropy is proved for any unitary between complex Hilbert spaces (\lean{carriesQSTO}).
   Rays are elements of \lean{Projectivization}; density operators and the entropy are those
   of \lean{ForPhyslib} (positive, trace class, trace one; entropy in $[0,\infty]$);
-  self-adjoint operators are partially defined (\lean{LinearPMap}). The closing remarks on
-  classical cutoffs and on Schwartz spaces are not formalized.
+  self-adjoint operators are partially defined (\lean{LinearPMap}). The closing remark on
+  classical cutoffs is not formalized.
+\item \emph{Theorem~5, Schwartz spaces.} ``Schwartz spaces present the same problem'' is read
+  in its strongest form: for all $n, m \ge 1$ there is a unitary $U\colon L^2(\mathbb{R}^n)
+  \to L^2(\mathbb{R}^m)$ that carries the QSTO:H model and maps $\mathcal{S}(\mathbb{R}^n)$
+  onto $\mathcal{S}(\mathbb{R}^m)$, as an isomorphism of topological vector spaces
+  (\lean{schwartz_stdist}). So the rigged Hilbert spaces $\mathcal{S} \subseteq L^2$ do not
+  tell the systems apart either. As for [B]STDIST, $U$ does not carry the positions and
+  momenta. The proof is the Hermite characterization of $\mathcal{S}$ (the
+  $N$-representation of Reed--Simon~I, Sec.~V.3 and its appendix): $f \in L^2(\mathbb{R}^n)$ is a Schwartz function exactly when
+  $\sup_\alpha (1 + |\alpha|)^K |c_\alpha(f)| < \infty$ for all $K$, and these suprema
+  define the topology of $\mathcal{S}$. One direction uses the operator
+  $\sum_i (x_i + \partial_i)(x_i - \partial_i) + 2$, which multiplies $c_\alpha$ by
+  $2(|\alpha| + 1 + n)$, the other the Sobolev bound for the values, Parseval's identity and
+  the ladder relations. The unitary $U$ relabels the Hermite functions,
+  $h_\alpha \mapsto h_{\sigma(\alpha)}$, by a bijection $\sigma\colon \mathbb{N}^n \to
+  \mathbb{N}^m$ built from iterated Cantor pairings, for which $1 + |\sigma(\alpha)|$ and
+  $1 + |\alpha|$ are polynomially bounded by each other.
 \item \emph{Sec.~5, the domain of the Schr\"odinger equation.} The brief says that the
   equation is valid only on $\mathcal{D}(H)$. This is read dynamically: the evolution
   $e^{-itH}$ is defined on all of $\mathcal{H}$, but its orbit $t \mapsto e^{-itH}\psi$
@@ -602,7 +667,8 @@ all of the above & \lean{pointwise_values} \\
 \item Cross-references lack their label: the proof of Theorem~5 has ``This satisfies the
   conditions for 2'', ``As shown in 3'' and ``By 4'' for Propositions~2, 3 and~4.
 \item ``Schwartz spaces present the same problem'' is asserted without proof, and without
-  saying which structure on $\mathcal{S}(\mathbb{R}^n)$ is meant (see the open problems).
+  saying which structure on $\mathcal{S}(\mathbb{R}^n)$ is meant. The formalization proves it
+  in its strongest form (see ``Differences'').
 \item QSTO:H still allows any separable Hilbert space, finite-dimensional ones included. This
   does not affect Theorem~5, which only claims that the conditions are not guaranteed, that is,
   that each fails for some system.
