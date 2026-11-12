@@ -31,6 +31,9 @@ are only evaluated on finitely supported states.
 For the reading as the oscillator, see the module `InconsistentConvergence.Oscillator`: the unitary
 `ℓ²(ℕ) ≃ L²(ℝ)` of the Hermite basis sends `|n⟩` to the `n`-th oscillator eigenfunction, and `S(ℕ)`
 onto the Schwartz space `𝓢(ℝ)`, with its topology. There `eʲ` has no limit in `𝓢(ℝ)`.
+
+For the operators, see the module `InconsistentConvergence.NumberOperator`: the number operator
+`N = a† a` is self-adjoint on its maximal domain, and `⟨x|N|x⟩ = numberExp x` there.
 -/
 public import Mathlib.Analysis.Normed.Lp.lpSpace
 

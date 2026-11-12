@@ -66,6 +66,15 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   The \lean{ForMathlib} file identifies $\mathcal{S}(\mathbb{R})$, with its topology, with the
   rapidly decreasing Hermite series. It transfers the multi-index Hermite expansions on
   $\mathbb{R}^1$, in the same directory, to $\mathbb{R}$.
+\item Third file, for the operators: module \lean{InconsistentConvergence.NumberOperator}, in
+  the same subdirectory and separate from the main file for the same reason. Its imports:
+  \begin{itemize}
+  \item \lean{InconsistentConvergence};
+  \item \lean{ForMathlib.Analysis.InnerProductSpace.l2Diagonal};
+  \item \lean{ForMathlib.LinearAlgebra.LinearPMap}.
+  \end{itemize}
+  The \lean{ForMathlib} files provide the diagonal operators on $\ell^2$, self-adjoint on their
+  maximal domains, and the composition of unbounded operators on its natural domain.
 \end{itemize}
 
 \paragraph{Setting.} $H = \ell^2(\mathbb{N})$ (\texttt{lp (fun \_ : }$\mathbb{N}$\texttt{ => }$\mathbb{C}$\texttt{) 2}), with
@@ -117,6 +126,30 @@ $e^j \to \ket{0}$, but not in $S(\mathbb{N})$ & \lean{tendsto_hermiteUnitary_e}:
 \end{tabularx}
 \end{center}
 
+\paragraph{Results: the number operator.} In the operator file, $a$ and $a^\dagger$ act by
+$(ax)_n = \sqrt{n+1}\,x_{n+1}$, $(a^\dagger y)_0 = 0$ and $(a^\dagger y)_{n+1} = \sqrt{n+1}\,y_n$,
+and $N$ by $(Nx)_n = n\,x_n$, each on its maximal domain:
+$D(a) = \{x \mid (\sqrt{n}\,x_n)_n \in \ell^2\}$ and $D(N) = \{x \mid (n\,x_n)_n \in \ell^2\}$.
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+$a\ket{n+1} = \sqrt{n+1}\,\ket{n}$, $a\ket{0} = 0$, $a^\dagger\ket{n} = \sqrt{n+1}\,\ket{n+1}$
+  & \lean{annihilation_level_succ}, \lean{annihilation_level_zero}, \lean{creation_level} \\
+$a^\dagger$ is the adjoint of $a$ & \lean{adjoint_annihilation} \\
+$N$ is self-adjoint, with $N\ket{n} = n\ket{n}$ & \lean{isSelfAdjoint_numberOp},
+  \lean{numberOp_level}; domain: \lean{mem_domain_numberOp} \\
+$N = a^\dagger a$ & \lean{numberOp_eq_adjoint_compMax}, with the composition on
+  $\{x \in D(a) \mid ax \in D(a^\dagger)\}$ \\
+$\braket{x|N|x} = \sum_n n\,|x_n|^2$ & \lean{inner_numberOp}, on $D(N)$;
+  \lean{numberExp_eq_norm_sq}: $\sum_n n\,|x_n|^2 = \|ax\|^2$ on $D(a)$ \\
+eq.~(4) for the operator & \lean{inner_numberOp_e}: $e^j \in D(N)$ and
+  $\braket{e^j|N|e^j} = 1$ for $j \ge 1$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item Indexing. Proposition~1 indexes sequences from $1$, with the ground term at $i = 1$. The
@@ -128,9 +161,10 @@ $e^j \to \ket{0}$, but not in $S(\mathbb{N})$ & \lean{tendsto_hermiteUnitary_e}:
   file describes it by its seminorms $\sup_n (n+1)^K |x_n|$, identifies it with
   $\mathcal{S}(\mathbb{R})$ through $U$, and proves that $Ue^j$ has no limit in
   $\mathcal{S}(\mathbb{R})$.
-\item $\langle N\rangle$ is defined on all of $\ell^2$ as the weighted sum
+\item In the main file, $\langle N\rangle$ is defined on all of $\ell^2$ as the weighted sum
   $\sum_n n\,|x_n|^2$, which has a default value outside the domain of $N$. The discontinuity
-  is still meaningful, because every $e^j$ is finitely supported.
+  is still meaningful, because every $e^j$ is finitely supported. The operator file constructs
+  $N = a^\dagger a$ and shows that the weighted sum is $\braket{x|N|x}$ on $D(N)$.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No mathematical problems. Minor: the distance is
