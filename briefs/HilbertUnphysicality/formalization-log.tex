@@ -99,6 +99,16 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForMathlib/Analysis/Fourier/LpSpace.lean} (the Fourier transform on $L^2$ of integrable
   functions, and the $L^1$ bound on $\mathbb{R}$).\newline
   It is kept out of the comparator lane: see ``Differences''.
+\item Third file, for real potentials:\newline
+  \lean{briefs/HilbertUnphysicality/HilbertUnphysicality/RealPotential.lean}\newline
+  (module \lean{HilbertUnphysicality.RealPotential}). It imports the main file, the Fourier
+  file above, which now also has the Fourier transform of a conjugate, and two new
+  \lean{ForMathlib} files:\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/SelfAdjointExtension.lean}\newline (von
+  Neumann's theorem on self-adjoint extensions, with TauCeti's criterion behind a private
+  import),\newline
+  \lean{ForMathlib/MeasureTheory/Function/L2Conj.lean} (complex conjugation on $L^2$).\newline
+  It is kept out of the comparator lane for the same reason.
 \end{itemize}
 
 \paragraph{Setting.} Theorem~5 says that the Hilbert-space formulation QSTO:H is inconsistent
@@ -322,6 +332,36 @@ $e^{-itH}$ solves the Schr\"odinger equation exactly on $\mathcal{D}(H) \ne L^2(
 \toprule
 Brief & Lean \\
 \midrule
+\multicolumn{2}{@{}l}{\emph{Sec.~5, real potentials ($V \in L^2_{\mathrm{loc}}(U)$, $U$ open,
+  $U^c$ null)}} \\
+von Neumann: a densely defined symmetric operator commuting with a conjugation has a
+  self-adjoint extension &
+  \lean{LinearPMap.exists_isSelfAdjoint_le_of_commutesWithConj} \\
+$\mathcal{F}\bar f(\xi) = \overline{\mathcal{F}f(-\xi)}$ on $L^2(\mathbb{R})$ &
+  \lean{Lp.fourier_conjugate} \\
+$H_0 + V$ is symmetric and commutes with complex conjugation &
+  \lean{isFormalAdjoint_schrodingerHamiltonian},
+  \lean{commutesWithConj_schrodingerHamiltonian} \\
+$\mathcal{D}(H_0) \cap \mathcal{D}(V)$ is dense & \lean{dense_domain_schrodingerHamiltonian} \\
+$H_0 + V$ is unbounded on its domain &
+  \lean{exists_lt_norm_schrodingerHamiltonian_of_locallyIntegrableOn} \\
+$H_0 + V$ has a self-adjoint extension $H$ &
+  \lean{exists_isSelfAdjoint_le_schrodingerHamiltonian} \\
+for every such $H$, $e^{-itH}$ solves the Schr\"odinger equation exactly on
+  $\mathcal{D}(H) \ne L^2(\mathbb{R})$ &
+  \lean{realPotential_schrodinger_only_on_domain} \\
+the same for continuous $V$, and for $V$ continuous off $0$ &
+  \lean{continuous_schrodinger_only_on_domain},
+  \lean{continuousOn_schrodinger_only_on_domain} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
 \multicolumn{2}{@{}l}{\emph{Sec.~5, commutator relations}} \\
 no bounded $X$, $P$ with $[X,P] = i\hbar$ & \lean{not_exists_ccr_bounded} (from
   \lean{commutator_ne_algebraMap}) \\
@@ -422,7 +462,8 @@ all of the above & \lean{pointwise_values} \\
   $\mathcal{D}(H)$ (\lean{differentiableAt_schrodingerPropagator_iff}, new in
   \lean{ForPhyslib}). This covers every potential $V$ for which $P^2/2m + V$ is self-adjoint;
   that it is, is proved here for $V = 0$, for bounded measurable $V$, for $V \in L^2 + L^\infty$,
-  and for the oscillator, $V(x) = x^2/2$. The evolution
+  and for the oscillator, $V(x) = x^2/2$; for every other real potential in
+  $L^2_{\mathrm{loc}}$ off a closed null set, it has self-adjoint realizations. The evolution
   is also built explicitly, and
   shown to be the one of Stone's theorem, for the harmonic oscillator in the number
   basis, $H = N$ on $\ell^2(\mathbb{N})$, in units with $\hbar\omega = 1$ and without the
@@ -488,8 +529,38 @@ all of the above & \lean{pointwise_values} \\
   privately; modules importing it do not load TauCeti. Files that load private imports, such as
   non-module files and the exporter of \texttt{lake comparator}, still see the clash, so these
   results are in the separate module \lean{HilbertUnphysicality.KatoRellich}, which the
-  comparator lane does not import. For the self-adjointness of $P^2/2m + V$ with
-  other potentials, see the open problems. For the potential part, $V(y) = y^2$ and the
+  comparator lane does not import.
+
+  For potentials outside $L^2 + L^\infty$, such as $|x|^\beta$ with $\beta > 0$, $-x^4$ or
+  $\pm 1/x^2$, $P^2/2m + V$ is not $H_0$-bounded, and need not be self-adjoint on
+  $\mathcal{D}(H_0) \cap \mathcal{D}(V)$ nor have a unique self-adjoint extension. The brief
+  speaks of ``the'' Hamiltonian; it is read as any self-adjoint realization: a self-adjoint $H$
+  extending $H_0 + V$ on $\mathcal{D}(H_0) \cap \mathcal{D}(V)$. Every real $V$ that is
+  square integrable near each point of an open set $U$ with null complement has one
+  (\lean{exists_isSelfAdjoint_le_schrodingerHamiltonian}), and the remark holds for every one
+  (\lean{realPotential_schrodinger_only_on_domain}); this includes every continuous $V$ and
+  every measurable $V$ continuous off $0$. The domain $\mathcal{D}(H_0) \cap \mathcal{D}(V)$
+  is dense, since a vector orthogonal to it is orthogonal to every smooth function with compact
+  support in $U$, and so vanishes on $U$. The operator commutes with complex conjugation:
+  multiplication by a real $V$ does, and so does $H_0$, the Fourier transform of
+  multiplication by the even function $2\pi^2\xi^2$, because
+  $\mathcal{F}\bar f(\xi) = \overline{\mathcal{F}f(-\xi)}$ (\lean{Lp.fourier_conjugate}, new,
+  by density of Schwartz functions). By von Neumann's theorem it has a self-adjoint
+  extension; the theorem is new in \lean{ForMathlib}
+  (\lean{LinearPMap.exists_isSelfAdjoint_le_of_commutesWithConj}). The proof takes, by Zorn's
+  lemma, a maximal symmetric extension $S$ commuting with the conjugation $C$. It is closed, as
+  $S^{**}$ is another one. If $S^*k = ik$ with $k \ne 0$, then $S^*Ck = -iCk$, and $S$ extends
+  to $\mathcal{D}(S) + \mathrm{span}(k + Ck)$, which is excluded; so the deficiency spaces are
+  zero, and $S$ is self-adjoint by TauCeti's criterion, reached through a private import as
+  for Kato--Rellich (\lean{isSelfAdjoint_of_surjective_addSub}). The extension is unbounded,
+  since already $H_0 + V$ is
+  (\lean{exists_lt_norm_schrodingerHamiltonian_of_locallyIntegrableOn}): for a bump $f$ with
+  support in $U$, multiplying by $e^{itx}$ changes neither $\|f\|$ nor $\|Vf\|$, while
+  \[ \|H_0\,e^{itx}f\| \ge \tfrac12\,\bigl(t^2\|f\| - 2t\|f'\| - \|f''\|\bigr). \]
+  The self-adjoint
+  realization is not unique in general: for $-x^4$ or $-1/x^2$ they differ by boundary
+  conditions at infinity or at $0$. Which one is physical is a choice of the model, not a
+  condition of the remark, which holds for each. For the potential part, $V(y) = y^2$ and the
   state $\phi = U\psi$ of Proposition~3 are used: $\phi \in L^2$, but $V\phi \notin L^2$; for
   $V(y) = y$ this is \lean{frameUnitary_gaussState_not_mem}.
 \item \emph{Sec.~5, commutator relations.} The brief says that $[X,P]/(i\hbar) = I$ cannot

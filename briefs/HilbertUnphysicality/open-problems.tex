@@ -58,29 +58,6 @@ precise first.
   compact support. (Brief, Sec.~4, proof of Theorem~5.)
 \end{enumerate}
 
-\section*{From the formalization}
-\begin{enumerate}
-\item \textbf{The Schr\"odinger equation with a potential.} The remark that the
-  Schr\"odinger equation holds only on $\mathcal{D}(H)$ is checked for every self-adjoint
-  Hamiltonian $H$ that is unbounded on its domain, with the evolution $e^{-itH/\hbar}$ given by
-  Stone's theorem (\lean{schrodinger_only_on_domain}). It is checked in detail for $H = N$ on
-  $\ell^2(\mathbb{N})$, for $H_0 = P^2/2$ on $L^2(\mathbb{R})$, and for the harmonic oscillator
-  $P^2/2 + X^2/2$ on $L^2(\mathbb{R})$, built from the Hermite basis
-  (\lean{oscillator_schrodinger_only_on_domain}) and shown to be the operator sum
-  $H_0 + X^2/2$ on $\mathcal{D}(H_0) \cap \mathcal{D}(X^2)$
-  (\lean{oscillatorHamiltonian_eq_add}). For bounded measurable $V$, $H = H_0 + V$ is
-  self-adjoint on $\mathcal{D}(H_0)$ and the remark is checked for it
-  (\lean{bounded_schrodinger_only_on_domain}), and so for $V \in L^2 + L^\infty$, by the
-  Kato--Rellich theorem (\lean{memLp_schrodinger_only_on_domain}). For potentials outside
-  $L^2 + L^\infty$ other than the oscillator, such as growing ones ($|x|^\beta$, $\beta \ne 2$)
-  or ones too singular for an operator bound, it is not formalized that $H = P^2/2m + V(x)$ is
-  self-adjoint, nor on which domain. These need other methods, such as quadratic forms (KLMN)
-  or limit point/limit circle criteria. The Kato--Rellich results are in a module of their own
-  outside the comparator lane, because TauCeti's theorem is reached through a private import:
-  TauCeti and Physlib both declare \lean{LinearPMap.adjoint_smul}.
-  (Brief, Sec.~5; Log, ``Differences''.)
-\end{enumerate}
-
 \noindent
 The blocker of the previous version of the brief, that the conditions and the inconsistency
 were informal, is resolved. The revised brief adds a minimum form to each condition (Sec.~3)
@@ -88,8 +65,18 @@ and reads the inconsistency as the failure of a condition for one particular sys
 (Sec.~4). The previous open problem on the expectations of a general unbounded observable is
 no longer raised: the [B]COBS part now rests on the number operator alone (Proposition~2).
 The formalization gap ``Theorem~5 itself'' is closed: Theorem~5 is stated and proved in Lean
-as \lean{theorem5}, in the readings of the next section. No open problem now blocks
-verification.
+as \lean{theorem5}, in the readings of the next section.
+The formalization gap ``the Schr\"odinger equation with a potential'' is closed too. The remark
+of Sec.~5, that the Schr\"odinger equation holds only on $\mathcal{D}(H)$, is checked for every
+self-adjoint realization $H$ of $P^2/2m + V$, for every real $V$ that is square integrable near
+each point of an open set with null complement (\lean{realPotential_schrodinger_only_on_domain}),
+such as every continuous $V$ or one continuous off $0$; such an $H$ exists by von Neumann's
+theorem. For bounded $V$ and $V \in L^2 + L^\infty$, $H_0 + V$ is itself self-adjoint on
+$\mathcal{D}(H_0)$ (Kato--Rellich, \lean{memLp_schrodinger_only_on_domain}), and so is the only
+such $H$.
+These results are in modules of their own, outside the comparator lane, because TauCeti's
+theorems are reached through a private import: TauCeti and Physlib both declare
+\lean{LinearPMap.adjoint_smul}. No open problem now blocks verification.
 
 \section*{Precise readings}
 

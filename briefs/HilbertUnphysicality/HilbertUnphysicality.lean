@@ -158,6 +158,9 @@ Sec. 5, bounded potentials (on `L²(ℝ)`, `V` measurable with `|V| ≤ C` a.e.)
 For potentials in `L² + L^∞`, by the Kato–Rellich theorem, see the module
 `HilbertUnphysicality.KatoRellich`. It is separate because TauCeti's Kato–Rellich theorem is
 reached through a private import, which the comparator's exporter cannot load next to Physlib.
+For every real potential `V ∈ L²_loc(U)`, `Uᶜ` null (any continuous `V`, or one continuous off
+`0`), `H₀ + V` has self-adjoint extensions by von Neumann's theorem, and the remark holds for
+each: see the module `HilbertUnphysicality.RealPotential`, separate for the same reason.
 
 Sec. 5, point-wise values (on `L²(ℝ)`):
 * `exists_representative_apply_eq`, `exists_representatives_ne`  a vector `ψ` of `L²(ℝ)` has

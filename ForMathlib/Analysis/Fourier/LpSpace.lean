@@ -6,7 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import Mathlib.Analysis.Fourier.LpSpace
-public import ForMathlib.MeasureTheory.Function.L2Multiplication
+public import ForMathlib.MeasureTheory.Function.L2Conj
 
 /-!
 # The Fourier transform on `L²` of integrable functions
@@ -16,6 +16,8 @@ Schwartz functions. This file shows that on an `L²` function that is also integ
 transform is given by the Fourier integral, and so is bounded by the `L¹` norm. On `ℝ`, an `L²`
 function `f` with `ξ² f ∈ L²` is integrable, with `∫ ‖f‖ ≤ ε ‖ξ² f‖₂ + C_ε ‖f‖₂` for every `ε > 0`:
 the Sobolev bound behind the Kato–Rellich theorem for `L² + L^∞` potentials in one dimension.
+Finally, the Fourier transform of a conjugate is the reflected conjugate of the transform,
+`𝓕 f̄ = R (𝓕 f)‾`, on `L²(ℝ)` as on functions.
 
 ## Main results
 
@@ -24,7 +26,9 @@ the Sobolev bound behind the Kato–Rellich theorem for `L² + L^∞` potentials
 * `MeasureTheory.Lp.ae_norm_fourierInv_le_of_integrable`: `‖(𝓕⁻ f)(x)‖ ≤ ∫ ‖f‖` for a.e. `x`;
 * `MeasureTheory.Lp.integral_norm_le_of_ae_eq_sq_mul`: on `ℝ`, the bound
   `∫ ‖f‖ ≤ √(π/λ) (λ ‖f‖₂ + ‖ξ² f‖₂)` for `λ ≥ 1`, by Cauchy–Schwarz;
-* `MeasureTheory.Lp.exists_integral_norm_le_of_ae_eq_sq_mul`: its form with `ε`.
+* `MeasureTheory.Lp.exists_integral_norm_le_of_ae_eq_sq_mul`: its form with `ε`;
+* `Real.fourier_conj`, `MeasureTheory.Lp.fourier_conjugate`: `𝓕 f̄ (ξ) = conj (𝓕 f (-ξ))`, for
+  functions and on `L²(ℝ)`.
 -/
 
 open FourierTransform SchwartzMap Real
@@ -181,5 +185,54 @@ theorem exists_integral_norm_le_of_ae_eq_sq_mul {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨hfi, hb⟩ := integral_norm_le_of_ae_eq_sq_mul hg hl
   refine ⟨hfi, hb.trans ?_⟩
   nlinarith [norm_nonneg g, Real.sqrt_nonneg (π / l)]
+
+section Conjugate
+
+open ComplexConjugate in
+/-- The Fourier transform of `v ↦ conj (f v)` is `w ↦ conj (𝓕 f (-w))`. -/
+theorem _root_.Real.fourier_conj (f : ℝ → ℂ) (w : ℝ) :
+    𝓕 (fun v => conj (f v)) w = conj (𝓕 f (-w)) := by
+  rw [fourier_real_eq_integral_exp_smul, fourier_real_eq_integral_exp_smul, ← integral_conj]
+  congr 1 with v
+  have h : (↑(-2 * π * v * w) : ℂ) * Complex.I = ↑(-2 * π * v * -w) * -Complex.I := by
+    push_cast
+    ring
+  rw [smul_eq_mul, smul_eq_mul, map_mul, ← Complex.exp_conj, map_mul, Complex.conj_ofReal,
+    Complex.conj_I, h]
+
+/-- **The Fourier transform of a conjugate**: on `L²(ℝ)`, `𝓕 f̄ = R (𝓕 f)‾`, where `R` is the
+reflection `g ↦ g ∘ (-·)`. -/
+theorem fourier_conjugate (f : Lp ℂ 2 (volume : Measure ℝ)) :
+    𝓕 (L2.conjugate f) = Lp.compMeasurePreserving (fun x : ℝ => -x)
+      (Measure.measurePreserving_neg volume) (L2.conjugate (𝓕 f)) := by
+  have hR := Measure.measurePreserving_neg (volume : Measure ℝ)
+  have h := (SchwartzMap.denseRange_toLpCLM (E := ℝ) (F := ℂ) (p := 2) (μ := volume)
+    (by norm_num)).equalizer
+    (g := fun f : Lp ℂ 2 (volume : Measure ℝ) => 𝓕 (L2.conjugate f))
+    (h := fun f => Lp.compMeasurePreserving (fun x : ℝ => -x) hR (L2.conjugate (𝓕 f)))
+    ((Lp.fourierTransformₗᵢ ℝ ℂ).continuous.comp L2.continuous_conjugate)
+    ((Lp.compMeasurePreservingₗᵢ ℂ _ hR).continuous.comp
+      (L2.continuous_conjugate.comp (Lp.fourierTransformₗᵢ ℝ ℂ).continuous)) ?_
+  · exact congrFun h f
+  funext φ
+  simp only [Function.comp_apply, SchwartzMap.toLpCLM_apply]
+  set φc : 𝓢(ℝ, ℂ) := SchwartzMap.postcompCLM (Complex.conjCLE : ℂ →L[ℝ] ℂ) φ
+  have hc : L2.conjugate (φ.toLp 2 volume) = φc.toLp 2 volume := by
+    refine Lp.ext ?_
+    filter_upwards [L2.coeFn_conjugate (φ.toLp 2 volume), φ.coeFn_toLp 2 volume,
+      φc.coeFn_toLp 2 volume] with x h1 h2 h3
+    rw [h1, h2, h3]
+    rfl
+  rw [hc, SchwartzMap.toLp_fourier_eq, SchwartzMap.toLp_fourier_eq]
+  refine Lp.ext ?_
+  filter_upwards [(𝓕 φc).coeFn_toLp 2 volume,
+    Lp.coeFn_compMeasurePreserving (L2.conjugate ((𝓕 φ).toLp 2 volume)) hR,
+    hR.quasiMeasurePreserving.ae (L2.coeFn_conjugate ((𝓕 φ).toLp 2 volume)),
+    hR.quasiMeasurePreserving.ae ((𝓕 φ).coeFn_toLp 2 volume)] with x h1 h2 h3 h4
+  rw [h1, h2, Function.comp_apply, h3, h4, SchwartzMap.fourier_coe, SchwartzMap.fourier_coe,
+    ← Real.fourier_conj]
+  rfl
+
+end Conjugate
 
 end MeasureTheory.Lp
