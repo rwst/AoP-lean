@@ -12,6 +12,7 @@ public import Mathlib.Analysis.InnerProductSpace.LinearPMap
 public import Mathlib.Analysis.Normed.Group.Tannery
 public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.HilbertBasis
 public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.Oscillator
+public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.Schwartz
 public import Mathlib.Analysis.InnerProductSpace.Spectrum
 public import Mathlib.LinearAlgebra.Eigenspace.ContinuousLinearMap
 public import PhyslibAlpha.ProbabilisticTheory.HilbertSpace.TraceClass.GeneralIdeal

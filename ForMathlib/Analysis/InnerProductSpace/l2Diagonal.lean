@@ -6,7 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import Mathlib.Analysis.InnerProductSpace.l2Space
-public import Mathlib.Analysis.InnerProductSpace.LinearPMap
+public import ForMathlib.Analysis.InnerProductSpace.LinearPMap
 
 /-!
 # Diagonal operators on `ℓ²`
@@ -161,16 +161,9 @@ eigenvalue `a i`, is `diagonal a`. -/
 theorem eq_diagonal {T : ℓ²(ι, 𝕜) →ₗ.[𝕜] ℓ²(ι, 𝕜)} (hT : IsSelfAdjoint T)
     (h : ∀ i, ∃ hi : lp.single 2 i (1 : 𝕜) ∈ T.domain,
       T ⟨_, hi⟩ = (a i : 𝕜) • lp.single 2 i (1 : 𝕜)) :
-    T = diagonal a := by
-  have hsym := LinearPMap.adjoint_isFormalAdjoint hT.dense_domain
-  rw [LinearPMap.isSelfAdjoint_def.mp hT] at hsym
-  have hle := le_diagonal a hsym h
-  -- `D(diagonal a) ⊆ D(T†) = D(T)`, tested against `T ≤ diagonal a`.
-  refine LinearPMap.eq_of_le_of_domain_eq hle (le_antisymm hle.1 fun x hx => ?_)
-  rw [← LinearPMap.isSelfAdjoint_def.mp hT]
-  refine LinearPMap.mem_adjoint_domain_of_exists _ ⟨diagonal a ⟨x, hx⟩, fun y => ?_⟩
-  rw [hle.2 (y := ⟨y, hle.1 y.2⟩) rfl]
-  exact isFormalAdjoint_diagonal a ⟨x, hx⟩ ⟨y, hle.1 y.2⟩
+    T = diagonal a :=
+  LinearPMap.eq_of_le_of_isFormalAdjoint hT (le_diagonal a hT.isFormalAdjoint h)
+    (isFormalAdjoint_diagonal a)
 
 /-- The diagonal operator is unbounded on its domain when `|a|` is unbounded. -/
 theorem exists_lt_norm_diagonal (ha : ¬ BddAbove (Set.range fun i => |a i|)) (C : ℝ) :

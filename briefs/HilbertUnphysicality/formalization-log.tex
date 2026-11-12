@@ -59,10 +59,12 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   model),\newline
   the existing \lean{ForPhyslib/QuantumMechanics/Stone.lean} (Stone's theorem in
   Schr\"odinger form, extended here by the differentiable orbits),\newline
-  two TauCeti files, the Hermite functions and their Hilbert basis of $L^2(\mathbb{R})$:\newline
+  three TauCeti files, the Hermite functions, their Hilbert basis of $L^2(\mathbb{R})$ and
+  their Schwartz versions:\newline
   \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/HilbertBasis.lean},\newline
   \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/Oscillator.lean},\newline
-  and eleven new \lean{ForMathlib} files:\newline
+  \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/Schwartz.lean},\newline
+  and thirteen new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2Diagonal.lean} (diagonal operators on
   $\ell^2$, and their characterization by eigenvectors),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/l2DiagonalEvolution.lean} (their
@@ -77,6 +79,10 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   change of variables on $L^2(\mathbb{R})$, and how it transforms multiplication
   operators),\newline
   \lean{ForMathlib/LinearAlgebra/LinearPMap.lean} (composition on the natural domain),\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/LinearPMap.lean}\newline (symmetric extensions
+  of self-adjoint operators, and closed operators under summation),\newline
+  \lean{ForMathlib/Analysis/InnerProductSpace/Subspace.lean} (summable combinations of an
+  orthonormal family),\newline
   \lean{ForMathlib/Analysis/Normed/Algebra/Wielandt.lean} (the Wielandt--Wintner
   theorem),\newline
   \lean{ForMathlib/Analysis/Distribution/TemperedDistribution.lean} (the Leibniz rule in
@@ -240,6 +246,29 @@ $\mathcal{D}(H) \ne L^2(\mathbb{R})$, and the Schr\"odinger equation holds only 
 \toprule
 Brief & Lean \\
 \midrule
+\multicolumn{2}{@{}l}{\emph{Sec.~5, the oscillator Hamiltonian as $H_0 + V$}} \\
+in $\mathcal{S}'$ and on Schwartz functions, $H_0 = -\tfrac12\,d^2/dx^2$ &
+  \lean{freeHamiltonian_toTemperedDistribution}, \lean{freeHamiltonian_toLp} \\
+$V = X^2/2$ is self-adjoint & \lean{oscillatorPotential},
+  \lean{isSelfAdjoint_oscillatorPotential} \\
+$V\psi_n$ in terms of $\psi_{n-2}$, $\psi_n$, $\psi_{n+2}$ & \lean{sq_mul_hermiteFunction},
+  \lean{oscillatorPotential_hermiteFunctionLp} (from \lean{TauCeti.mul_hermiteFunction}) \\
+$H_0\psi_n = (n + \tfrac12)\psi_n - V\psi_n$ & \lean{freeHamiltonian_hermiteFunctionLp} \\
+$\mathcal{D}(H) \subseteq \mathcal{D}(H_0) \cap \mathcal{D}(V)$, and $H = H_0 + V$ there &
+  \lean{summable_smul_oscillatorPotential}, \lean{oscillatorHamiltonian_le} \\
+$H = H_0 + V$, with $\mathcal{D}(H) = \mathcal{D}(H_0) \cap \mathcal{D}(V)$ &
+  \lean{oscillatorHamiltonian_eq_add}, \lean{domain_oscillatorHamiltonian} \\
+on Schwartz functions, $H\varphi = -\tfrac12\varphi'' + \tfrac12 x^2\varphi$ &
+  \lean{toLp_mem_domain_oscillatorHamiltonian}, \lean{oscillatorHamiltonian_toLp} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
 \multicolumn{2}{@{}l}{\emph{Sec.~5, commutator relations}} \\
 no bounded $X$, $P$ with $[X,P] = i\hbar$ & \lean{not_exists_ccr_bounded} (from
   \lean{commutator_ne_algebraMap}) \\
@@ -362,9 +391,17 @@ all of the above & \lean{pointwise_values} \\
   $L^2(\mathbb{R})$. It is tied to the differential expression $\tfrac12(-\psi'' + x^2\psi)$
   by $H\psi_n = \tfrac12(-\psi_n'' + x^2\psi_n)$, and by uniqueness: $H$ is the only
   self-adjoint operator with these eigenvectors and eigenvalues (\lean{eq_oscillatorHamiltonian},
-  from \lean{lp.eq_diagonal}, new in \lean{ForMathlib}). That $H = H_0 + X^2/2$ as a sum of
-  partially defined operators, or that $H$ acts as the differential expression on every
-  Schwartz function, is not proved. For the self-adjointness of $P^2/2m + V$ with other
+  from \lean{lp.eq_diagonal}, new in \lean{ForMathlib}). It is also the operator sum
+  $H = H_0 + V$ of partially defined operators, with $V = X^2/2$ multiplication by $x^2/2$,
+  on $\mathcal{D}(H) = \mathcal{D}(H_0) \cap \mathcal{D}(V)$
+  (\lean{oscillatorHamiltonian_eq_add}). The proof computes $H_0$ on Schwartz functions in
+  $\mathcal{S}'$, and $V\psi_n$ from the position ladder relation; for $x \in \mathcal{D}(H)$
+  the series $\sum_n c_n V\psi_n$ then converges, so $x \in \mathcal{D}(V)$ and
+  $x \in \mathcal{D}(H_0)$ because both operators are closed. Hence $H \subseteq H_0 + V$, and
+  equality holds because $H_0 + V$ is symmetric and $H$ is self-adjoint
+  (\lean{LinearPMap.eq_of_le_of_isFormalAdjoint}, new in \lean{ForMathlib}). In particular
+  $H\varphi = -\tfrac12\varphi'' + \tfrac12 x^2\varphi$ for every Schwartz function $\varphi$
+  (\lean{oscillatorHamiltonian_toLp}). For the self-adjointness of $P^2/2m + V$ with other
   potentials, see the open problems. For the potential part, $V(y) = y^2$ and the
   state $\phi = U\psi$ of Proposition~3 are used: $\phi \in L^2$, but $V\phi \notin L^2$; for
   $V(y) = y$ this is \lean{frameUnitary_gaussState_not_mem}.

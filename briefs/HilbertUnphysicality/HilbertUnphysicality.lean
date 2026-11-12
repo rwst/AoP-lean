@@ -127,6 +127,25 @@ Sec. 5, commutator relations (`ħ = 1` on `L²(ℝ)`):
   `D([X, P])`, so it is dense;
 * `commutator_relations`  the above together.
 
+Sec. 5, the oscillator Hamiltonian as the operator sum `H₀ + V` (on `L²(ℝ)`, `V(x) = x²/2`):
+* `freeHamiltonian_toTemperedDistribution`, `freeHamiltonian_toLp`  in `𝓢'`, and on Schwartz
+  functions, `H₀ = -½ d²/dx²`;
+* `oscillatorPotential`, `isSelfAdjoint_oscillatorPotential`  `V = X²/2`, multiplication by
+  `x²/2` on its maximal domain, is self-adjoint;
+* `hermiteSchwartz`, `sq_mul_hermiteFunction`, `oscillatorPotential_hermiteFunctionLp`  `ψₙ` as
+  a complex Schwartz function, and `V ψₙ` as a combination of `ψₙ₋₂, ψₙ, ψₙ₊₂` (the position
+  ladder relation `TauCeti.mul_hermiteFunction` twice);
+* `freeHamiltonian_hermiteFunctionLp`  `H₀ ψₙ = (n + 1/2) ψₙ - V ψₙ`;
+* `summable_smul_oscillatorPotential`  for `x ∈ D(H)` with Hermite coefficients `cₙ`, the series
+  `∑ cₙ V ψₙ` converges (`Orthonormal.summable_smul_iff`, in `ForMathlib`);
+* `oscillatorHamiltonian_le`  so `D(H) ⊆ D(H₀) ∩ D(V)` and `H x = H₀ x + V x` there, because
+  `H₀` and `V` are closed (`LinearPMap.IsClosed.exists_mem_domain_of_hasSum`, in `ForMathlib`);
+* `oscillatorHamiltonian_eq_add`, `domain_oscillatorHamiltonian`  `H = H₀ + V` as partially
+  defined operators, with `D(H) = D(H₀) ∩ D(V)`: `H₀ + V` is symmetric and `H` self-adjoint
+  (`LinearPMap.eq_of_le_of_isFormalAdjoint`, in `ForMathlib`);
+* `toLp_mem_domain_oscillatorHamiltonian`, `oscillatorHamiltonian_toLp`  Schwartz functions lie
+  in `D(H)`, where `H φ = -½ φ'' + x²/2 φ`.
+
 Sec. 5, point-wise values (on `L²(ℝ)`):
 * `exists_representative_apply_eq`, `exists_representatives_ne`  a vector `ψ` of `L²(ℝ)` has
   representatives with any prescribed value at any point, so two of them differ there
@@ -147,6 +166,8 @@ public import ForMathlib.MeasureTheory.Function.L2Space
 public import ForMathlib.MeasureTheory.Function.LpSpace.ChangeOfVariables
 public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.HilbertBasis
 public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.Oscillator
+public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.Schwartz
+public import ForMathlib.Analysis.InnerProductSpace.Subspace
 public import ForPhyslib.QuantumMechanics.Stone
 public import ForPhyslib.QuantumMechanics.UnitaryEquivalence
 public import Mathlib.Analysis.PSeries
@@ -1282,6 +1303,374 @@ theorem commutator_relations :
     dense_domain_commutatorXP, commutatorXP_apply⟩
 
 end Commutator
+
+/-! ### Sec. 5: the oscillator Hamiltonian as `P²/2 + X²/2` -/
+
+section OscillatorSum
+
+open QuantumMechanics FourierTransform LinearPMap LineDeriv TemperedDistribution TauCeti
+open scoped SchwartzMap lp
+
+/-! `H₀` on Schwartz functions, computed in `𝓢'(ℝ)`. -/
+
+/-- `2π²ξ² 𝓕u = 𝓕(-½ ∂²u)` in `𝓢'(ℝ)`. -/
+lemma smulLeftCLM_kinetic_fourier (u : 𝓢'(ℝ, ℂ)) :
+    smulLeftCLM ℂ (fun ξ : ℝ => ((2 * π ^ 2 * ξ ^ 2 : ℝ) : ℂ)) (𝓕 u) =
+      𝓕 ((-(1 / 2) : ℂ) • ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} u)) := by
+  have h1 : (fun ξ : ℝ => ((2 * π * ξ : ℝ) : ℂ)).HasTemperateGrowth := by fun_prop
+  have hf : (fun ξ : ℝ => ((2 * π ^ 2 * ξ ^ 2 : ℝ) : ℂ)) = (1 / 2 : ℂ) •
+      ((fun ξ : ℝ => ((2 * π * ξ : ℝ) : ℂ)) * fun ξ : ℝ => ((2 * π * ξ : ℝ) : ℂ)) := by
+    funext ξ
+    simp only [Pi.smul_apply, Pi.mul_apply, smul_eq_mul]
+    push_cast
+    ring
+  rw [hf, smulLeftCLM_smul (h1.mul h1), _root_.smul_apply,
+    ← smulLeftCLM_smulLeftCLM_apply h1 h1, smulLeftCLM_fourier, smulLeftCLM_fourier,
+    ← fourier_smul, lineDerivOp_smul, smul_smul, smul_smul]
+  congr 2
+  linear_combination (1 / 2 : ℂ) * Complex.I_sq
+
+lemma mem_domain_freeHamiltonian' {ψ : L2R} :
+    ψ ∈ freeHamiltonian.domain ↔
+      fourierL2 ψ ∈ (L2.mulOp fun ξ : ℝ => 2 * π ^ 2 * ξ ^ 2).domain :=
+  mem_domain_freeHamiltonian
+
+/-- In `𝓢'`, `H₀` is `-½ d²/dx²`. -/
+theorem freeHamiltonian_toTemperedDistribution (ψ : freeHamiltonian.domain) :
+    ((freeHamiltonian ψ : L2R) : 𝓢'(ℝ, ℂ)) =
+      (-(1 / 2) : ℂ) • ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} ((ψ : L2R) : 𝓢'(ℝ, ℂ))) := by
+  rw [freeHamiltonian_apply]
+  change ((𝓕⁻ (L2.mulOp (fun ξ : ℝ => 2 * π ^ 2 * ξ ^ 2) _ : L2R) : L2R) : 𝓢'(ℝ, ℂ)) = _
+  rw [← Lp.fourierInv_toTemperedDistribution_eq, toTemperedDistribution_mulOp (by fun_prop)]
+  change 𝓕⁻ (smulLeftCLM ℂ _ ((𝓕 (ψ : L2R) : L2R) : 𝓢'(ℝ, ℂ))) = _
+  rw [← Lp.fourier_toTemperedDistribution_eq, smulLeftCLM_kinetic_fourier, fourierInv_fourier_eq]
+
+/-- Multiplication by a function of temperate growth preserves Schwartz functions, so they lie in
+its maximal domain. -/
+lemma toLp_mem_mulDomain {a : ℝ → ℝ} (ha : (fun x => (a x : ℂ)).HasTemperateGrowth)
+    (φ : 𝓢(ℝ, ℂ)) : φ.toLp 2 volume ∈ L2.mulDomain a := by
+  rw [L2.mem_mulDomain]
+  refine ((SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => (a x : ℂ)) φ).memLp 2 volume).ae_eq ?_
+  filter_upwards [φ.coeFn_toLp 2 volume] with x hx
+  rw [SchwartzMap.smulLeftCLM_apply_apply ha, hx, smul_eq_mul]
+
+lemma mulOp_toLp {a : ℝ → ℝ} (ha : (fun x => (a x : ℂ)).HasTemperateGrowth) (φ : 𝓢(ℝ, ℂ)) :
+    L2.mulOp a ⟨φ.toLp 2 volume, toLp_mem_mulDomain ha φ⟩ =
+      (SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => (a x : ℂ)) φ).toLp 2 volume := by
+  refine Lp.ext ?_
+  filter_upwards [L2.coeFn_mulOp a ⟨φ.toLp 2 volume, toLp_mem_mulDomain ha φ⟩,
+    φ.coeFn_toLp 2 volume,
+    (SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => (a x : ℂ)) φ).coeFn_toLp 2 volume] with x h1 h2 h3
+  rw [h1, h3, h2, SchwartzMap.smulLeftCLM_apply_apply ha, smul_eq_mul]
+
+lemma toLp_mem_domain_freeHamiltonian (φ : 𝓢(ℝ, ℂ)) :
+    φ.toLp 2 volume ∈ freeHamiltonian.domain := by
+  rw [mem_domain_freeHamiltonian]
+  change 𝓕 (φ.toLp 2) ∈ _
+  rw [SchwartzMap.toLp_fourier_eq]
+  exact toLp_mem_mulDomain (by fun_prop) _
+
+/-- On Schwartz functions, `H₀ φ = -½ φ''`. -/
+lemma freeHamiltonian_toLp (φ : 𝓢(ℝ, ℂ)) :
+    freeHamiltonian ⟨φ.toLp 2 volume, toLp_mem_domain_freeHamiltonian φ⟩ =
+      ((-(1 / 2) : ℂ) • ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} φ)).toLp 2 volume := by
+  apply injective_toTemperedDistribution
+  simp only [Lp.toTemperedDistributionCLM_apply]
+  rw [freeHamiltonian_toTemperedDistribution]
+  simp only [Lp.toTemperedDistribution_toLp_eq, lineDerivOp_toTemperedDistributionCLM_eq,
+    _root_.map_smul]
+
+
+/-! The Hermite functions under `H₀` and `V`. -/
+
+/-- The coefficient `√((n+1)/2) √((n+2)/2)` of `ψₙ₊₂` in `x² ψₙ`. -/
+def ladderUp (n : ℕ) : ℝ := √((n + 1) / 2) * √((n + 1 + 1) / 2)
+
+/-- The coefficient `√(n/2) √((n-1)/2)` of `ψₙ₋₂` in `x² ψₙ`; it vanishes for `n < 2`. -/
+def ladderDown (n : ℕ) : ℝ := √(n / 2) * √(((n - 1 : ℕ) : ℝ) / 2)
+
+/-- `x² ψₙ = √((n+1)/2) √((n+2)/2) ψₙ₊₂ + (n + 1/2) ψₙ + √(n/2) √((n-1)/2) ψₙ₋₂`, from the
+position ladder relation `TauCeti.mul_hermiteFunction` applied twice. -/
+theorem sq_mul_hermiteFunction (n : ℕ) (x : ℝ) :
+    x ^ 2 * hermiteFunction n x = ladderUp n * hermiteFunction (n + 2) x +
+      (n + 1 / 2) * hermiteFunction n x + ladderDown n * hermiteFunction (n - 2) x := by
+  have h1 : √((n : ℝ) / 2) * (√((((n - 1 : ℕ) : ℝ) + 1) / 2) * hermiteFunction (n - 1 + 1) x) =
+      n / 2 * hermiteFunction n x := by
+    rcases n with _ | m
+    · simp
+    · rw [Nat.add_sub_cancel, ← mul_assoc, Nat.cast_add_one,
+        Real.mul_self_sqrt (by positivity)]
+  have h2 : √(((n : ℝ) + 1) / 2) * √(((n + 1 : ℕ) : ℝ) / 2) = (n + 1) / 2 := by
+    rw [Nat.cast_add_one, Real.mul_self_sqrt (by positivity)]
+  rw [sq, mul_assoc, mul_hermiteFunction, mul_add, mul_left_comm, mul_left_comm x,
+    mul_hermiteFunction, mul_hermiteFunction, Nat.add_sub_cancel, Nat.sub_sub,
+    show n - (1 + 1) = n - 2 from rfl, show n + 1 + 1 = n + 2 from rfl, ladderUp, ladderDown]
+  push_cast at h1 h2 ⊢
+  linear_combination h1 + hermiteFunction n x * h2
+
+/-- The Hermite function `ψₙ` as a complex Schwartz function. -/
+def hermiteSchwartz (n : ℕ) : 𝓢(ℝ, ℂ) :=
+  SchwartzMap.postcompCLM Complex.ofRealCLM (hermiteSchwartzMap n)
+
+@[simp]
+lemma hermiteSchwartz_apply (n : ℕ) (x : ℝ) : hermiteSchwartz n x = hermiteFunction n x := by
+  simp [hermiteSchwartz]
+
+lemma toLp_hermiteSchwartz (n : ℕ) :
+    (hermiteSchwartz n).toLp 2 volume = hermiteFunctionLp ℂ n := by
+  refine Lp.ext ?_
+  filter_upwards [(hermiteSchwartz n).coeFn_toLp 2 volume,
+    coeFn_hermiteFunctionLp (𝕜 := ℂ) n] with x h1 h2
+  rw [h1, h2, hermiteSchwartz_apply, Complex.coe_algebraMap]
+
+lemma lineDerivOp_hermiteSchwartz_apply (n : ℕ) (x : ℝ) :
+    ∂_{(1 : ℝ)} (hermiteSchwartz n) x = ((deriv (hermiteFunction n) x : ℝ) : ℂ) := by
+  have hc : ⇑(hermiteSchwartz n) = fun x => (hermiteFunction n x : ℂ) :=
+    funext (hermiteSchwartz_apply n)
+  rw [SchwartzMap.lineDerivOp_apply_eq_fderiv, fderiv_apply_one_eq_deriv, hc]
+  exact (hasDerivAt_hermiteFunction n x).differentiableAt.hasDerivAt.ofReal_comp.deriv
+
+lemma lineDerivOp_lineDerivOp_hermiteSchwartz_apply (n : ℕ) (x : ℝ) :
+    ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} (hermiteSchwartz n)) x =
+      (((x ^ 2 - (2 * n + 1)) * hermiteFunction n x : ℝ) : ℂ) := by
+  have hc : ⇑(∂_{(1 : ℝ)} (hermiteSchwartz n) : 𝓢(ℝ, ℂ)) =
+      fun x => ((deriv (hermiteFunction n) x : ℝ) : ℂ) :=
+    funext (lineDerivOp_hermiteSchwartz_apply n)
+  rw [SchwartzMap.lineDerivOp_apply_eq_fderiv, fderiv_apply_one_eq_deriv, hc]
+  exact (hasDerivAt_deriv_hermiteFunction n x).ofReal_comp.deriv
+
+lemma hasTemperateGrowth_potential :
+    (fun x : ℝ => ((x ^ 2 / 2 : ℝ) : ℂ)).HasTemperateGrowth := by
+  have h : (fun x : ℝ => ((x ^ 2 / 2 : ℝ) : ℂ)) = fun x : ℝ => (2⁻¹ : ℂ) * (x : ℂ) ^ 2 := by
+    funext x
+    push_cast
+    ring
+  rw [h]
+  fun_prop
+
+/-- `x²/2 ψₙ` in Schwartz space, from `sq_mul_hermiteFunction`. -/
+lemma smulLeftCLM_potential_hermiteSchwartz (n : ℕ) :
+    SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => ((x ^ 2 / 2 : ℝ) : ℂ)) (hermiteSchwartz n) =
+      (1 / 2 : ℂ) • ((ladderUp n : ℂ) • hermiteSchwartz (n + 2) +
+        ((n + 1 / 2 : ℝ) : ℂ) • hermiteSchwartz n +
+          (ladderDown n : ℂ) • hermiteSchwartz (n - 2)) := by
+  ext x
+  have h := congrArg (fun r : ℝ => (r : ℂ)) (sq_mul_hermiteFunction n x)
+  simp only [SchwartzMap.smulLeftCLM_apply_apply hasTemperateGrowth_potential,
+    _root_.smul_apply, _root_.add_apply, hermiteSchwartz_apply, smul_eq_mul] at h ⊢
+  push_cast at h ⊢
+  linear_combination h / 2
+
+/-- `(-½ d²/dx² + x²/2) ψₙ = (n + 1/2) ψₙ` in Schwartz space
+(`TauCeti.hermiteFunction_oscillator`). -/
+lemma oscillator_hermiteSchwartz (n : ℕ) :
+    (-(1 / 2) : ℂ) • ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} (hermiteSchwartz n)) +
+        SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => ((x ^ 2 / 2 : ℝ) : ℂ)) (hermiteSchwartz n) =
+      ((n + 1 / 2 : ℝ) : ℂ) • hermiteSchwartz n := by
+  ext x
+  simp only [SchwartzMap.smulLeftCLM_apply_apply hasTemperateGrowth_potential,
+    _root_.smul_apply, _root_.add_apply, hermiteSchwartz_apply, smul_eq_mul,
+    lineDerivOp_lineDerivOp_hermiteSchwartz_apply]
+  push_cast
+  ring
+
+/-- The oscillator potential `V(x) = x²/2`, as a multiplication operator on `L²(ℝ)`. -/
+def oscillatorPotential : L2R →ₗ.[ℂ] L2R := L2.mulOp fun x : ℝ => x ^ 2 / 2
+
+theorem isSelfAdjoint_oscillatorPotential : IsSelfAdjoint oscillatorPotential :=
+  L2.isSelfAdjoint_mulOp (by fun_prop)
+
+lemma toLp_mem_domain_oscillatorPotential (φ : 𝓢(ℝ, ℂ)) :
+    φ.toLp 2 volume ∈ oscillatorPotential.domain :=
+  toLp_mem_mulDomain hasTemperateGrowth_potential φ
+
+lemma oscillatorPotential_toLp (φ : 𝓢(ℝ, ℂ)) :
+    oscillatorPotential ⟨φ.toLp 2 volume, toLp_mem_domain_oscillatorPotential φ⟩ =
+      (SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => ((x ^ 2 / 2 : ℝ) : ℂ)) φ).toLp 2 volume :=
+  mulOp_toLp hasTemperateGrowth_potential φ
+
+lemma hermiteFunctionLp_mem_domain_oscillatorPotential (n : ℕ) :
+    hermiteFunctionLp ℂ n ∈ oscillatorPotential.domain :=
+  toLp_hermiteSchwartz n ▸ toLp_mem_domain_oscillatorPotential _
+
+/-- `V ψₙ = ½ (√((n+1)/2) √((n+2)/2) ψₙ₊₂ + (n + 1/2) ψₙ + √(n/2) √((n-1)/2) ψₙ₋₂)`. -/
+theorem oscillatorPotential_hermiteFunctionLp (n : ℕ) :
+    oscillatorPotential ⟨_, hermiteFunctionLp_mem_domain_oscillatorPotential n⟩ =
+      (1 / 2 : ℂ) • ((ladderUp n : ℂ) • hermiteFunctionLp ℂ (n + 2) +
+        ((n + 1 / 2 : ℝ) : ℂ) • hermiteFunctionLp ℂ n +
+          (ladderDown n : ℂ) • hermiteFunctionLp ℂ (n - 2)) := by
+  have e : (⟨_, hermiteFunctionLp_mem_domain_oscillatorPotential n⟩ :
+      oscillatorPotential.domain) =
+      ⟨_, toLp_mem_domain_oscillatorPotential (hermiteSchwartz n)⟩ :=
+    Subtype.ext (toLp_hermiteSchwartz n).symm
+  rw [e, oscillatorPotential_toLp, smulLeftCLM_potential_hermiteSchwartz]
+  simp only [← toLp_hermiteSchwartz]
+  rfl
+
+lemma hermiteFunctionLp_mem_domain_freeHamiltonian (n : ℕ) :
+    hermiteFunctionLp ℂ n ∈ freeHamiltonian.domain :=
+  toLp_hermiteSchwartz n ▸ toLp_mem_domain_freeHamiltonian _
+
+/-- `H₀ ψₙ = (n + 1/2) ψₙ - V ψₙ`. -/
+theorem freeHamiltonian_hermiteFunctionLp (n : ℕ) :
+    freeHamiltonian ⟨_, hermiteFunctionLp_mem_domain_freeHamiltonian n⟩ =
+      ((n + 1 / 2 : ℝ) : ℂ) • hermiteFunctionLp ℂ n -
+        oscillatorPotential ⟨_, hermiteFunctionLp_mem_domain_oscillatorPotential n⟩ := by
+  have e : (⟨_, hermiteFunctionLp_mem_domain_freeHamiltonian n⟩ : freeHamiltonian.domain) =
+      ⟨_, toLp_mem_domain_freeHamiltonian (hermiteSchwartz n)⟩ :=
+    Subtype.ext (toLp_hermiteSchwartz n).symm
+  have e' : (⟨_, hermiteFunctionLp_mem_domain_oscillatorPotential n⟩ :
+      oscillatorPotential.domain) =
+      ⟨_, toLp_mem_domain_oscillatorPotential (hermiteSchwartz n)⟩ :=
+    Subtype.ext (toLp_hermiteSchwartz n).symm
+  rw [e, e', freeHamiltonian_toLp, oscillatorPotential_toLp,
+    eq_sub_of_add_eq (oscillator_hermiteSchwartz n), ← toLp_hermiteSchwartz]
+  rfl
+
+
+/-! `D(H) ⊆ D(H₀) ∩ D(V)`. For `x ∈ D(H)` with Hermite coefficients `cₙ`, the series `∑ cₙ V ψₙ`
+converges, because `V ψₙ` only involves `ψₙ₋₂, ψₙ, ψₙ₊₂` with coefficients `O(n)` and
+`∑ |(n + 1/2) cₙ|² < ∞`. Since `V` and `H₀` are closed, `x` lies in their domains. -/
+
+lemma summable_norm_sq_energy_mul {x : L2R} (hx : x ∈ oscillatorHamiltonian.domain) :
+    Summable fun n => ‖(oscillatorEnergy n : ℂ) * (hermiteHilbertBasis ℂ).repr x n‖ ^ 2 := by
+  rw [oscillatorHamiltonian, mem_domain_conjLinearPMap] at hx
+  change (hermiteHilbertBasis ℂ).repr x ∈ lp.diagonalDomain oscillatorEnergy at hx
+  have h := (memℓp_gen_iff (p := 2) (by norm_num)).1 hx
+  simpa using h
+
+lemma norm_sq_mul_ofReal (a : ℂ) (r : ℝ) : ‖a * (r : ℂ)‖ ^ 2 = ‖a‖ ^ 2 * r ^ 2 := by
+  rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, mul_pow, sq_abs]
+
+lemma ladderUp_sq (n : ℕ) : ladderUp n ^ 2 = (n + 1) / 2 * ((n + 1 + 1) / 2) := by
+  rw [ladderUp, mul_pow, Real.sq_sqrt (by positivity), Real.sq_sqrt (by positivity)]
+
+lemma ladderDown_add_two_sq (n : ℕ) : ladderDown (n + 2) ^ 2 = (n + 2) / 2 * ((n + 1) / 2) := by
+  rw [ladderDown, mul_pow, Real.sq_sqrt (by positivity), Real.sq_sqrt (by positivity)]
+  push_cast
+  ring
+
+/-- `∑ cₙ V ψₙ` converges for `x ∈ D(H)`. -/
+lemma summable_smul_oscillatorPotential {x : L2R} (hx : x ∈ oscillatorHamiltonian.domain) :
+    Summable fun n => (hermiteHilbertBasis ℂ).repr x n •
+      oscillatorPotential ⟨_, hermiteFunctionLp_mem_domain_oscillatorPotential n⟩ := by
+  set c := (hermiteHilbertBasis ℂ).repr x
+  have hs := summable_norm_sq_energy_mul hx
+  have hv : Orthonormal ℂ (hermiteFunctionLp ℂ) := orthonormal_hermiteFunctionLp
+  simp_rw [oscillatorPotential_hermiteFunctionLp, smul_smul, smul_add, smul_smul]
+  refine ((Summable.add ?_ ?_).add ?_)
+  · -- the `ψₙ₊₂` terms
+    have hv2 : Orthonormal ℂ fun n => hermiteFunctionLp ℂ (n + 2) :=
+      hv.comp _ (add_left_injective 2)
+    refine (hv2.summable_smul_iff (a := fun n => c n * (1 / 2) * ladderUp n)).2 ?_
+    refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_) (hs.mul_left 1)
+    rw [mul_assoc, ← Complex.ofReal_one, ← Complex.ofReal_ofNat, ← Complex.ofReal_div,
+      ← Complex.ofReal_mul, norm_sq_mul_ofReal, mul_pow, ladderUp_sq,
+      mul_comm (oscillatorEnergy n : ℂ), norm_sq_mul_ofReal, oscillatorEnergy, one_mul]
+    gcongr
+    nlinarith [(n.cast_nonneg : (0 : ℝ) ≤ n)]
+  · -- the `ψₙ` terms
+    refine (hv.summable_smul_iff (a := fun n => c n * (1 / 2) * ((n + 1 / 2 : ℝ) : ℂ))).2 ?_
+    refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_) (hs.mul_left 1)
+    rw [mul_assoc, ← Complex.ofReal_one, ← Complex.ofReal_ofNat, ← Complex.ofReal_div,
+      ← Complex.ofReal_mul, norm_sq_mul_ofReal, mul_comm (oscillatorEnergy n : ℂ),
+      norm_sq_mul_ofReal, oscillatorEnergy, one_mul]
+    gcongr
+    nlinarith
+  · -- the `ψₙ₋₂` terms, after dropping the first two, which vanish
+    rw [← summable_nat_add_iff 2]
+    simp only [Nat.add_sub_cancel]
+    refine (hv.summable_smul_iff (a := fun n => c (n + 2) * (1 / 2) * ladderDown (n + 2))).2 ?_
+    refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
+      (((summable_nat_add_iff 2).2 hs).mul_left 1)
+    rw [mul_assoc, ← Complex.ofReal_one, ← Complex.ofReal_ofNat, ← Complex.ofReal_div,
+      ← Complex.ofReal_mul, norm_sq_mul_ofReal, mul_pow, ladderDown_add_two_sq,
+      mul_comm (oscillatorEnergy (n + 2) : ℂ), norm_sq_mul_ofReal, oscillatorEnergy, one_mul]
+    gcongr
+    push_cast
+    nlinarith [(n.cast_nonneg : (0 : ℝ) ≤ n)]
+
+lemma hasSum_hermite_expansion (x : L2R) :
+    HasSum (fun n => (hermiteHilbertBasis ℂ).repr x n • hermiteFunctionLp ℂ n) x := by
+  simpa [coe_hermiteHilbertBasis] using (hermiteHilbertBasis ℂ).hasSum_repr x
+
+lemma hasSum_oscillatorHamiltonian (x : oscillatorHamiltonian.domain) :
+    HasSum (fun n => ((oscillatorEnergy n : ℂ) * (hermiteHilbertBasis ℂ).repr x n) •
+      hermiteFunctionLp ℂ n) (oscillatorHamiltonian x) := by
+  have h := (hermiteHilbertBasis ℂ).hasSum_repr_symm
+    (lp.diagonal oscillatorEnergy ⟨hermiteUnitary.symm x, mem_domain_conjLinearPMap.mp x.2⟩)
+  rw [coe_hermiteHilbertBasis] at h
+  rw [show oscillatorHamiltonian x = _ from conjLinearPMap_apply x]
+  exact h
+
+/-- `H ⊆ H₀ + V`: every `x ∈ D(H)` lies in `D(H₀) ∩ D(V)`, and there `Hx = H₀x + Vx`. -/
+theorem oscillatorHamiltonian_le :
+    oscillatorHamiltonian ≤ freeHamiltonian + oscillatorPotential := by
+  have key (x : oscillatorHamiltonian.domain) :
+      ∃ hx : (x : L2R) ∈ (freeHamiltonian + oscillatorPotential).domain,
+        (freeHamiltonian + oscillatorPotential) ⟨x, hx⟩ = oscillatorHamiltonian x := by
+    set c := (hermiteHilbertBasis ℂ).repr (x : L2R)
+    have hVs := summable_smul_oscillatorPotential x.2
+    obtain ⟨hV, hVx⟩ := isSelfAdjoint_oscillatorPotential.isClosed.exists_mem_domain_of_hasSum
+      (x := fun n => c n • (⟨_, hermiteFunctionLp_mem_domain_oscillatorPotential n⟩ :
+        oscillatorPotential.domain))
+      (by simpa using hasSum_hermite_expansion (x : L2R))
+      (by simpa only [LinearPMap.map_smul] using hVs.hasSum)
+    have h0s : HasSum (fun n => c n •
+        freeHamiltonian ⟨_, hermiteFunctionLp_mem_domain_freeHamiltonian n⟩)
+        (oscillatorHamiltonian x - oscillatorPotential ⟨x, hV⟩) := by
+      rw [hVx]
+      convert (hasSum_oscillatorHamiltonian x).sub hVs.hasSum using 1
+      funext n
+      rw [freeHamiltonian_hermiteFunctionLp, smul_sub, smul_smul, mul_comm]
+      rfl
+    obtain ⟨h0, h0x⟩ := isSelfAdjoint_freeHamiltonian.isClosed.exists_mem_domain_of_hasSum
+      (x := fun n => c n • (⟨_, hermiteFunctionLp_mem_domain_freeHamiltonian n⟩ :
+        freeHamiltonian.domain))
+      (by simpa using hasSum_hermite_expansion (x : L2R))
+      (by simpa only [LinearPMap.map_smul] using h0s)
+    refine ⟨⟨h0, hV⟩, ?_⟩
+    rw [LinearPMap.add_apply]
+    change freeHamiltonian ⟨x, h0⟩ + oscillatorPotential ⟨x, hV⟩ = _
+    rw [h0x, sub_add_cancel]
+  refine ⟨fun x hx => (key ⟨x, hx⟩).1, fun x y hxy => ?_⟩
+  obtain ⟨h, he⟩ := key x
+  rw [← he]
+  congr 1
+  exact Subtype.ext hxy
+
+/-- **`H = P²/2 + X²/2`** as partially defined operators: the oscillator Hamiltonian is the
+operator sum `H₀ + V` on `D(H₀) ∩ D(V)`. -/
+theorem oscillatorHamiltonian_eq_add :
+    oscillatorHamiltonian = freeHamiltonian + oscillatorPotential :=
+  eq_of_le_of_isFormalAdjoint isSelfAdjoint_oscillatorHamiltonian oscillatorHamiltonian_le
+    (isSelfAdjoint_freeHamiltonian.isFormalAdjoint.add
+      isSelfAdjoint_oscillatorPotential.isFormalAdjoint)
+
+/-- `D(H) = D(P²) ∩ D(X²)`. -/
+theorem domain_oscillatorHamiltonian :
+    oscillatorHamiltonian.domain = freeHamiltonian.domain ⊓ oscillatorPotential.domain := by
+  rw [oscillatorHamiltonian_eq_add]
+  rfl
+
+lemma toLp_mem_domain_oscillatorHamiltonian (φ : 𝓢(ℝ, ℂ)) :
+    φ.toLp 2 volume ∈ oscillatorHamiltonian.domain := by
+  rw [domain_oscillatorHamiltonian]
+  exact ⟨toLp_mem_domain_freeHamiltonian φ, toLp_mem_domain_oscillatorPotential φ⟩
+
+/-- On Schwartz functions, `H` is the differential expression `-½ φ'' + x²/2 φ`. -/
+theorem oscillatorHamiltonian_toLp (φ : 𝓢(ℝ, ℂ)) :
+    oscillatorHamiltonian ⟨_, toLp_mem_domain_oscillatorHamiltonian φ⟩ =
+      ((-(1 / 2) : ℂ) • ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} φ) +
+        SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => ((x ^ 2 / 2 : ℝ) : ℂ)) φ).toLp 2 volume := by
+  rw [oscillatorHamiltonian_le.2 (y := ⟨_, toLp_mem_domain_freeHamiltonian φ,
+    toLp_mem_domain_oscillatorPotential φ⟩) rfl, LinearPMap.add_apply]
+  change freeHamiltonian ⟨_, toLp_mem_domain_freeHamiltonian φ⟩ +
+    oscillatorPotential ⟨_, toLp_mem_domain_oscillatorPotential φ⟩ = _
+  rw [freeHamiltonian_toLp, oscillatorPotential_toLp]
+  rfl
+
+end OscillatorSum
 
 /-! ### Sec. 5: point-wise values -/
 
