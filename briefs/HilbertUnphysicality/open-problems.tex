@@ -8,14 +8,11 @@
 \usepackage{lmodern}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
-\usepackage{braket}
 \usepackage[hidelinks]{hyperref}
 
 % Lean names and paths: verbatim, breakable at . _ /
 \DeclareUrlCommand\lean{\urlstyle{tt}}
 \def\UrlBreaks{\do\.\do\_\do\/}
-% Marks an open problem that blocks checking a main claim of the brief
-\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
 % Extra stretch for paragraphs with long, unbreakable Lean names
 \emergencystretch=6em
 
@@ -28,12 +25,8 @@
 
 \noindent
 Open problems raised by the technical brief in this directory, and by its Lean formalization
-(see \lean{formalization-log.tex}).
-Items marked \textsc{[blocks verification]} stand in the way of checking a main
-claim of the brief as the brief states it: a \emph{formalization gap} can be closed
-in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
-precise first. Items marked \emph{research} are open research questions, not needed to check
-the brief.
+(see \lean{formalization-log.tex}). Items marked \emph{research} are open research questions,
+not needed to check the brief. No open problem blocks verification of the brief.
 
 \section*{From the brief}
 \begin{enumerate}
@@ -46,151 +39,5 @@ the brief.
   [B]WDQ and [B]STDIST is not given here; one candidate is the brief ``Physical vector spaces
   for quantum mechanics''. (Brief, Sec.~6.)
 \end{enumerate}
-
-\noindent
-The blocker of an earlier version of the brief, that the conditions and the inconsistency
-were informal, is resolved. The brief gives [B]COBS and [B]WDQ a minimum form (Sec.~3). Its
-current version states Theorem~5 as ``Over QSTO:H, conditions [B]COBS, [B]WDQ and [B]STDIST
-are not guaranteed'', which is shown by a condition failing for one particular system
-(Sec.~4). The current version also drops the minimum form of [B]STDIST, but the proof still
-fixes its meaning (see ``Precise readings''). An earlier open problem, on the expectations of
-a general unbounded observable, is no longer raised: the [B]COBS part now rests on the number
-operator alone (Proposition~2).
-The formalization gap ``Theorem~5 itself'' is closed: Theorem~5 is stated and proved in Lean
-as \lean{theorem5}, in the readings of the next section.
-The formalization gap ``the Schr\"odinger equation with a potential'' is closed too. The remark
-of Sec.~5, that the Schr\"odinger equation holds only on $\mathcal{D}(H)$, is checked for every
-self-adjoint realization $H$ of $P^2/2m + V$, for every real $V$ that is square integrable near
-each point of an open set with null complement (\lean{realPotential_schrodinger_only_on_domain}),
-such as every continuous $V$ or one continuous off $0$; such an $H$ exists by von Neumann's
-theorem. For bounded $V$ and $V \in L^2 + L^\infty$, $H_0 + V$ is itself self-adjoint on
-$\mathcal{D}(H_0)$ (Kato--Rellich, \lean{memLp_schrodinger_only_on_domain}), and so is the only
-such $H$.
-These results are in modules of their own, outside the comparator lane, because TauCeti's
-theorems are reached through a private import: TauCeti and Physlib both declare
-\lean{LinearPMap.adjoint_smul}.
-The former item ``Schwartz spaces'', on the closing remark of the proof of Theorem~5 that
-``Schwartz spaces present the same problem'', is closed in the reading of the next section:
-for all $n, m \ge 1$ a unitary $L^2(\mathbb{R}^n) \to L^2(\mathbb{R}^m)$ carries the QSTO:H
-model and restricts to an isomorphism of topological vector spaces
-$\mathcal{S}(\mathbb{R}^n) \cong \mathcal{S}(\mathbb{R}^m)$ (\lean{schwartz_stdist}, in a
-module of its own as well). The former item ``Classical cutoffs'', on the remarks of the proof
-of Theorem~5 that classical mechanics allows a cutoff on all variables and quantum mechanics
-does not, is closed in the reading of the next section (\lean{classical_cutoff_cobs},
-\lean{classical_cutoff_wdq}, \lean{quantum_no_cutoff}, in a module of its own too). No open
-problem now blocks verification.
-
-\section*{Precise readings}
-
-The brief confirms the readings proposed for its earlier versions, with the changes
-below. They are the readings in which Theorem~5 is stated in Lean (\lean{theorem5}).
-
-\paragraph{Not guaranteed.} ``Over QSTO:H, condition C is not guaranteed'' means: there is a
-quantum system to which QSTO:H applies whose QSTO:H model fails condition C. The current brief
-uses these words in place of ``QSTO:H is inconsistent with C'', which was read in the same
-way. The systems are the
-one-dimensional harmonic oscillator for [B]COBS, a system with one spatial degree of freedom
-for [B]WDQ, and two systems with different numbers of continuous degrees of freedom for
-[B]STDIST. Under this reading finite-dimensional Hilbert spaces do not need to be excluded.
-
-\paragraph{[B]COBS.}
-\begin{itemize}
-\item \emph{States} are the nonzero vectors of $\mathcal{H} = \ell^2(\mathbb{N}_0)$, with the
-  norm topology; this is equivalent to the quotient topology on $P(\mathcal{H})$, since
-  everything below is invariant under $\psi \mapsto c\psi$.
-\item The observable is the number operator $N$ with domain $\mathcal{D}(N)$ of
-  Proposition~2.
-\item The \emph{expectation} of $N$ is $E_N(x) = \braket{x|Nx}/\|x\|^2$, defined for
-  $x \in \mathcal{D}(N)\setminus\{0\}$.
-\item [B]COBS, minimum form: $E_N$ is continuous on $\mathcal{D}(N)\setminus\{0\}$ with the
-  subspace topology.
-\item Claim to be proved: $E_N$ is not continuous at $e_0$ within
-  $\mathcal{D}(N)\setminus\{0\}$ (Proposition~2; \lean{expN_not_continuousWithinAt} and
-  \lean{not_continuousOn_expN}, checked). That $N$ is self-adjoint on $\mathcal{D}(N)$
-  and that $E_N(x) = \braket{x|Nx}/\|x\|^2$ there are checked too
-  (\lean{isSelfAdjoint_numberOp}, \lean{coe_domain_numberOp}, \lean{expN_eq_inner}).
-\item Not claimed by the brief, but true: for every densely defined, symmetric, unbounded $O$,
-  $\psi \mapsto \langle O\rangle_\psi$ is discontinuous at every point of
-  $\mathcal{D}(O)\setminus\{0\}$.
-\end{itemize}
-
-\paragraph{[B]WDQ.}
-\begin{itemize}
-\item A \emph{change of frame} is a smooth increasing bijection $y = f(x)$ of $\mathbb{R}$. It
-  acts on states by the unitary $U\colon L^2(\mathbb{R}, dx) \to L^2(\mathbb{R}, dy)$,
-  $(U\psi)(y) = \psi(g(y))\sqrt{g'(y)}$ with $g = f^{-1}$ (Proposition~3).
-\item Each observer measures position with the multiplication operator by their own
-  coordinate, on its maximal domain: $X$ on $L^2(\mathbb{R}, dx)$ and $Y$ on
-  $L^2(\mathbb{R}, dy)$. The brief now says this, and notes that $UXU^{-1}$ is the different
-  operator of multiplication by $g(y)$, with domain $U\,\mathcal{D}(X)$. It is checked
-  that $X$ and $Y$ are self-adjoint (\lean{isSelfAdjoint_positionOp}), that $UXU^{-1}$ is
-  multiplication by $g(y)$ (\lean{conjLinearPMap_frameUnitary_positionOp}) and self-adjoint
-  (\lean{isSelfAdjoint_conjLinearPMap_frameUnitary_positionOp}), and that $UXU^{-1} \ne Y$
-  (\lean{conjLinearPMap_frameUnitary_positionOp_ne}).
-\item A normalized state has \emph{finite variance} for an observable $O$ if it lies in
-  $\mathcal{D}(O)$, that is, if $\|O\psi\|^2 < \infty$ (Sec.~4).
-\item [B]WDQ, minimum form: for every change of frame and every state $\psi$,
-  $\psi \in \mathcal{D}(X)$ implies $U\psi \in \mathcal{D}(Y)$.
-\item Claim to be proved: for $f(x) = \tan(\tfrac{\pi}{2}\operatorname{erf}(x))$ and
-  $\psi = (e^{-x^2}/\sqrt\pi)^{1/2}$, $\psi \in \mathcal{D}(X)$ but
-  $U\psi = (1/(\pi(1+y^2)))^{1/2} \notin \mathcal{D}(Y)$ (Proposition~3;
-  \lean{gaussState_mem_positionDomain}, \lean{frameUnitary_gaussState},
-  \lean{frameUnitary_gaussState_not_mem} and \lean{not_forall_frameUnitary_mem_positionDomain},
-  checked).
-\end{itemize}
-
-\paragraph{[B]STDIST.}
-\begin{itemize}
-\item The \emph{systems} are those with $n \ge 1$ continuous degrees of freedom
-  (Proposition~4 is stated for positive integers).
-\item The \emph{mathematical representation} of a system is
-  $\mathcal{H}_n = L^2(\mathbb{R}^n)$ with what QSTO:H builds from it: $P(\mathcal{H}_n)$,
-  $D(\mathcal{H}_n)$, the self-adjoint operators, the Born rule and the von Neumann entropy.
-  The brief now lists exactly these, so the positions $X_1, \dots, X_n$ and momenta
-  $P_1, \dots, P_n$ are not part of the representation.
-\item Two systems have the \emph{same} representation if a unitary
-  $\mathcal{H}_n \to \mathcal{H}_m$ carries one onto the other.
-\item The current brief states [B]STDIST as ``Systems with a different number of degrees of
-  freedom are distinct'', without saying in what sense. Its previous version had the minimum
-  form ``physical systems with a different number of degrees of freedom should not have the
-  same mathematical representation''. The proof of Theorem~5 still ends with the systems
-  having ``the same mathematical representation'', so that minimum form is used.
-\item [B]STDIST, minimum form: for $n \ne m$ there is no unitary
-  $\mathcal{H}_n \to \mathcal{H}_m$.
-\item Claim to be proved: for all $n, m \ge 1$ there is one (Proposition~4;
-  \lean{L2_euclidean_iso}), and it carries the QSTO:H structure (\lean{carriesQSTO},
-  \lean{exists_carriesQSTO}). Both are checked.
-\item ``Schwartz spaces present the same problem'' is read as: the same holds for the rigged
-  Hilbert spaces $\mathcal{S}(\mathbb{R}^n) \subseteq \mathcal{H}_n$. For all $n, m \ge 1$
-  there is a unitary $\mathcal{H}_n \to \mathcal{H}_m$ that carries the QSTO:H structure and
-  maps $\mathcal{S}(\mathbb{R}^n)$ onto $\mathcal{S}(\mathbb{R}^m)$, as an isomorphism of
-  topological vector spaces (\lean{schwartz_stdist}, checked). The weaker reading, that
-  $\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ are isomorphic as topological
-  vector spaces, follows (\lean{nonempty_schwartzEquiv}).
-\end{itemize}
-
-\paragraph{Classical cutoffs.} The proof of Theorem~5 says that in classical mechanics ``one
-can, in principle, put a cutoff on all variables and work only with joint probability
-distributions in that compact region'', and, for [B]WDQ, with ``joint probability distributions
-with compact support, which bound all moments'', while ``Quantum mechanics does not allow
-that''.
-\begin{itemize}
-\item \emph{Classical states with a cutoff} are the probability measures on the phase space
-  $\mathbb{R}^n \times \mathbb{R}^n$ that give no mass to the complement of a fixed compact
-  set $K$, with the topology of weak convergence. \emph{Observables} are the continuous real
-  functions on phase space, the moments of positions and momenta among them.
-\item Claim, [B]COBS: every observable has a finite expectation, and the expectation is
-  continuous on these states (\lean{classical_cutoff_cobs}, checked).
-\item Claim, [B]WDQ: a \emph{change of frame} is a continuous map $\varphi$ of phase space. It
-  maps a state with a cutoff to one concentrated on the compact set $\varphi(K)$, for which every
-  observable is again integrable, so all variances stay finite (\lean{classical_cutoff_wdq},
-  checked).
-\item ``Quantum mechanics does not allow that'' is read, for one degree of freedom, as: no
-  nonzero wave function $\psi \in L^2(\mathbb{R})$ vanishes outside a bounded set while its
-  momentum wave function $\mathcal{F}\psi$ (an integral, as $\psi$ is then integrable) also
-  vanishes outside a bounded set (\lean{quantum_no_cutoff}, checked). A cutoff on position
-  alone is allowed: smooth compactly supported states have finite moments of all orders in
-  position and momentum.
-\end{itemize}
 
 \end{document}
