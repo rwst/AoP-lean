@@ -146,6 +146,15 @@ Sec. 5, the oscillator Hamiltonian as the operator sum `H₀ + V` (on `L²(ℝ)`
 * `toLp_mem_domain_oscillatorHamiltonian`, `oscillatorHamiltonian_toLp`  Schwartz functions lie
   in `D(H)`, where `H φ = -½ φ'' + x²/2 φ`.
 
+Sec. 5, bounded potentials (on `L²(ℝ)`, `V` measurable with `|V| ≤ C` a.e.):
+* `exists_lt_norm_freeHamiltonian`  `H₀` is unbounded on its domain
+  (`MeasureTheory.L2.exists_lt_norm_mulOp`, in `ForMathlib`);
+* `isSelfAdjoint_schrodingerHamiltonian`, `domain_schrodingerHamiltonian`  `H₀ + V` is
+  self-adjoint on `D(H₀)` (`IsSelfAdjoint.add_of_domain_eq_top`, the bounded case of
+  Kato–Rellich, in `ForMathlib`);
+* `bounded_schrodinger_only_on_domain`  the remark of Sec. 5 for `H₀ + V`: `e^{-itH}` solves the
+  Schrödinger equation exactly on `D(H₀) ≠ L²(ℝ)`.
+
 Sec. 5, point-wise values (on `L²(ℝ)`):
 * `exists_representative_apply_eq`, `exists_representatives_ne`  a vector `ψ` of `L²(ℝ)` has
   representatives with any prescribed value at any point, so two of them differ there
@@ -1671,6 +1680,84 @@ theorem oscillatorHamiltonian_toLp (φ : 𝓢(ℝ, ℂ)) :
   rfl
 
 end OscillatorSum
+
+/-! ### Sec. 5: bounded potentials -/
+
+section BoundedPotential
+
+open QuantumMechanics LinearPMap
+
+/-- `H₀` is unbounded on its domain: `2π²ξ²` exceeds every bound on an interval. -/
+theorem exists_lt_norm_freeHamiltonian (C : ℝ) :
+    ∃ ψ : freeHamiltonian.domain, C * ‖(ψ : L2R)‖ < ‖freeHamiltonian ψ‖ := by
+  obtain ⟨f, hf⟩ := L2.exists_lt_norm_mulOp (μ := volume) measurable_kinetic (fun C => by
+    set R := |C| + 1
+    refine ⟨Set.Icc R (R + 1), measurableSet_Icc, by simp, by simp, 2 * π ^ 2 * (R + 1) ^ 2,
+      fun x hx => ?_⟩
+    have hR : 1 ≤ R := le_add_of_nonneg_left (abs_nonneg C)
+    have hx0 : 0 ≤ x := by linarith [hx.1]
+    have hπ : 1 ≤ 2 * π ^ 2 := by nlinarith [Real.two_le_pi]
+    rw [abs_of_nonneg (by positivity)]
+    constructor
+    · have h1 : R ^ 2 ≤ x ^ 2 := pow_le_pow_left₀ (by linarith) hx.1 2
+      nlinarith [le_abs_self C]
+    · have h1 : x ^ 2 ≤ (R + 1) ^ 2 := pow_le_pow_left₀ hx0 hx.2 2
+      nlinarith) C
+  refine ⟨⟨fourierL2.symm f, mem_domain_freeHamiltonian.2 ?_⟩, ?_⟩
+  · rw [LinearIsometryEquiv.apply_symm_apply]
+    exact f.2
+  · rw [freeHamiltonian_apply, LinearIsometryEquiv.norm_map, LinearIsometryEquiv.norm_map]
+    convert hf using 4
+    exact Subtype.ext (LinearIsometryEquiv.apply_symm_apply _ _)
+
+/-- The Hamiltonian `H₀ + V` of a particle in the potential `V`, on `D(H₀) ∩ D(V)`. -/
+def schrodingerHamiltonian (V : ℝ → ℝ) : L2R →ₗ.[ℂ] L2R :=
+  freeHamiltonian + L2.mulOp V
+
+variable {V : ℝ → ℝ} (hV : Measurable V) {C : ℝ} (hC : ∀ᵐ x, |V x| ≤ C)
+include hV hC
+
+/-- **Bounded potentials.** For a bounded measurable potential `V`, `H₀ + V` is self-adjoint. -/
+theorem isSelfAdjoint_schrodingerHamiltonian : IsSelfAdjoint (schrodingerHamiltonian V) :=
+  isSelfAdjoint_freeHamiltonian.add_of_domain_eq_top (L2.isSelfAdjoint_mulOp hV).isFormalAdjoint
+    (L2.mulDomain_eq_top hV hC)
+
+/-- `D(H₀ + V) = D(H₀)`. -/
+theorem domain_schrodingerHamiltonian :
+    (schrodingerHamiltonian V).domain = freeHamiltonian.domain := by
+  change freeHamiltonian.domain ⊓ L2.mulDomain V = _
+  rw [L2.mulDomain_eq_top hV hC, inf_top_eq]
+
+/-- `H₀ + V` is unbounded on its domain, since `H₀` is and `V` is bounded. -/
+theorem exists_lt_norm_schrodingerHamiltonian (c : ℝ) :
+    ∃ ψ : (schrodingerHamiltonian V).domain,
+      c * ‖(ψ : L2R)‖ < ‖schrodingerHamiltonian V ψ‖ := by
+  obtain ⟨ψ, hψ⟩ := exists_lt_norm_freeHamiltonian (c + C)
+  have hmem : (ψ : L2R) ∈ (schrodingerHamiltonian V).domain :=
+    (domain_schrodingerHamiltonian hV hC).ge ψ.2
+  refine ⟨⟨ψ, hmem⟩, ?_⟩
+  have h1 := L2.norm_mulOp_le V hC ⟨ψ, hmem.2⟩
+  have h2 := norm_sub_norm_le (freeHamiltonian ψ) (-L2.mulOp V ⟨ψ, hmem.2⟩)
+  rw [sub_neg_eq_add, norm_neg] at h2
+  change c * ‖(ψ : L2R)‖ < ‖freeHamiltonian ψ + L2.mulOp V ⟨ψ, hmem.2⟩‖
+  linarith
+
+/-- The remark of Sec. 5 for every bounded measurable potential `V`: `H = H₀ + V` is
+self-adjoint on `D(H) = D(H₀) ≠ L²(ℝ)`, the evolution `e^{-itH}` of Stone's theorem solves the
+Schrödinger equation on `D(H)`, and off `D(H)` its orbit is differentiable nowhere. -/
+theorem bounded_schrodinger_only_on_domain :
+    (schrodingerHamiltonian V).domain = freeHamiltonian.domain ∧
+      freeHamiltonian.domain ≠ ⊤ ∧
+      SolvesSchrodinger 1 (schrodingerHamiltonian V)
+        (schrodingerPropagator one_ne_zero (isSelfAdjoint_schrodingerHamiltonian hV hC)) ∧
+      ∀ ψ ∉ freeHamiltonian.domain, ∀ t, ¬ DifferentiableAt ℝ (fun s =>
+        schrodingerPropagator one_ne_zero (isSelfAdjoint_schrodingerHamiltonian hV hC) s ψ) t := by
+  obtain ⟨h1, h2, h3⟩ := schrodinger_only_on_domain one_ne_zero
+    (isSelfAdjoint_schrodingerHamiltonian hV hC) (exists_lt_norm_schrodingerHamiltonian hV hC)
+  rw [domain_schrodingerHamiltonian hV hC] at h1 h3
+  exact ⟨domain_schrodingerHamiltonian hV hC, h1, h2, h3⟩
+
+end BoundedPotential
 
 /-! ### Sec. 5: point-wise values -/
 

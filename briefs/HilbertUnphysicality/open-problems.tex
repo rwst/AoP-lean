@@ -68,10 +68,15 @@ precise first.
   $P^2/2 + X^2/2$ on $L^2(\mathbb{R})$, built from the Hermite basis
   (\lean{oscillator_schrodinger_only_on_domain}) and shown to be the operator sum
   $H_0 + X^2/2$ on $\mathcal{D}(H_0) \cap \mathcal{D}(X^2)$
-  (\lean{oscillatorHamiltonian_eq_add}). For other potentials $V \ne 0$, it is not
-  formalized that $H = P^2/2m + V(x)$ is self-adjoint, nor on which domain. This needs results
-  such as the Kato--Rellich theorem, which Mathlib, TauCeti and Physlib do not have.
-  (Brief, Sec.~5; Log, ``Differences''.)
+  (\lean{oscillatorHamiltonian_eq_add}). For bounded measurable $V$, $H = H_0 + V$ is
+  self-adjoint on $\mathcal{D}(H_0)$ and the remark is checked for it
+  (\lean{bounded_schrodinger_only_on_domain}). For unbounded potentials other than the
+  oscillator, it is not formalized that $H = P^2/2m + V(x)$ is self-adjoint, nor on which
+  domain. The next class, $V \in L^2 + L^\infty$, follows from the Kato--Rellich theorem and the
+  bound $\|\psi\|_\infty \le \varepsilon\|H_0\psi\| + C_\varepsilon\|\psi\|$ on
+  $\mathcal{D}(H_0)$, which is not formalized. TauCeti has the Kato--Rellich theorem, but it
+  cannot be imported here together with Physlib's unbounded operators: both declare
+  \lean{LinearPMap.adjoint_smul}. (Brief, Sec.~5; Log, ``Differences''.)
 \end{enumerate}
 
 \noindent

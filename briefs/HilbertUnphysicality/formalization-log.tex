@@ -74,13 +74,14 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   $\ell^2(\mathbb{N})$),\newline
   \lean{ForMathlib/MeasureTheory/Function/L2Space.lean} ($L^2$ is infinite-dimensional),\newline
   \lean{ForMathlib/MeasureTheory/Function/L2Multiplication.lean} (multiplication operators
-  on $L^2$, their self-adjointness and their evolution),\newline
+  on $L^2$, their self-adjointness, bounds and evolution),\newline
   \lean{ForMathlib/MeasureTheory/Function/LpSpace/ChangeOfVariables.lean} (the unitary of a
   change of variables on $L^2(\mathbb{R})$, and how it transforms multiplication
   operators),\newline
   \lean{ForMathlib/LinearAlgebra/LinearPMap.lean} (composition on the natural domain),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/LinearPMap.lean}\newline (symmetric extensions
-  of self-adjoint operators, and closed operators under summation),\newline
+  of self-adjoint operators, bounded symmetric perturbations, and closed operators under
+  summation),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Subspace.lean} (summable combinations of an
   orthonormal family),\newline
   \lean{ForMathlib/Analysis/Normed/Algebra/Wielandt.lean} (the Wielandt--Wintner
@@ -269,6 +270,23 @@ on Schwartz functions, $H\varphi = -\tfrac12\varphi'' + \tfrac12 x^2\varphi$ &
 \toprule
 Brief & Lean \\
 \midrule
+\multicolumn{2}{@{}l}{\emph{Sec.~5, bounded potentials ($V$ measurable, $|V| \le C$ a.e.)}} \\
+$H_0$ is unbounded on its domain & \lean{exists_lt_norm_freeHamiltonian} (from
+  \lean{L2.exists_lt_norm_mulOp}) \\
+$H = H_0 + V$ is self-adjoint, with $\mathcal{D}(H) = \mathcal{D}(H_0)$ &
+  \lean{schrodingerHamiltonian}, \lean{isSelfAdjoint_schrodingerHamiltonian},
+  \lean{domain_schrodingerHamiltonian} \\
+$e^{-itH}$ solves the Schr\"odinger equation exactly on $\mathcal{D}(H) \ne L^2(\mathbb{R})$ &
+  \lean{bounded_schrodinger_only_on_domain} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
 \multicolumn{2}{@{}l}{\emph{Sec.~5, commutator relations}} \\
 no bounded $X$, $P$ with $[X,P] = i\hbar$ & \lean{not_exists_ccr_bounded} (from
   \lean{commutator_ne_algebraMap}) \\
@@ -368,7 +386,8 @@ all of the above & \lean{pointwise_values} \\
   unbounded self-adjoint operators), whose orbits are differentiable exactly when they start in
   $\mathcal{D}(H)$ (\lean{differentiableAt_schrodingerPropagator_iff}, new in
   \lean{ForPhyslib}). This covers every potential $V$ for which $P^2/2m + V$ is self-adjoint;
-  that it is, is proved here for $V = 0$ and for the oscillator, $V(x) = x^2/2$. The evolution
+  that it is, is proved here for $V = 0$, for bounded measurable $V$, and for the oscillator,
+  $V(x) = x^2/2$. The evolution
   is also built explicitly, and
   shown to be the one of Stone's theorem, for the harmonic oscillator in the number
   basis, $H = N$ on $\ell^2(\mathbb{N})$, in units with $\hbar\omega = 1$ and without the
@@ -401,8 +420,18 @@ all of the above & \lean{pointwise_values} \\
   equality holds because $H_0 + V$ is symmetric and $H$ is self-adjoint
   (\lean{LinearPMap.eq_of_le_of_isFormalAdjoint}, new in \lean{ForMathlib}). In particular
   $H\varphi = -\tfrac12\varphi'' + \tfrac12 x^2\varphi$ for every Schwartz function $\varphi$
-  (\lean{oscillatorHamiltonian_toLp}). For the self-adjointness of $P^2/2m + V$ with other
-  potentials, see the open problems. For the potential part, $V(y) = y^2$ and the
+  (\lean{oscillatorHamiltonian_toLp}). For a measurable $V$ with $|V| \le C$ almost
+  everywhere, $H_0 + V$ is self-adjoint on $\mathcal{D}(H_0)$
+  (\lean{isSelfAdjoint_schrodingerHamiltonian}). This is the bounded case of the Kato--Rellich
+  theorem, proved directly: multiplication by $V$ is defined on all of $L^2$ and symmetric, and
+  a self-adjoint operator plus an everywhere defined symmetric one is self-adjoint
+  (\lean{IsSelfAdjoint.add_of_domain_eq_top}, new in \lean{ForMathlib}). TauCeti has the full
+  Kato--Rellich theorem (\lean{IsSelfAdjoint.add_of_isRelativelyBounded}), but its module
+  cannot be imported together with Physlib's unbounded operators, which Stone's theorem here
+  uses: both declare \lean{LinearPMap.adjoint_smul}. Since $H_0$ is unbounded on its domain
+  (\lean{exists_lt_norm_freeHamiltonian}), so is $H_0 + V$, and the remark holds for it
+  (\lean{bounded_schrodinger_only_on_domain}). For the self-adjointness of $P^2/2m + V$ with
+  other potentials, see the open problems. For the potential part, $V(y) = y^2$ and the
   state $\phi = U\psi$ of Proposition~3 are used: $\phi \in L^2$, but $V\phi \notin L^2$; for
   $V(y) = y$ this is \lean{frameUnitary_gaussState_not_mem}.
 \item \emph{Sec.~5, commutator relations.} The brief says that $[X,P]/(i\hbar) = I$ cannot

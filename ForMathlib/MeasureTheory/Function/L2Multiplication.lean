@@ -34,6 +34,10 @@ lies in the domain of `A`: outside the domain the orbit is differentiable nowher
   differentiable;
 * `MeasureTheory.L2.differentiableAt_mulEvolution_iff`: the two together;
 * `MeasureTheory.L2.dense_mulDomain`: the maximal domain is dense;
+* `MeasureTheory.L2.mulDomain_eq_top`, `MeasureTheory.L2.norm_mulOp_le`: for `|a| ≤ C` the
+  domain is the whole space and the operator has norm at most `C`;
+* `MeasureTheory.L2.exists_lt_norm_mulOp`: the operator is unbounded when `|a|` exceeds every bound
+  on a set of positive finite measure;
 * `MeasureTheory.L2.isSelfAdjoint_mulOp`: the multiplication operator is self-adjoint.
 -/
 
@@ -104,8 +108,66 @@ lemma coeFn_mulOp (f : (mulOp a : Lp ℂ 2 μ →ₗ.[ℂ] Lp ℂ 2 μ).domain) 
     mulOp a f =ᵐ[μ] fun x => (a x : ℂ) * (f : Lp ℂ 2 μ) x :=
   MemLp.coeFn_toLp ((mem_mulDomain a).1 f.2)
 
+/-- Multiplication by a function bounded by `C` has norm at most `C`. -/
+theorem norm_mulOp_le {C : ℝ} (hC : ∀ᵐ x ∂μ, |a x| ≤ C)
+    (f : (mulOp a : Lp ℂ 2 μ →ₗ.[ℂ] Lp ℂ 2 μ).domain) :
+    ‖mulOp a f‖ ≤ C * ‖(f : Lp ℂ 2 μ)‖ := by
+  refine Lp.norm_le_mul_norm_of_ae_le_mul ?_
+  filter_upwards [coeFn_mulOp a f, hC] with x h1 hx
+  rw [h1, norm_mul, Complex.norm_real, Real.norm_eq_abs]
+  exact mul_le_mul_of_nonneg_right hx (norm_nonneg _)
+
 variable {a} (ha : Measurable a)
 include ha
+
+/-- Multiplication by an essentially bounded function is defined on all of `L²`. -/
+theorem mulDomain_eq_top {C : ℝ} (hC : ∀ᵐ x ∂μ, |a x| ≤ C) : mulDomain (μ := μ) a = ⊤ := by
+  refine eq_top_iff.2 fun f _ => (mem_mulDomain a).2 <| (Lp.memLp f).of_le_mul (c := C)
+    ((ha.complex_ofReal.aestronglyMeasurable).mul (Lp.aestronglyMeasurable f)) ?_
+  filter_upwards [hC] with x hx
+  rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
+  exact mul_le_mul_of_nonneg_right hx (norm_nonneg _)
+
+/-- The multiplication operator is unbounded when `|a|` exceeds every bound on a set of positive
+finite measure on which it is bounded. -/
+theorem exists_lt_norm_mulOp
+    (h : ∀ C : ℝ, ∃ s, MeasurableSet s ∧ μ s ≠ 0 ∧ μ s ≠ ⊤ ∧ ∃ D, ∀ x ∈ s, C < |a x| ∧ |a x| ≤ D)
+    (C : ℝ) :
+    ∃ f : (mulOp a : Lp ℂ 2 μ →ₗ.[ℂ] Lp ℂ 2 μ).domain, C * ‖(f : Lp ℂ 2 μ)‖ < ‖mulOp a f‖ := by
+  set C' := max C 0 + 1
+  obtain ⟨s, hs, h0, hfin, D, hD⟩ := h C'
+  set g : Lp ℂ 2 μ := indicatorConstLp 2 hs hfin (1 : ℂ)
+  have hg : g ∈ mulDomain a := by
+    refine (mem_mulDomain a).2 <| (Lp.memLp g).of_le_mul (c := D)
+      ((ha.complex_ofReal.aestronglyMeasurable).mul (Lp.aestronglyMeasurable g)) ?_
+    filter_upwards [indicatorConstLp_coeFn (p := 2) (hs := hs) (hμs := hfin) (c := (1 : ℂ))]
+      with x hx
+    rw [hx, norm_mul, Complex.norm_real, Real.norm_eq_abs]
+    by_cases hxs : x ∈ s
+    · exact mul_le_mul_of_nonneg_right (hD x hxs).2 (norm_nonneg _)
+    · simp [Set.indicator_of_notMem hxs]
+  refine ⟨⟨g, hg⟩, ?_⟩
+  have hC' : 0 < C' := by positivity
+  have hle : ‖g‖ ≤ C'⁻¹ * ‖mulOp a ⟨g, hg⟩‖ := by
+    refine Lp.norm_le_mul_norm_of_ae_le_mul ?_
+    filter_upwards [coeFn_mulOp a ⟨g, hg⟩,
+      indicatorConstLp_coeFn (p := 2) (hs := hs) (hμs := hfin) (c := (1 : ℂ))] with x h1 hx
+    rw [h1]
+    change ‖g x‖ ≤ C'⁻¹ * ‖(a x : ℂ) * g x‖
+    rw [hx, norm_mul, Complex.norm_real, Real.norm_eq_abs]
+    by_cases hxs : x ∈ s
+    · rw [Set.indicator_of_mem hxs, norm_one, mul_one, inv_mul_eq_div, one_le_div hC']
+      exact (hD x hxs).1.le
+    · simp [Set.indicator_of_notMem hxs]
+  have hpos : 0 < ‖g‖ := by
+    rw [norm_indicatorConstLp two_ne_zero ENNReal.ofNat_ne_top, norm_one, one_mul]
+    exact Real.rpow_pos_of_pos (ENNReal.toReal_pos h0 hfin) _
+  have h2 : C' * ‖g‖ ≤ ‖mulOp a ⟨g, hg⟩‖ := by
+    have := mul_le_mul_of_nonneg_left hle hC'.le
+    rwa [← mul_assoc, mul_inv_cancel₀ hC'.ne', one_mul] at this
+  calc C * ‖g‖ ≤ max C 0 * ‖g‖ := mul_le_mul_of_nonneg_right (le_max_left _ _) hpos.le
+    _ < C' * ‖g‖ := mul_lt_mul_of_pos_right (lt_add_one _) hpos
+    _ ≤ _ := h2
 
 lemma memLp_phase_mul (t : ℝ) {f : α → ℂ} (hf : MemLp f 2 μ) :
     MemLp (fun x => phase (a x) t * f x) 2 μ := by
