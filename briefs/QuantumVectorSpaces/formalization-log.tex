@@ -8,7 +8,7 @@
 \usepackage{lmodern}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
-\usepackage{booktabs,tabularx}
+\usepackage{booktabs,xltabular}
 \usepackage{braket}
 \usepackage[hidelinks]{hyperref}
 
@@ -58,7 +58,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/PureStates.lean} (second countability
   from the pure states, Sec.~5), and\newline
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Frames.lean} (frame changes, Theorem~5,
-  [B]WDQ)
+  [B]WDQ), and\newline
+  \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Isomorphisms.lean} (isomorphisms of
+  quantum vector spaces, Example~3 and Theorem~5)
 \item Library: \lean{QuantumVectorSpaces}
 \item \raggedright Imports: \lean{SchwartzNorms}
   (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$)
@@ -106,11 +108,11 @@ and $V$ with \lean{topology} is complete and second-countable. Completeness refe
 \lean{uniformSpace}, the uniform structure that every topological vector space carries.
 
 \paragraph{Results.}
-\begin{center}
-\begin{tabularx}{\textwidth}{@{}BL@{}}
+\begin{xltabular}{\textwidth}{@{}BL@{}}
 \toprule
 Brief & Lean \\
 \midrule
+\endhead
 Corollary 2, coarsest topology & \lean{isGreatest_topology} (from \lean{isAdmissible_topology}
   and \lean{IsAdmissible.continuous_algebra}) \\
 Corollary 2, locally convex & \lean{locallyConvexSpace} \\
@@ -150,9 +152,14 @@ Theorem 5, [B]WDQ: two frames with each other's defining observables as observab
 Theorem 5, [B]WDQ: sufficient conditions & \lean{topology_eq_of_mem_algebra},
   \lean{topology_eq_of_finiteDimensional} \\
 Theorem 5, [B]WDQ: the premise is not automatic & \lean{Diagonal.not_continuous_mulOp} \\
+Isomorphisms of quantum vector spaces & \lean{UnitaryEquiv}, \lean{LieIso} (with
+  \lean{refl}, \lean{symm}, \lean{trans}), \lean{LieIso.toUnitaryEquiv} \\
+Isomorphisms preserve observables and pure states & \lean{UnitaryEquiv.isObservable_conj_iff},
+  \lean{UnitaryEquiv.pureStates} \\
+Isomorphisms and frame changes & \lean{induced_topology_eq_pullback},
+  \lean{induced_topology_eq_iff} \\
 \bottomrule
-\end{tabularx}
-\end{center}
+\end{xltabular}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
@@ -239,12 +246,40 @@ Theorem 5, [B]WDQ: the premise is not automatic & \lean{Diagonal.not_continuous_
   multiplication by $n$, a defining observable of the frame with all multiplication operators,
   is not continuous for the frame whose only defining observable is the identity
   (\lean{Diagonal.not_continuous_mulOp}), since $\|e_n\| = 1$ while $\|n e_n\| = n$.
-\item Not formalized: the ``iff $n = m$'' part of Example~3, which needs a
-  notion of isomorphism of quantum vector spaces; [B]STDIST in Theorem~5 and the other remarks
-  of section~5, which are informal.
+\item The brief does not define isomorphisms of quantum vector spaces. Two notions are
+  formalized, each closed under identity, inverse and composition. A \emph{unitary equivalence}
+  (\lean{UnitaryEquiv}) is a linear bijection $U\colon V \to W$ that preserves the inner product
+  and carries the topology of $W$ to that of $V$. Conjugation $A \mapsto U A U^{-1}$ is then a
+  bijection of the observables (\lean{UnitaryEquiv.isObservable_conj_iff}), $U$ induces a
+  homeomorphism of the pure states (\lean{UnitaryEquiv.pureStates}), and the Born rule is
+  preserved with the inner product. Along any $U$ that preserves the inner product, the topology
+  of $W$ pulls back to the topology on $V$ with defining observables $U^{-1} Y_j U$
+  (\lean{induced_topology_eq_pullback}). So $U$ is a unitary equivalence if and only if the
+  $U^{-1} Y_j U$ are continuous on $V$ and the $U X_i U^{-1}$ are continuous on $W$
+  (\lean{induced_topology_eq_iff}); for $U = \mathrm{id}$ this is the frame condition above. A
+  \emph{Lie isomorphism} (\lean{LieIso}) is a linear bijection that preserves the inner product
+  and whose conjugation maps the complex Lie algebra spanned by the $X_i$ (\lean{lieAlgebra}),
+  with the commutator as bracket, onto that spanned by the $Y_j$. This is the brief's
+  ``preserve the Lie algebraic structure''. Every Lie isomorphism is a unitary equivalence
+  (\lean{LieIso.toUnitaryEquiv}): the two Lie algebras generate conjugate associative algebras,
+  hence the same topology.
+\item The ``iff $n = m$'' part of Example~3 is not formalized, and its truth depends on the
+  notion of isomorphism. For Lie isomorphisms and $\hbar \ne 0$ it holds: $X^i$, $P_i$ and $I$
+  are linearly independent and span a Lie algebra of dimension $2n + 1$, and conjugation
+  preserves the dimension. For unitary equivalences it fails. The Hermite functions $h_\alpha$
+  ($\alpha \in \mathbb{N}^n$) form an orthonormal basis of $L^2(\mathbb{R}^n)$, and $f$ lies in
+  $\mathcal{S}(\mathbb{R}^n)$ exactly when its coefficients $c_\alpha$ satisfy
+  $\sum_\alpha |c_\alpha|^2 (1 + |\alpha|)^{2k} < \infty$ for all $k$, these sums giving the
+  topology (Reed and Simon, \emph{Methods of Modern Mathematical Physics~I}, Thm.~V.13, for
+  $n = 1$; B.~Simon, \emph{J. Math. Phys.} 12 (1971) 140). Listing the $\alpha$ by total degree,
+  the $j$-th one has $|\alpha| \sim j^{1/n}$, so both weight families define the space $s$ of
+  rapidly decreasing sequences. Hence $\mathcal{S}(\mathbb{R}^n)$ and
+  $\mathcal{S}(\mathbb{R}^m)$ are unitarily equivalent for all $n, m \ge 1$.
+\item Not formalized: [B]STDIST in Theorem~5 and the other remarks of section~5, which are
+  informal.
 \end{itemize}
 
-\paragraph{Problems found in the brief.} One claim is false, one is imprecise, and two steps
+\paragraph{Problems found in the brief.} One claim is false, two are imprecise, and two steps
 are left implicit.
 \begin{itemize}
 \item Sec.~5 says that ``separability/second countability would allow us to find a countable
@@ -256,6 +291,14 @@ are left implicit.
   topology the pure states carry or what extending means. With the quotient topology, no choice
   of topology on $V$ is involved: the topology of Definition~1 is second countable if and only
   if the pure states are.
+\item Example~3 says that $\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ ``are
+  isomorphic as quantum vector spaces if and only if $n = m$'', but the brief does not define
+  these isomorphisms. The argument of the Remark, that ``no linear transformation can change the
+  number of defining observables'', is not valid: the number of defining observables is not an
+  invariant. A unitary equivalence $\mathcal{S}(\mathbb{R}^n) \to \mathcal{S}(\mathbb{R})$ carries
+  the $2n + 1$ defining observables $X^i$, $P_i$, $I$ to defining observables on
+  $\mathcal{S}(\mathbb{R})$ that give the same topology. The claim holds for Lie isomorphisms and
+  fails for unitary equivalences (see ``Differences'').
 \item The Remark after Example~3 says the $L^2$ seminorms and the sup seminorms dominate each
   other. But the seminorms of Corollary~2 are $\|Af\|$ for every $A$ in the algebra, including
   non-normally-ordered products such as $PX$. Reducing them to $\|x^a \partial^b f\|$ needs the
