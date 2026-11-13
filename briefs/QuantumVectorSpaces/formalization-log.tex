@@ -56,7 +56,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Countable.lean} (a countable generating
   set of observables, Sec.~5), and\newline
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/PureStates.lean} (second countability
-  from the pure states, Sec.~5)
+  from the pure states, Sec.~5), and\newline
+  \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Frames.lean} (frame changes, Theorem~5,
+  [B]WDQ)
 \item Library: \lean{QuantumVectorSpaces}
 \item \raggedright Imports: \lean{SchwartzNorms}
   (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$)
@@ -143,6 +145,11 @@ Sec.~5, second countability from the pure states &
   \lean{secondCountableTopology_iff_projectivization} (for a definite inner product) \\
 Sec.~5, the pure states of a quantum vector space are second countable &
   \lean{IsQuantumVectorSpace.secondCountableTopology_projectivization} \\
+Theorem 5, [B]WDQ: two frames with each other's defining observables as observables have the
+  same observables & \lean{topology_eq_iff_continuous}, \lean{isObservable_iff_of_frames} \\
+Theorem 5, [B]WDQ: sufficient conditions & \lean{topology_eq_of_mem_algebra},
+  \lean{topology_eq_of_finiteDimensional} \\
+Theorem 5, [B]WDQ: the premise is not automatic & \lean{Diagonal.not_continuous_mulOp} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -217,9 +224,24 @@ Sec.~5, the pure states of a quantum vector space are second countable &
   many such sets cover the nonzero vectors, because $\mathbb{P}(V)$ is Lindel\"of, and a translate
   of one of them covers $0$. The topology that the ensembles would induce on the pure states is
   not compared with the quotient topology, since the brief defines no ensemble space over $V$.
+\item For [B]WDQ, two frames are two families of defining observables $X^A_i$ and $X^B_j$ on the
+  same space $V$ with the same inner product, and an observable of a frame is a symmetric
+  operator that is continuous for its topology (\lean{IsObservable}). The brief's premise, that
+  the defining observables of each frame are observables in the other, is a physical assumption
+  and is kept as a hypothesis. It holds if and only if the two frames give the same topology
+  (\lean{topology_eq_iff_continuous}): the topology of $B$ is then admissible for $A$, hence
+  finer than that of $A$ by Corollary~2, and vice versa. The two frames then have the same
+  observables (\lean{isObservable_iff_of_frames}), so the identity is a linear homeomorphism that
+  preserves the inner product and all observables. The premise holds when the defining
+  observables of each frame lie in the algebra of the other (\lean{topology_eq_of_mem_algebra}),
+  and always in finite dimension (\lean{topology_eq_of_finiteDimensional}). It does not follow
+  from sharing the space and the inner product: on the finitely supported sequences, the
+  multiplication by $n$, a defining observable of the frame with all multiplication operators,
+  is not continuous for the frame whose only defining observable is the identity
+  (\lean{Diagonal.not_continuous_mulOp}), since $\|e_n\| = 1$ while $\|n e_n\| = n$.
 \item Not formalized: the ``iff $n = m$'' part of Example~3, which needs a
-  notion of isomorphism of quantum vector spaces; [B]WDQ and [B]STDIST in Theorem~5 and the
-  other remarks of section~5, which are informal.
+  notion of isomorphism of quantum vector spaces; [B]STDIST in Theorem~5 and the other remarks
+  of section~5, which are informal.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} One claim is false, one is imprecise, and two steps
