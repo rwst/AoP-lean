@@ -52,9 +52,11 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
-\item Files: \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces.lean}, and\newline
+\item \raggedright Files: \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces.lean}, and\newline
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Countable.lean} (a countable generating
-  set of observables, Sec.~5)
+  set of observables, Sec.~5), and\newline
+  \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/PureStates.lean} (second countability
+  from the pure states, Sec.~5)
 \item Library: \lean{QuantumVectorSpaces}
 \item \raggedright Imports: \lean{SchwartzNorms}
   (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$)
@@ -74,7 +76,10 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   by its values on an orthonormal basis),\newline
   \lean{ForMathlib/Analysis/LocallyConvex/FirstCountable.lean}
   (\lean{WithSeminorms.exists_countable}: a family of seminorms inducing a first-countable
-  topology has a countable subfamily inducing it)
+  topology has a countable subfamily inducing it),\newline
+  \lean{ForMathlib/Topology/Algebra/Projectivization/SecondCountable.lean}
+  (\lean{Projectivization.secondCountableTopology_of}: with a separating dual, $V$ is second
+  countable if its projective space is)
 \end{itemize}
 
 \paragraph{Setting.} $V$ is a complex vector space with an inner product given as a
@@ -134,6 +139,10 @@ Sec.~5, a countable subset of observables generates the topology &
 Sec.~5, the same for a quantum vector space & \lean{IsQuantumVectorSpace.exists_countable} \\
 Sec.~5, separability is not enough & \lean{Diagonal.separableSpace},
   \lean{Diagonal.not_firstCountableTopology}, \lean{Diagonal.not_exists_countable} \\
+Sec.~5, second countability from the pure states &
+  \lean{secondCountableTopology_iff_projectivization} (for a definite inner product) \\
+Sec.~5, the pure states of a quantum vector space are second countable &
+  \lean{IsQuantumVectorSpace.secondCountableTopology_projectivization} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -196,17 +205,35 @@ Sec.~5, separability is not enough & \lean{Diagonal.separableSpace},
   (\lean{Diagonal.not_firstCountableTopology}). Hence no countable subset of the observables
   generates the topology (\lean{Diagonal.not_exists_countable}). The topology is the finest
   locally convex one, so the space is also complete; this is not formalized.
+\item The pure states are the rays of $V$, that is, the projective space $\mathbb{P}(V)$. Its
+  topology is the quotient topology from the nonzero vectors, which is Mathlib's
+  \lean{Projectivization.instTopologicalSpace}. With a definite inner product, $V$ is second
+  countable if and only if $\mathbb{P}(V)$ is
+  (\lean{secondCountableTopology_iff_projectivization}), so the claim of Sec.~5 holds with the
+  topology of Definition~1 itself; nothing has to be extended. One direction holds because the
+  quotient map is open. For the other, on the open set where $\langle v_0, v\rangle \ne 0$ the
+  map $v \mapsto ([v], \langle v_0, v\rangle)$ is an embedding into the second-countable
+  space $\mathbb{P}(V) \times \mathbb{C}$ (\lean{Projectivization.isInducing_chart}); countably
+  many such sets cover the nonzero vectors, because $\mathbb{P}(V)$ is Lindel\"of, and a translate
+  of one of them covers $0$. The topology that the ensembles would induce on the pure states is
+  not compared with the quotient topology, since the brief defines no ensemble space over $V$.
 \item Not formalized: the ``iff $n = m$'' part of Example~3, which needs a
   notion of isomorphism of quantum vector spaces; [B]WDQ and [B]STDIST in Theorem~5 and the
   other remarks of section~5, which are informal.
 \end{itemize}
 
-\paragraph{Problems found in the brief.} One claim is false, and two steps are left implicit.
+\paragraph{Problems found in the brief.} One claim is false, one is imprecise, and two steps
+are left implicit.
 \begin{itemize}
 \item Sec.~5 says that ``separability/second countability would allow us to find a countable
   subset of observables from a bigger set that generates the same topology''. This holds for
   second countability (first countability suffices), but not for separability: see the
   counterexample under ``Differences''.
+\item Sec.~5 says that ``if the pure states are second countable, we can always extend the
+  topology to the vector space to preserve second countability''. It does not say which
+  topology the pure states carry or what extending means. With the quotient topology, no choice
+  of topology on $V$ is involved: the topology of Definition~1 is second countable if and only
+  if the pure states are.
 \item The Remark after Example~3 says the $L^2$ seminorms and the sup seminorms dominate each
   other. But the seminorms of Corollary~2 are $\|Af\|$ for every $A$ in the algebra, including
   non-normally-ordered products such as $PX$. Reducing them to $\|x^a \partial^b f\|$ needs the
