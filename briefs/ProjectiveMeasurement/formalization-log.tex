@@ -8,7 +8,7 @@
 \usepackage{lmodern}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
-\usepackage{booktabs,tabularx}
+\usepackage{booktabs,tabularx,xltabular}
 \usepackage{braket}
 \usepackage[hidelinks]{hyperref}
 
@@ -221,6 +221,9 @@ EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-
 \item New file \lean{ForPhyslib/QuantumMechanics/RelativeEntropyAgreement.lean}: in finite
   dimension, \lean{relativeEntropy} and \lean{relEntropy} agree on density operators, and every
   entropy is finite.
+\item New file:\newline \lean{ForPhyslib/QuantumMechanics/LindbladSumBasisIndependence.lean}\newline
+  eigenspace projections, and Lindblad's formula in terms of them, so that it does not depend on
+  the eigenbases.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
@@ -247,11 +250,17 @@ these changes:
 \end{itemize}
 
 \paragraph{Results.}
-\begin{center}
-\begin{tabularx}{\textwidth}{@{}BL@{}}
+\begin{xltabular}{\textwidth}{@{}BL@{}}
 \toprule
 Brief & Lean \\
 \midrule
+\endfirsthead
+\toprule
+Brief & Lean \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
 Eq.~(2), blocks determine $\rho$ & \lean{IsResolutionOfIdentity.ext_block} \\
 Eqs.~(3)--(4) & \lean{IsEigenDecomposition.mul_dephasingGenerator_mul} \\
 Eq.~(5), for every solution & \lean{IsEigenDecomposition.mul_eq_of_hasDerivAt} \\
@@ -272,6 +281,10 @@ Eq.~(11) & \lean{IsResolutionOfIdentity.hilbertSchmidtEnergy_sub},
 EQ-HS $\Leftrightarrow$ EQ-MEAS & \lean{eqMeas_iff_eqHS} \\
 $-\operatorname{tr}(\rho\log\sigma)$ & \lean{crossEntropy},
   \lean{IsEigenbasis.crossEntropy_eq} \\
+$D(\rho\|\sigma)$ does not depend on the eigenbases &
+  \lean{IsEigenbasis.lindbladSum_eq_lindbladSum},
+  \lean{relativeEntropy_eq_lindbladSum_of_isEigenbasis},
+  \lean{relativeEntropy_eq_tsum_eigenproj} \\
 $D(\rho\|\sigma) = -\operatorname{tr}(\rho\log\sigma) - S(\rho)$ &
   \lean{crossEntropy_eq_lindbladSum_add}, \lean{relativeEntropy_add_vonNeumannEntropy},
   \lean{relativeEntropy_eq_lindbladSum} \\
@@ -295,9 +308,7 @@ In finite dimension, the two relative entropies agree & \lean{relativeEntropy_eq
   \lean{IsDensityOperator.vonNeumannEntropy_ne_top} \\
 In finite dimension, EQ-KL is the same minimization in both parts &
   \lean{commutingDensities_eq}, \lean{eqKL_iff_relativeEntropy} \\
-\bottomrule
-\end{tabularx}
-\end{center}
+\end{xltabular}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
@@ -318,8 +329,13 @@ In finite dimension, EQ-KL is the same minimization in both parts &
   The cross term $-\operatorname{tr}(\rho\log\sigma)$ is defined without bases, as
   $\sup_n \operatorname{tr}(g_n(\sigma)\rho\,g_n(\sigma))$ for continuous $g_n$ with
   $g_n^2 \uparrow -\log$. In any eigenbases, Lindblad's sum plus $S(\rho)$ equals the cross term,
-  so the formula does not depend on the bases once $S(\rho) < \infty$; for $S(\rho) = \infty$
-  independence is not formalized. Klein's equality case is read off the sum: a vanishing term
+  so the formula does not depend on the bases once $S(\rho) < \infty$. For every $\rho$ it does
+  not depend on them either: with $P_a$ and $Q_b$ the projections onto the eigenspaces of $\rho$
+  and $\sigma$, grouping the sum by eigenvalues gives
+  $D(\rho\|\sigma) = \sum_{a,b}\operatorname{tr}(Q_bP_aQ_b)\,K(a,b)$ with
+  $K(a,b) = a\log a - a\log b + b - a$ ($+\infty$ for $b = 0 < a$), all terms in $[0,\infty]$
+  (\lean{relativeEntropy_eq_tsum_eigenproj}). Klein's equality case is read off the sum: a
+  vanishing term
   forces $\lambda_i = \mu_j$ or $\braket{e_i|f_j} = 0$, so $\rho$ and $\sigma$ agree on every
   $\braket{e_i|\,\cdot\,f_j}$. In finite dimension it agrees with the finite-dimensional
   \lean{relEntropy} on density operators (\lean{relativeEntropy_eq_relEntropy}): the entropy is

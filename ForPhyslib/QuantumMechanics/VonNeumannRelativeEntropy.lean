@@ -402,8 +402,9 @@ theorem eq_of_lindbladSum_eq_zero (hρ : IsDensityOperator ρ) (hσ : IsDensityO
   exact h4.unique hasSum_zero
 
 /-- The **relative entropy** `D(ρ‖σ) ∈ [0, ∞]` of density operators, by Lindblad's formula in
-chosen eigenbases (`+∞` if `ρ` or `σ` is not a density operator). When `S(ρ) < ∞` it does not
-depend on the eigenbases (`relativeEntropy_eq_lindbladSum`). -/
+chosen eigenbases (`+∞` if `ρ` or `σ` is not a density operator). It does not depend on the
+eigenbases: when `S(ρ) < ∞` by `relativeEntropy_eq_lindbladSum`, and in general by
+`relativeEntropy_eq_lindbladSum_of_isEigenbasis` (in `LindbladSumBasisIndependence`). -/
 def relativeEntropy (ρ σ : E →L[ℂ] E) : ℝ≥0∞ :=
   open Classical in
   if h : IsDensityOperator ρ ∧ IsDensityOperator σ then
