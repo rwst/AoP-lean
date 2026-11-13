@@ -50,7 +50,9 @@ finite-dimensional `relEntropy`, and EQ-KL is the same minimization in both part
 when it has pure point spectrum, with `Pₓ = μ_S({x})` its spectral projections, so the conditions
 depend on `X` only, in `ProjectiveMeasurement.SpectralTheorem`. The conclusion's claims on
 repeatability and on state update as classical conditioning are in
-`ProjectiveMeasurement.Repeatability`.
+`ProjectiveMeasurement.Repeatability`. A second proof of EQ-LIND ⇔ EQ-MEAS by the route of the
+brief, Hilbert–Schmidt convergence and the non-commutative Scheffé lemma, is in
+`ProjectiveMeasurement.HilbertSchmidtRoute`.
 -/
 
 public import ForPhyslib.QuantumMechanics.DephasingFlow

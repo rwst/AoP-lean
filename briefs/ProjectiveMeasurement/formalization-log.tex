@@ -244,6 +244,20 @@ covers the claims of the conclusion on repeatability and state update.
 \item New file \lean{ForPhyslib/QuantumMechanics/LuedersRule.lean}: outcome probabilities
   $p_x = \operatorname{tr}(P_x\rho P_x)$, the L\"uders state $\rho_x = P_x\rho P_x/p_x$,
   repeatability, and conditioning of mixtures.
+\item EQ-LIND by the route of the brief, eqs.~(6)--(10), in a module of its own, so that the
+  comparator lane is unchanged:\newline
+  \lean{briefs/ProjectiveMeasurement/ProjectiveMeasurement/HilbertSchmidtRoute.lean}\newline
+  Imports: \lean{ProjectiveMeasurement.InfiniteDimensional} and\newline
+  \lean{ForPhyslib.QuantumMechanics.DephasingHilbertSchmidt}
+\item New file:\newline \lean{ForPhyslib/QuantumMechanics/NoncommutativeScheffe.lean}\newline
+  trace-norm bounds
+  averaged over the spectral expansion, the gentle measurement bound, and the non-commutative
+  Scheff\'e lemma for weak and for Hilbert--Schmidt convergence.
+\item New file:\newline \lean{ForPhyslib/QuantumMechanics/DephasingHilbertSchmidt.lean}\newline
+  solutions of the dephasing equation stay density operators, their Hilbert--Schmidt distance to
+  $P_X(\rho)$, its convergence by dominated convergence (Mathlib's Tannery theorem,
+  \lean{Mathlib.Analysis.Normed.Group.Tannery}), and trace-norm convergence through the
+  Scheff\'e lemma.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
@@ -291,6 +305,18 @@ $\rho(t)$ is a mixture of unitary conjugations of $\rho(0)$ &
 Eqs.~(6)--(10), trace-norm convergence &
   \lean{IsEigenDecomposition.traceENorm_gaussianDephasing_sub_le},
   \lean{IsEigenDecomposition.tendsto_traceENorm_of_hasDerivAt} \\
+``Both $\rho(t)$ and $P_X(\rho(0))$ are density operators'' &
+  \lean{IsEigenDecomposition.gaussianDephasing_nonneg},
+  \lean{IsEigenDecomposition.isDensityOperator_of_hasDerivAt} \\
+Eqs.~(6)--(9), the brief's route: Hilbert--Schmidt convergence &
+  \lean{IsEigenDecomposition.hilbertSchmidtEnergy_sub_pinching_of_hasDerivAt},
+  \lean{IsEigenDecomposition.tendsto_hilbertSchmidtNorm_of_hasDerivAt} \\
+Non-commutative Scheff\'e lemma, between eqs.~(9) and~(10) &
+  \lean{tendsto_traceENorm_of_tendsto_hilbertSchmidtNorm}, for weak convergence
+  \lean{tendsto_traceENorm_of_tendsto_inner}; gentle measurement
+  \lean{traceENorm_sub_finiteProj_le} \\
+Eq.~(10) and EQ-LIND $\Leftrightarrow$ EQ-MEAS, the brief's route &
+  \lean{IsEigenDecomposition.tendsto_traceENorm_of_hasDerivAt'}, \lean{eqMeas_iff_eqLind'} \\
 EQ-LIND $\Leftrightarrow$ EQ-MEAS & \lean{eqMeas_iff_eqLind} \\
 ``$[\sigma, X] = 0$ iff block diagonal iff $P_X(\sigma) = \sigma$'' &
   \lean{IsEigenDecomposition.commute_iff}, \lean{IsResolutionOfIdentity.pinching_eq_self_iff} \\
@@ -368,14 +394,28 @@ Sec.~5, ``the update \dots\ is equivalent to what happens in the classical case'
   projection onto $\ker(X - x)$, so the pinching and the conditions depend on $X$ only. The
   identification uses $\|(X - a)v\|^2 = \int|r - a|^2\,d\langle v, \mu_S(r) v\rangle$, through
   PhyslibAlpha's bounded spectral integral.
-\item EQ-LIND is proved without the Hilbert--Schmidt estimate (6)--(9) and without the
-  non-commutative Scheff\'e lemma. Every solution has the blocks of eq.~(5), so it equals the
+\item EQ-LIND is proved twice. The first proof (\lean{eqMeas_iff_eqLind}) uses neither the
+  Hilbert--Schmidt estimate (6)--(9) nor the non-commutative Scheff\'e lemma. Every solution has
+  the blocks of eq.~(5), so it equals the
   Gaussian average $\int e^{isX}\rho\,e^{-isX}\,dN(0,t)(s)$, whose blocks carry the characteristic
   function $e^{-t(x-y)^2/2}$. As an average of unitary conjugations, computed in
   $\mathcal{S}_1$, it is a trace-norm contraction. With $Q = \sum_{x \in F} P_x$ for a finite set
   $F$, $\|\rho(t) - P_X(\rho)\|_1$ is at most $\|\rho - Q\rho Q\|_1 + \|QP_X(\rho)Q - P_X(\rho)\|_1$,
   both small for large $F$ uniformly in $t$, plus finitely many off-diagonal blocks of
   $Q\rho Q$, each decaying like $e^{-t(x-y)^2/2}$.
+\item The second proof (\lean{eqMeas_iff_eqLind'}) follows the brief. The Hilbert--Schmidt
+  energy of $\rho(t) - P_X(\rho)$ is $\sum_{x \ne y} e^{-t(x-y)^2}\|P_x\rho P_y\|_{HS}^2$, which
+  tends to zero by dominated convergence, the bound being $\|\rho\|_{HS}^2 \le 1$. The
+  Scheff\'e lemma is proved in the stronger form of Simon, \emph{Trace Ideals}, Thm.~2.20 for
+  $p = 1$: density operators converging \emph{weakly} to a density operator converge in trace
+  norm. The proof truncates with $Q = \sum_{k \in F}|b_k\rangle\langle b_k|$, the $b_k$
+  eigenvectors of the limit $\rho$ carrying weight $> 1 - \eta^2$, and uses the gentle
+  measurement bound $\|\sigma - Q\sigma Q\|_1 \le (1 - \operatorname{tr}(Q\sigma))/\eta + \eta$
+  (cf.\ Winter 1999, Lemma~9), obtained by averaging the pure-state bound
+  $\||c\rangle\langle c| - |Qc\rangle\langle Qc|\|_1 \le 2\|c - Qc\|$ over the spectral expansion
+  of $\sigma$. That $\rho(t)$ is a density operator follows from the Gaussian representation:
+  the average of positive operators is positive, and its trace is that of its pinching, which
+  is $P_X(\rho)$.
 \item The relative entropy follows decision~D4: Lindblad's formula, in eigenbases chosen once.
   The cross term $-\operatorname{tr}(\rho\log\sigma)$ is defined without bases, as
   $\sup_n \operatorname{tr}(g_n(\sigma)\rho\,g_n(\sigma))$ for continuous $g_n$ with
@@ -419,10 +459,12 @@ Sec.~5, ``the update \dots\ is equivalent to what happens in the classical case'
 finite-dimensional part:
 \begin{itemize}
 \item ``Both $\rho(t)$ and $P_X(\rho(0))$ are density operators'' is asserted. In infinite
-  dimension it is needed for the Scheff\'e step. The Gaussian representation above proves it,
-  and also gives the contraction that replaces that step.
+  dimension it is needed for the Scheff\'e step. The Gaussian representation above proves it
+  (\lean{IsEigenDecomposition.isDensityOperator_of_hasDerivAt}).
 \item The Scheff\'e step itself (``Hilbert--Schmidt convergence to a density operator implies
-  trace-norm convergence'') is cited without reference or proof; it is not needed here.
+  trace-norm convergence'') is cited without reference or proof. It is a known theorem (Simon,
+  \emph{Trace Ideals}, Thm.~2.20; Dell'Antonio 1967), proved here in its weak-convergence form
+  (\lean{tendsto_traceENorm_of_tendsto_inner}).
 \item The conclusion's claims on repeatability and state update use the outcome probabilities and
   the post-measurement state without defining them; see the last item of the differences above.
 \item The brief solves the block equations (4) but does not say that the solution is unique; the
