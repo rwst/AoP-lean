@@ -58,6 +58,11 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{Mathlib.Analysis.InnerProductSpace.Calculus},\newline
   \lean{Mathlib.Analysis.SpecialFunctions.ExpDeriv},\newline
   \lean{Mathlib.LinearAlgebra.Projectivization.Basic}
+\item File: \lean{briefs/NonLinearQuantum/NonLinearQuantum/DensityOperators.lean}\newline
+  Density operators and entropy on $m(H)$, in a module of its own, so that the comparator lane
+  for the main file is unchanged.
+\item Imports: \lean{NonLinearQuantum},\newline
+  \lean{ForPhyslib.QuantumMechanics.UnitaryEquivalence}
 \end{itemize}
 
 \paragraph{Setting.} $E$ is any complex inner product space, $v, w \in E$ are orthonormal
@@ -102,6 +107,17 @@ Thm.~4, proof: $m(H)$ & \lean{Twisted}, \lean{toTwisted} (identity of the carrie
 \quad different addition & \lean{not_map_add_toTwisted} \\
 \quad $m$ a linear isometry onto $m(H)$ & \lean{twistedIsometry} \\
 \quad all together & \lean{exists_second_linear_structure} \\
+\quad a separable Hilbert space & \lean{instCompleteSpaceTwisted},
+  \lean{instSeparableSpaceTwisted}, \lean{finrank_twisted} \\
+\quad states unchanged & \lean{mk_twistedIsometry}: the ray of $m(x)$ in $m(H)$ is that of
+  $x$ \\
+\quad density operators & \lean{transportOp}: $\rho \mapsto m\rho m^{-1}$;
+  \lean{densityEquiv}: a bijection of the density operators \\
+\quad spectra and entropy kept & \lean{spectrum_transportOp},
+  \lean{vonNeumannEntropy_densityEquiv} \\
+\quad on the carrier, not additive & \lean{transportOp_toTwisted},
+  \lean{not_map_add_transportOp_projOp} \\
+\quad QST:H on $m(H)$, together & \lean{qst_twisted} \\
 Conclusion, inner product not conserved & \lean{inner_nlMap_ne} \\
 (extra) smoothness & \lean{contDiffAt_nlMap}: smooth at every $x \ne 0$;
   \lean{not_differentiableAt_nlMap_zero}: not differentiable at $0$ \\
@@ -146,8 +162,11 @@ Conclusion, inner product not conserved & \lean{inner_nlMap_ne} \\
   $\tilde\rho(v + w) = e^{\imath\theta/2}v$, which is not additive
   (\lean{not_map_add_transport_projOp}). Keeping the original $\rho$ instead would not fit
   with the moved-over observables, since $\operatorname{tr}(\rho\tilde A)$ is not defined for a
-  non-linear $\tilde A$. What is true is that pure states, as rays, are unchanged, and that
-  $\rho \mapsto m\rho m^{-1}$ keeps spectra, hence entropy. QMLIN does not mention density
+  non-linear $\tilde A$. What is true is that pure states, as rays, are unchanged
+  (\lean{mk_twistedIsometry}), and that $\rho \mapsto m\rho m^{-1}$ is a bijection from the
+  density operators of $H$ onto those of $m(H)$ (\lean{densityEquiv}) that keeps spectra and
+  entropy (\lean{spectrum_transportOp}, \lean{vonNeumannEntropy_densityEquiv}); $m(H)$ is a
+  separable Hilbert space like $H$ (\lean{qst_twisted}). QMLIN does not mention density
   operators, so the conclusion is not affected; only the step ``QST:H remains valid on
   $m(H)$'' needs rewording.
 \item QMLIN asks that superpositions, observables and evolution use ``the ordinary linear

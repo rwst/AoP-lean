@@ -106,6 +106,7 @@ srcDir = "briefs/PureStatesNotEnough"
 [[lean_lib]]
 name = "NonLinearQuantum"
 srcDir = "briefs/NonLinearQuantum"
+globs = ["NonLinearQuantum.*"]
 
 # Its comparator lane (not default targets; see COMPARATOR.md).
 [[lean_lib]]

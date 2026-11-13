@@ -40,6 +40,9 @@ The structure of `E` carried over along `m` (the brief's `m(H)`):
 
 Also: `nlHomeomorph` (`m` is a homeomorphism), `contDiffAt_nlMap` (smooth away from `0`) and
 `not_differentiableAt_nlMap_zero` (not differentiable at `0`).
+
+The density operators and their entropy on `m(E)` (`ρ ↦ m ρ m⁻¹` is a bijection of the density
+operators that keeps spectra and entropy) are in the module `NonLinearQuantum.DensityOperators`.
 -/
 public import Mathlib.Analysis.InnerProductSpace.Adjoint
 public import Mathlib.Analysis.InnerProductSpace.Calculus

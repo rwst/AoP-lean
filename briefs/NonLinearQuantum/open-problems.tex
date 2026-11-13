@@ -36,19 +36,17 @@ precise first.
 
 \section*{From the brief}
 \begin{enumerate}
-\item \textbf{Density operators and entropy on $m(H)$.} The proof of Theorem~4 says that QST:H
-  ``remains valid on $m(H)$'': density operators and their von Neumann entropy are ``left
-  unchanged''. As operators they change: moving them over through $m$ gives
-  $m\rho m^{-1}$, which is not even additive for the ordinary structure
-  (\lean{not_map_add_transport_projOp}). What should hold is that $\rho \mapsto m\rho m^{-1}$ is
-  a bijection from the density operators of $H$ onto those of $m(H)$, the space with the
-  carried-over structure (\lean{Twisted}), that keeps spectra and so entropy. This follows from
-  \lean{twistedIsometry} but is not formalized; nor is separability, which is trivial in
-  dimension two. (Brief, Sec.~4, proof of Theorem~4.)
-\item \textbf{Madelung representation.} ``The Madelung equations \ldots\ provide such a
-  representation'', one ``not even tied to vector spaces''. The equivalence of the Madelung
-  equations with quantum theory, and in what sense they represent QST:H, are not shown.
-  (Brief, Sec.~5.)
+\item \textbf{Madelung representation.} \emph{Research.} ``The Madelung equations \ldots\
+  provide such a representation'', one ``not even tied to vector spaces''. The equivalence of
+  the Madelung equations with quantum theory, and in what sense they represent QST:H, are not
+  shown. As stated the equivalence is false: the Madelung equations have solutions that come
+  from no wave function, and to exclude them one must add a quantization condition on the
+  circulation of the velocity field, $\oint \nabla S \cdot d\ell \in 2\pi\hbar\,\mathbb{Z}$,
+  which is not part of the hydrodynamic equations and is hard to state at the nodes, where the
+  density vanishes and the phase $S$ is undefined (T.~C.~Wallstrom, Phys.\ Rev.\ A \textbf{49}
+  (1994), 1613). A precise statement is needed first, and checking it needs partial
+  differential equations on $\mathbb{R}^3$ with a singular nodal set, which neither Mathlib nor
+  TauCeti provides. (Brief, Sec.~5.)
 \end{enumerate}
 
 \section*{From the formalization}
