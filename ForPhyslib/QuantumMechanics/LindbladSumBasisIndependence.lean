@@ -5,6 +5,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
+public import ForPhyslib.QuantumMechanics.PurePointSpectrum
 public import ForPhyslib.QuantumMechanics.VonNeumannRelativeEntropy
 
 /-!
@@ -27,7 +28,6 @@ The right side involves no basis.
 
 ## ii. Key results
 
-- `QuantumMechanics.eigenproj`: the orthogonal projection onto an eigenspace.
 - `QuantumMechanics.IsEigenbasis.eigenproj_apply`: `Pₐ eᵢ = if λᵢ = a then eᵢ else 0`.
 - `QuantumMechanics.IsEigenbasis.lindbladSum_eq_tsum_eigenproj`: Lindblad's sum in terms of the
   eigenprojections.
@@ -39,7 +39,7 @@ The right side involves no basis.
 
 ## iii. Table of contents
 
-- A. Eigenprojections
+- A. Eigenprojections in an eigenbasis
 - B. Grouping by eigenvalues
 - C. Basis independence
 -/
@@ -53,22 +53,7 @@ namespace QuantumMechanics
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
 
-/-! ## A. Eigenprojections -/
-
-instance (ρ : E →L[ℂ] E) (a : ℝ) :
-    ((ρ - (a : ℂ) • (1 : E →L[ℂ] E)).ker).HasOrthogonalProjection :=
-  haveI : CompleteSpace ((ρ - (a : ℂ) • (1 : E →L[ℂ] E)).ker) :=
-    (ContinuousLinearMap.isClosed_ker _).completeSpace_coe
-  inferInstance
-
-/-- The orthogonal projection onto the eigenspace `ker(ρ - a)`. -/
-def eigenproj (ρ : E →L[ℂ] E) (a : ℝ) : E →L[ℂ] E :=
-  ((ρ - (a : ℂ) • (1 : E →L[ℂ] E)).ker).starProjection
-
-omit [CompleteSpace E] in
-lemma mem_ker_sub_smul_one {ρ : E →L[ℂ] E} {a : ℝ} {v : E} :
-    v ∈ (ρ - (a : ℂ) • (1 : E →L[ℂ] E)).ker ↔ ρ v = (a : ℂ) • v := by
-  simp [sub_eq_zero]
+/-! ## A. Eigenprojections in an eigenbasis -/
 
 namespace IsEigenbasis
 

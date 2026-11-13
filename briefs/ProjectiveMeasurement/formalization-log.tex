@@ -222,8 +222,19 @@ EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-
   dimension, \lean{relativeEntropy} and \lean{relEntropy} agree on density operators, and every
   entropy is finite.
 \item New file:\newline \lean{ForPhyslib/QuantumMechanics/LindbladSumBasisIndependence.lean}\newline
-  eigenspace projections, and Lindblad's formula in terms of them, so that it does not depend on
-  the eigenbases.
+  Lindblad's formula in terms of the eigenspace projections, so that it does not depend on the
+  eigenbases.
+\item The bridge from the spectral theorem, in a module of its own, so that the comparator lane
+  is unchanged:\newline
+  \lean{briefs/ProjectiveMeasurement/ProjectiveMeasurement/SpectralTheorem.lean}\newline
+  Imports: \lean{ProjectiveMeasurement.InfiniteDimensional} and\newline
+  \lean{ForPhyslib.QuantumMechanics.PurePointSpectralMeasure}
+\item New file:\newline \lean{ForPhyslib/QuantumMechanics/PurePointSpectrum.lean}\newline
+  eigenspace projections \lean{eigenproj}, pure point spectrum, and the existence and uniqueness
+  of eigendecompositions.
+\item New file:\newline \lean{ForPhyslib/QuantumMechanics/PurePointSpectralMeasure.lean}\newline
+  the spectral projections of points are the eigenspace projections, for the spectral measure
+  \lean{boundedSelfAdjointSpectralMeasure} of a bounded self-adjoint operator in PhyslibAlpha.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
@@ -281,6 +292,19 @@ Eq.~(11) & \lean{IsResolutionOfIdentity.hilbertSchmidtEnergy_sub},
 EQ-HS $\Leftrightarrow$ EQ-MEAS & \lean{eqMeas_iff_eqHS} \\
 $-\operatorname{tr}(\rho\log\sigma)$ & \lean{crossEntropy},
   \lean{IsEigenbasis.crossEntropy_eq} \\
+Bridge from the spectral theorem: pure point spectrum gives $X = \sum_x x\,\mu_S(\{x\})$ &
+  \lean{IsSelfAdjoint.isEigenDecomposition_eigenproj},
+  \lean{isEigenDecomposition_spectralMeasureProj}, \lean{isEigenDecomposition_spectral} \\
+$\mu_S(\{x\})$ is the eigenspace projection, and $P_x = \mu_S(\{x\})$ in every
+  eigendecomposition & \lean{spectralMeasureProj_singleton},
+  \lean{IsEigenDecomposition.eigenproj_eq},
+  \lean{IsEigenDecomposition.spectralMeasureProj_singleton_eq} \\
+Pure point spectrum iff $\sum_x \mu_S(\{x\}) = 1$ strongly &
+  \lean{hasPurePointSpectrum_iff_hasSum_eigenproj},
+  \lean{hasPurePointSpectrum_iff_hasSum_spectralMeasureProj},
+  \lean{IsEigenDecomposition.hasPurePointSpectrum} \\
+$P_X$ depends on $X$ only; EQ-MEAS with $P_x = \mu_S(\{x\})$ &
+  \lean{IsEigenDecomposition.pinching_eq_pinching}, \lean{eqMeas_iff_spectral} \\
 $D(\rho\|\sigma)$ does not depend on the eigenbases &
   \lean{IsEigenbasis.lindbladSum_eq_lindbladSum},
   \lean{relativeEntropy_eq_lindbladSum_of_isEigenbasis},
@@ -315,8 +339,13 @@ In finite dimension, EQ-KL is the same minimization in both parts &
 \item Observables are bounded with pure point spectrum, given by their eigenprojections and
   distinct eigenvalues. The brief allows any self-adjoint $X$ and remarks that the conditions fail
   on a continuous part of the spectrum; unbounded $X$, where the Lindblad equation holds only on
-  a domain, is not formalized. Nor is a bridge from the spectral theorem: for a self-adjoint $X$
-  with pure point spectrum, the $P_x$ would be the spectral projections $\mu_S(\{x\})$.
+  a domain, is not formalized. The bridge from the spectral theorem is formalized: a bounded
+  self-adjoint $X$ has pure point spectrum (its eigenvectors span a dense subspace) iff its
+  spectral measure $\mu_S$ is atomic, $\sum_x\mu_S(\{x\}) = 1$ strongly, and then
+  $X = \sum_x x\,\mu_S(\{x\})$. Every eigendecomposition has $P_x = \mu_S(\{x\})$, the
+  projection onto $\ker(X - x)$, so the pinching and the conditions depend on $X$ only. The
+  identification uses $\|(X - a)v\|^2 = \int|r - a|^2\,d\langle v, \mu_S(r) v\rangle$, through
+  PhyslibAlpha's bounded spectral integral.
 \item EQ-LIND is proved without the Hilbert--Schmidt estimate (6)--(9) and without the
   non-commutative Scheff\'e lemma. Every solution has the blocks of eq.~(5), so it equals the
   Gaussian average $\int e^{isX}\rho\,e^{-isX}\,dN(0,t)(s)$, whose blocks carry the characteristic

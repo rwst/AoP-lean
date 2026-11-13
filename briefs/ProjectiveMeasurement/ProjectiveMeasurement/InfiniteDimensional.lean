@@ -46,7 +46,9 @@ The remark "every ensemble commuting with `X` is infinitely distant from `ρ`" w
 `S(P_X(ρ)) = ∞` is proved for `S(ρ) < ∞`, and refuted otherwise, in
 `ProjectiveMeasurement.InfiniteDistance`. In finite dimension `relativeEntropy` agrees with the
 finite-dimensional `relEntropy`, and EQ-KL is the same minimization in both parts, in
-`ProjectiveMeasurement.RelativeEntropies`.
+`ProjectiveMeasurement.RelativeEntropies`. A self-adjoint `X` has an eigendecomposition exactly
+when it has pure point spectrum, with `Pₓ = μ_S({x})` its spectral projections, so the conditions
+depend on `X` only, in `ProjectiveMeasurement.SpectralTheorem`.
 -/
 
 public import ForPhyslib.QuantumMechanics.DephasingFlow
