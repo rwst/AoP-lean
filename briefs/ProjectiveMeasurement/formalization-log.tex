@@ -213,6 +213,14 @@ EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-
   Imports: \lean{ProjectiveMeasurement.InfiniteDimensional} and\newline
   \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture}\newline
   (the latter for a density operator of infinite entropy).
+\item Agreement of the two relative entropies, in a module of its own, so that the comparator lane
+  is unchanged:\newline
+  \lean{briefs/ProjectiveMeasurement/ProjectiveMeasurement/RelativeEntropies.lean}\newline
+  Imports: \lean{ProjectiveMeasurement.InfiniteDimensional} and\newline
+  \lean{ForPhyslib.QuantumMechanics.RelativeEntropyAgreement}
+\item New file \lean{ForPhyslib/QuantumMechanics/RelativeEntropyAgreement.lean}: in finite
+  dimension, \lean{relativeEntropy} and \lean{relEntropy} agree on density operators, and every
+  entropy is finite.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
@@ -283,6 +291,10 @@ $D(\rho\|\sigma) \ge S(P_X(\rho)) - S(\rho)$ for $[\sigma, X] = 0$ &
   \lean{relativeEntropy_eq_top_of_vonNeumannEntropy_pinching_eq_top} \\
 The same, for $S(\rho) = \infty$: false & \lean{not_forall_relativeEntropy_eq_top},
   \lean{isEigenDecomposition_zero} \\
+In finite dimension, the two relative entropies agree & \lean{relativeEntropy_eq_relEntropy},
+  \lean{IsDensityOperator.vonNeumannEntropy_ne_top} \\
+In finite dimension, EQ-KL is the same minimization in both parts &
+  \lean{commutingDensities_eq}, \lean{eqKL_iff_relativeEntropy} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -309,8 +321,12 @@ The same, for $S(\rho) = \infty$: false & \lean{not_forall_relativeEntropy_eq_to
   so the formula does not depend on the bases once $S(\rho) < \infty$; for $S(\rho) = \infty$
   independence is not formalized. Klein's equality case is read off the sum: a vanishing term
   forces $\lambda_i = \mu_j$ or $\braket{e_i|f_j} = 0$, so $\rho$ and $\sigma$ agree on every
-  $\braket{e_i|\,\cdot\,f_j}$. Agreement with the finite-dimensional \lean{relEntropy} is not
-  formalized.
+  $\braket{e_i|\,\cdot\,f_j}$. In finite dimension it agrees with the finite-dimensional
+  \lean{relEntropy} on density operators (\lean{relativeEntropy_eq_relEntropy}): the entropy is
+  finite, so Lindblad's formula may be taken in the eigenvector bases, where it is
+  $\operatorname{tr}(\rho(\log\rho - \log\sigma))$ if $\ker\sigma \le \ker\rho$ and has a term
+  $+\infty$ otherwise. Hence the finite-dimensional EQ-KL minimizes the same function over the
+  same set as the part in any dimension (\lean{eqKL_iff_relativeEntropy}).
 \item The Pythagoras identity (12) is proved in the form $D(\rho\|\sigma) + S(\rho) =
   -\operatorname{tr}(P_X(\rho)\log\sigma) = D(P_X(\rho)\|\sigma) + S(P_X(\rho))$. The middle step
   holds because each $g_n(\sigma)$ commutes with every $P_x$ and the pinching preserves traces. No

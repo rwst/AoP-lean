@@ -44,7 +44,9 @@ Theorem 1:
 
 The remark "every ensemble commuting with `X` is infinitely distant from `ρ`" when
 `S(P_X(ρ)) = ∞` is proved for `S(ρ) < ∞`, and refuted otherwise, in
-`ProjectiveMeasurement.InfiniteDistance`.
+`ProjectiveMeasurement.InfiniteDistance`. In finite dimension `relativeEntropy` agrees with the
+finite-dimensional `relEntropy`, and EQ-KL is the same minimization in both parts, in
+`ProjectiveMeasurement.RelativeEntropies`.
 -/
 
 public import ForPhyslib.QuantumMechanics.DephasingFlow
