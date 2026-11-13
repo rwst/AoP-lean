@@ -34,7 +34,8 @@ file gives two definitions, both groupoids.
 * `UnitaryEquiv.refl`, `UnitaryEquiv.symm`, `UnitaryEquiv.trans`, and the same for `LieIso`;
 * `UnitaryEquiv.isObservable_conj_iff`  conjugation by `U` is a bijection of the observables;
 * `UnitaryEquiv.pureStates`  `U` induces a homeomorphism of the pure states `ℙ ℂ V ≃ₜ ℙ ℂ W`;
-* `LieIso.toUnitaryEquiv`  every Lie isomorphism is a unitary equivalence.
+* `LieIso.toUnitaryEquiv`  every Lie isomorphism is a unitary equivalence;
+* `LieIso.finrank_lieAlgebra`  Lie-isomorphic spaces have Lie algebras of the same dimension.
 -/
 
 open Topology
@@ -294,6 +295,23 @@ def toUnitaryEquiv (e : LieIso c X c' Y) : UnitaryEquiv c X c' Y where
         ((e.conj_mem_iff (X i)).2 (LieSubalgebra.subset_lieSpan ⟨i, rfl⟩))
       rw [algebra_pullback]
       exact ⟨_, h, by ext; simp⟩
+
+/-- Conjugation by a Lie isomorphism maps the Lie algebra of `X` onto that of `Y`. -/
+theorem toSubmodule_lieAlgebra (e : LieIso c X c' Y) :
+    (lieAlgebra Y).toSubmodule = (lieAlgebra X).toSubmodule.map
+      (e.toLinearEquiv.conj : Module.End ℂ V →ₗ[ℂ] Module.End ℂ W) := by
+  ext B
+  rw [LieSubalgebra.mem_toSubmodule, Submodule.mem_map]
+  refine ⟨fun hB => ⟨e.toLinearEquiv.symm.conj B, ?_, LinearEquiv.conj_conj_symm _ _⟩, ?_⟩
+  · rw [LieSubalgebra.mem_toSubmodule, ← e.conj_mem_iff, LinearEquiv.conj_conj_symm]
+    exact hB
+  · rintro ⟨A, hA, rfl⟩
+    exact (e.conj_mem_iff A).2 hA
+
+/-- Lie-isomorphic quantum vector spaces have Lie algebras of the same dimension. -/
+theorem finrank_lieAlgebra (e : LieIso c X c' Y) :
+    Module.finrank ℂ (lieAlgebra X).toSubmodule = Module.finrank ℂ (lieAlgebra Y).toSubmodule := by
+  rw [e.toSubmodule_lieAlgebra, LinearEquiv.finrank_map_eq]
 
 end LieIso
 

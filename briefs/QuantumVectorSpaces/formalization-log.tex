@@ -60,7 +60,10 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Frames.lean} (frame changes, Theorem~5,
   [B]WDQ), and\newline
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Isomorphisms.lean} (isomorphisms of
-  quantum vector spaces, Example~3 and Theorem~5)
+  quantum vector spaces, Example~3 and Theorem~5), and\newline
+  \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/SchwartzIsomorphisms.lean}
+  ($\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ are Lie isomorphic iff $n = m$,
+  Example~3)
 \item Library: \lean{QuantumVectorSpaces}
 \item \raggedright Imports: \lean{SchwartzNorms}
   (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$)
@@ -83,7 +86,10 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   topology has a countable subfamily inducing it),\newline
   \lean{ForMathlib/Topology/Algebra/Projectivization/SecondCountable.lean}
   (\lean{Projectivization.secondCountableTopology_of}: with a separating dual, $V$ is second
-  countable if its projective space is)
+  countable if its projective space is),\newline
+  \lean{ForMathlib/Algebra/Lie/Subalgebra.lean}
+  (\lean{LieSubalgebra.coe_lieSpan_eq_span_of_forall_lie_mem}: a set whose brackets lie in its
+  span generates its span as a Lie subalgebra)
 \end{itemize}
 
 \paragraph{Setting.} $V$ is a complex vector space with an inner product given as a
@@ -158,6 +164,10 @@ Isomorphisms preserve observables and pure states & \lean{UnitaryEquiv.isObserva
   \lean{UnitaryEquiv.pureStates} \\
 Isomorphisms and frame changes & \lean{induced_topology_eq_pullback},
   \lean{induced_topology_eq_iff} \\
+Example 3, $\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ isomorphic iff $n = m$ &
+  \lean{nonempty_lieIso_schwartzN_iff} (for Lie isomorphisms and $\hbar, \hbar' \ne 0$; from
+  \lean{LieIso.finrank_lieAlgebra}, \lean{linearIndependent_obsN},
+  \lean{finrank_lieAlgebra_obsN}) \\
 \bottomrule
 \end{xltabular}
 
@@ -263,10 +273,16 @@ Isomorphisms and frame changes & \lean{induced_topology_eq_pullback},
   ``preserve the Lie algebraic structure''. Every Lie isomorphism is a unitary equivalence
   (\lean{LieIso.toUnitaryEquiv}): the two Lie algebras generate conjugate associative algebras,
   hence the same topology.
-\item The ``iff $n = m$'' part of Example~3 is not formalized, and its truth depends on the
-  notion of isomorphism. For Lie isomorphisms and $\hbar \ne 0$ it holds: $X^i$, $P_i$ and $I$
-  are linearly independent and span a Lie algebra of dimension $2n + 1$, and conjugation
-  preserves the dimension. For unitary equivalences it fails. The Hermite functions $h_\alpha$
+\item The truth of the ``iff $n = m$'' part of Example~3 depends on the notion of isomorphism.
+  For Lie isomorphisms it holds (\lean{nonempty_lieIso_schwartzN_iff}), even with different
+  nonzero values $\hbar$ and $\hbar'$ on the two sides. Conjugation preserves the dimension of
+  the Lie algebra (\lean{LieIso.finrank_lieAlgebra}). For $\hbar \ne 0$ the observables $X^i$,
+  $P_i$, $I$ are linearly independent (\lean{linearIndependent_obsN}): the commutator of a
+  vanishing combination with $P_k$ is $i\hbar$ times the coefficient of $X^k$, and with $X^k$
+  it is $-i\hbar$ times the coefficient of $P_k$. Their commutators are multiples of $I$, so
+  their Lie algebra is their linear span, of dimension $2n + 1$
+  (\lean{finrank_lieAlgebra_obsN}). For unitary equivalences the claim fails; this is not
+  formalized. The Hermite functions $h_\alpha$
   ($\alpha \in \mathbb{N}^n$) form an orthonormal basis of $L^2(\mathbb{R}^n)$, and $f$ lies in
   $\mathcal{S}(\mathbb{R}^n)$ exactly when its coefficients $c_\alpha$ satisfy
   $\sum_\alpha |c_\alpha|^2 (1 + |\alpha|)^{2k} < \infty$ for all $k$, these sums giving the
@@ -297,8 +313,9 @@ are left implicit.
   number of defining observables'', is not valid: the number of defining observables is not an
   invariant. A unitary equivalence $\mathcal{S}(\mathbb{R}^n) \to \mathcal{S}(\mathbb{R})$ carries
   the $2n + 1$ defining observables $X^i$, $P_i$, $I$ to defining observables on
-  $\mathcal{S}(\mathbb{R})$ that give the same topology. The claim holds for Lie isomorphisms and
-  fails for unitary equivalences (see ``Differences'').
+  $\mathcal{S}(\mathbb{R})$ that give the same topology. The claim holds for Lie isomorphisms
+  (\lean{nonempty_lieIso_schwartzN_iff}) and fails for unitary equivalences (see
+  ``Differences'').
 \item The Remark after Example~3 says the $L^2$ seminorms and the sup seminorms dominate each
   other. But the seminorms of Corollary~2 are $\|Af\|$ for every $A$ in the algebra, including
   non-normally-ordered products such as $PX$. Reducing them to $\|x^a \partial^b f\|$ needs the
