@@ -207,6 +207,12 @@ EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-
 \item New file \lean{ForMathlib/Analysis/InnerProductSpace/CFCEigenvector.lean}:
   $g(T)v = g(\mu)v$ for $Tv = \mu v$, $T$ self-adjoint and $g$ continuous on the spectrum, in any
   dimension (TauCeti's version is finite-dimensional).
+\item Infinite distance when $S(P_X(\rho)) = \infty$, in a module of its own, so that the
+  comparator lane is unchanged:\newline
+  \lean{briefs/ProjectiveMeasurement/ProjectiveMeasurement/InfiniteDistance.lean}\newline
+  Imports: \lean{ProjectiveMeasurement.InfiniteDimensional} and\newline
+  \lean{ForPhyslib.QuantumMechanics.VonNeumannEntropyMixture}\newline
+  (the latter for a density operator of infinite entropy).
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
@@ -271,6 +277,12 @@ Klein, ``vanishes iff $\sigma = P_X(\rho)$'' & \lean{eq_of_lindbladSum_eq_zero},
 EQ-KL $\Leftrightarrow$ EQ-MEAS under [B]FINENT & \lean{eqKL_iff_eqMeasFinEnt}, via
   \lean{IsResolutionOfIdentity.relativeEntropy_pinching_lt} \\
 Theorem~1 & \lean{projective_measurement_tfae} and \lean{eqKL_iff_eqMeasFinEnt} \\
+$D(\rho\|\sigma) \ge S(P_X(\rho)) - S(\rho)$ for $[\sigma, X] = 0$ &
+  \lean{IsResolutionOfIdentity.vonNeumannEntropy_pinching_le} \\
+``Every ensemble commuting with $X$ is infinitely distant from $\rho$'', for $S(\rho) < \infty$ &
+  \lean{relativeEntropy_eq_top_of_vonNeumannEntropy_pinching_eq_top} \\
+The same, for $S(\rho) = \infty$: false & \lean{not_forall_relativeEntropy_eq_top},
+  \lean{isEigenDecomposition_zero} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -326,9 +338,11 @@ finite-dimensional part:
   $\rho$ with $S(\rho) = \infty$ has $D(\rho\|P_X(\rho)) = D(\rho\|\rho) = 0$. The remark
   ``Relative entropy in infinite dimensions'' says that in the case $S(P_X(\rho)) = +\infty$
   ``every ensemble commuting with $X$ is infinitely distant from $\rho$''. Read literally, the same
-  $\rho$ is a counterexample, with $\sigma = \rho$. The claim holds when $S(\rho) < \infty$, by
-  $D(\rho\|\sigma) = -\operatorname{tr}(P_X(\rho)\log\sigma) - S(\rho) \ge S(P_X(\rho)) - S(\rho)$;
-  this is not formalized.
+  $\rho$ is a counterexample, with $\sigma = \rho$: in every infinite-dimensional space, for
+  $X = 0$ with the single eigenprojection $1$ and a density operator of infinite entropy
+  (\lean{not_forall_relativeEntropy_eq_top}). The claim holds when $S(\rho) < \infty$, by
+  $D(\rho\|\sigma) + S(\rho) = -\operatorname{tr}(P_X(\rho)\log\sigma) \ge S(P_X(\rho))$
+  (\lean{relativeEntropy_eq_top_of_vonNeumannEntropy_pinching_eq_top}).
 \end{itemize}
 
 \end{document}

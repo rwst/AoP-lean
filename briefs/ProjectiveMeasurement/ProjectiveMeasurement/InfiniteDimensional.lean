@@ -41,6 +41,10 @@ Theorem 1:
   Pythagoras identity and Klein's inequality;
 * `relativeEntropy_pinching_eq`  eq. (13): `D(ρ‖P_X(ρ)) = S(P_X(ρ)) - S(ρ)`;
 * `projective_measurement_tfae`  EQ-MEAS, EQ-LIND and EQ-HS are equivalent.
+
+The remark "every ensemble commuting with `X` is infinitely distant from `ρ`" when
+`S(P_X(ρ)) = ∞` is proved for `S(ρ) < ∞`, and refuted otherwise, in
+`ProjectiveMeasurement.InfiniteDistance`.
 -/
 
 public import ForPhyslib.QuantumMechanics.DephasingFlow
