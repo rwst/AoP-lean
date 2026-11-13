@@ -193,6 +193,7 @@ srcDir = "briefs/SchwartzNorms/comparator"
 [[lean_lib]]
 name = "QuantumVectorSpaces"
 srcDir = "briefs/QuantumVectorSpaces"
+globs = ["QuantumVectorSpaces.*"]
 
 # Its comparator lane (not default targets; see COMPARATOR.md).
 [[lean_lib]]

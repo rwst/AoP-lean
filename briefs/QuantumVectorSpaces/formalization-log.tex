@@ -52,9 +52,12 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
-\item File: \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces.lean}
+\item Files: \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces.lean}, and\newline
+  \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Countable.lean} (a countable generating
+  set of observables, Sec.~5)
 \item Library: \lean{QuantumVectorSpaces}
-\item Imports: \lean{SchwartzNorms} (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$)
+\item \raggedright Imports: \lean{SchwartzNorms}
+  (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$)
   and new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Defs.lean} (the seminorm
   $\sqrt{\operatorname{re}\langle x, x\rangle}$ of a \lean{PreInnerProductSpace.Core}, and
@@ -68,7 +71,10 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   function, from TauCeti's \lean{SchwartzMap.exists_integral_norm_fourierInv_le}),\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/MultilinearBasis.lean}\newline
   (\lean{ContinuousMultilinearMap.norm_le_sum_orthonormalBasis}: a multilinear map is bounded
-  by its values on an orthonormal basis)
+  by its values on an orthonormal basis),\newline
+  \lean{ForMathlib/Analysis/LocallyConvex/FirstCountable.lean}
+  (\lean{WithSeminorms.exists_countable}: a family of seminorms inducing a first-countable
+  topology has a countable subfamily inducing it)
 \end{itemize}
 
 \paragraph{Setting.} $V$ is a complex vector space with an inner product given as a
@@ -122,6 +128,12 @@ Example 3 in $n$ dimensions, second countability & \lean{secondCountableTopology
 Example 3 in $n$ dimensions is a quantum vector space & \lean{isQuantumVectorSpace_schwartzN}
   (for $\hbar \ne 0$) \\
 Theorem 5, [B]COBS & \lean{IsAdmissible.continuous_expectation} \\
+Sec.~5, a countable subset of observables generates the topology &
+  \lean{exists_countable_topology_eq}, \lean{exists_countable_topology_eq_iff} (under first
+  countability) \\
+Sec.~5, the same for a quantum vector space & \lean{IsQuantumVectorSpace.exists_countable} \\
+Sec.~5, separability is not enough & \lean{Diagonal.separableSpace},
+  \lean{Diagonal.not_firstCountableTopology}, \lean{Diagonal.not_exists_countable} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -166,13 +178,35 @@ Theorem 5, [B]COBS & \lean{IsAdmissible.continuous_expectation} \\
   uniformly; the limits are the derivatives of the limit function, by the theorem on uniform
   limits of derivatives (\lean{hasFDerivAt_of_tendstoUniformly}); and the bounds pass to the
   limit. For the qubit, completeness and second countability come from finite dimension.
+\item The claim of Sec.~5 that a countable subset of the observables generates the topology is
+  proved under first countability, which second countability implies; it is in fact equivalent
+  to first countability (\lean{exists_countable_topology_eq_iff}). The proof
+  (\lean{WithSeminorms.exists_countable}) takes a countable basis of balls at $0$; each ball
+  involves finitely many words $X_{i_1} \cdots X_{i_k}$, and their letters form the countable
+  subset. For a quantum vector space the subset is enlarged to be closed under the structure
+  constants, so that it satisfies Definition~1 itself
+  (\lean{IsQuantumVectorSpace.exists_countable}).
+\item Separability is not enough. On the finitely supported sequences, with the $\ell^2$ inner
+  product and every multiplication operator $(M_f v)_n = f_n v_n$ by a real sequence $f$ as a
+  defining observable, the observables are symmetric and commute (\lean{Diagonal.isSymmetric_mulOp},
+  \lean{Diagonal.mulOp_comm}), and the space is separable, as the union of countably many
+  finite-dimensional subspaces (\lean{Diagonal.separableSpace}). But the topology is not first
+  countable: for countably many balls $U_n$ at $0$, choose $t_n > 0$ with $t_n e_n \in U_n$; then
+  $\|M_f(t_n e_n)\| = 1$ for $f_n = 1/t_n$, so no $U_n$ lies in the ball of $p_{M_f}$
+  (\lean{Diagonal.not_firstCountableTopology}). Hence no countable subset of the observables
+  generates the topology (\lean{Diagonal.not_exists_countable}). The topology is the finest
+  locally convex one, so the space is also complete; this is not formalized.
 \item Not formalized: the ``iff $n = m$'' part of Example~3, which needs a
   notion of isomorphism of quantum vector spaces; [B]WDQ and [B]STDIST in Theorem~5 and the
-  remarks of section~5, which are informal.
+  other remarks of section~5, which are informal.
 \end{itemize}
 
-\paragraph{Problems found in the brief.} No errors. Two steps are left implicit.
+\paragraph{Problems found in the brief.} One claim is false, and two steps are left implicit.
 \begin{itemize}
+\item Sec.~5 says that ``separability/second countability would allow us to find a countable
+  subset of observables from a bigger set that generates the same topology''. This holds for
+  second countability (first countability suffices), but not for separability: see the
+  counterexample under ``Differences''.
 \item The Remark after Example~3 says the $L^2$ seminorms and the sup seminorms dominate each
   other. But the seminorms of Corollary~2 are $\|Af\|$ for every $A$ in the algebra, including
   non-normally-ordered products such as $PX$. Reducing them to $\|x^a \partial^b f\|$ needs the
