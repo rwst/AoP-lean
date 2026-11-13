@@ -184,8 +184,9 @@ Theorem~1, complete & \lean{projective_measurement_tfae} \\
 
 This subsection covers Theorem~1 for bounded observables with pure point spectrum: EQ-MEAS,
 EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-MEAS. It also
-covers the claims of the conclusion on repeatability and state update, and the remark that the
-conditions fail on a continuous part of the spectrum.
+covers the claims of the conclusion on repeatability and state update, the remark that the
+conditions fail on a continuous part of the spectrum, and Theorem~1 for unbounded observables with
+pure point spectrum.
 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
@@ -272,6 +273,17 @@ conditions fail on a continuous part of the spectrum.
   for a self-adjoint $x$ in a C$^*$-algebra, $[x, [x, a]] = 0$ implies $[x, a] = 0$.
 \item New file:\newline \lean{ForMathlib/Analysis/Calculus/Deriv/Tendsto.lean}\newline
   if $f$ converges at $+\infty$ and $f' \to c$, then $c = 0$.
+\item {\raggedright Unbounded observables, in a module of its own, so that the comparator lane is
+  unchanged:\newline
+  \lean{briefs/ProjectiveMeasurement/ProjectiveMeasurement/Unbounded.lean}\newline
+  Imports: \lean{ProjectiveMeasurement.InfiniteDimensional},\newline
+  \lean{ForPhyslib.QuantumMechanics.UnboundedDephasing} and\newline
+  \lean{PhyslibAlpha.ProbabilisticTheory.HilbertSpace.Unbounded.CayleySpectralData.SpecTheorem}\par}
+\item New file:\newline \lean{ForPhyslib/QuantumMechanics/UnboundedDephasing.lean}\newline
+  Gaussian averages over a strongly continuous phase group, with their blocks, the trace-norm
+  contraction, the semigroup property and equilibration; for a self-adjoint $T$ with atomic
+  PhyslibAlpha spectral measure, the eigenprojections, $e^{isT}$, $T$ on spectral windows, and
+  the dephasing semigroup as the unique extension from the windows.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
@@ -414,14 +426,34 @@ Sec.~4, ``all four conditions fail when $X$ has purely continuous spectrum'' &
   \lean{not_isEigenDecomposition}, \lean{commutingDensityOperators_eq_empty},
   \lean{not_isUniqueMinOn_commutingDensityOperators},
   \lean{not_exists_isDensityOperator_dephasingGenerator_eq_zero}, \lean{not_tendsto_traceENorm} \\
+Sec.~3, unbounded $X$: the eigenprojections $\mu_S(\{a\})$ of an atomic spectral measure project
+  onto eigenvectors, and commuting with $X$ means commuting with them &
+  \lean{apply_pointProj_apply}, \lean{IsAtomic.isResolutionOfIdentity},
+  \lean{IsAtomic.commute_iff} \\
+Sec.~3, ``if $X$ is unbounded, the differential equation is initially valid only on the domain of
+  its generator'': on the spectral window $[-m, m]$, $X$ is bounded and the semigroup solves the
+  equation & \lean{apply_spectralCutoffProj_apply},
+  \lean{IsAtomic.hasDerivAt_dephasingSemigroup}, \lean{IsAtomic.dephasingFlow_eq} \\
+Sec.~3, ``the blockwise solution extends the resulting semigroup to every density operator'' &
+  \lean{IsPhaseGroup.mul_gaussianConj_mul}, \lean{IsAtomic.isDephasingExtension},
+  \lean{IsAtomic.eq_of_isDephasingExtension}, \lean{exists_unique_extension},
+  \lean{IsAtomic.dephasingSemigroup_add} \\
+Sec.~3, $\rho(t)$ stays a density operator, for unbounded $X$ &
+  \lean{IsPhaseGroup.isDensityOperator_gaussianConj},
+  \lean{isDensityOperator_dephasingSemigroup} \\
+Theorem~1 for unbounded $X$: EQ-LIND $\Leftrightarrow$ EQ-MEAS $\Leftrightarrow$ EQ-HS, and
+  EQ-KL $\Leftrightarrow$ EQ-MEAS under [B]FINENT & \lean{IsPhaseGroup.tendsto_traceENorm_gaussianConj},
+  \lean{Unbounded.eqMeas_iff_eqLind}, \lean{Unbounded.eqMeas_iff_eqHS},
+  \lean{Unbounded.eqKL_iff_eqMeasFinEnt}, \lean{Unbounded.projective_measurement_tfae} \\
 \end{xltabular}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item Observables are bounded with pure point spectrum, given by their eigenprojections and
   distinct eigenvalues. The brief allows any self-adjoint $X$ and remarks that the conditions fail
-  on a continuous part of the spectrum, which is formalized separately (see below); unbounded $X$,
-  where the Lindblad equation holds only on a domain, is not formalized. The bridge from the spectral theorem is formalized: a bounded
+  on a continuous part of the spectrum, which is formalized separately (see below), as are
+  unbounded observables with pure point spectrum. The bridge from the spectral theorem is
+  formalized: a bounded
   self-adjoint $X$ has pure point spectrum (its eigenvectors span a dense subspace) iff its
   spectral measure $\mu_S$ is atomic, $\sum_x\mu_S(\{x\}) = 1$ strongly, and then
   $X = \sum_x x\,\mu_S(\{x\})$. Every eigendecomposition has $P_x = \mu_S(\{x\})$, the
@@ -510,14 +542,37 @@ Sec.~4, ``all four conditions fail when $X$ has purely continuous spectrum'' &
   nothing about such $X$; the statements above say that no extension to them can hold. In the
   mixed case, every commuting density operator, every density-operator fixed point and every
   density-operator limit of the flow lives on $H_{pp}$.
+\item Unbounded observables are made precise as follows. An observable is a self-adjoint
+  operator $T$ defined on a subspace of $E$ (Mathlib's \lean{LinearPMap}), whose PhyslibAlpha
+  spectral measure $\mu_S$ (\lean{cayleyRealSpectralMeasure}) is atomic, $\sum_a \mu_S(\{a\}) = 1$ strongly. Then
+  $\mu_S(\{a\})$ maps into the domain of $T$ and onto eigenvectors of eigenvalue $a$. A density
+  operator commutes with $T$ when it commutes with every $\mu_S(S)$, equivalently with every
+  $\mu_S(\{a\})$. ``Valid only on the domain of its generator'' is read on spectral windows: with
+  $Q_m = \mu_S([-m, m])$, $TQ_m$ is the bounded $X_m = \int 1_{[-m,m]}(r)\,r\,d\mu_S(r)$, by
+  PhyslibAlpha's maximal spectral integral, and for $\rho = Q_m\rho Q_m$ the equation is
+  $\rho' = X_m\rho X_m - \frac12\{X_m^2, \rho\}$. ``Extends the resulting semigroup'' is read as a
+  family $S_t$ that solves these equations on every window, with $S_0\rho = \rho$, and is
+  continuous in trace norm on positive trace-class operators. The Gaussian average
+  $\int e^{isT}\rho\,e^{-isT}\,dN(0,t)(s)$, with PhyslibAlpha's unitary group $e^{isT}$, is
+  such an extension: its blocks are those of eq.~(5), and on a window it is the bounded flow of
+  $X_m$. Since $s \mapsto e^{isT}$ is only strongly continuous, the integral is taken in the
+  trace class, where conjugation by strongly continuous contractions is continuous. Every
+  extension agrees with it on density operators, because $Q_m\rho Q_m \to \rho$ in trace norm.
+  EQ-LIND for unbounded $T$ asks every extension to converge to $\Phi(T, \rho)$ in trace norm;
+  the other conditions are those above with $\mu_S(\{a\})$ as eigenprojections. The maximal
+  domain of the generator is not described.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No errors in the statements. Gaps beyond those of the
 finite-dimensional part:
 \begin{itemize}
 \item ``Both $\rho(t)$ and $P_X(\rho(0))$ are density operators'' is asserted. In infinite
-  dimension it is needed for the Scheff\'e step. The Gaussian representation above proves it
-  (\lean{IsEigenDecomposition.isDensityOperator_of_hasDerivAt}).
+  dimension it is needed for the Scheff\'e step. The Gaussian representation above proves it,
+  for bounded $X$ (\lean{IsEigenDecomposition.isDensityOperator_of_hasDerivAt}) and for
+  unbounded $X$ (\lean{isDensityOperator_dephasingSemigroup}).
+\item For unbounded $X$, the brief does not say on which domain the equation holds, nor in which
+  sense the extension of the semigroup is determined. With the reading above it is the unique
+  extension continuous in trace norm (\lean{IsAtomic.eq_of_isDephasingExtension}).
 \item The Scheff\'e step itself (``Hilbert--Schmidt convergence to a density operator implies
   trace-norm convergence'') is cited without reference or proof. It is a known theorem (Simon,
   \emph{Trace Ideals}, Thm.~2.20; Dell'Antonio 1967), proved here in its weak-convergence form

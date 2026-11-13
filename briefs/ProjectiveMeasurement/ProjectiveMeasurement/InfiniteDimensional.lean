@@ -53,7 +53,8 @@ repeatability and on state update as classical conditioning are in
 `ProjectiveMeasurement.Repeatability`. A second proof of EQ-LIND ⇔ EQ-MEAS by the route of the
 brief, Hilbert–Schmidt convergence and the non-commutative Scheffé lemma, is in
 `ProjectiveMeasurement.HilbertSchmidtRoute`. The claims on observables with continuous spectra
-are in `ProjectiveMeasurement.ContinuousSpectrum`.
+are in `ProjectiveMeasurement.ContinuousSpectrum`, and Theorem 1 for unbounded observables with
+pure point spectrum is in `ProjectiveMeasurement.Unbounded`.
 -/
 
 public import ForPhyslib.QuantumMechanics.DephasingFlow
