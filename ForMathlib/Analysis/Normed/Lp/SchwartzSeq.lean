@@ -24,7 +24,9 @@ The sup-type seminorms `supₙ (n + 1)ᵏ |xₙ|` define the same space and the 
 * `SchwartzSeq.submodule 𝕜`: the rapidly decreasing sequences, as a submodule of `ℓ²(ℕ, 𝕜)`;
 * `SchwartzSeq 𝕜`: the same sequences, as a type with the topology of the seminorms;
 * `SchwartzSeq.toLp`: the inclusion into `ℓ²(ℕ, 𝕜)`;
-* `SchwartzSeq.seminormFamily 𝕜`: the seminorms `p k`.
+* `SchwartzSeq.seminormFamily 𝕜`: the seminorms `p k`;
+* `SchwartzSeq.mkCLM`: a linear map into `ℓ²` whose weighted values are bounded by seminorms, as
+  a continuous linear endomorphism of `S(ℕ, 𝕜)`.
 
 ## Main results
 
@@ -35,11 +37,13 @@ The sup-type seminorms `supₙ (n + 1)ᵏ |xₙ|` define the same space and the 
 * `SchwartzSeq.tendsto_iff`: convergence in `S(ℕ, 𝕜)` is uniform convergence of every
   `(n + 1)ᵏ xₙ`;
 * `SchwartzSeq.not_tendsto_of_tendsto_atTop`: a sequence along which a seminorm diverges has no
-  limit.
+  limit;
+* `SchwartzSeq.continuous_inner_apply`: for a continuous linear endomorphism `T`, the expectation
+  `x ↦ ⟪x, T x⟫` is continuous.
 -/
 
 open Filter Topology
-open scoped lp NNReal
+open scoped lp NNReal InnerProductSpace
 
 @[expose] public noncomputable section
 
@@ -221,5 +225,59 @@ theorem not_tendsto_of_tendsto_atTop {α : Type*} {l : Filter α} [l.NeBot]
 /-- The finitely supported sequences are rapidly decreasing. -/
 lemma single_mem_submodule (i : ℕ) (c : 𝕜) : lp.single 2 i c ∈ submodule 𝕜 :=
   Submodule.mem_iInf _ |>.2 fun _ => lp.single_mem_diagonalDomain _ i c
+
+/-- A sequence dominated by a weighted Schwartz sequence `((n + 1)ᵏ xₙ)ₙ` lies in `ℓ²`. -/
+theorem memℓp_of_norm_le {f : ℕ → 𝕜} (k : ℕ) (x : SchwartzSeq 𝕜)
+    (h : ∀ n, ‖f n‖ ≤ ((n : ℝ) + 1) ^ k * ‖toLp x n‖) : Memℓp f 2 :=
+  (lp.memℓp (weight k x)).mono' fun n => (h n).trans (norm_weight_apply k x n).ge
+
+/-! ### Continuous linear endomorphisms -/
+
+section mkCLM
+
+variable (f : SchwartzSeq 𝕜 →ₗ[𝕜] ℓ²(ℕ, 𝕜))
+  (hf : ∀ k : ℕ, ∃ m : ℕ, ∃ C : ℝ, ∀ x : SchwartzSeq 𝕜, ∀ n : ℕ,
+    ((n : ℝ) + 1) ^ k * ‖f x n‖ ≤ C * seminormFamily 𝕜 m x)
+
+include hf in
+lemma mem_submodule_of_bound (x : SchwartzSeq 𝕜) : f x ∈ submodule 𝕜 :=
+  (mem_submodule_iff _).2 fun k => by
+    obtain ⟨m, C, hC⟩ := hf k
+    exact ⟨C * seminormFamily 𝕜 m x, hC x⟩
+
+/-- The linear map underlying `mkCLM`. -/
+def mkLM : SchwartzSeq 𝕜 →ₗ[𝕜] SchwartzSeq 𝕜 :=
+  f.codRestrict (submodule 𝕜) (mem_submodule_of_bound f hf)
+
+theorem continuous_mkLM : Continuous (mkLM f hf) := by
+  refine continuous_iff_continuousAt.2 fun g => tendsto_iff.2 fun k ε hε => ?_
+  obtain ⟨m, C, hC⟩ := hf k
+  have hC1 : 0 < |C| + 1 := by positivity
+  filter_upwards [((withSeminorms 𝕜).tendsto_nhds id g).1 tendsto_id m _
+    (div_pos hε hC1)] with y hy n
+  rw [← map_sub]
+  change ((n : ℝ) + 1) ^ k * ‖f (y - g) n‖ ≤ ε
+  have hp := apply_nonneg (seminormFamily 𝕜 m) (y - g)
+  calc ((n : ℝ) + 1) ^ k * ‖f (y - g) n‖ ≤ C * seminormFamily 𝕜 m (y - g) := hC _ n
+    _ ≤ (|C| + 1) * seminormFamily 𝕜 m (y - g) :=
+        mul_le_mul_of_nonneg_right (by linarith [le_abs_self C]) hp
+    _ ≤ (|C| + 1) * (ε / (|C| + 1)) := mul_le_mul_of_nonneg_left hy.le hC1.le
+    _ = ε := mul_div_cancel₀ ε hC1.ne'
+
+/-- A linear map `f : S(ℕ, 𝕜) → ℓ²(ℕ, 𝕜)` whose weighted values are bounded by seminorms,
+`(n + 1)ᵏ |(f x)ₙ| ≤ C p m x`, as a continuous linear endomorphism of `S(ℕ, 𝕜)`. -/
+def mkCLM : SchwartzSeq 𝕜 →L[𝕜] SchwartzSeq 𝕜 := ⟨mkLM f hf, continuous_mkLM f hf⟩
+
+@[simp]
+theorem toLp_mkCLM (x : SchwartzSeq 𝕜) : toLp (mkCLM f hf x) = f x :=
+  rfl
+
+end mkCLM
+
+/-- **Continuous expectations.** For a continuous linear endomorphism `T` of `S(ℕ, 𝕜)`, the
+expectation `x ↦ ⟪x, T x⟫` is continuous on `S(ℕ, 𝕜)`. -/
+theorem continuous_inner_apply (T : SchwartzSeq 𝕜 →L[𝕜] SchwartzSeq 𝕜) :
+    Continuous fun x => ⟪toLp x, toLp (T x)⟫_𝕜 :=
+  continuous_toLp.inner (continuous_toLp.comp T.continuous)
 
 end SchwartzSeq

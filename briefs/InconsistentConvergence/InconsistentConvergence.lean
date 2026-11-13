@@ -35,7 +35,9 @@ onto the Schwartz space `𝓢(ℝ)`, with its topology. There `eʲ` has no limit
 For the operators, see the module `InconsistentConvergence.NumberOperator`: the number operator
 `N = a† a` is self-adjoint on its maximal domain, and `⟨x|N|x⟩ = numberExp x` there. For `S(ℕ)` as
 a topological space, see the module `InconsistentConvergence.SchwartzSequences`: there `eʲ` and
-the `|j⟩` have no limit in `S(ℕ)`, and `S(ℕ) ≃ 𝓢(ℝ)` as topological vector spaces.
+the `|j⟩` have no limit in `S(ℕ)`, and `S(ℕ) ≃ 𝓢(ℝ)` as topological vector spaces. For the
+observables on `S(ℕ)`, see the module `InconsistentConvergence.SchwartzObservables`: there
+`⟨x|N|x⟩`, and the expectation of every polynomial in `a` and `a†`, is continuous on `S(ℕ)`.
 -/
 public import Mathlib.Analysis.Normed.Lp.lpSpace
 

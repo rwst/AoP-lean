@@ -83,6 +83,15 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \item \lean{ForMathlib.Analysis.Normed.Lp.SchwartzSeq}.
   \end{itemize}
   The \lean{ForMathlib} file constructs $S(\mathbb{N})$ as a topological vector space.
+\item Fifth file, for the observables on $S(\mathbb{N})$, in the same subdirectory and separate
+  from the main file for the same reason: module \lean{InconsistentConvergence.SchwartzObservables}.
+  Its imports:
+  \begin{itemize}
+  \item \lean{InconsistentConvergence.NumberOperator};
+  \item \lean{InconsistentConvergence.SchwartzSequences}.
+  \end{itemize}
+  The construction of continuous linear maps of $S(\mathbb{N})$ from weighted bounds, and the
+  continuity of their expectations, are in \lean{ForMathlib.Analysis.Normed.Lp.SchwartzSeq}.
 \end{itemize}
 
 \paragraph{Setting.} $H = \ell^2(\mathbb{N})$ (\texttt{lp (fun \_ : }$\mathbb{N}$\texttt{ => }$\mathbb{C}$\texttt{) 2}), with
@@ -183,6 +192,32 @@ $S(\mathbb{N})$ is the Schwartz space of the oscillator & \lean{hermiteSchwartzE
 \end{tabularx}
 \end{center}
 
+\paragraph{Results: observables on $S(\mathbb{N})$.} In the fifth file, $a$, $a^\dagger$ and $N$
+are restricted to $S(\mathbb{N})$, which lies in their domains. The bounds
+$(n+1)^k |(ax)_n| \le p_{k+1}(x)$, $(n+1)^k |(a^\dagger x)_n| \le 2^k p_{k+1}(x)$ and
+$(n+1)^k |(Nx)_n| \le p_{k+1}(x)$, with $p_k(x) = \|((n+1)^k x_n)_n\|$, make them continuous
+linear maps $S(\mathbb{N}) \to S(\mathbb{N})$ (\lean{SchwartzSeq.mkCLM}).
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+$a$, $a^\dagger$, $N$ act on $S(\mathbb{N})$ & \lean{annihilationS}, \lean{creationS},
+  \lean{numberOpS}, agreeing with the operators of the fourth file
+  (\lean{toLp_numberOpS}); $N = a^\dagger a$ (\lean{numberOpS_eq_comp}) \\
+the Schwartz topology does not allow this kind of convergence: $\langle N\rangle$
+  & \lean{continuous_inner_numberOpS}, \lean{continuous_numberExp}: $\braket{x|N|x}$ is
+  continuous on $S(\mathbb{N})$ \\
+Prop.~1, from the expectation & \lean{not_tendsto_eS_of_numberExp}: a limit of $e^j$ in
+  $S(\mathbb{N})$ would be $\ket{0}$, with $\langle N\rangle = 0 \ne 1$ \\
+the same for all moments & \lean{continuous_inner_of_mem_adjoin}: $\braket{x|T|x}$ is continuous
+  on $S(\mathbb{N})$ for every polynomial $T$ in $a$ and $a^\dagger$, among them
+  $\hat{x} = (a + a^\dagger)/\sqrt{2}$, $\hat{p} = i(a^\dagger - a)/\sqrt{2}$ and
+  $N + \tfrac12$ (\lean{positionS}, \lean{momentumS}, \lean{hamiltonianS}) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item Indexing. Proposition~1 indexes sequences from $1$, with the ground term at $i = 1$. The
@@ -199,6 +234,12 @@ $S(\mathbb{N})$ is the Schwartz space of the oscillator & \lean{hermiteSchwartzE
   $\sum_n n\,|x_n|^2$, which has a default value outside the domain of $N$. The discontinuity
   is still meaningful, because every $e^j$ is finitely supported. The operator file constructs
   $N = a^\dagger a$ and shows that the weighted sum is $\braket{x|N|x}$ on $D(N)$.
+\item All moments. The brief says that the Schwartz topology ``keeps track of all moments''.
+  The formalization reads this as the continuity on $S(\mathbb{N})$ of the expectations of the
+  polynomials in $a$ and $a^\dagger$. The proof does not use the polynomial form: the
+  expectation of every continuous linear map $S(\mathbb{N}) \to S(\mathbb{N})$ is continuous
+  (\lean{SchwartzSeq.continuous_inner_apply}), and the polynomials are such maps because $a$
+  and $a^\dagger$ are.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No mathematical problems. Minor: the distance is
