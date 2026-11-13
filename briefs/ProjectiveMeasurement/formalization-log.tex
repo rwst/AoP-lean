@@ -183,7 +183,8 @@ Theorem~1, complete & \lean{projective_measurement_tfae} \\
 \subsection{Hilbert spaces of any dimension}\label{sec:projective-measurement-any-dim}
 
 This subsection covers Theorem~1 for bounded observables with pure point spectrum: EQ-MEAS,
-EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-MEAS.
+EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-MEAS. It also
+covers the claims of the conclusion on repeatability and state update.
 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
@@ -235,6 +236,14 @@ EQ-LIND and EQ-HS are equivalent, and under [B]FINENT EQ-KL is equivalent to EQ-
 \item New file:\newline \lean{ForPhyslib/QuantumMechanics/PurePointSpectralMeasure.lean}\newline
   the spectral projections of points are the eigenspace projections, for the spectral measure
   \lean{boundedSelfAdjointSpectralMeasure} of a bounded self-adjoint operator in PhyslibAlpha.
+\item Repeatability and state update, in a module of its own, so that the comparator lane is
+  unchanged:\newline
+  \lean{briefs/ProjectiveMeasurement/ProjectiveMeasurement/Repeatability.lean}\newline
+  Imports: \lean{ProjectiveMeasurement.InfiniteDimensional} and\newline
+  \lean{ForPhyslib.QuantumMechanics.LuedersRule}
+\item New file \lean{ForPhyslib/QuantumMechanics/LuedersRule.lean}: outcome probabilities
+  $p_x = \operatorname{tr}(P_x\rho P_x)$, the L\"uders state $\rho_x = P_x\rho P_x/p_x$,
+  repeatability, and conditioning of mixtures.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a complex Hilbert space of any dimension; separability is not used.
@@ -332,6 +341,19 @@ In finite dimension, the two relative entropies agree & \lean{relativeEntropy_eq
   \lean{IsDensityOperator.vonNeumannEntropy_ne_top} \\
 In finite dimension, EQ-KL is the same minimization in both parts &
   \lean{commutingDensities_eq}, \lean{eqKL_iff_relativeEntropy} \\
+Sec.~5, ``all outputs are equilibria'': $L(\sigma) = 0$ iff $[\sigma, X] = 0$, and such $\sigma$ is
+  its own output & \lean{dephasingGenerator_eq_zero_iff}, \lean{EqLind.apply_eq_self} \\
+Sec.~5, repeatability: $\Phi(X, \Phi(X, \rho)) = \Phi(X, \rho)$, and the outcome probabilities
+  are unchanged & \lean{EqLind.apply_apply}, \lean{EqMeas.outcomeProb_apply},
+  \lean{IsResolutionOfIdentity.tsum_outcomeProb_eq_one} \\
+Sec.~5, after the outcome $x$ the state $\rho_x$ is an equilibrium and a second measurement gives
+  $x$ with certainty & \lean{IsResolutionOfIdentity.isDensityOperator_luders},
+  \lean{commute_luders}, \lean{IsResolutionOfIdentity.outcomeProb_luders} \\
+Sec.~5, ``the output is a classical statistical mixture'': $\Phi(X, \rho) = \sum_x p_x\rho_x$ &
+  \lean{IsResolutionOfIdentity.hasSum_pinching_apply_luders}, \lean{EqMeas.hasSum_apply_luders} \\
+Sec.~5, ``the update \dots\ is equivalent to what happens in the classical case'' &
+  \lean{IsResolutionOfIdentity.luders_of_hasSum}, \lean{EqMeas.luders_apply_eq_component},
+  \lean{EqMeas.luders_apply} \\
 \end{xltabular}
 
 \paragraph{Differences from the brief.}
@@ -381,6 +403,16 @@ In finite dimension, EQ-KL is the same minimization in both parts &
 \item The Hilbert--Schmidt Pythagoras identity holds in $[0, \infty]$ for every operator, through
   TauCeti's block splitting of the energy, with no summability assumption. The strict inequality
   uses that differences of density operators have finite energy.
+\item The two claims of the conclusion are made precise as follows. The outcome $x$ has the
+  probability $p_x = \operatorname{tr}(P_x\rho P_x)$, and the state after it is the L\"uders state
+  $\rho_x = P_x\rho P_x/p_x$; the brief names neither. Repeatability: the equilibria of the
+  dephasing equation are the operators commuting with $X$, under EQ-LIND each commuting density
+  operator is its own output, so applying the process to its output returns it; $\rho_x$ is again
+  an equilibrium, and gives $x$ with probability one. Classical update: a mixture
+  $\sigma = \sum_x w_x\sigma_x$ of density operators $\sigma_x = P_x\sigma_xP_x$ gives the outcome
+  $x$ with probability $w_x$, and its L\"uders state for $x$ is $\sigma_x$. This is conditioning
+  of a classical mixture on the component that occurred. The output $\sum_x p_x\rho_x$ is such a
+  mixture, and its update on $x$ equals the L\"uders state of the input $\rho$.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No errors in the statements. Gaps beyond those of the
@@ -391,6 +423,8 @@ finite-dimensional part:
   and also gives the contraction that replaces that step.
 \item The Scheff\'e step itself (``Hilbert--Schmidt convergence to a density operator implies
   trace-norm convergence'') is cited without reference or proof; it is not needed here.
+\item The conclusion's claims on repeatability and state update use the outcome probabilities and
+  the post-measurement state without defining them; see the last item of the differences above.
 \item The brief solves the block equations (4) but does not say that the solution is unique; the
   argument behind \lean{IsEigenDecomposition.mul_eq_of_hasDerivAt} gives uniqueness for every
   solution continuous from the right at $0$.

@@ -48,7 +48,9 @@ The remark "every ensemble commuting with `X` is infinitely distant from `ρ`" w
 finite-dimensional `relEntropy`, and EQ-KL is the same minimization in both parts, in
 `ProjectiveMeasurement.RelativeEntropies`. A self-adjoint `X` has an eigendecomposition exactly
 when it has pure point spectrum, with `Pₓ = μ_S({x})` its spectral projections, so the conditions
-depend on `X` only, in `ProjectiveMeasurement.SpectralTheorem`.
+depend on `X` only, in `ProjectiveMeasurement.SpectralTheorem`. The conclusion's claims on
+repeatability and on state update as classical conditioning are in
+`ProjectiveMeasurement.Repeatability`.
 -/
 
 public import ForPhyslib.QuantumMechanics.DephasingFlow
