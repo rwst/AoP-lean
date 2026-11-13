@@ -92,6 +92,15 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \end{itemize}
   The construction of continuous linear maps of $S(\mathbb{N})$ from weighted bounds, and the
   continuity of their expectations, are in \lean{ForMathlib.Analysis.Normed.Lp.SchwartzSeq}.
+\item Sixth file, for unbounded observables in general, in the same subdirectory and kept
+  apart from the main file for the same reason:
+  \lean{InconsistentConvergence.UnboundedObservables}. Its imports:
+  \begin{itemize}
+  \item \lean{InconsistentConvergence.NumberOperator};
+  \item \lean{ForMathlib.Analysis.InnerProductSpace.UnboundedForm}.
+  \end{itemize}
+  The \lean{ForMathlib} file proves the general statements, for densely defined operators on a
+  complex inner product space.
 \end{itemize}
 
 \paragraph{Setting.} $H = \ell^2(\mathbb{N})$ (\texttt{lp (fun \_ : }$\mathbb{N}$\texttt{ => }$\mathbb{C}$\texttt{) 2}), with
@@ -218,6 +227,37 @@ the same for all moments & \lean{continuous_inner_of_mem_adjoin}: $\braket{x|T|x
 \end{tabularx}
 \end{center}
 
+\paragraph{Results: unbounded observables.} The general statements are in
+\lean{ForMathlib}, for an operator $A$ with dense domain $D(A)$ in a complex inner product space,
+unbounded in the sense that no $C$ has $\|Ax\| \le C\|x\|$ on $D(A)$. The instances are in the
+sixth file, with the position $\hat{x} = (a + a^\dagger)/\sqrt{2}$ of the oscillator on
+$D(a) \cap D(a^\dagger) = D(a^\dagger)$.
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}BL@{}}
+\toprule
+Brief & Lean \\
+\midrule
+the domain of an unbounded self-adjoint operator cannot be the whole space
+  & \lean{LinearPMap.domain_ne_top_of_isFormalAdjoint}: Hellinger--Toeplitz, from Mathlib's
+  \lean{LinearMap.IsSymmetric.continuous} \\
+a continuous linear operator is bounded
+  & Mathlib; in this project also \lean{HilbertUnphysicality.not_continuous_of_unbounded} \\
+an unbounded operator is not continuous in its own domain: small state changes, big changes of
+  the average
+  & \lean{LinearPMap.not_continuousAt_inner}: $x \mapsto \braket{x|A|x}$ is discontinuous at
+  every point of $D(A)$; \lean{LinearPMap.not_continuousAt_inner_div}: so is
+  $\braket{x|A|x}/\|x\|^2$ at every $x \ne 0$ \\
+$\langle N\rangle$ & \lean{exists_lt_norm_numberOp}, \lean{not_continuousAt_inner_numberOp},
+  \lean{not_continuousAt_numberExp_domain}: discontinuous at every point of $D(N)$ \\
+the average position is not defined for all states
+  & \lean{exists_lt_norm_positionOp}: $|(\hat{x}\ket{n})_{n+1}| = \sqrt{(n+1)/2}$;
+  \lean{isFormalAdjoint_positionOp}, \lean{domain_positionOp_ne_top}: $D(\hat{x}) \ne \ell^2$ \\
+and is not continuous in its domain & \lean{not_continuousAt_inner_positionOp},
+  \lean{not_continuousAt_inner_div_positionOp} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item Indexing. Proposition~1 indexes sequences from $1$, with the ground term at $i = 1$. The
@@ -240,6 +280,14 @@ the same for all moments & \lean{continuous_inner_of_mem_adjoin}: $\braket{x|T|x
   expectation of every continuous linear map $S(\mathbb{N}) \to S(\mathbb{N})$ is continuous
   (\lean{SchwartzSeq.continuous_inner_apply}), and the polynomials are such maps because $a$
   and $a^\dagger$ are.
+\item Unbounded operators. The brief argues that a continuous operator is bounded because it
+  extends from a dense domain to the whole space. The formalization uses directly that a
+  continuous linear map is bounded. The discontinuity in the domain is proved for the
+  expectation $\braket{x|A|x}$, which is the brief's ``average'', and holds for every densely
+  defined unbounded operator, symmetric or not, since over $\mathbb{C}$ the expectation
+  determines $\braket{x|A|y}$ by polarization. The position is that of the oscillator in
+  $\ell^2$; under the Hermite unitary $U$ it is multiplication by $x$ in $L^2(\mathbb{R})$,
+  which is not formalized here.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No mathematical problems. Minor: the distance is

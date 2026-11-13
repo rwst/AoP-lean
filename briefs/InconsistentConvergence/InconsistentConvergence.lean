@@ -38,6 +38,9 @@ a topological space, see the module `InconsistentConvergence.SchwartzSequences`:
 the `|j⟩` have no limit in `S(ℕ)`, and `S(ℕ) ≃ 𝓢(ℝ)` as topological vector spaces. For the
 observables on `S(ℕ)`, see the module `InconsistentConvergence.SchwartzObservables`: there
 `⟨x|N|x⟩`, and the expectation of every polynomial in `a` and `a†`, is continuous on `S(ℕ)`.
+For unbounded observables in general, see the module
+`InconsistentConvergence.UnboundedObservables`: the expectation of every densely defined unbounded
+operator is discontinuous at every point of its domain, for example `⟨N⟩` and the average position.
 -/
 public import Mathlib.Analysis.Normed.Lp.lpSpace
 
