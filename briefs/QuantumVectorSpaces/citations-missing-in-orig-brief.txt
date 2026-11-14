@@ -120,3 +120,13 @@ this directory.
 15. R. de la Madrid, Eur. J. Phys. 26 (2005) 287-312, arXiv:quant-ph/0502053. [agent]
     Bears on: Sec. 1. Rigged Hilbert space with a Schwartz-like space of preparable states.
     PDF: delaMadrid2005-quant-ph0502053.pdf
+
+16. G. Carcassi, F. Calderón, C. A. Aidala, The unphysicality of Hilbert spaces, Quantum Stud.:
+    Math. Found. 12, 13 (2025), arXiv:2308.06669v3, Appendix, Sec. VIII (p. 14). [read]
+    (in Lean)
+    Bears on: Theorem 5 ([B]WDQ). "If we restrict ourselves to the Schwartz space, then the
+    only unitary transformations we are interested in are those that map Schwartz functions to
+    Schwartz functions. [...] The change of coordinate y(x) we defined in the previous
+    section, then, is automatically ruled out." The brief leaves this restriction implicit in
+    the premise of its proof.
+    PDF: CarcassiCalderonAidala2023-2308.06669.pdf
