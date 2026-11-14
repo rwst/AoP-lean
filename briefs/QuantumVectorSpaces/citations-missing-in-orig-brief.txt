@@ -152,3 +152,38 @@ this directory.
     Prop. 1a. [read in part]
     Bears on: as 18; the condition on H is also necessary.
     PDF: Shirokov2006-quant-ph0510073.pdf
+
+20. T. Gramchev, S. Pilipović, L. Rodino, Eigenfunction expansions in R^n, Proc. Amer. Math.
+    Soc. 139 (2011) 4361-4368, Thm. 1.2 and Remark 1.3. [read: statements, proof outline] (in
+    Lean, QuantumVectorSpaces/FurtherResults/GelfandShilov.lean)
+    Bears on: Theorem 5 ([B]STDIST). A function lies in the Gelfand-Shilov space S^mu_mu(R^n),
+    mu >= 1/2, iff its Hermite coefficients satisfy |a_j| <= C exp(-eps j^(1/(2n mu))); for
+    mu = 1/2, |a_alpha| <= C exp(-eps |alpha|).
+    PDF: Gramchev2011.pdf
+
+21. Z. Lozanov-Crvenković, D. Perišić, Hermite expansions of elements of generalized
+    Gelfand-Shilov spaces in quasianalytic and non quasianalytic case, arXiv:quant-ph/0701041,
+    Thm. 2.3. [read: statement, definitions] (in Lean, as 20)
+    Bears on: as 20. The Hermite expansion is a topological isomorphism of S^mu_mu(R^n),
+    mu >= 1/2, onto its coefficient space; S^1/2_1/2 is the smallest nonzero space of the scale.
+    PDF: LozanovCrvenkovic2007-quant-ph-0701041.pdf
+
+22. M. Langenbruch, Hermite functions and weighted spaces of generalized functions, Manuscripta
+    Math. 119 (2006) 269-285, Example 5.3(b). [read in part]
+    Bears on: as 20. The coefficient spaces of S^r_r(R^n) for r > 1/2 are duals of power series
+    spaces; at r = 1/2 the formal statements need a logarithmic factor.
+    PDF: langenbruch2005.pdf
+
+23. D. Vogt, Lectures on Fréchet spaces, Wuppertal 2000, Thms. 4.9, 5.8, 5.12. [read in part]
+    Bears on: as 20. Power series spaces are classified by their exponent sequences up to
+    constant factors; so S^1/2_1/2(R^n) and S^1/2_1/2(R^m) are not isomorphic for n != m, while
+    all Schwartz spaces S(R^n) are.
+    PDF: Vogt2000.pdf
+
+24. S. L. Woronowicz, The quantum problem of moments I, Rep. Math. Phys. 1 (1970) 135,
+    Theorem and Counterexample II. [read: statements]
+    Bears on: Condition QSTO:V. A state on the polynomials in X and P with an analyticity
+    condition is represented by exactly one positive rho with rho L^2 inside S(R); every pure
+    state of S^1/2_1/2(R) satisfies it. Counterexample II (states with the same moments) is the
+    construction of the brief "Non-uniqueness of the moment problem for Schwartz functions".
+    PDF: woronowicz1970.pdf

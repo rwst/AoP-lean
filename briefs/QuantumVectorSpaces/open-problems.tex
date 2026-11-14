@@ -57,6 +57,13 @@ precise first.
   are physically equivalent if and only if their Lie algebras of observables are equivalent'' is
   asserted, and is what makes QSTO:V consistent with [B]STDIST. (Brief, Theorem~5, proof; Log,
   ``Differences'', last item.)
+  \emph{Related} (\lean{further-results.tex}, Sec.~5). Without the observables, the space alone
+  does not tell the systems apart: all $\mathcal S(\mathbb R^n)$ are isomorphic. The
+  Gelfand--Shilov spaces $S^{1/2}_{1/2}(\mathbb R^n)$ (exponentially decreasing Hermite
+  coefficients) do: they are pairwise non-isomorphic as locally convex spaces (proved there from
+  the literature, not formalized). They do not fit Definition~1, however. Their own topology is not
+  second countable, and with $X$, $P$, $I$ the space $S^{1/2}_{1/2}(\mathbb R)$ is not complete
+  (\lean{FurtherResults.not_isQuantumVectorSpace_gelfandShilov}).
 \item \textbf{Ensembles on a quantum vector space.} \emph{Research.} QSTO:V uses
   density operators $\rho$ and $S(\rho) = -\operatorname{tr}(\rho\log\rho)$, and Sec.~5 calls the
   set of ensembles ``the most natural space to consider'', but no ensemble space over $V$ is

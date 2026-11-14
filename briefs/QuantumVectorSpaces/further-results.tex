@@ -463,6 +463,199 @@ The general theorem is in\\ \lean{ForPhyslib.QuantumMechanics.EntropyContinuity}
 Not formalized: the topology of Schwartz operators and the comparison with Keyl, Kiukas and
 Werner's definition; the continuity of the expectations of polynomials in $X$ and $P$.
 
+\section{A space of states that remembers the number of degrees of freedom}
+\label{sec:gelfandshilov}
+
+[B]STDIST asks that systems with different numbers of degrees of freedom be distinct. QSTO:V
+gets this from the defining observables (proof of Theorem~5), not from $V$: as topological
+vector spaces the Schwartz spaces are all isomorphic. The brief \emph{Unphysicality of Hilbert
+spaces}~\cite{hilbert} says that ``Schwartz spaces present the same problem'', and its
+formalization proves this: for all $n, m \ge 1$ a unitary $L^2(\mathbb R^n) \to L^2(\mathbb R^m)$
+maps $\mathcal S(\mathbb R^n)$ onto $\mathcal S(\mathbb R^m)$ as an isomorphism of topological
+vector spaces (\lean{SchwartzMap.exists_unitary_schwartzEquiv}). This section shows that a
+slightly smaller space does remember~$n$, and what that space costs in Definition~1.
+
+For $\mu \ge \frac12$ the Gelfand--Shilov space $S^\mu_\mu(\mathbb R^n)$ consists of the smooth
+$u$ with $|x^\beta\partial^\alpha u(x)| \le C A^{|\alpha| + |\beta|}(\alpha!\,\beta!)^\mu$ for
+some constants $A$, $C$. It carries the inductive limit topology, as $A \to \infty$, of the Banach
+spaces in which the least such $C$ is the norm. It contains the Hermite functions $h_k$, and
+$S^{1/2}_{1/2}$ is the smallest nonzero space of the scale~\cite[Sec.~1]{lcp}. Its elements are
+the functions whose Hermite coefficients decrease exponentially~\cite[Remark~1.3]{gpr}, that is,
+the analytic vectors $\bigcup_{t > 0} D(e^{tN})$ of the number operator $N$.
+
+\begin{theorem}\label{thm:gs}
+  Let $\mu, \nu \ge \frac12$ and $n, m \ge 1$. Then $S^\mu_\mu(\mathbb R^n)$ and
+  $S^\nu_\nu(\mathbb R^m)$ are isomorphic as locally convex spaces if and only if
+  $\mu n = \nu m$. In particular $S^{1/2}_{1/2}(\mathbb R^n) \cong S^{1/2}_{1/2}(\mathbb R^m)$
+  only for $n = m$.
+\end{theorem}
+
+For $\mu, \nu > \frac12$ this follows from Langenbruch's description of the coefficient
+spaces~\cite[Example~5.3(b)]{lang} together with Vogt's classification of power series
+spaces~\cite[Thm.~5.12]{vogt}. Langenbruch's introduction claims $r \ge \frac12$, but his
+Remark~5.2 and Example~5.3(b) need a logarithmic factor in the defining sequence at
+$r = \frac12$. So the case that matters here is not covered by a formal statement there. The
+proof below treats all $\mu \ge \frac12$ alike.
+
+\begin{proof}
+  For an exponent sequence $0 \le a_0 \le a_1 \le \dots \to \infty$, the power series space of
+  finite type is
+  \[
+    \Lambda_0(a) = \Bigl\{x : |x|_t^2 = \sum_j |x_j|^2 e^{2ta_j} < \infty \text{ for all } t < 0
+    \Bigr\},
+  \]
+  a Fr\'echet--Schwartz space~\cite[Thm.~5.8]{vogt}.
+
+  \emph{Coefficients.} Enumerate the multi-indices $k \in \mathbb N^n$ as $k(0), k(1), \dots$
+  with $|k(j)|$ nondecreasing. There are $\binom{M+n}{n}$ multi-indices with $|k| \le M$, a
+  number between $M^n/n!$ and $(M+1)^n$. Hence $\frac12 j^{1/n} \le |k(j)| \le (n!\,j)^{1/n}$
+  for $j \ge 1$. Gramchev, Pilipovi\'c and Rodino~\cite[Thm.~1.2]{gpr} show that
+  $f \in L^2(\mathbb R^n)$ lies in $S^\mu_\mu(\mathbb R^n)$ if and only if its Hermite
+  coefficients $c_j = \langle h_{k(j)}, f\rangle$ satisfy
+  $\sum_j |c_j|^2 e^{2s j^{1/(2n\mu)}} < \infty$ for some $s > 0$. (Their eigenvalues are those of
+  the harmonic oscillator, $2|k| + n$, in this order.) Lozanov-Crvenkovi\'c and
+  Peri\v{s}i\'c~\cite[Thm.~2.3]{lcp} show that the coefficient map is a topological isomorphism
+  onto this sequence space. The sequence space carries the inductive limit topology of the
+  weighted $\ell^2$ spaces as $s \to 0$. Their weights are built from the
+  $M(\theta_i\sqrt{k_i})$, $\theta_i > 0$, with $M(\rho) \asymp \rho^{1/\mu}$ for large $\rho$.
+  Since $|k|^{1/(2\mu)} \le \sum_i k_i^{1/(2\mu)} \le n|k|^{1/(2\mu)}$ and
+  $|k(j)| \asymp j^{1/n}$, they define the same inductive limit. This inductive limit is the
+  strong dual $\Lambda_0(a^{n,\mu})'_b$ with $a^{n,\mu}_j = j^{1/(2n\mu)}$. Indeed, the dual of
+  $\Lambda_0(a)$ is the union of the duals $\ell^2(e^{-2ta_j})$ of its local Hilbert spaces.
+  Since $\Lambda_0(a)$ is reflexive, hence distinguished~\cite[Thms.~3.3, 2.8]{vogt}, the strong
+  topology is the inductive one~\cite[Sec.~2]{vogt}. So
+  $S^\mu_\mu(\mathbb R^n) \cong \Lambda_0(a^{n,\mu})'_b$.
+
+  \emph{Duality.} An isomorphism between the strong duals of two reflexive Fr\'echet spaces
+  transposes to an isomorphism between their strong biduals, which are the spaces themselves.
+  So $S^\mu_\mu(\mathbb R^n) \cong S^\nu_\nu(\mathbb R^m)$ if and only if
+  $\Lambda_0(a^{n,\mu}) \cong \Lambda_0(a^{m,\nu})$.
+
+  \emph{Classification.} By~\cite[Thm.~5.12]{vogt}, $\Lambda_0(a) \cong \Lambda_0(b)$ if and
+  only if $a_j/C \le b_j \le Ca_j$ for some $C$ and all large $j$. For $a_j = j^{1/(2n\mu)}$ and
+  $b_j = j^{1/(2m\nu)}$ this holds exactly when the exponents agree, that is when
+  $n\mu = m\nu$.
+\end{proof}
+
+At $\mu = \frac12$, where the literature was in doubt, the topological half of the coefficient
+description can also be checked without~\cite{lcp}. Both $S^{1/2}_{1/2}(\mathbb R^n)$ and the
+coefficient space are countable inductive limits of Banach spaces. By~\cite{gpr} the
+coefficient map is a bijection between them. The map and its inverse have closed graphs,
+because every coefficient $f \mapsto \langle h_k, f\rangle$ is continuous on both spaces. By
+Grothendieck's closed graph theorem for such spaces~\cite{mv}, both are continuous.
+
+\paragraph{Why the Schwartz spaces do not remember $n$.} The same argument for
+$\mathcal S(\mathbb R^n)$ gives a power series space of infinite type with exponents
+$\log j^{1/n} = \frac1n\log j$. Vogt's criterion allows a constant factor, so every
+$\mathcal S(\mathbb R^n)$ is isomorphic to $s = \Lambda_\infty(\log(j+1))$. For
+$S^{1/2}_{1/2}$ the dimension sits in the exponent of $j^{1/n}$, where no constant can absorb it.
+The isomorphism in the formalization of the Hilbert brief relabels Hermite functions along a
+bijection $\sigma\colon \mathbb N^n \to \mathbb N^m$ with $|\sigma(k)|$ polynomially bounded in
+$|k|$, and conversely. For $S^{1/2}_{1/2}$ a relabelling would need $|\sigma(k)| \asymp |k|$,
+which counting excludes when $n \ne m$. Theorem~\ref{thm:gs} shows that no isomorphism of any
+kind exists.
+
+\paragraph{Only the product $\mu n$ is remembered.} For example
+$S^{1/2}_{1/2}(\mathbb R^2) \cong S^1_1(\mathbb R)$. So the number of degrees of freedom becomes a
+topological invariant only once $\mu$ is fixed. The natural choice is $\mu = \frac12$, the
+smallest nonzero space of the scale.
+
+\subsection{The cost in Definition 1}
+
+\begin{theorem}\label{thm:gs-def1}
+  \begin{enumerate}
+    \item With its own topology, $V = S^{1/2}_{1/2}(\mathbb R^n)$ is not metrizable, hence not
+      second countable. So no choice of defining observables whose topology of Corollary~2 is
+      this one makes $V$ a quantum vector space.
+    \item The observables $X$, $P$, $I$ of Example~3 map $S^{1/2}_{1/2}(\mathbb R)$ into itself.
+      With them, $S^{1/2}_{1/2}(\mathbb R)$ is not complete in the topology of Corollary~2, so it
+      is not a quantum vector space, whatever the structure constants.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  (1) $V$ is the union of the Hilbert spaces
+  $H_k = \{f : \sum_\alpha |c_\alpha(f)|^2 e^{2|\alpha|/k} < \infty\}$, each continuously
+  included. As the strong dual of a Fr\'echet space, $V$ is complete~\cite[Cor.~2.6]{vogt}. If
+  it were metrizable it would be a Fr\'echet space, and by Baire's theorem some $H_k$ would be of
+  second category in~$V$. Banach's argument (as in the proof of the open mapping
+  theorem,~\cite[Lemmas~1.4, 1.5]{vogt}) would then make the inclusion $H_k \to V$ surjective.
+  But the function with coefficients $e^{-|\alpha|/k}$ lies in $H_{2k}$ and not in~$H_k$. A
+  topological vector space with a countable base at~$0$ is metrizable, so $V$ is not second
+  countable, which Definition~1 requires.
+
+  (2) Write $a_\mp = X \pm D$, so that $a_- h_j = \sqrt{2j}\,h_{j-1}$ and
+  $a_+ h_j = \sqrt{2(j+1)}\,h_{j+1}$. Then $c_j(a_- f) = \sqrt{2(j+1)}\,c_{j+1}(f)$ and
+  $c_j(a_+ f) = \sqrt{2j}\,c_{j-1}(f)$, and these coefficients still decrease exponentially, with
+  half the rate. As $X$ and $D$ are combinations of $a_\pm$, the space is invariant. On an
+  invariant subspace, the topology of Corollary~2 for the restricted observables is the subspace
+  topology. For Example~3 that is the topology of $\mathcal S(\mathbb R)$ (checked with the brief).
+  The space contains the Hermite partial sums of every Schwartz function, which converge in
+  $\mathcal S(\mathbb R)$~\cite{simon}, so it is dense. The Schwartz function with coefficients
+  $e^{-\sqrt{j+1}}$ is not in it. A dense proper subspace is not closed, hence not complete.
+\end{proof}
+
+So $S^{1/2}_{1/2}$ is not a quantum vector space as Definition~1 stands. It needs its own
+inductive limit topology, which no family of defining observables can give it under
+second countability. The observables of Example~3 give it the wrong topology. Using it means
+changing Definition~1 to allow such topologies. That gives up second countability, which the
+brief ties to the second countability of the pure states (Sec.~\ref{sec:ensembles}).
+
+\subsection{Moments determine the pure states}
+
+In $\mathcal S(\mathbb R)$ two different density operators can have the same moments of $X$
+and $P$. This is Woronowicz's Counterexample~II~\cite{woronowicz70}, and the construction of the
+brief \emph{Non-uniqueness of the moment problem for Schwartz functions}. It uses functions with
+disjoint compact supports. $S^{1/2}_{1/2}$ is a quasianalytic class~\cite[Sec.~1]{lcp} and has
+no nonzero functions of compact support, and the non-uniqueness disappears.
+
+\begin{theorem}\label{thm:gs-moments}
+  Take $\hbar = 1$. Let $\psi \in S^{1/2}_{1/2}(\mathbb R)$ with $\|\psi\| = 1$. If $\rho \ge 0$ with
+  $\rho L^2(\mathbb R) \subset \mathcal S(\mathbb R)$ satisfies
+  $\operatorname{tr}(\rho A) = \langle\psi, A\psi\rangle$ for every polynomial $A$ in $X$
+  and~$P$, then $\rho = |\psi\rangle\langle\psi|$.
+\end{theorem}
+
+\begin{proof}
+  Woronowicz~\cite[Theorem]{woronowicz70} proves the following. If a state $\omega$ on the
+  polynomials in $X$ and $P$ satisfies
+  $\sum_k \omega(a^k(a^\dagger)^k)^{1/2}\,t^k/k! < \infty$ for some $t > 0$, with
+  $a^\dagger h_j = \sqrt{j+1}\,h_{j+1}$, then exactly one positive $\rho$ with
+  $\rho L^2 \subset \mathcal S$ represents it. For $\omega = \langle\psi, \cdot\,\psi\rangle$ and
+  $|c_j(\psi)| \le Ce^{-\varepsilon j}$,
+  \[
+    \omega(a^k(a^\dagger)^k) = \|(a^\dagger)^k\psi\|^2 = \sum_j |c_j|^2\frac{(j+k)!}{j!}
+    = k!\sum_j |c_j|^2\binom{j+k}{j}.
+  \]
+  The binomial theorem gives $\binom{j+k}{j}p^j(1-p)^k \le 1$ for $0 < p < 1$. With
+  $p = \delta/(1+\delta)$ this reads $\binom{j+k}{j} \le (1+\delta)^k(1+1/\delta)^j$. Choose
+  $\delta$ with $1 + 1/\delta < e^{2\varepsilon}$, so that
+  $S = \sum_j |c_j|^2(1+1/\delta)^j < \infty$. Then
+  $\|(a^\dagger)^k\psi\| \le \sqrt{k!\,S}\,(1+\delta)^{k/2}$, and the series is at most
+  $\sqrt S\sum_k (t\sqrt{1+\delta})^k/\sqrt{k!} < \infty$ for every~$t$.
+\end{proof}
+
+\subsection{Lean}
+
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.GelfandShilov},\\ namespace
+\lean{QuantumVectorSpaces.FurtherResults}. There $S^{1/2}_{1/2}(\mathbb R)$ is defined by
+its Hermite coefficients~\cite[Remark~1.3]{gpr}, not by the Gelfand--Shilov estimates.
+\begin{itemize}
+  \item \lean{ExpDecay}, \lean{gelfandShilov}: the Schwartz functions with
+    $|c_j| \le Ce^{-\varepsilon j}$, as a subspace of $\mathcal S(\mathbb R)$.
+  \item \lean{coreRestrict}, \lean{obsRestrict}, \lean{topology_restrict}: on a subspace
+    invariant under the defining observables, the topology of Corollary~2 is the subspace
+    topology (any $V$, any observables).
+  \item \lean{coef_raiseOp}, \lean{lowerOp_apply_mem}, \lean{raiseOp_apply_mem},
+    \lean{obs_apply_mem}: the ladder operators, and so $X$, $P$, $I$, preserve the space.
+  \item \lean{topology_gelfandShilov}, \lean{dense_gelfandShilov},
+    \lean{exists_not_mem_gelfandShilov}, \lean{not_completeSpace_gelfandShilov},
+    \lean{not_isQuantumVectorSpace_gelfandShilov}: Theorem~\ref{thm:gs-def1}(2).
+\end{itemize}
+Not formalized: Theorem~\ref{thm:gs}, which needs the Gelfand--Shilov estimates for Hermite
+expansions, inductive limit topologies and the classification of power series spaces; and
+Theorems~\ref{thm:gs-def1}(1) and~\ref{thm:gs-moments}.
+
 \begin{thebibliography}{9}
 \bibitem{brief} G.~Carcassi, \emph{Physical vector spaces for quantum mechanics}, technical
   brief, Assumptions of Physics, \url{https://assumptionsofphysics.org/resources/briefs}.
@@ -492,6 +685,19 @@ Werner's definition; the continuity of the expectations of polynomials in $X$ an
   arXiv:quant-ph/0510073 (2005).
 \bibitem{woronowicz71} S.~L.~Woronowicz, The quantum problem of moments II, Rep. Math. Phys.
   \textbf{1} (1971) 175.
+\bibitem{gpr} T.~Gramchev, S.~Pilipovi\'c, L.~Rodino, Eigenfunction expansions in
+  $\mathbb R^n$, Proc. Amer. Math. Soc. \textbf{139} (2011) 4361--4368.
+\bibitem{lcp} Z.~Lozanov-Crvenkovi\'c, D.~Peri\v{s}i\'c, Hermite expansions of elements of
+  generalized Gelfand--Shilov spaces in quasianalytic and non quasianalytic case,
+  arXiv:quant-ph/0701041 (2007).
+\bibitem{lang} M.~Langenbruch, Hermite functions and weighted spaces of generalized functions,
+  Manuscripta Math. \textbf{119} (2006) 269--285.
+\bibitem{vogt} D.~Vogt, \emph{Lectures on Fr\'echet spaces}, Bergische Universit\"at Wuppertal,
+  2000.
+\bibitem{mv} R.~Meise, D.~Vogt, \emph{Introduction to Functional Analysis}, Oxford University
+  Press, 1997.
+\bibitem{woronowicz70} S.~L.~Woronowicz, The quantum problem of moments I, Rep. Math. Phys.
+  \textbf{1} (1970) 135.
 \bibitem{further-hilbert} R.~Stephan, \emph{Further results on the brief ``Unphysicality of
   Hilbert spaces for quantum mechanics''}, \lean{briefs/HilbertUnphysicality/further-results.pdf}.
 \end{thebibliography}
