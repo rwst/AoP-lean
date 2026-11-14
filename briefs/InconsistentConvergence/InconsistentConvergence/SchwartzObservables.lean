@@ -34,6 +34,15 @@ construction of continuous endomorphisms from weighted bounds is `SchwartzSeq.mk
 
 This module is separate from the main file of the brief, so that the comparator lane, which
 certifies the main file, is unchanged. No certified statement depends on it.
+
+## References
+
+* J. E. Roberts, The Dirac bra and ket formalism, J. Math. Phys. 7 (1966) 1097–1104, Theorem 1;
+  Rigged Hilbert spaces in quantum mechanics, Commun. Math. Phys. 3 (1966) 98–119,
+  Proposition 11: the coarsest topology making a set of observables continuous on their maximal
+  invariant domain.
+* J.-P. Antoine, Dirac formalism and symmetry problems in quantum mechanics. I, J. Math. Phys.
+  10 (1969) 53–69.
 -/
 
 open Filter Topology

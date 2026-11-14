@@ -1,0 +1,147 @@
+(C) 2026 Ralf Stephan, in collaboration with Claude Code.
+Released under CC0 1.0 Universal (public-domain dedication).
+See https://creativecommons.org/publicdomain/zero/1.0/
+
+Citations missing in the original brief
+Brief: Unphysicality of Hilbert spaces for quantum mechanics
+Compiled 2026-11-14 from the literature search in ~/physics/plans/report-hilbert.html.
+
+The brief has no reference list. Each entry below gives the work, the place in the brief it
+bears on, what it says, and how well this was checked:
+  [read]    the statement was read in the paper (the passage named, not the whole paper);
+  [agent]   read by a search agent only, not re-read;
+  [bib]     existence and bibliographic data confirmed, content not read.
+PDF names refer to ~/physics/papers/. Entries marked (in Lean) are cited in the Lean files of
+this directory.
+
+A. THE SOURCE AND ITS PUBLISHED DISCUSSION
+
+1. G. Carcassi, F. Calderón, C. A. Aidala, The unphysicality of Hilbert spaces, Quantum Stud.:
+   Math. Found. 12, 13 (2025), arXiv:2308.06669. [agent] (in Lean)
+   Bears on: the whole brief. The paper behind it. Offers Schwartz space as a "much more
+   reasonable candidate", "not a final and general answer".
+   PDF: CarcassiCalderonAidala2023-2308.06669.pdf
+
+2. G. Carcassi, T. Thrien, C. A. Aidala, Reverse physics for quantum mechanics,
+   arXiv:2608.27543. [agent] (in Lean)
+   Bears on: Sec. 3-4. Source of [B]COBS, [B]WDQ, [B]STDIST and QSTO:H; its Theorem 3 is the
+   brief's Theorem 5, with the same frame change.
+   PDF: CarcassiThrienAidala2026-2608.27543.pdf
+
+3. N. A. Lemos, Are Hilbert spaces unphysical? Hardly, my dear!, Found. Phys. 55, 46 (2025),
+   arXiv:2501.03294. [agent] (in Lean)
+   Bears on: Theorem 5, all three parts; Sec. 6. The main rebuttal. WDQ: the change of
+   variables is a change of basis. STDIST: a system is Hilbert space plus Hamiltonian. Against
+   Schwartz space: X^3 P + P X^3 has no self-adjoint extension.
+   PDF: Lemos2025-2501.03294.pdf
+
+4. G. Carcassi, R. Rozite, C. A. Aidala, Response to "Are Hilbert spaces unphysical? Hardly,
+   my dear!", arXiv:2507.09738. [agent] (in Lean)
+   Bears on: Theorem 5, [B]WDQ. Coordinate transformation versus change of basis.
+   PDF: CarcassiRoziteAidala2025-2507.09738.pdf
+
+5. Z. Lu, Is the existence of unbounded operators a problem for quantum mechanics?,
+   arXiv:2603.10601; Unbounded operators, physicality, and modality in quantum theories,
+   arXiv:2609.28136. [agent] (first one in Lean)
+   Bears on: Sec. 1, Sec. 6. Any restriction to "physical" states is arbitrary; compact
+   support is not preserved by free evolution; Schwartz space excludes meaningful evolutions.
+   PDF: Lu2026-2603.10601.pdf, Lu2026-2609.28136.pdf
+
+B. PRIORITY FOR THE THREE FAILURES
+
+6. J. E. Roberts, The Dirac bra and ket formalism, J. Math. Phys. 7 (1966) 1097-1104. [read,
+   Sec. 1-4] (in Lean)
+   Bears on: Theorem 5, [B]STDIST; Proposition 4. States the failure in 1966: with all rays
+   as states and all self-adjoint operators as observables, "the mathematical structures
+   assigned to these quantum systems are mutually isomorphic. Yet we can clearly distinguish
+   between the different physical systems". His fix: labeled Hilbert spaces.
+   PDF: roberts1966dirac.pdf
+
+7. A. Heathcote, Unbounded operators and the incompleteness of quantum mechanics, Philos.
+   Sci. 57 (1990) 523-534. [read in part]
+   Bears on: Proposition 1; Theorem 5, [B]COBS; Sec. 6. A unit vector outside D(Q) has no
+   position expectation. He argues against restricting the state space: domains of different
+   observables do not coincide, self-adjointness is lost, and the lattice of propositions
+   (Mackey, Gleason) is disturbed. (in Lean)
+   PDF: heathcote1990.pdf
+
+8. R. Werner, Physical uniformities on the state space of nonrelativistic quantum mechanics,
+   Found. Phys. 13 (1983) 859-881. [read in part]
+   Bears on: [B]COBS, "small changes in state". Which uniformity on states is physical, for
+   bounded observables: "the usual quantum mechanical formalism contains no physical uniformity
+   on the state space". Answers with a coarser topology and a larger state space.
+   PDF: werner1983.pdf
+
+9. F. Gieres, Mathematical surprises and Dirac's formalism in quantum mechanics, Rep. Prog.
+   Phys. 63 (2000) 1893, arXiv:quant-ph/9907069. [agent] (in Lean)
+   Bears on: Sec. 5 (commutators, domain of the Schrödinger equation). A catalogue of the
+   contradictions that come from ignoring domains.
+   PDF: Gieres2000-quant-ph9907069.pdf
+
+10. K. Schmüdgen, Unbounded Self-adjoint Operators on Hilbert Space, GTM 265 (2012),
+    Proposition 10.1; B. Simon, Tosio Kato's work on non-relativistic quantum mechanics,
+    arXiv:1711.00528, Theorem 10.14 (Davies-Kato). [agent]
+    Bears on: Proposition 2. The expectation of a semibounded operator is lower
+    semicontinuous, so the jump in Proposition 2 can only go up.
+    PDF: Schmüdgen-Book.pdf, Simon2018-1711.00528.pdf
+
+C. FOR "SCHWARTZ SPACES PRESENT THE SAME PROBLEM" (last sentence of the proof of Theorem 5)
+
+11. R. Meise, D. Vogt, Introduction to Functional Analysis, Oxford 1997, 14.9 and Example
+    29.5(2). [bib; cited through Langenbruch 2006, who was read] (in Lean)
+    The Schwartz space of R^n is isomorphic to the sequence space s for every n.
+
+12. M. Langenbruch, Hermite functions and weighted spaces of generalized functions,
+    Manuscripta Math. 119 (2006) 269-285, Example 5.3. [read in part] (in Lean)
+    Contrast: the Gelfand-Shilov spaces S^r_r(R^n), r > 1/2, are isomorphic to duals of power
+    series spaces whose exponent sequence k^{1/(2rn)} depends on n. With the classification
+    in D. Vogt, Lectures on Fréchet spaces (2000), Thm 5.12 [agent], they are pairwise
+    non-isomorphic for different n. The case r = 1/2 is not covered by a formal statement.
+    PDF: langenbruch2005.pdf, Vogt2000.pdf
+
+D. FOR THE CLASSICAL-CUTOFF REMARKS IN THE PROOF OF THEOREM 5
+
+13. G. B. Folland, A. Sitaram, The uncertainty principle: a mathematical survey, J. Fourier
+    Anal. Appl. 3 (1997) 207-238, Theorem 7.2 (Benedicks 1985; Amrein-Berthier 1977). [agent]
+    (in Lean)
+    "Quantum mechanics does not allow that": no nonzero function is supported, together with
+    its Fourier transform, on sets of finite measure.
+    PDF: Folland1997.pdf
+
+E. FOR SEC. 6, "FIX THE MATHEMATICAL MODEL": CANDIDATES IN PRINT
+
+14. J. E. Roberts, Rigged Hilbert spaces in quantum mechanics, Commun. Math. Phys. 3 (1966)
+    98-119; J.-P. Antoine, J. Math. Phys. 10 (1969) 53-69 and 2276-2290. [read in part]
+    See the file of the same name in ../QuantumVectorSpaces/.
+    PDF: roberts1966.pdf, antoine1969.pdf, antoine1969II.pdf
+
+15. R. de la Madrid, The role of the rigged Hilbert space in quantum mechanics, Eur. J. Phys.
+    26 (2005) 287-312, arXiv:quant-ph/0502053. [agent]
+    The space of "physically preparable wave packets", "very similar to the Schwartz space".
+    PDF: delaMadrid2005-quant-ph0502053.pdf
+
+16. D. Buchholz, H. Grundling, The resolvent algebra, J. Funct. Anal. 254 (2008) 2725-2779,
+    arXiv:0705.1988; D. Buchholz, The resolvent algebra: ideals and dimension, J. Funct. Anal.
+    266 (2014) 3286-3302, arXiv:1307.6416, Theorem 3.7. [agent]
+    [B]STDIST: the number of degrees of freedom is an isomorphism invariant of the algebra.
+    PDF: BuchholzGrundling2008-0705.1988.pdf, Buchholz2014-1307.6416.pdf
+
+17. M. Keyl, J. Kiukas, R. F. Werner, Schwartz operators, Rev. Math. Phys. 28 (2016) 1630001,
+    arXiv:1503.04086. [agent, abstract]
+    The density-operator analogue of Schwartz functions.
+    PDF: KeylKiukasWerner2016-1503.04086.pdf
+
+18. A. Winter, arXiv:1712.10267; M. E. Shirokov, arXiv:1806.05668. [agent, abstracts]
+    [B]COBS inside the Hilbert-space model: energy-constrained norms.
+    PDF: Winter2017-1712.10267.pdf, Shirokov2020-1806.05668.pdf
+
+19. P. Zanardi, D. A. Lidar, S. Lloyd, Quantum tensor product structures are
+    observable-induced, Phys. Rev. Lett. 92, 060402 (2004), arXiv:quant-ph/0308043. [agent,
+    abstract]
+    [B]STDIST: the structure that distinguishes systems lies in the observables.
+    PDF: ZanardiLidarLloyd2004-quant-ph0308043.pdf
+
+NOT VERIFIED, DO NOT CITE YET
+- von Neumann's 1935 remark on Hilbert space (via M. Rédei, Stud. Hist. Phil. Mod. Phys. 27
+  (1996) 493-510): secondary sources only; his motive was not unbounded operators.
+- Dirac 1965/1966 on Hilbert space: publications exist, not read.

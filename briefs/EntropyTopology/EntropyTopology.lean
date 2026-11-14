@@ -55,6 +55,14 @@ Formalized here:
 
 Densities are functions `X → ℝ`, not `L¹` classes, and are required to be measurable and
 pointwise nonnegative. Logarithms are natural inside proofs; `entropy` and `jsd` are in bits.
+
+References (the brief cites none). Both treat the quantum (von Neumann) entropy:
+* A. Wehrl, General properties of entropy, Rev. Mod. Phys. 50 (1978) 221–260, Sec. II.D. The
+  entropy is lower semicontinuous and discontinuous in trace norm, infinite arbitrarily close
+  to every state, and continuous along sequences whose energy also converges.
+* M. E. Shirokov, Entropy characteristics of subsets of states I, Izv. Math. 70 (2006)
+  1265–1292, arXiv:quant-ph/0510073, Proposition 1: the entropy is continuous on the states of
+  bounded energy iff `Tr e^{-βH}` is finite for all `β > 0`.
 -/
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
 public import Mathlib.Analysis.SpecialFunctions.Log.Base

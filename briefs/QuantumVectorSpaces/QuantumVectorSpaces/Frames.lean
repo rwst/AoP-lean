@@ -27,6 +27,15 @@ observables. The premise holds automatically in finite dimension, but not in gen
 * `topology_eq_of_finiteDimensional`  in finite dimension all frames give the same topology;
 * `Diagonal.not_continuous_mulOp`  but on the finitely supported sequences, the multiplication
   by `n` is not continuous for the frame whose only defining observable is the identity.
+
+## References
+
+* J.-P. Antoine, Dirac formalism and symmetry problems in quantum mechanics. II. Symmetry
+  problems, J. Math. Phys. 10 (1969) 2276–2290, Sec. II: a symmetry group is compatible with the
+  space of states when the space is invariant under its representation; Proposition 4:
+  observables transforming by a finite-dimensional representation stay continuous.
+* A. Galbis, E. Jordá, Composition operators on the Schwartz space, Rev. Mat. Iberoam. 34
+  (2018) 397–412, Theorem 2.3: the changes of variable that map `𝓢(ℝ)` into itself.
 -/
 
 open Topology

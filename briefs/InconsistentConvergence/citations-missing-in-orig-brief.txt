@@ -1,0 +1,60 @@
+(C) 2026 Ralf Stephan, in collaboration with Claude Code.
+Released under CC0 1.0 Universal (public-domain dedication).
+See https://creativecommons.org/publicdomain/zero/1.0/
+
+Citations missing in the original brief
+Brief: Inconsistent convergence in Hilbert space
+Compiled 2026-11-14 from the literature search in ~/physics/plans/report-hilbert.html.
+
+The brief has no reference list. Each entry below gives the work, the place in the brief it
+bears on, what it says, and how well this was checked:
+  [read]    the statement was read in the paper (the passage named, not the whole paper);
+  [agent]   read by a search agent only, not re-read;
+  [bib]     existence and bibliographic data confirmed, content not read.
+PDF names refer to ~/physics/papers/. Entries marked (in Lean) are cited in the Lean files of
+this directory.
+
+1. G. Carcassi, F. Calderón, C. A. Aidala, The unphysicality of Hilbert spaces, Quantum Stud.:
+   Math. Found. 12, 13 (2025), arXiv:2308.06669. [agent] (in Lean)
+   Bears on: the whole brief.
+   PDF: CarcassiCalderonAidala2023-2308.06669.pdf
+
+2. K. Schmüdgen, Unbounded Self-adjoint Operators on Hilbert Space, GTM 265 (2012),
+   Proposition 10.1; B. Simon, arXiv:1711.00528, Theorem 10.14 (Davies-Kato). [agent]
+   (Schmüdgen in Lean)
+   Bears on: Sec. 3, eq. (4)-(5). A lower semibounded form is closed iff it is lower
+   semicontinuous. So the expected number can jump up in the limit, as in the brief, but
+   never down.
+   PDF: Schmüdgen-Book.pdf, Simon2018-1711.00528.pdf
+
+3. A. Wehrl, General properties of entropy, Rev. Mod. Phys. 50 (1978) 221-260, Sec. II.D.
+   [read] (in Lean)
+   Bears on: Sec. 3-4. The same phenomenon for the entropy, with the remark that these
+   discontinuities "do not really affect physics" when the energy is controlled.
+   PDF: wehrl1978.pdf
+
+4. J. E. Roberts, J. Math. Phys. 7 (1966) 1097-1104, Theorem 1; Commun. Math. Phys. 3 (1966)
+   98-119, Proposition 11. [read] (in Lean, SchwartzObservables)
+   Bears on: Sec. 3 last sentence, Sec. 4 ("a topology that keeps track of all moments"). The
+   coarsest topology that makes a given set of observables continuous on their maximal
+   invariant domain.
+   PDF: roberts1966dirac.pdf, roberts1966.pdf
+
+5. J.-P. Antoine, J. Math. Phys. 10 (1969) 53-69. [read: abstract, introduction] (in Lean,
+   SchwartzObservables)
+   Bears on: Sec. 4. Unbounded operators made continuous by a finer topology; credits
+   Kristensen, Mejlbo, Thue Poulsen (1965).
+   PDF: antoine1969.pdf
+
+6. R. Werner, Found. Phys. 13 (1983) 859-881. [read in part]
+   Bears on: Sec. 4, "a meaningful criterion of physical convergence". Physical uniformities
+   on quantum states, for bounded observables; the opposite conclusion (a coarser topology).
+   PDF: werner1983.pdf
+
+7. A. Winter, arXiv:1712.10267; M. E. Shirokov, arXiv:1806.05668. [agent, abstracts]
+   Bears on: Sec. 4. Convergence with an energy constraint.
+   PDF: Winter2017-1712.10267.pdf, Shirokov2020-1806.05668.pdf
+
+8. Z. Lu, arXiv:2603.10601. [agent]
+   Bears on: Sec. 1, Sec. 4. Argues the discontinuity is not a physical problem.
+   PDF: Lu2026-2603.10601.pdf

@@ -41,6 +41,15 @@ observables on `S(ℕ)`, see the module `InconsistentConvergence.SchwartzObserva
 For unbounded observables in general, see the module
 `InconsistentConvergence.UnboundedObservables`: the expectation of every densely defined unbounded
 operator is discontinuous at every point of its domain, for example `⟨N⟩` and the average position.
+
+References (the brief cites none):
+* G. Carcassi, F. Calderón, C. A. Aidala, The unphysicality of Hilbert spaces, Quantum Stud.:
+  Math. Found. 12, 13 (2025), arXiv:2308.06669.
+* K. Schmüdgen, Unbounded Self-adjoint Operators on Hilbert Space, Springer GTM 265 (2012),
+  Proposition 10.1: a lower semibounded form is closed iff it is lower semicontinuous. So the
+  limit of `⟨eʲ|N|eʲ⟩` can exceed `⟨0|N|0⟩` but cannot be smaller.
+* A. Wehrl, General properties of entropy, Rev. Mod. Phys. 50 (1978) 221–260, Sec. II.D. The
+  same phenomenon for the entropy, and the role of convergence of the energy.
 -/
 public import Mathlib.Analysis.Normed.Lp.lpSpace
 

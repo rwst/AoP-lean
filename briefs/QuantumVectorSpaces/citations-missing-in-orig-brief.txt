@@ -1,0 +1,122 @@
+(C) 2026 Ralf Stephan, in collaboration with Claude Code.
+Released under CC0 1.0 Universal (public-domain dedication).
+See https://creativecommons.org/publicdomain/zero/1.0/
+
+Citations missing in the original brief
+Brief: Physical vector spaces for quantum mechanics
+Compiled 2026-11-14 from the literature search in ~/physics/plans/report-hilbert.html.
+
+The brief has no reference list. Each entry below gives the work, the place in the brief it
+bears on, what it says, and how well this was checked:
+  [read]    the statement was read in the paper (the passage named, not the whole paper);
+  [agent]   read by a search agent only, not re-read;
+  [bib]     existence and bibliographic data confirmed, content not read.
+PDF names refer to ~/physics/papers/. Entries marked (in Lean) are cited in the Lean files of
+this directory.
+
+1. G. Carcassi, T. Thrien, C. A. Aidala, Reverse physics for quantum mechanics,
+   arXiv:2608.27543, Definition 1 and Theorem 4. [agent] (in Lean)
+   Bears on: the whole brief. The paper behind it.
+   PDF: CarcassiThrienAidala2026-2608.27543.pdf
+
+2. J. E. Roberts, The Dirac bra and ket formalism, J. Math. Phys. 7 (1966) 1097-1104. [read,
+   Sec. 1-4] (in Lean)
+   Bears on: Definition 1, Corollary 2, Theorem 5 ([B]STDIST), "Completeness of the Lie
+   algebra".
+   - Labeled Hilbert space (H, {A_i}); isomorphisms are unitaries with U A_i U^-1 = B_i; "all
+     physically meaningful concepts ... must thus be invariant under labeled Hilbert space
+     isomorphisms". This is the brief's "isomorphism in the category of quantum vector spaces".
+   - Theorem 1: on the maximal invariant domain of the labeled observables, the topology is
+     uniquely fixed as the coarsest one, finer than the Hilbert topology, that makes each of
+     them continuous; it is locally convex and complete, and Fréchet if the labels are
+     countable. This is Definition 1 (third bullet) and Corollary 2.
+   - Completeness condition: the labeled observables have the same commutant as all
+     observables, O' = O_l'. It excludes both pathologies named in Sec. 5.
+   PDF: roberts1966dirac.pdf
+
+3. J. E. Roberts, Rigged Hilbert spaces in quantum mechanics, Commun. Math. Phys. 3 (1966)
+   98-119. [read in part] (in Lean)
+   Bears on: Corollary 2; Example 3; Sec. 5.
+   - Proposition 11: the initial topology is the coarsest allowed one.
+   - Proposition 15: the space is nuclear iff (1 + A^2 + ... + A^2n)^(-1/2) is nuclear for some
+     n and some A in the algebra.
+   - Theorem 2: with positions, momenta and the Hamiltonian labeled, a dense invariant domain
+     exists iff the potential is smooth off a closed null set; functions in it vanish where
+     the potential is not smooth (Lemma 3).
+   PDF: roberts1966.pdf
+
+4. J.-P. Antoine, Dirac formalism and symmetry problems in quantum mechanics. I. General
+   Dirac formalism, J. Math. Phys. 10 (1969) 53-69. [read: abstract, introduction] (in Lean)
+   Bears on: Sec. 1, Condition QSTO:V. The space "is identified with the set of all physically
+   accessible states of the system". Names Segal's bounded observables as the alternative.
+   PDF: antoine1969.pdf
+
+5. J.-P. Antoine, ... II. Symmetry problems, J. Math. Phys. 10 (1969) 2276-2290. [read to the
+   end of Sec. III] (in Lean)
+   Bears on: Theorem 5 ([B]WDQ); Definition 1 (the Lie algebra); "Symmetric vs self-adjoint".
+   - A symmetry group is compatible with the space when the space is invariant under its
+     unitary representation.
+   - Builds the space from the group: Gårding domain, smooth vectors, the enveloping algebra
+     acting on them; essential self-adjointness by Segal and Nelson-Stinespring.
+   - Proposition 4: observables transforming under the group by a finite-dimensional
+     representation act continuously.
+   PDF: antoine1969II.pdf
+
+6. P. Kristensen, L. Mejlbo, E. Thue Poulsen, Tempered distributions in infinitely many
+   dimensions I, Commun. Math. Phys. 1 (1965) 175-214. [bib; credited by Antoine 1969 I, read]
+   (in Lean)
+   Bears on: Sec. 1; "Number of defining observables" (field theory). Origin of "changing its
+   topology in such a way that these operators become continuous". Part II is local:
+   KristensenMejlboPoulsen1964-II.pdf (scan, no text layer).
+
+7. G. Lassner, Topological algebras of operators, Rep. Math. Phys. 3 (1972) 279-293. [read:
+   introduction of the JINR preprint E5-4606] (in Lean)
+   Bears on: Corollary 2. Algebras of operators on a common invariant domain (Op*-algebras)
+   and their topologies.
+   PDF: Lassner1972.pdf
+
+8. G. Lassner, W. Timmermann, Normal states on algebras of unbounded operators, Rep. Math.
+   Phys. 3 (1972) 295-305. [read: introduction]
+   Bears on: Condition QSTO:V (density operators); "Ensembles" (open problem of the
+   formalization). Reports Woronowicz: every strongly positive functional on the algebra of
+   all operators on Schwartz space is given by a density operator.
+   PDF: LassnerTimmermann1972.pdf
+
+9. S. L. Woronowicz, The quantum problem of moments II, Rep. Math. Phys. 1 (1971) 175. [read:
+   statements]
+   Bears on: Condition QSTO:V. Positive functionals on the algebra of all operators on S(R)
+   correspond one-to-one to positive rho with rho L^2 inside S.
+   PDF: woronowicz1971.pdf
+
+10. M. Keyl, J. Kiukas, R. F. Werner, Schwartz operators, Rev. Math. Phys. 28 (2016) 1630001,
+    arXiv:1503.04086. [agent, abstract]
+    Bears on: the missing ensemble space over V = S(R^n).
+    PDF: KeylKiukasWerner2016-1503.04086.pdf
+
+11. R. Goodman, Analytic and entire vectors for representations of Lie groups, Trans. Amer.
+    Math. Soc. 143 (1969) 55-76, Sec. 1 and 6. [agent]
+    Bears on: Example 3. The smooth vectors of the Schrödinger representation of the
+    Heisenberg group are the Schwartz space, with the topology of the enveloping algebra.
+    PDF: Goodman1969.pdf
+
+12. M. Flato, J. Simon, H. Snellman, D. Sternheimer, Simple facts about analytic vectors and
+    integrability, Ann. Sci. ENS (4) 5 (1972) 423-434. [agent, abstract]
+    Bears on: "Symmetric vs self-adjoint" (which observables generate unitary groups). A Lie
+    algebra of skew-symmetric operators with a dense invariant domain of analytic vectors for
+    a basis integrates to a unitary group representation.
+    PDF: FlatoSimonSnellmanSternheimer1972.pdf
+
+13. A. Galbis, E. Jordá, Composition operators on the Schwartz space, Rev. Mat. Iberoam. 34
+    (2018) 397-412, arXiv:1511.03072, Theorem 2.3. [agent] (in Lean, Frames)
+    Bears on: Theorem 5 ([B]WDQ). Which changes of variable map S(R) into itself. The frame
+    change of the brief "Unphysicality of Hilbert spaces" is not one of them.
+    PDF: Galbis2018-1511.03072.pdf
+
+14. N. A. Lemos, Found. Phys. 55, 46 (2025), arXiv:2501.03294. [agent]
+    Bears on: "Symmetric vs self-adjoint". X^3 P + P X^3 is symmetric on S(R) and has no
+    self-adjoint extension.
+    PDF: Lemos2025-2501.03294.pdf
+
+15. R. de la Madrid, Eur. J. Phys. 26 (2005) 287-312, arXiv:quant-ph/0502053. [agent]
+    Bears on: Sec. 1. Rigged Hilbert space with a Schwartz-like space of preparable states.
+    PDF: delaMadrid2005-quant-ph0502053.pdf

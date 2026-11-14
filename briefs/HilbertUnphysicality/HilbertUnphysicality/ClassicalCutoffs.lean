@@ -43,6 +43,14 @@ certifies the main file, is unchanged. No certified statement depends on it.
 * `classical_cutoff_cobs`: finite and continuous expectations under a classical cutoff;
 * `classical_cutoff_wdq`: changes of frame keep the cutoff, and with it all moments finite;
 * `quantum_no_cutoff`: the only state with a cutoff on position and momentum is zero.
+
+## References
+
+* G. B. Folland, A. Sitaram, The uncertainty principle: a mathematical survey, J. Fourier Anal.
+  Appl. 3 (1997) 207–238, Theorem 7.2: a function and its Fourier transform cannot both be
+  supported on sets of finite measure (M. Benedicks, J. Math. Anal. Appl. 106 (1985) 180–183;
+  W. O. Amrein, A. M. Berthier, J. Funct. Anal. 24 (1977) 258–267). `quantum_no_cutoff` is the
+  compact-support case, by the Paley–Wiener theorem.
 -/
 
 open MeasureTheory Set

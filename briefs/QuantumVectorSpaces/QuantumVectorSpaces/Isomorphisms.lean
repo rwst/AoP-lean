@@ -36,6 +36,12 @@ file gives two definitions, both groupoids.
 * `UnitaryEquiv.pureStates`  `U` induces a homeomorphism of the pure states `ℙ ℂ V ≃ₜ ℙ ℂ W`;
 * `LieIso.toUnitaryEquiv`  every Lie isomorphism is a unitary equivalence;
 * `LieIso.finrank_lieAlgebra`  Lie-isomorphic spaces have Lie algebras of the same dimension.
+
+## References
+
+* J. E. Roberts, The Dirac bra and ket formalism, J. Math. Phys. 7 (1966) 1097–1104, Sec. 2:
+  two labeled Hilbert spaces are isomorphic if a unitary `U` satisfies `U Aᵢ U⁻¹ = Bᵢ` for all
+  labels `i`, and physically meaningful concepts must be invariant under such isomorphisms.
 -/
 
 open Topology

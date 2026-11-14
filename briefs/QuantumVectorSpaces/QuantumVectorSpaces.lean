@@ -56,6 +56,25 @@ Example 4 (qubit):
 
 Theorem 5, [B]COBS:
 * `IsAdmissible.continuous_expectation`  expectations `⟨v, Av⟩` are continuous.
+
+References (the brief cites none):
+* G. Carcassi, T. Thrien, C. A. Aidala, Reverse physics for quantum mechanics, arXiv:2608.27543,
+  Definition 1 and Theorem 4. The paper behind the brief.
+* J. E. Roberts, The Dirac bra and ket formalism, J. Math. Phys. 7 (1966) 1097–1104. Labeled
+  Hilbert spaces and their isomorphisms (Sec. 2); Theorem 1: on the maximal invariant domain of
+  the labeled observables, the coarsest topology finer than the Hilbert one that makes them
+  continuous is unique, locally convex and complete. Corollary 2 here is the same topology.
+* J. E. Roberts, Rigged Hilbert spaces in quantum mechanics, Commun. Math. Phys. 3 (1966)
+  98–119. Proofs: Proposition 11 (coarsest topology), Proposition 15 (nuclearity), Theorem 2
+  (which potentials admit a dense invariant domain).
+* J.-P. Antoine, Dirac formalism and symmetry problems in quantum mechanics. I. General Dirac
+  formalism, J. Math. Phys. 10 (1969) 53–69; II. Symmetry problems, ibid. 2276–2290. The
+  space as the set of physically accessible states; its invariance under a symmetry group.
+* P. Kristensen, L. Mejlbo, E. Thue Poulsen, Tempered distributions in infinitely many
+  dimensions I, Commun. Math. Phys. 1 (1965) 175–214. Credited by Antoine with changing the
+  topology so that unbounded operators become continuous.
+* G. Lassner, Topological algebras of operators, Rep. Math. Phys. 3 (1972) 279–293. Algebras
+  of operators on a common invariant domain and their topologies.
 -/
 public import ForMathlib.Analysis.CStarAlgebra.Matrix
 public import ForMathlib.Analysis.Distribution.SchwartzSpace.Complete

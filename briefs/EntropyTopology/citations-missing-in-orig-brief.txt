@@ -1,0 +1,47 @@
+(C) 2026 Ralf Stephan, in collaboration with Claude Code.
+Released under CC0 1.0 Universal (public-domain dedication).
+See https://creativecommons.org/publicdomain/zero/1.0/
+
+Citations missing in the original brief
+Brief: Entropy is not continuous in standard probability spaces
+Compiled 2026-11-14 from the literature search in ~/physics/plans/report-hilbert.html.
+
+The brief has no reference list. Each entry below gives the work, the place in the brief it
+bears on, what it says, and how well this was checked:
+  [read]    the statement was read in the paper (the passage named, not the whole paper);
+  [agent]   read by a search agent only, not re-read;
+  [bib]     existence and bibliographic data confirmed, content not read.
+PDF names refer to ~/physics/papers/. Entries marked (in Lean) are cited in the Lean files of
+this directory.
+
+The search was aimed at the quantum briefs, so only the quantum counterparts were found. The
+classical literature on continuity of the Shannon and differential entropy in total variation
+was not searched.
+
+1. A. Wehrl, General properties of entropy, Rev. Mod. Phys. 50 (1978) 221-260, Sec. II.D.
+   [read] (in Lean)
+   Bears on: Theorem 21 and the remarks after it. For the von Neumann entropy:
+   - lower semicontinuity in trace norm (Naudts 1969; Wehrl 1976);
+   - "unboundedness in every neighborhood": every state has states of infinite entropy
+     arbitrarily close, so the entropy is discontinuous;
+   - the set of states with finite entropy is of first category;
+   - if Tr e^(-beta H) is finite and the energies converge with the states, the entropies
+     converge.
+   PDF: wehrl1978.pdf
+
+2. M. E. Shirokov, Entropy characteristics of subsets of states I, Izv. Math. 70 (2006)
+   1265-1292, arXiv:quant-ph/0510073, Proposition 1. [agent] (in Lean)
+   Bears on: Theorem 21; Theorem 46 (which topology makes the entropy continuous). The
+   entropy is continuous on the states with Tr(H rho) <= h iff Tr e^(-beta H) is finite for
+   all beta > 0.
+   PDF: Shirokov2006-quant-ph0510073.pdf
+
+3. M. E. Shirokov, Continuity of the von Neumann entropy, Commun. Math. Phys. 296 (2010)
+   625-654, arXiv:0904.1963. [agent]
+   Bears on: Theorem 46. Conditions for continuity; credits the condition above to Wehrl.
+   PDF: Shirokov2010-0904.1963.pdf
+
+4. A. Winter, Energy-constrained diamond norm ..., arXiv:1712.10267; S. Becker, N. Datta,
+   Commun. Math. Phys. (2020), arXiv:1810.00863. [agent, abstract / bib]
+   Bears on: Theorem 46. Continuity bounds under an energy constraint.
+   PDF: Winter2017-1712.10267.pdf, BeckerDatta2020-1810.00863.pdf

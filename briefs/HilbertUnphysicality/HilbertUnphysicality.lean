@@ -176,6 +176,22 @@ Sec. 5, point-wise values (on `L²(ℝ)`):
 * `not_exists_continuous_eval`  even on Schwartz functions, `φ ↦ φ(x₀)` is not the restriction
   of a continuous linear functional on `L²(ℝ)`, so no choice of point values is continuous in `ψ`;
 * `pointwise_values`  the above together.
+
+References (the brief cites none):
+* G. Carcassi, F. Calderón, C. A. Aidala, The unphysicality of Hilbert spaces, Quantum Stud.:
+  Math. Found. 12, 13 (2025), arXiv:2308.06669. The paper behind the brief.
+* G. Carcassi, T. Thrien, C. A. Aidala, Reverse physics for quantum mechanics, arXiv:2608.27543.
+  Conditions [B]COBS, [B]WDQ, [B]STDIST and QSTO:H; its Theorem 3 is Theorem 5 here.
+* J. E. Roberts, The Dirac bra and ket formalism, J. Math. Phys. 7 (1966) 1097–1104, Sec. 2.
+  [B]STDIST: with all rays as states and all self-adjoint operators as observables, the
+  structures assigned to different systems "are mutually isomorphic".
+* A. Heathcote, Unbounded operators and the incompleteness of quantum mechanics, Philos. Sci.
+  57 (1990) 523–534. A unit vector outside the domain of position, and the consequences drawn.
+* F. Gieres, Mathematical surprises and Dirac's formalism in quantum mechanics, Rep. Prog.
+  Phys. 63 (2000) 1893, arXiv:quant-ph/9907069. The domain remarks of Sec. 5.
+* N. A. Lemos, Are Hilbert spaces unphysical? Hardly, my dear!, Found. Phys. 55, 46 (2025),
+  arXiv:2501.03294; reply by G. Carcassi, R. Rozite, C. A. Aidala, arXiv:2507.09738; Z. Lu,
+  arXiv:2603.10601. The published discussion of the three conditions.
 -/
 public import ForMathlib.Analysis.Distribution.TemperedDistribution
 public import ForMathlib.Analysis.Normed.Algebra.Wielandt

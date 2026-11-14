@@ -33,6 +33,17 @@ certifies the main file, is unchanged. No certified statement depends on it.
   Schwartz spaces it restricts to;
 * `nonempty_schwartzEquiv`: `𝓢(ℝⁿ⁺¹)` and `𝓢(ℝᵐ⁺¹)` are isomorphic as topological vector
   spaces.
+
+## References
+
+* R. Meise, D. Vogt, *Introduction to Functional Analysis*, Oxford 1997, 14.9 and Example
+  29.5(2): the Hermite functions are a basis of `𝓢(ℝⁿ)`, which is isomorphic to the space `s` of
+  rapidly decreasing sequences (as cited by Langenbruch below).
+* M. Langenbruch, Hermite functions and weighted spaces of generalized functions, Manuscripta
+  Math. 119 (2006) 269–285, Example 5.3. For contrast: the Gelfand–Shilov spaces `S^r_r(ℝⁿ)`,
+  `r > 1/2`, have sequence-space representations that depend on `n`.
+* J. E. Roberts, The Dirac bra and ket formalism, J. Math. Phys. 7 (1966) 1097–1104, Sec. 2:
+  isomorphisms of labeled Hilbert spaces must carry the labeled observables, here `Xᵢ`, `Pᵢ`.
 -/
 
 open MeasureTheory
