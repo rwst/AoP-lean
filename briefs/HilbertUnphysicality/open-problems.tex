@@ -37,7 +37,14 @@ not needed to check the brief. No open problem blocks verification of the brief.
   solution is not to find workarounds for these issues, but to fix the mathematical model to
   better reflect the physical requirements''. A replacement for QSTO:H that satisfies [B]COBS,
   [B]WDQ and [B]STDIST is not given here; one candidate is the brief ``Physical vector spaces
-  for quantum mechanics''. (Brief, Sec.~6.)
+  for quantum mechanics''. That candidate meets [B]WDQ only for changes of frame that map its
+  space onto itself. For its Schwartz example, the change of frame of Proposition~3 is not one:
+  the Gaussian $\psi$ is a Schwartz function and $U\psi$ is not
+  (\lean{QuantumVectorSpaces.SchwartzFrame.not_forall_frameUnitary_mem_range}). A replacement
+  therefore has to say which changes of frame it supports; Carcassi, Calder\'on and Aidala
+  exclude this one for Schwartz spaces (arXiv:2308.06669v3, Appendix, Sec.~VIII). The remark
+  after Theorem~5 that ``Schwartz spaces present the same problem'' concerns [B]STDIST only.
+  (Brief, Sec.~6; Theorem~5, proof.)
 \end{enumerate}
 
 \end{document}

@@ -61,6 +61,28 @@ precise first.
   checked''. A characterization, analogous to complete vector fields in Hamiltonian mechanics, is
   not given.
   (Brief, Sec.~5, ``Symmetric vs self-adjoint''.)
+\item \textbf{Which changes of frame.} \emph{Research.} The proof of Theorem~5 gets [B]WDQ
+  from the premise that ``the defining observables of A must be observables in B and
+  vice-versa'', which holds exactly when the two frames give the same topology on $V$
+  (\lean{topology_eq_iff_continuous}). The brief does not say which changes of frame satisfy it.
+  For Example~3 the change of frame $y = \tan(\frac{\pi}{2}\operatorname{erf} x)$, which the
+  brief ``Unphysicality of Hilbert spaces for quantum mechanics'' uses against [B]WDQ for
+  QSTO:H, does not: it takes a Gaussian out of $\mathcal{S}(\mathbb{R})$
+  (\lean{SchwartzFrame.not_forall_frameUnitary_mem_range}), and the position of the second frame,
+  carried back to the first, is not defined at that Gaussian
+  (\lean{SchwartzFrame.toLp_gaussSchwartz_not_mem_domain}). So QSTO:V gives [B]WDQ only for a
+  class of changes of frame that map $V$ onto itself, as Carcassi, Calder\'on and Aidala already
+  require for Schwartz spaces (arXiv:2308.06669v3, Appendix, Sec.~VIII). The class is not
+  specified. The restriction cannot simply be dropped: a wave function on $\mathbb{R}$ with finite
+  position variance in every smooth increasing coordinate has compact support, and then, unless
+  it is zero, its Fourier transform does not (for the second step, \lean{quantum_no_cutoff} in the brief
+  ``Unphysicality of Hilbert spaces for quantum mechanics''; the first is not formalized). Open:
+  which group of changes of frame should be part of the data of a quantum vector space, and how
+  it relates to the Lie algebra of the defining observables. For plain changes of variable
+  $f \mapsto f \circ g$ on $\mathcal{S}(\mathbb{R})$, those that map $\mathcal{S}(\mathbb{R})$ into
+  itself are characterized by Galbis and Jord\'a (Rev.\ Mat.\ Iberoam.\ 34 (2018), Thm.~2.3); the
+  unitary changes of frame carry the extra factor $\sqrt{g'}$.
+  (Brief, Theorem~5, proof; Log, ``Problems found in the brief'', last item.)
 \end{enumerate}
 
 \section*{From the formalization}
