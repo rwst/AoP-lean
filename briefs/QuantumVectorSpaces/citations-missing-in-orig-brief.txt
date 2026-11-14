@@ -30,8 +30,9 @@ this directory.
      uniquely fixed as the coarsest one, finer than the Hilbert topology, that makes each of
      them continuous; it is locally convex and complete, and Fréchet if the labels are
      countable. This is Definition 1 (third bullet) and Corollary 2.
-   - Completeness condition: the labeled observables have the same commutant as all
-     observables, O' = O_l'. It excludes both pathologies named in Sec. 5.
+   - Completeness condition (p. 1099): the labeled observables have the same commutant as all
+     observables, O' = O_l'. It excludes the qubit pathology named in Sec. 5; the other one,
+     position alone on S(R), is not complete (in Lean, FurtherResults/Irreducibility).
    PDF: roberts1966dirac.pdf
 
 3. J. E. Roberts, Rigged Hilbert spaces in quantum mechanics, Commun. Math. Phys. 3 (1966)
@@ -131,3 +132,8 @@ this directory.
     section, then, is automatically ruled out." The brief leaves this restriction implicit in
     the premise of its proof.
     PDF: CarcassiCalderonAidala2023-2308.06669.pdf
+
+17. B. Simon, Distributions and their Hermite expansions, J. Math. Phys. 12 (1971) 140-148.
+    [bib] (in Lean, ForMathlib/Analysis/Distribution/SchwartzSpace/HermitePartialSum.lean)
+    Bears on: Example 3. Hermite expansions of Schwartz functions converge in S(R); used for
+    the irreducibility of Example 3. Not downloaded.

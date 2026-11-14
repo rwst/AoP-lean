@@ -41,6 +41,17 @@ precise first.
   vectors'') and a Schwartz space with position as the only defining observable (``too few
   observables''). ``Addressing this gap is an open problem''; the brief expects a ``final
   definition'' once it is solved.
+  Partial answer (\lean{further-results.tex}, Sec.~2): the second case is not a quantum vector
+  space, since with position alone $\mathcal{S}(\mathbb{R})$ is not complete
+  (\lean{FurtherResults.not_isQuantumVectorSpace_posOnly}). The first case is one
+  (\lean{FurtherResults.isQuantumVectorSpace_pair}, for $\mathbb{C}^2 \otimes \mathbb{C}^2$),
+  and irreducibility excludes it: every continuous operator that commutes with all defining
+  observables is a multiple of the identity (\lean{FurtherResults.not_isIrreducible_pair}).
+  This is a form of Roberts's condition (J.\ Math.\ Phys.\ 7 (1966) 1097, p.~1099), and
+  Examples~3 and~4 satisfy it (\lean{FurtherResults.isIrreducible_schwartz},
+  \lean{FurtherResults.isIrreducible_qubit}). Open: whether irreducibility is the condition
+  the brief is looking for, and how it relates to taking the smooth vectors of an irreducible
+  unitary group representation as $V$.
   (Brief, Sec.~5, ``Completeness of the Lie algebra''; Sec.~6.)
 \item \textbf{Lie algebras determine physical systems.} \emph{Research.} ``Two systems
   are physically equivalent if and only if their Lie algebras of observables are equivalent'' is

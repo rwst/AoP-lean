@@ -17,6 +17,10 @@
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
 
 \title{Further results on the brief\\ \emph{Physical vector spaces for quantum mechanics}}
 \author{Ralf Stephan}
@@ -100,6 +104,153 @@ and the position operator are those of the Hilbert brief's formalization.
 \end{itemize}
 The statement is made in $L^2(\mathbb R)$, where $U$ lives; it does not need $U$ to be smooth.
 
+\section{The completeness problem of Definition 1}
+\label{sec:irreducible}
+
+The brief leaves one problem with its Definition~1 open (Sec.~5, ``Completeness of the Lie
+algebra''). The definition admits two cases that the brief calls pathological: ``a Hilbert space
+with the defining observables of a qubit'', which has ``too many vectors'', and ``a Schwartz space
+with only position in the defining observable'', which has ``too few observables''. This section
+shows that the second case is not a quantum vector space at all, and that the first one is
+excluded by an irreducibility condition which Examples~3 and~4 of the brief satisfy.
+
+Throughout, $V$ carries an inner product and defining observables $X_i$, and $\mathcal A$ is the
+unital algebra they generate. The topology of the brief's Corollary~2 is given by the seminorms
+$p_A(v) = \|Av\|$, $A \in \mathcal A$; Definition~1 requires $V$ to be complete and second
+countable in it.
+
+\subsection{Position alone}
+
+\begin{theorem}\label{thm:posonly}
+  Let $V = \mathcal S(\mathbb R)$ with the $L^2$ inner product, and let position $X$ be the only
+  defining observable. Then $V$ is not complete in the topology of Corollary~2. So it is not a
+  quantum vector space, whatever $\hbar$ and structure constants are chosen.
+\end{theorem}
+
+\begin{proof}
+  Let $\psi_0(x) = \pi^{-1/4}e^{-x^2/2}$ and $f_m = u_m\psi_0$ with
+  $u_m(x) = \sqrt{(m+1)^{-2} + x^2}$, a Schwartz function since $u_m$ is smooth with polynomially
+  bounded derivatives. As $u_m(x) = |(m+1)^{-1} + ix|$, the triangle inequality gives
+  $|u_m - u_k| \le |(m+1)^{-1} - (k+1)^{-1}|$ and $|u_m(x) - |x|| \le (m+1)^{-1}$. Every
+  $A \in \mathcal A$ commutes with multiplication by $u_m$, so
+  \[
+    p_A(f_m - f_k) = \|(u_m - u_k)\,A\psi_0\| \le \bigl|(m+1)^{-1} - (k+1)^{-1}\bigr|\,\|A\psi_0\|,
+  \]
+  and $(f_m)$ is a Cauchy sequence. If it converged to some $h \in \mathcal S(\mathbb R)$, then
+  $\|f_m - h\| \to 0$ (take $A = 1$), while $\|f_m - |x|\psi_0\| \le \|\psi_0\|/(m+1)$. So
+  $h = |x|\psi_0$ almost everywhere, and everywhere since both are continuous. But $|x|\psi_0$ is
+  not differentiable at~$0$.
+\end{proof}
+
+So the brief's second example is excluded by Definition~1 already, through completeness. The
+pathology it was meant to show does not go away, though. The completion of $V$ is the space
+$\Phi_X$ of all $f \in L^2(\mathbb R)$ with $x^k f \in L^2(\mathbb R)$ for every $k$, and $\Phi_X$
+with position alone is a quantum vector space: it is a separable Fr\'echet space, the projective
+limit of the weighted spaces $L^2((1+x^2)^k\,dx)$. Neither statement is formalized. It still has ``too few observables'': multiplication by
+$e^{ix}$ commutes with position, on $\Phi_X$ as on $\mathcal S(\mathbb R)$.
+
+\subsection{Irreducibility}
+
+\begin{definition}\label{def:irreducible}
+  $V$ with the defining observables $X_i$ is \emph{irreducible} if every linear map
+  $T\colon V \to V$ that is continuous in the topology of Corollary~2 and commutes with every
+  $X_i$ is a multiple of the identity.
+\end{definition}
+
+This is a form of the condition Roberts imposes on labelled Hilbert spaces: ``We simply suppose
+that $\mathcal O' = \mathcal O_l'$, where $\mathcal O'$ denotes the set of all bounded operators
+commuting with $\mathcal O$''~\cite[Sec.~2, p.~1099]{roberts}, where $\mathcal O$ is the set of all
+observables and $\mathcal O_l$ that of the labelled ones. Without superselection rules
+$\mathcal O' = \mathbb C 1$, and the condition says that the labelled observables have only the
+scalars in their commutant. Definition~\ref{def:irreducible} states this on $V$ itself, with
+continuous instead of bounded operators, and so needs no Hilbert completion. For unbounded
+operators ``commutant'' can be made precise in several inequivalent ways; the statements below are
+for this one. A sufficient condition for continuity is easy to check: if $T$ commutes with every
+$X_i$, it commutes with every $A \in \mathcal A$, and $\|Tv\| \le C\|v\|$ for all $v$ gives
+$p_A(Tv) = \|TAv\| \le C\,p_A(v)$.
+
+\begin{theorem}\label{thm:irreducible}
+  Let $\hbar \ne 0$.
+  \begin{enumerate}
+    \item Example~4 of the brief, $\mathbb C^2$ with the spin observables
+      $S_i = \frac\hbar2\sigma_i$, is irreducible.
+    \item $\mathbb C^2 \otimes \mathbb C^2$ with the defining observables $S_i \otimes 1$ is a
+      quantum vector space, with the same commutation relations, but it is not irreducible:
+      $1 \otimes \sigma_3$ commutes with every $S_i \otimes 1$.
+    \item $\mathcal S(\mathbb R)$ with position alone is not irreducible: multiplication by
+      $e^{ix}$ commutes with position.
+    \item Example~3 of the brief, $\mathcal S(\mathbb R)$ with $X$, $P = -i\hbar\,d/dx$ and $I$,
+      is irreducible.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  (1) A $2\times 2$ matrix that commutes with $\sigma_3$ is diagonal, and a diagonal one that
+  commutes with $\sigma_1$ is scalar. (2) The commutation relations and symmetry pass from $S_i$
+  to $S_i \otimes 1$, and the remaining conditions hold in every finite dimension; finite
+  dimension also makes $1 \otimes \sigma_3$ continuous. (3) Multiplication by $e^{ix}$ is an
+  isometry for the $L^2$ norm, hence continuous by the remark above, and it is not scalar.
+
+  (4) The ladder operators $a_\mp = X \pm d/dx$ lie in $\mathcal A$, since
+  $d/dx = (i/\hbar)P$. On the Hermite functions $\psi_n$ they act by
+  $a_-\psi_n = \sqrt{2n}\,\psi_{n-1}$ and $a_+\psi_n = \sqrt{2(n+1)}\,\psi_{n+1}$. Write
+  $c_n(f) = \langle\psi_n, f\rangle$ and $S_m f = \sum_{n<m} c_n(f)\psi_n$. The partial sums
+  converge to $f$ in $\mathcal S(\mathbb R)$, because the coefficients of a Schwartz function
+  decrease rapidly~\cite{simon}. Since $X$ is symmetric and $d/dx$ antisymmetric,
+  $c_n(a_- g) = \langle a_+\psi_n, g\rangle = \sqrt{2(n+1)}\,c_{n+1}(g)$; so $a_- g = 0$ forces
+  $c_n(g) = 0$ for $n \ge 1$, and $g = c_0(g)\psi_0$. Now let $T$ be continuous and commute with
+  $X$ and $P$. It commutes with $a_\mp$, so $a_- T\psi_0 = T a_-\psi_0 = 0$ and
+  $T\psi_0 = z\psi_0$ for some $z$. Applying $a_+$ gives $T\psi_n = z\psi_n$ for every $n$ by
+  induction, hence $T S_m f = z S_m f$, and in the limit $Tf = zf$.
+\end{proof}
+
+Parts (1) and (2) also bear on the brief's claim, in the proof of its Theorem~5, that ``two
+systems are physically equivalent if and only if their Lie algebras of observables are
+equivalent''. The two spaces have isomorphic Lie algebras of defining observables and the same
+structure constants, but they are not isomorphic, as their dimensions differ. Irreducibility
+alone does not restore the claim: spin $\frac12$ and spin~$1$ are both irreducible, with the
+same commutation relations. The system is determined by the representation, not by the Lie
+algebra; for the Heisenberg algebra the Stone--von~Neumann theorem makes the irreducible
+representation unique once $\hbar$ is fixed.
+
+\subsection{The group form}
+
+A stronger version of the same repair is to make a group part of the data. Let $G$ be a Lie
+group, $\pi$ an irreducible unitary representation on a Hilbert space $H$, and let $V$ be the
+space $H^\infty$ of smooth vectors, with the seminorms $\|d\pi(u)v\|$ for $u$ in the enveloping
+algebra. These are the seminorms of Corollary~2 for the defining observables $i\,d\pi(Y_k)$, with
+$(Y_k)$ a basis of the Lie algebra. Antoine builds his space from such a representation and
+requires it to be invariant under the symmetry group~\cite{antoine2}; he considers $H^\infty$
+and sets it aside because it need not be nuclear. For the Schr\"odinger representation of the
+Heisenberg group, $H^\infty$ is $\mathcal S(\mathbb R)$ with its usual
+topology~\cite[Secs.~1 and~6]{goodman}. In this form every defining observable is essentially
+self-adjoint on $V$, as Antoine recalls from Segal and from Nelson and Stinespring, and it
+generates a unitary group that maps $V$ onto itself. Every $\pi(g)$ maps $V$ onto itself, which
+is the condition on changes of frame that Sec.~\ref{sec:schwartz} found missing from the brief's
+argument for [B]WDQ. The cost
+is that the definition presupposes the Hilbert space and the group. The Lean files contain only
+the Lie-algebra form above; Theorem~\ref{thm:irreducible}(4) is its instance for the Heisenberg
+group.
+
+\subsection{Lean}
+
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.Irreducibility},\\ namespace
+\lean{QuantumVectorSpaces.FurtherResults}.
+\begin{itemize}
+  \item \lean{not_completeSpace_posOnly}, \lean{not_isQuantumVectorSpace_posOnly}:
+    Theorem~\ref{thm:posonly}.
+  \item \lean{IsIrreducible}: Definition~\ref{def:irreducible}; \lean{continuous_of_commute}:
+    the sufficient condition for continuity.
+  \item \lean{isIrreducible_qubit}, \lean{isQuantumVectorSpace_pair},
+    \lean{not_isIrreducible_pair}, \lean{not_isIrreducible_posOnly},
+    \lean{isIrreducible_schwartz}: Theorem~\ref{thm:irreducible}(1)--(4).
+  \item The convergence of Hermite expansions in $\mathcal S(\mathbb R)$ is
+    \lean{SchwartzMap.tendsto_hermiteSum}, in\\
+    \lean{ForMathlib.Analysis.Distribution.SchwartzSpace.HermitePartialSum}.
+\end{itemize}
+Not formalized: that $\Phi_X$ is a quantum vector space, the remark on Theorem~5, and the group
+form.
+
 \begin{thebibliography}{9}
 \bibitem{brief} G.~Carcassi, \emph{Physical vector spaces for quantum mechanics}, technical
   brief, Assumptions of Physics, \url{https://assumptionsofphysics.org/resources/briefs}.
@@ -110,6 +261,14 @@ The statement is made in $L^2(\mathbb R)$, where $U$ lives; it does not need $U$
   Quantum Stud.: Math. Found. \textbf{12}, 13 (2025), arXiv:2308.06669v3.
 \bibitem{galbis} A.~Galbis, E.~Jord\'a, Composition operators on the Schwartz space, Rev. Mat.
   Iberoam. \textbf{34} (2018) 397--412.
+\bibitem{roberts} J.~E.~Roberts, The Dirac bra and ket formalism, J. Math. Phys. \textbf{7}
+  (1966) 1097--1104.
+\bibitem{antoine2} J.-P.~Antoine, Dirac formalism and symmetry problems in quantum mechanics.
+  II. Symmetry problems, J. Math. Phys. \textbf{10} (1969) 2276--2290.
+\bibitem{goodman} R.~Goodman, Analytic and entire vectors for representations of Lie groups,
+  Trans. Amer. Math. Soc. \textbf{143} (1969) 55--76.
+\bibitem{simon} B.~Simon, Distributions and their Hermite expansions, J. Math. Phys.
+  \textbf{12} (1971) 140--148.
 \bibitem{further-hilbert} R.~Stephan, \emph{Further results on the brief ``Unphysicality of
   Hilbert spaces for quantum mechanics''}, \lean{briefs/HilbertUnphysicality/further-results.pdf}.
 \end{thebibliography}
