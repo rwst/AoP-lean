@@ -12,8 +12,8 @@ public import ForMathlib.MeasureTheory.Function.L2Conj
 # The Fourier transform on `L²` of integrable functions
 
 Mathlib's Fourier transform on `L²` is the continuous extension of the Fourier transform of
-Schwartz functions. This file shows that on an `L²` function that is also integrable, the inverse
-transform is given by the Fourier integral, and so is bounded by the `L¹` norm. On `ℝ`, an `L²`
+Schwartz functions. This file shows that on an `L²` function that is also integrable, the
+transform and its inverse are given by the Fourier integral, and so is bounded by the `L¹` norm. On `ℝ`, an `L²`
 function `f` with `ξ² f ∈ L²` is integrable, with `∫ ‖f‖ ≤ ε ‖ξ² f‖₂ + C_ε ‖f‖₂` for every `ε > 0`:
 the Sobolev bound behind the Kato–Rellich theorem for `L² + L^∞` potentials in one dimension.
 Finally, the Fourier transform of a conjugate is the reflected conjugate of the transform,
@@ -23,6 +23,7 @@ Finally, the Fourier transform of a conjugate is the reflected conjugate of the 
 
 * `MeasureTheory.Lp.fourierInv_coeFn_eq_of_integrable`: on `L²(ℝ)`, `𝓕⁻ f` is a.e. the Fourier
   integral;
+* `MeasureTheory.Lp.fourier_coeFn_eq_of_integrable`: the same for `𝓕 f`;
 * `MeasureTheory.Lp.ae_norm_fourierInv_le_of_integrable`: `‖(𝓕⁻ f)(x)‖ ≤ ∫ ‖f‖` for a.e. `x`;
 * `MeasureTheory.Lp.integral_norm_le_of_ae_eq_sq_mul`: on `ℝ`, the bound
   `∫ ‖f‖ ≤ √(π/λ) (λ ‖f‖₂ + ‖ξ² f‖₂)` for `λ ≥ 1`, by Cauchy–Schwarz;
@@ -85,6 +86,52 @@ theorem fourierInv_coeFn_eq_of_integrable (f : Lp F 2 (volume : Measure ℝ))
       exact h1.trans (e1.trans (e2.symm.trans h2.symm))
     exact ((integral_congr_ae (Filter.Eventually.of_forall fun x =>
       smul_sub (φ x) ((𝓕⁻ f : Lp F 2 (volume : Measure ℝ)) x) (g x))).trans
+        (integral_sub hi1 hi2)).trans (sub_eq_zero.2 key)
+  filter_upwards [hw] with x hx
+  exact sub_eq_zero.1 hx
+
+lemma flip_innerₗ : (innerₗ ℝ : ℝ →ₗ[ℝ] ℝ →ₗ[ℝ] ℝ).flip = innerₗ ℝ :=
+  LinearMap.ext₂ fun x y => by simp [mul_comm]
+
+/-- On an integrable `L²` function, the Fourier transform on `L²` is a.e. the Fourier
+integral. -/
+theorem fourier_coeFn_eq_of_integrable (f : Lp F 2 (volume : Measure ℝ))
+    (hf : Integrable (f : ℝ → F)) :
+    (𝓕 f : Lp F 2 (volume : Measure ℝ)) =ᵐ[volume] 𝓕 (f : ℝ → F) := by
+  set g : ℝ → F := 𝓕 (f : ℝ → F)
+  have hL : Continuous fun p : ℝ × ℝ => (innerₗ ℝ) p.1 p.2 := by
+    simpa using (continuous_inner : Continuous fun p : ℝ × ℝ => inner ℝ p.1 p.2)
+  have hgc : Continuous g :=
+    VectorFourier.fourierIntegral_continuous continuous_fourierChar hL hf
+  have hloc : LocallyIntegrable (fun x => (𝓕 f : Lp F 2 (volume : Measure ℝ)) x - g x) volume :=
+    ((Lp.memLp _).locallyIntegrable (by norm_num)).sub hgc.locallyIntegrable
+  have hw := ae_eq_zero_of_integral_contDiff_smul_eq_zero hloc fun φ hφ hφc => by
+    have h₁ : HasCompactSupport (Complex.ofRealCLM ∘ φ) := hφc.comp_left rfl
+    have h₂ : ContDiff ℝ ∞ (Complex.ofRealCLM ∘ φ) := by fun_prop
+    set ψ : 𝓢(ℝ, ℂ) := h₁.toSchwartzMap h₂
+    have hψ (x : ℝ) (v : F) : φ x • v = ψ x • v := (Complex.coe_smul (φ x) v).symm
+    have e1 : ∫ x, ψ x • (𝓕 f : Lp F 2 (volume : Measure ℝ)) x = ∫ ξ, (𝓕 ψ) ξ • f ξ := by
+      rw [← Lp.toTemperedDistribution_apply, ← fourier_toTemperedDistribution_eq,
+        TemperedDistribution.fourier_apply, Lp.toTemperedDistribution_apply]
+    have e2 : ∫ x, ψ x • g x = ∫ ξ, (𝓕 ψ) ξ • f ξ := by
+      rw [SchwartzMap.fourier_coe]
+      have h := VectorFourier.integral_fourierIntegral_smul_eq_flip (μ := volume) (ν := volume)
+        continuous_fourierChar hL ψ.integrable hf
+      rw [flip_innerₗ] at h
+      exact h.symm
+    have hi1 := ((Lp.memLp (𝓕 f : Lp F 2 (volume : Measure ℝ))).locallyIntegrable
+      (by norm_num)).integrable_smul_left_of_hasCompactSupport hφ.continuous hφc
+    have hi2 := hgc.locallyIntegrable.integrable_smul_left_of_hasCompactSupport (μ := volume)
+      hφ.continuous hφc
+    have key : ∫ x, φ x • (𝓕 f : Lp F 2 (volume : Measure ℝ)) x = ∫ x, φ x • g x := by
+      have h1 : ∫ x, φ x • (𝓕 f : Lp F 2 (volume : Measure ℝ)) x =
+          ∫ x, ψ x • (𝓕 f : Lp F 2 (volume : Measure ℝ)) x :=
+        integral_congr_ae (Filter.Eventually.of_forall fun x => hψ x _)
+      have h2 : ∫ x, φ x • g x = ∫ x, ψ x • g x :=
+        integral_congr_ae (Filter.Eventually.of_forall fun x => hψ x _)
+      exact h1.trans (e1.trans (e2.symm.trans h2.symm))
+    exact ((integral_congr_ae (Filter.Eventually.of_forall fun x =>
+      smul_sub (φ x) ((𝓕 f : Lp F 2 (volume : Measure ℝ)) x) (g x))).trans
         (integral_sub hi1 hi2)).trans (sub_eq_zero.2 key)
   filter_upwards [hw] with x hx
   exact sub_eq_zero.1 hx

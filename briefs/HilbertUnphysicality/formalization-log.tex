@@ -141,6 +141,22 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{TauCeti/Analysis/Fourier/SineSeries.lean} (uniqueness of Fourier coefficients on an
   interval).\newline
   It is kept out of the comparator lane, which stays unchanged.
+\item Sixth file, for [B]WDQ in every smooth frame:\newline
+  \lean{briefs/HilbertUnphysicality/HilbertUnphysicality/FrameCutoffs.lean}\newline
+  (module \lean{HilbertUnphysicality.FrameCutoffs}). It imports the main file, TauCeti's
+  \lean{TauCeti/Analysis/Fourier/Continuous.lean} (the Fourier integral of an integrable function
+  is continuous) and new \lean{ForMathlib} material:\newline
+  \lean{ForMathlib/Analysis/SpecialFunctions/SmoothTransition.lean} (smooth diffeomorphisms of
+  $\mathbb{R}$ that grow as fast as prescribed),\newline
+  \lean{ForMathlib/Analysis/Fourier/Chirp.lean} (a chirp $e^{-ia\xi^2}$ on the Fourier side
+  destroys bounded support, by the Phragm\'en--Lindel\"of principle),\newline
+  \lean{Real.exists_differentiable_fourier_eq}, added to
+  \lean{ForMathlib/Analysis/Fourier/PaleyWiener.lean} (the Fourier transform of a function of
+  bounded support extends to an entire function of exponential type),\newline
+  \lean{MeasureTheory.Lp.fourier_coeFn_eq_of_integrable}, added to
+  \lean{ForMathlib/Analysis/Fourier/LpSpace.lean} (on integrable $L^2$ functions the $L^2$
+  Fourier transform is the Fourier integral).\newline
+  It is kept out of the comparator lane, which stays unchanged.
 \end{itemize}
 
 \paragraph{Setting.} Theorem~5 says that three physical conditions are not guaranteed over
@@ -155,7 +171,9 @@ ones on commutator relations, for position and momentum on $L^2(\mathbb{R})$, an
 point-wise values, in $L^2(\mathbb{R})$ (see ``Differences''). The closing remark of the proof
 of Theorem~5, that Schwartz spaces present the same problem, is checked as well, and so are
 its remarks that classical mechanics allows a cutoff on all variables and quantum mechanics
-does not, in the readings of ``Differences''.
+does not, in the readings of ``Differences''. Going beyond the brief, [B]WDQ is also checked for
+all smooth changes of frame at once: it forces a cutoff on position, which the free evolution
+destroys at once.
 
 \paragraph{Results.}
 \begin{center}
@@ -298,6 +316,23 @@ if $f \in L^2$ vanishes outside a bounded interval and $\mathcal{F}f$ vanishes o
   \lean{Real.ae_eq_zero_of_fourier_eq_zero_of_lt_abs} \\
 ``Quantum mechanics does not allow that'': no nonzero state has a cutoff on position and
   momentum & \lean{quantum_no_cutoff} \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{Theorem~5, [B]WDQ in every smooth frame (beyond the brief)}} \\
+the unitary of the change of frame $y = e(x)$, for a smooth diffeomorphism $e$ &
+  \lean{smoothFrameChange}, \lean{smoothFrameChange_mem_positionDomain_iff} \\
+for every $c_k$ there is a smooth diffeomorphism $e$ with $|e(x)| \ge c_k$ for
+  $|x| \ge k + 1$ & \lean{Real.exists_contDiff_homeomorph_le_abs} \\
+$e\psi \in L^2$ for every smooth diffeomorphism $e$ iff $\psi$ vanishes outside a bounded set &
+  \lean{memLp_mul_forall_iff} \\
+$\psi$ has finite position variance in every smooth frame iff it vanishes outside a bounded
+  set & \lean{forall_smoothFrameChange_mem_positionDomain_iff} \\
+a chirp on the Fourier side destroys bounded support &
+  \lean{Real.ae_eq_zero_of_fourier_eq_cexp_mul} (from
+  \lean{Real.exists_differentiable_fourier_eq}) \\
+the free evolution takes no nonzero state of bounded support to one of bounded support &
+  \lean{freeEvolution_not_cutoff} \\
+no nonzero state has finite position variance in every smooth frame now and after a free
+  evolution & \lean{not_forall_frames_freeEvolution} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -572,6 +607,40 @@ all of the above & \lean{pointwise_values} \\
   gives $G = 0$, so all Fourier coefficients of $\psi$ on $[a, b]$ vanish, and $\psi = 0$ by
   Parseval's identity. A cutoff on position alone is allowed, and is not formalized: smooth
   compactly supported states have finite moments of all orders in position and momentum.
+\item \emph{Theorem~5, [B]WDQ in every smooth frame.} This goes beyond the brief, which shows
+  that [B]WDQ fails for one change of frame. Here it is asked for all of them, for position on
+  $L^2(\mathbb{R})$. A smooth change of frame $y = e(x)$ is a homeomorphism $e$ of $\mathbb{R}$
+  that is smooth with a smooth inverse; its unitary is \lean{Lp.compDiffeo} for $g = e^{-1}$
+  (\lean{smoothFrameChange}), and $U_e\psi$ lies in the domain of the position operator exactly
+  when $e\psi \in L^2$ (\lean{smoothFrameChange_mem_positionDomain_iff}). That holds for every
+  $e$ if and only if $\psi$ vanishes almost everywhere outside a bounded set
+  (\lean{forall_smoothFrameChange_mem_positionDomain_iff}). If it does, a continuous $e$ is
+  bounded where $\psi$ lives. If it does not, infinitely many shells
+  $k + 1 \le |x| < k + 2$ carry mass $m_k > 0$, and a diffeomorphism with
+  $|e(x)| \ge m_k^{-1/2}$ on the $k$-th shell makes $\int e^2 |\psi|^2$ infinite. That
+  diffeomorphism is $x + \sum_k c_k (\sigma(x - k) - \sigma(-x - k))$ for Mathlib's smooth
+  transition function $\sigma$: each term is a monotone smooth step that vanishes on $[-k, k]$,
+  so the sum is locally finite, and its inverse is smooth because its derivative is at least~1
+  (\lean{Real.exists_contDiff_homeomorph_le_abs}).
+
+  The free evolution $e^{-itH_0}$, $t \ne 0$, takes no nonzero state of bounded support to one of
+  bounded support (\lean{freeEvolution_not_cutoff}). In momentum space it multiplies by
+  $e^{-ia\xi^2}$, $a = 2\pi^2 t$. If $\psi$ and $\phi = e^{-itH_0}\psi$ both have bounded support,
+  their Fourier transforms extend to entire functions $G$ and $H$ of exponential type, and
+  $H(z) = e^{-iaz^2} G(z)$ on $\mathbb{C}$. With $\omega^2 = i \operatorname{sign} a$, the
+  function $k(s) = G(s\omega) H(s\omega)$ decays like $e^{-|a|s^2}$ on the real and the imaginary
+  axis and is of exponential type, so it vanishes on the right half-plane by Mathlib's
+  Phragm\'en--Lindel\"of theorem
+  (\lean{PhragmenLindelof.eq_zero_on_right_half_plane_of_superexponential_decay}). As
+  $k(s) = e^{|a|s^2} G(s\omega)^2$, $G$ vanishes on an open set, hence everywhere, and
+  $\psi = 0$ (\lean{Real.ae_eq_zero_of_fourier_eq_cexp_mul}). The usual proof writes
+  $e^{-itH_0}\psi$ with the free propagator as a chirp times the Fourier transform of a function
+  of bounded support; that would need the Fourier transform of $e^{-ia\xi^2}$, which is not
+  integrable, so the complex-analytic route is taken instead.
+
+  Together: no nonzero state has finite position variance in every smooth frame both at time~$0$
+  and at a time $t \ne 0$ (\lean{not_forall_frames_freeEvolution}). So [B]WDQ, read for all smooth
+  frames, has no nonzero solution that survives the dynamics, in $L^2$ or in any subspace of it.
 \item \emph{Sec.~5, the domain of the Schr\"odinger equation.} The brief says that the
   equation is valid only on $\mathcal{D}(H)$. This is read dynamically: the evolution
   $e^{-itH}$ is defined on all of $\mathcal{H}$, but its orbit $t \mapsto e^{-itH}\psi$

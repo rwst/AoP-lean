@@ -73,10 +73,12 @@ precise first.
   (\lean{SchwartzFrame.toLp_gaussSchwartz_not_mem_domain}). So QSTO:V gives [B]WDQ only for a
   class of changes of frame that map $V$ onto itself, as Carcassi, Calder\'on and Aidala already
   require for Schwartz spaces (arXiv:2308.06669v3, Appendix, Sec.~VIII). The class is not
-  specified. The restriction cannot simply be dropped: a wave function on $\mathbb{R}$ with finite
-  position variance in every smooth increasing coordinate has compact support, and then, unless
-  it is zero, its Fourier transform does not (for the second step, \lean{quantum_no_cutoff} in the brief
-  ``Unphysicality of Hilbert spaces for quantum mechanics''; the first is not formalized). Open:
+  specified. The restriction cannot simply be dropped: a wave function on $\mathbb{R}$ has finite position
+  variance in every smooth coordinate only if it vanishes outside a bounded set; then, unless it
+  is zero, its Fourier transform does not, and the free evolution destroys the cutoff at once.
+  This is proved in the Lean files of the brief ``Unphysicality of Hilbert spaces for quantum
+  mechanics'' (\lean{forall_smoothFrameChange_mem_positionDomain_iff}, \lean{quantum_no_cutoff},
+  \lean{freeEvolution_not_cutoff}, \lean{not_forall_frames_freeEvolution}). Open:
   which group of changes of frame should be part of the data of a quantum vector space, and how
   it relates to the Lie algebra of the defining observables. For plain changes of variable
   $f \mapsto f \circ g$ on $\mathcal{S}(\mathbb{R})$, those that map $\mathcal{S}(\mathbb{R})$ into

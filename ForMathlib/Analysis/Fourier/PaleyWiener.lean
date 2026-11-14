@@ -6,6 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import Mathlib.Analysis.Fourier.FourierTransform
+public import Mathlib.Analysis.Calculus.FDeriv.Defs
 import Mathlib.Analysis.Complex.CauchyIntegral
 import TauCeti.Analysis.Fourier.SineSeries
 
@@ -26,6 +27,8 @@ Fourier coefficients of `f` on `[a, b]`, which are values of `G` at real points,
 
 ## Main results
 
+* `Real.exists_differentiable_fourier_eq`: if `f` is integrable on `(a, b]` and vanishes outside
+  it, `𝓕 f` is the restriction of an entire function of exponential type;
 * `Real.ae_eq_zero_of_fourier_eqOn_zero`: if `f ∈ L²(a, b]` vanishes outside `(a, b]` and `𝓕 f`
   vanishes on a nonempty open set, then `f = 0` almost everywhere;
 * `Real.ae_eq_zero_of_fourier_eq_zero_of_lt_abs`: if `f ∈ L²(ℝ)` vanishes almost everywhere
@@ -102,6 +105,29 @@ private theorem differentiable_integral_cexp_mul (hf : IntegrableOn f (Ioc a b))
     simp only [id_eq] at this
     convert this using 1
     ring
+
+/-- **Paley–Wiener, the easy half.** If `f` is integrable on `(a, b]` and zero almost everywhere
+outside it, then `𝓕 f` is the restriction to `ℝ` of an entire function `G` of exponential type,
+`‖G z‖ ≤ (∫_{(a, b]} ‖f‖) exp (2π max(|a|, |b|) ‖z‖)`. -/
+theorem exists_differentiable_fourier_eq (hf : IntegrableOn f (Ioc a b))
+    (hsupp : ∀ᵐ x, x ∉ Ioc a b → f x = 0) :
+    ∃ G : ℂ → ℂ, Differentiable ℂ G ∧ (∀ ξ : ℝ, 𝓕 f ξ = G ξ) ∧
+      ∀ z, ‖G z‖ ≤ (∫ x in Ioc a b, ‖f x‖) * Real.exp (2 * π * max |a| |b| * ‖z‖) := by
+  refine ⟨fun z => ∫ x in Ioc a b, cexp (-2 * π * I * x * z) * f x,
+    differentiable_integral_cexp_mul hf, fun ξ => ?_, fun z => ?_⟩
+  · rw [fourier_real_eq_integral_exp_smul, ← setIntegral_eq_integral_of_ae_compl_eq_zero
+      (s := Ioc a b) (by filter_upwards [hsupp] with x hx hx'; rw [hx hx', smul_zero])]
+    refine setIntegral_congr_fun measurableSet_Ioc fun x _ => ?_
+    simp only [smul_eq_mul]
+    congr 2
+    push_cast
+    ring
+  · rw [← integral_mul_const]
+    refine norm_integral_le_of_norm_le (hf.norm.mul_const _) ?_
+    filter_upwards [ae_restrict_mem measurableSet_Ioc] with x hx
+    rw [norm_mul, mul_comm]
+    exact mul_le_mul_of_nonneg_left (norm_cexp_le (abs_le_max_abs_abs hx.1.le hx.2) z)
+      (norm_nonneg _)
 
 /-- **Paley–Wiener uniqueness.** If `f` is square integrable on `(a, b]` and zero almost
 everywhere outside it, and its Fourier transform vanishes on a nonempty open set, then `f = 0`
