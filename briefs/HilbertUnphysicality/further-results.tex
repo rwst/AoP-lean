@@ -1,0 +1,309 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\emergencystretch=6em
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\Hil}{\mathcal H}
+\newcommand{\ip}[2]{\langle #1, #2\rangle}
+
+\title{Further results on the brief\\ \emph{Unphysicality of Hilbert spaces for quantum mechanics}}
+\author{Ralf Stephan}
+\date{14 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  This note collects results that go beyond the technical brief \emph{Unphysicality of Hilbert
+  spaces for quantum mechanics}~\cite{brief}, which is based on~\cite{cca}, and partial answers to its open problems. They are
+  not part of the brief. Each section is self-contained, and each names the Lean declarations
+  that check it; the Lean files are in the brief's directory, under
+  \lean{HilbertUnphysicality/FurtherResults/}.
+\end{abstract}
+
+\section{[B]COBS fails in one direction only}
+\label{sec:lsc}
+
+Condition [B]COBS asks that measurable quantities depend continuously on the state
+\cite{reverse}. The brief's Proposition~2 shows that QSTO:H violates it: for the oscillator, the
+vectors
+\[
+  x^j = \sqrt{\tfrac{j-1}{j}}\,\ket{0} + \sqrt{\tfrac1j}\,\ket{j}
+\]
+converge to $\ket{0}$ in norm, while the expectation of the number operator is
+$E_N(x^j) = 1$ for every $j$ and $E_N(\ket{0}) = 0$. The jump goes up. This section shows that it
+always goes up: for an observable that is bounded below, the expectation can exceed its value at
+the limit, but never fall below it.
+
+The mathematics is classical: it is the statement that the quadratic form of a semibounded
+self-adjoint operator is closed, which is equivalent to lower semicontinuity
+(Schmüdgen~\cite[Prop.~10.1]{schmudgen}, Simon~\cite[Thm.~10.14]{simon}). What is added here is its
+reading as a positive, one-sided form of [B]COBS that QSTO:H does satisfy.
+
+\subsection{Statement}
+
+Let $A$ be a self-adjoint operator on $\Hil$ with $A \ge c$ for some $c \in \mathbb R$, and let
+$E$ be its spectral measure. For $\psi \ne 0$ put
+\[
+  \langle A\rangle_\psi = \frac{1}{\|\psi\|^2} \int_{[c,\infty)} \lambda \, d\ip{\psi}{E(\lambda)\psi}
+  \in [c, +\infty].
+\]
+It is finite exactly when $\psi$ lies in the form domain $D(|A|^{1/2})$, and it equals
+$\ip{\psi}{A\psi}/\|\psi\|^2$ on $D(A)$. Off the form domain it is $+\infty$: such a state has
+infinite expected energy, which is the physically correct value, rather than none.
+
+\begin{theorem}\label{thm:lsc}
+  The map $\psi \mapsto \langle A\rangle_\psi$ is lower semicontinuous on $\Hil\setminus\{0\}$
+  in the norm topology. That is, if $\psi_k \to \psi \ne 0$, then
+  \[
+    \langle A\rangle_\psi \le \liminf_{k\to\infty} \langle A\rangle_{\psi_k}.
+  \]
+\end{theorem}
+
+\begin{proof}
+  Since $\langle A\rangle_\psi = c + \langle A - c\rangle_\psi$ and adding a constant preserves
+  lower semicontinuity, we may assume $c = 0$. For $n \in \mathbb N$ let
+  $A_n = A\,E([0,n])$, a bounded operator. The function
+  $f_n(\psi) = \ip{\psi}{A_n\psi}/\|\psi\|^2$ is continuous on $\Hil\setminus\{0\}$, and
+  $f_n(\psi) = \|\psi\|^{-2}\int_{[0,n]}\lambda\,d\ip{\psi}{E(\lambda)\psi}$ increases to
+  $\langle A\rangle_\psi$ by monotone convergence. A pointwise supremum of continuous functions
+  is lower semicontinuous.
+\end{proof}
+
+When $A$ is diagonal in an orthonormal basis $(b_i)$, with eigenvalues $w_i \ge 0$, the same
+argument reads: $\langle A\rangle_\psi = \|\psi\|^{-2}\sum_i w_i |\ip{b_i}{\psi}|^2$ is a sum of
+nonnegative continuous functions of $\psi$, hence lower semicontinuous. This covers the number
+operator and the oscillator Hamiltonian, and it is the case checked in Lean.
+
+\begin{corollary}\label{cor:number}
+  For the number operator $N$, $E_N = \langle N\rangle$ is lower semicontinuous on
+  $\ell^2\setminus\{0\}$ and agrees with the brief's expectation on $D(N)\setminus\{0\}$. It is not
+  upper semicontinuous at $\ket{0}$: along the brief's sequence,
+  $\liminf_j E_N(x^j) = 1 > 0 = E_N(\ket{0})$.
+\end{corollary}
+
+\begin{remark}[Mixed states]
+  For a density operator $\rho$ put $\operatorname{Tr}\rho A = \sup_n \operatorname{Tr}\rho A_n
+  \in [0,\infty]$ (for $A \ge 0$). Since $|\operatorname{Tr}\rho A_n - \operatorname{Tr}\sigma A_n|
+  \le n\,\|\rho - \sigma\|_1$, each $\rho \mapsto \operatorname{Tr}\rho A_n$ is continuous in the
+  trace norm, so $\rho \mapsto \operatorname{Tr}\rho A$ is lower semicontinuous on density
+  operators. (Not formalized.)
+\end{remark}
+
+\subsection{Interpretation}
+
+A small change of state can add a large amount of energy, by moving a small probability to very
+high energies; it cannot remove energy. So for semibounded quantities the failure of [B]COBS in
+QSTO:H is one-sided, and it has a usable consequence: if preparations $\psi_k$ approximate a
+target state $\psi$ in norm, their energies bound the energy of the target from above in the
+limit.
+
+Semiboundedness is needed. Position is not semibounded, and its expectation is neither lower nor
+upper semicontinuous.
+
+\begin{example}
+  Let $\varphi$ be the normalized real Gaussian, $\varphi_a(x) = \varphi(x-a)$, and
+  $\psi_k = \sqrt{1-1/k}\,\varphi + \sqrt{1/k}\,\varphi_{a_k}$ with $a_k = \pm k^2$. Then
+  $\psi_k \to \varphi$ in $L^2(\mathbb R)$ and $\|\psi_k\| \to 1$. The cross terms
+  $\ip{\varphi}{\varphi_a}$ and $\ip{\varphi}{X\varphi_a}$ are $O(|a|\,e^{-a^2/4})$, so
+  $\langle X\rangle_{\psi_k} = \pm k + o(1) \to \pm\infty$, while $\langle X\rangle_\varphi = 0$.
+  (Not formalized.)
+\end{example}
+
+The theorem also says what a replacement for QSTO:H has to add to obtain full continuity:
+control of the tails of the state. In the topology of the Schwartz sequences $S(\mathbb N)$, for
+example, $E_N$ is continuous
+(\lean{InconsistentConvergence.SchwartzObservables.continuous_numberExp}).
+
+\subsection{Lean}
+
+Module \lean{HilbertUnphysicality.FurtherResults.LowerSemicontinuity}, namespace
+\lean{HilbertUnphysicality.FurtherResults}. Expectations take values in $[0,\infty]$; the
+general case of Theorem~\ref{thm:lsc}, which needs the spectral theorem, is not formalized.
+
+\begin{itemize}
+  \item \lean{diagForm}, \lean{lowerSemicontinuous_diagForm}: the form
+    $x \mapsto \sum_i w_i |x_i|^2 \in [0,\infty]$ on $\ell^2(\iota)$, $w_i \ge 0$, is lower
+    semicontinuous (from \lean{lp.lowerSemicontinuous_tsum_mul_enorm_pow}, in
+    \lean{ForMathlib/Analysis/Normed/Lp/Semicontinuous.lean}).
+  \item \lean{diagForm_ne_top_iff}, \lean{diagForm_eq_ofReal}: it is finite exactly on the form
+    domain, and there equals the real sum.
+  \item \lean{diagExpectation}, \lean{lowerSemicontinuousOn_diagExpectation},
+    \lean{le_liminf_diagExpectation}: the expectation $\langle A\rangle_x$ is lower
+    semicontinuous on $x \ne 0$; Theorem~\ref{thm:lsc} for diagonal $A \ge 0$.
+  \item \lean{numberExpectation_eq_ofReal}: for $N$, it agrees with the brief's
+    \lean{HilbertUnphysicality.expN} on $D(N)\setminus\{0\}$.
+  \item \lean{le_liminf_numberExpectation} and
+    \lean{not_upperSemicontinuousWithinAt_numberExpectation} together give
+    Corollary~\ref{cor:number}.
+\end{itemize}
+
+\section{No state has finite position variance in every frame}
+\label{sec:frames}
+
+Proposition~3 of the brief shows that [B]WDQ fails for one change of frame,
+$y = \tan(\frac\pi2\operatorname{erf}x)$: the Gaussian packet has finite position variance in
+the frame $x$ and infinite variance in the frame $y$. This section asks for [B]WDQ for all smooth
+changes of frame at once, for the position of one degree of freedom on $L^2(\mathbb R)$, and
+shows that no nonzero state survives the free evolution under that demand.
+
+A \emph{smooth change of frame} $y = e(x)$ is a homeomorphism $e$ of $\mathbb R$ such that $e$
+and $e^{-1}$ are $C^\infty$. Its unitary is $(U_e\psi)(y) = \psi(e^{-1}(y))\,|(e^{-1})'(y)|^{1/2}$,
+and $U_e\psi$ lies in the domain of the position operator $Y$ exactly when
+\[
+  \int e(x)^2 |\psi(x)|^2 \,dx < \infty,
+\]
+that is, when $\psi$ has finite position variance in the frame $e$.
+
+\subsection{All frames force a cutoff}
+
+\begin{lemma}\label{lem:staircase}
+  For every sequence $(c_k)_{k\in\mathbb N}$ of reals there is a smooth change of frame $e$ with
+  $|e(x)| \ge c_k$ whenever $|x| \ge k+1$.
+\end{lemma}
+
+\begin{proof}
+  Let $\sigma$ be a smooth monotone transition function, $0$ on $(-\infty,0]$ and $1$ on
+  $[1,\infty)$, and put $e(x) = x + \sum_k b_k\bigl(\sigma(x-k) - \sigma(-x-k)\bigr)$ with
+  $b_k \ge 0$. The $k$-th term vanishes on $[-k,k]$, so the sum is locally finite and $e$ is
+  smooth; each term is monotone, so $e' \ge 1$, $e$ is a bijection of $\mathbb R$, and $e^{-1}$
+  is smooth by the inverse function theorem. For $x \ge k+1$ the terms $0,\dots,k$ are complete,
+  so $e(x) \ge x + \sum_{j\le k} b_j$, and symmetrically for $x \le -(k+1)$. Choosing the $b_k$
+  large enough gives the bound.
+\end{proof}
+
+\begin{theorem}\label{thm:cutoff}
+  For $\psi \in L^2(\mathbb R)$, the following are equivalent:
+  \begin{enumerate}
+    \item $\psi$ has finite position variance in every smooth frame;
+    \item $\psi$ vanishes almost everywhere outside a bounded set.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  If $\psi = 0$ a.e.\ outside $[-R,R]$, a continuous $e$ is bounded on $[-R,R]$ and
+  $\int e^2|\psi|^2 < \infty$. Otherwise infinitely many shells $k+1 \le |x| < k+2$ carry mass
+  $m_k = \int_{\text{shell}}|\psi|^2 > 0$. Lemma~\ref{lem:staircase} with $c_k = m_k^{-1/2}$ on
+  those shells gives an $e$ with $\int_{\text{shell}} e^2|\psi|^2 \ge 1$ for infinitely many $k$,
+  so the variance in the frame $e$ is infinite.
+\end{proof}
+
+Carcassi, Calderón and Aidala make the same observation for the expectations of all functions of
+position \cite[Appendix, Sec.~VIII]{cca}. Theorem~\ref{thm:cutoff} uses only changes of frame,
+which is what [B]WDQ asks for.
+
+\subsection{The free evolution destroys the cutoff}
+
+\begin{theorem}\label{thm:evolution}
+  Let $\psi \in L^2(\mathbb R)$, $\psi \ne 0$, vanish outside a bounded set, and let $t \ne 0$.
+  Then $e^{-itH_0}\psi$, with $H_0 = -\frac12\frac{d^2}{dx^2}$, does not vanish outside any
+  bounded set.
+\end{theorem}
+
+The statement is well known; the usual proof writes $e^{-itH_0}\psi$ with the free propagator as
+a chirp times the Fourier transform of a function of bounded support. That needs the Fourier
+transform of the non-integrable chirp, so the proof below, which is the one checked in Lean,
+stays on the Fourier side and uses complex analysis instead.
+
+\begin{proof}
+  With the convention $\hat f(\xi) = \int e^{-2\pi i x\xi} f(x)\,dx$, the evolution multiplies
+  the Fourier transform by $e^{-ia\xi^2}$, $a = 2\pi^2 t \ne 0$. Suppose $\psi$ and
+  $\phi = e^{-itH_0}\psi$ both vanish outside a bounded set. By Paley--Wiener, $\hat\psi$ and
+  $\hat\phi$ extend to entire functions $G$ and $H$ of exponential type, and
+  $H(z) = e^{-iaz^2}G(z)$ on $\mathbb C$ by the identity theorem; both satisfy
+  $|G(z)|, |H(z)| \le Ce^{B|z|}$. Choose $\omega$ with $\omega^2 = i\operatorname{sign}a$. For
+  real $s$ and $u$,
+  \[
+    H(s\omega) = e^{|a|s^2}\,G(s\omega), \qquad H(iu\omega) = e^{-|a|u^2}\,G(iu\omega).
+  \]
+  So $|G(s\omega)| \le Ce^{B|s| - |a|s^2}$ and $|H(iu\omega)| \le Ce^{B|u| - |a|u^2}$. The entire
+  function $k(s) = G(s\omega)H(s\omega)$ is of exponential type, decays faster than any
+  exponential along the positive real axis, and is bounded on the imaginary axis. By the
+  Phragmén--Lindelöf principle in this form, $k = 0$ on the right half-plane. For real $s > 0$,
+  $k(s) = e^{|a|s^2}G(s\omega)^2$, so $G$ vanishes on the ray $\{s\omega : s > 0\}$, hence
+  everywhere by the identity theorem. Then $\hat\psi = 0$ and $\psi = 0$.
+\end{proof}
+
+\begin{corollary}\label{cor:frames}
+  No nonzero $\psi \in L^2(\mathbb R)$ has finite position variance in every smooth frame both at
+  time $0$ and at some time $t \ne 0$ of the free evolution.
+\end{corollary}
+
+\begin{proof}
+  By Theorem~\ref{thm:cutoff} both $\psi$ and $e^{-itH_0}\psi$ would vanish outside a bounded
+  set, which Theorem~\ref{thm:evolution} excludes.
+\end{proof}
+
+The brief's remark that quantum mechanics does not allow a cutoff on all variables gives the
+companion statement: by Paley--Wiener, no nonzero state has a cutoff on position and on momentum
+(checked with the brief, \lean{HilbertUnphysicality.quantum_no_cutoff}). So the same demand on
+position and momentum leaves only $\psi = 0$ even without dynamics.
+
+\subsection{Consequence}
+
+[B]WDQ, read for all smooth changes of frame, has no nonzero solution that survives the dynamics,
+in $L^2(\mathbb R)$ or in any subspace of it. Any replacement for QSTO:H must therefore name the
+group of changes of frame it supports, and the choice of state space and of frame group are one
+decision. Antoine~\cite[Sec.~II]{antoine} already requires the state space of a rigged Hilbert
+space to be invariant under the representation of a given symmetry group; Corollary~\ref{cor:frames}
+shows that the group cannot be all changes of frame.
+
+\subsection{Lean}
+
+Module:\\ \lean{HilbertUnphysicality.FurtherResults.FrameCutoffs},\\ namespace
+\lean{HilbertUnphysicality.FurtherResults}.
+\begin{itemize}
+  \item \lean{smoothFrameChange}, \lean{smoothFrameChange_mem_positionDomain_iff}: the unitary
+    $U_e$ (\lean{Lp.compDiffeo} for $g = e^{-1}$), and $U_e\psi \in D(Y)$ iff $e\psi \in L^2$.
+  \item \lean{Real.exists_contDiff_homeomorph_le_abs}: Lemma~\ref{lem:staircase}, in
+    \lean{ForMathlib/Analysis/SpecialFunctions/SmoothTransition.lean}.
+  \item \lean{memLp_mul_forall_iff}, \lean{forall_smoothFrameChange_mem_positionDomain_iff}:
+    Theorem~\ref{thm:cutoff}.
+  \item \lean{Real.ae_eq_zero_of_fourier_eq_cexp_mul}, in
+    \lean{ForMathlib/Analysis/Fourier/Chirp.lean}: a chirp on the Fourier side destroys bounded
+    support. It uses \lean{Real.exists_differentiable_fourier_eq}
+    (\lean{ForMathlib/Analysis/Fourier/PaleyWiener.lean}) and Mathlib's
+    \lean{PhragmenLindelof.eq_zero_on_right_half_plane_of_superexponential_decay}.
+  \item \lean{freeEvolution_not_cutoff}: Theorem~\ref{thm:evolution}, with
+    \lean{MeasureTheory.Lp.fourier_coeFn_eq_of_integrable}
+    (\lean{ForMathlib/Analysis/Fourier/LpSpace.lean}).
+  \item \lean{not_forall_frames_freeEvolution}: Corollary~\ref{cor:frames}.
+\end{itemize}
+
+\begin{thebibliography}{9}
+\bibitem{brief} G.~Carcassi, \emph{Unphysicality of Hilbert spaces for quantum mechanics},
+  technical brief, Assumptions of Physics,
+  \url{https://assumptionsofphysics.org/resources/briefs}.
+\bibitem{cca} G.~Carcassi, F.~Calder\'on, C.~A.~Aidala, The unphysicality of Hilbert spaces,
+  Quantum Stud.: Math. Found. \textbf{12}, 13 (2025), arXiv:2308.06669.
+\bibitem{reverse} G.~Carcassi, T.~Thrien, C.~A.~Aidala, Reverse physics for quantum mechanics,
+  arXiv:2608.27543.
+\bibitem{antoine} J.-P.~Antoine, Dirac formalism and symmetry problems in quantum mechanics.
+  II.~Symmetry problems, J. Math. Phys. \textbf{10} (1969) 2276--2290.
+\bibitem{schmudgen} K.~Schmüdgen, \emph{Unbounded Self-adjoint Operators on Hilbert Space},
+  Graduate Texts in Mathematics~265, Springer, 2012.
+\bibitem{simon} B.~Simon, Tosio Kato's work on non-relativistic quantum mechanics,
+  arXiv:1711.00528.
+\end{thebibliography}
+
+\end{document}

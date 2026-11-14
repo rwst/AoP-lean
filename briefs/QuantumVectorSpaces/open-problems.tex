@@ -68,17 +68,18 @@ precise first.
   For Example~3 the change of frame $y = \tan(\frac{\pi}{2}\operatorname{erf} x)$, which the
   brief ``Unphysicality of Hilbert spaces for quantum mechanics'' uses against [B]WDQ for
   QSTO:H, does not: it takes a Gaussian out of $\mathcal{S}(\mathbb{R})$
-  (\lean{SchwartzFrame.not_forall_frameUnitary_mem_range}), and the position of the second frame,
+  (\lean{FurtherResults.not_forall_frameUnitary_mem_range}), and the position of the second frame,
   carried back to the first, is not defined at that Gaussian
-  (\lean{SchwartzFrame.toLp_gaussSchwartz_not_mem_domain}). So QSTO:V gives [B]WDQ only for a
+  (\lean{FurtherResults.toLp_gaussSchwartz_not_mem_domain}; see \lean{further-results.tex}, Sec.~1). So QSTO:V gives [B]WDQ only for a
   class of changes of frame that map $V$ onto itself, as Carcassi, Calder\'on and Aidala already
   require for Schwartz spaces (arXiv:2308.06669v3, Appendix, Sec.~VIII). The class is not
   specified. The restriction cannot simply be dropped: a wave function on $\mathbb{R}$ has finite position
   variance in every smooth coordinate only if it vanishes outside a bounded set; then, unless it
   is zero, its Fourier transform does not, and the free evolution destroys the cutoff at once.
-  This is proved in the Lean files of the brief ``Unphysicality of Hilbert spaces for quantum
-  mechanics'' (\lean{forall_smoothFrameChange_mem_positionDomain_iff}, \lean{quantum_no_cutoff},
-  \lean{freeEvolution_not_cutoff}, \lean{not_forall_frames_freeEvolution}). Open:
+  This is proved in \lean{briefs/HilbertUnphysicality/further-results.tex}, Sec.~2
+  (\lean{HilbertUnphysicality.FurtherResults.not_forall_frames_freeEvolution}), and with the
+  brief ``Unphysicality of Hilbert spaces for quantum mechanics''
+  (\lean{HilbertUnphysicality.quantum_no_cutoff}). Open:
   which group of changes of frame should be part of the data of a quantum vector space, and how
   it relates to the Lie algebra of the defining observables. For plain changes of variable
   $f \mapsto f \circ g$ on $\mathcal{S}(\mathbb{R})$, those that map $\mathcal{S}(\mathbb{R})$ into

@@ -1,0 +1,117 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\emergencystretch=6em
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+
+\title{Further results on the brief\\ \emph{Physical vector spaces for quantum mechanics}}
+\author{Ralf Stephan}
+\date{14 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  This note collects results that go beyond the technical brief \emph{Physical vector spaces for
+  quantum mechanics}~\cite{brief} and partial answers to its open problems. They are not part of
+  the brief. Each section is self-contained, and each names the Lean declarations that check it;
+  the Lean files are in the brief's directory, under \lean{QuantumVectorSpaces/FurtherResults/}.
+\end{abstract}
+
+\section{The Hilbert brief's change of frame is not a map of Schwartz space}
+\label{sec:schwartz}
+
+The brief proposes quantum vector spaces (QSTO:V) as a replacement for the Hilbert-space
+formulation QSTO:H, and argues in the proof of its Theorem~5 that QSTO:V satisfies [B]WDQ. The
+argument assumes that ``the defining observables of A must be observables in B and
+vice-versa'' for two frames $A$ and $B$ of the same system. This premise holds exactly when the
+two frames give the same topology on $V$ (checked with the brief,
+\lean{QuantumVectorSpaces.topology_eq_iff_continuous}). It is not automatic. This section shows
+that it fails for the brief's own Example~3, $V = \mathcal S(\mathbb R)$, with the change of
+frame that the companion brief \emph{Unphysicality of Hilbert spaces for quantum
+mechanics}~\cite{hilbert} uses against QSTO:H.
+
+That change of frame is $y = \tan(\frac\pi2\operatorname{erf}x)$. Its unitary $U$ on
+$L^2(\mathbb R)$ sends the Gaussian packet
+\[
+  \psi(x) = \bigl(e^{-x^2}/\sqrt\pi\bigr)^{1/2} = \pi^{-1/4}e^{-x^2/2}
+  \quad\text{to}\quad
+  \phi(y) = \bigl(\pi(1+y^2)\bigr)^{-1/2}.
+\]
+
+\begin{theorem}\label{thm:schwartz}
+  \begin{enumerate}
+    \item $\psi$ is a Schwartz function, and $U\psi = \phi$ is not. So $U$ does not map
+      $\mathcal S(\mathbb R)$ into itself.
+    \item The position $Y$ of the second frame, carried back to the first as $U^{-1}YU$, is not
+      defined at the Schwartz function $\psi$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  Every Schwartz function $f$ lies in the domain of the position operator, since $xf$ is again
+  a Schwartz function and so in $L^2$. But $\int y^2|\phi(y)|^2\,dy =
+  \int y^2/(\pi(1+y^2))\,dy = \infty$, so $\phi$ is not in that domain (the brief
+  \emph{Unphysicality of Hilbert spaces}, Proposition~3). This gives~(1). For~(2),
+  $\psi \in D(U^{-1}YU)$ iff $U\psi \in D(Y)$, which fails.
+\end{proof}
+
+So the two observers do not describe the same $V$ with two families of defining observables, as
+the premise requires: the second observer cannot express the first observer's $\psi$ in
+$\mathcal S(\mathbb R)$. QSTO:V gives [B]WDQ only for changes of frame whose unitaries map $V$
+onto itself. The restriction is stated in print by Carcassi, Calderón and Aidala: on the Schwartz
+space ``the only unitary transformations we are interested in are those that map Schwartz
+functions to Schwartz functions'', and the change of coordinate ``is automatically ruled
+out''~\cite[Appendix, Sec.~VIII]{cca}. The brief does not repeat it. Theorem~\ref{thm:schwartz}
+is the concrete instance, checked in Lean.
+
+Which changes of variable do map $\mathcal S(\mathbb R)$ into itself is known: Galbis and Jordá
+characterize them~\cite[Thm.~2.3]{galbis}. That the restriction cannot be lifted by choosing a
+different space is shown in the companion note on the Hilbert brief~\cite[Sec.~2]{further-hilbert}:
+no nonzero state of $L^2(\mathbb R)$ has finite position variance in every smooth frame both now
+and after a free evolution. A quantum vector space has to come with its group of changes of frame.
+
+\subsection{Lean}
+
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.SchwartzFrame},\\ namespace
+\lean{QuantumVectorSpaces.FurtherResults}. The unitary $U$ (\lean{frameUnitary}), the packets
+and the position operator are those of the Hilbert brief's formalization.
+\begin{itemize}
+  \item \lean{toLp_gaussSchwartz}: $\psi$ is $\pi^{-1/4}$ times TauCeti's Gaussian Schwartz map.
+  \item \lean{toLp_mem_positionDomain}: every Schwartz function lies in the domain of the position
+    operator on $L^2(\mathbb R)$.
+  \item \lean{frameUnitary_gaussState_not_mem_range}, \lean{not_forall_frameUnitary_mem_range}:
+    Theorem~\ref{thm:schwartz}(1).
+  \item \lean{toLp_gaussSchwartz_not_mem_domain}: Theorem~\ref{thm:schwartz}(2).
+\end{itemize}
+The statement is made in $L^2(\mathbb R)$, where $U$ lives; it does not need $U$ to be smooth.
+
+\begin{thebibliography}{9}
+\bibitem{brief} G.~Carcassi, \emph{Physical vector spaces for quantum mechanics}, technical
+  brief, Assumptions of Physics, \url{https://assumptionsofphysics.org/resources/briefs}.
+\bibitem{hilbert} G.~Carcassi, \emph{Unphysicality of Hilbert spaces for quantum mechanics},
+  technical brief, Assumptions of Physics,
+  \url{https://assumptionsofphysics.org/resources/briefs}.
+\bibitem{cca} G.~Carcassi, F.~Calder\'on, C.~A.~Aidala, The unphysicality of Hilbert spaces,
+  Quantum Stud.: Math. Found. \textbf{12}, 13 (2025), arXiv:2308.06669v3.
+\bibitem{galbis} A.~Galbis, E.~Jord\'a, Composition operators on the Schwartz space, Rev. Mat.
+  Iberoam. \textbf{34} (2018) 397--412.
+\bibitem{further-hilbert} R.~Stephan, \emph{Further results on the brief ``Unphysicality of
+  Hilbert spaces for quantum mechanics''}, \lean{briefs/HilbertUnphysicality/further-results.pdf}.
+\end{thebibliography}
+
+\end{document}

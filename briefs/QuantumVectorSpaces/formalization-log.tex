@@ -58,20 +58,19 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/PureStates.lean} (second countability
   from the pure states, Sec.~5), and\newline
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Frames.lean} (frame changes, Theorem~5,
-  [B]WDQ, with the change of frame of the brief \emph{Unphysicality of Hilbert spaces for quantum
-  mechanics} on $\mathcal{S}(\mathbb{R})$), and\newline
+  [B]WDQ), and\newline
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/Isomorphisms.lean} (isomorphisms of
   quantum vector spaces, Example~3 and Theorem~5), and\newline
   \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/SchwartzIsomorphisms.lean}
   ($\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ are Lie isomorphic iff $n = m$,
   Example~3)
+\item Not in this log: results that go beyond the brief, by R.~Stephan, are in
+  \lean{briefs/QuantumVectorSpaces/further-results.tex}, with their Lean files under
+  \lean{briefs/QuantumVectorSpaces/QuantumVectorSpaces/FurtherResults/} (modules
+  \lean{QuantumVectorSpaces.FurtherResults.*}). No module of the brief imports them.
 \item Library: \lean{QuantumVectorSpaces}
 \item \raggedright Imports: \lean{SchwartzNorms}
   (the $L^2$ seminorm family on $\mathcal{S}(\mathbb{R})$);
-  in \lean{Frames.lean} also \lean{HilbertUnphysicality} (the change of frame $U$, the Gaussian
-  packet, the domain of the position operator on $L^2(\mathbb{R})$) and TauCeti's
-  \lean{TauCeti/Analysis/SpecialFunctions/Gaussian/Schwartz.lean} (the Gaussian as a Schwartz
-  function);
   and new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Defs.lean} (the seminorm
   $\sqrt{\operatorname{re}\langle x, x\rangle}$ of a \lean{PreInnerProductSpace.Core}, and
@@ -163,13 +162,6 @@ Theorem 5, [B]WDQ: two frames with each other's defining observables as observab
 Theorem 5, [B]WDQ: sufficient conditions & \lean{topology_eq_of_mem_algebra},
   \lean{topology_eq_of_finiteDimensional} \\
 Theorem 5, [B]WDQ: the premise is not automatic & \lean{Diagonal.not_continuous_mulOp} \\
-Theorem 5, [B]WDQ: the premise fails for Example 3 with the change of frame
-  $y = \tan(\frac{\pi}{2}\operatorname{erf} x)$ of the brief \emph{Unphysicality of Hilbert
-  spaces for quantum mechanics} & \lean{SchwartzFrame.toLp_gaussSchwartz},
-  \lean{SchwartzFrame.toLp_mem_positionDomain},
-  \lean{SchwartzFrame.frameUnitary_gaussState_not_mem_range},
-  \lean{SchwartzFrame.not_forall_frameUnitary_mem_range},
-  \lean{SchwartzFrame.toLp_gaussSchwartz_not_mem_domain} \\
 Isomorphisms of quantum vector spaces & \lean{UnitaryEquiv}, \lean{LieIso} (with
   \lean{refl}, \lean{symm}, \lean{trans}), \lean{LieIso.toUnitaryEquiv} \\
 Isomorphisms preserve observables and pure states & \lean{UnitaryEquiv.isObservable_conj_iff},
@@ -268,20 +260,6 @@ Example 3, $\mathcal{S}(\mathbb{R}^n)$ and $\mathcal{S}(\mathbb{R}^m)$ isomorphi
   multiplication by $n$, a defining observable of the frame with all multiplication operators,
   is not continuous for the frame whose only defining observable is the identity
   (\lean{Diagonal.not_continuous_mulOp}), since $\|e_n\| = 1$ while $\|n e_n\| = n$.
-\item The premise also fails for Example~3, with the change of frame that the brief
-  \emph{Unphysicality of Hilbert spaces for quantum mechanics} uses against [B]WDQ for QSTO:H.
-  There $y = \tan(\frac{\pi}{2}\operatorname{erf} x)$, and the unitary $U$ of $L^2(\mathbb{R})$
-  (\lean{frameUnitary}, from that brief's Lean file) sends
-  $\psi(x) = (e^{-x^2}/\sqrt{\pi})^{1/2}$ to $\phi(y) = (\pi(1 + y^2))^{-1/2}$. Here $\psi$ is a
-  Schwartz function, $\pi^{-1/4}$ times TauCeti's Gaussian $e^{-x^2/2}$
-  (\lean{SchwartzFrame.toLp_gaussSchwartz}), while $\phi$ is not: every Schwartz function lies
-  in the domain of the position operator (\lean{SchwartzFrame.toLp_mem_positionDomain}), and
-  $\phi$ does not (\lean{frameUnitary_gaussState_not_mem}). So $U$ does not map
-  $\mathcal{S}(\mathbb{R})$ into itself (\lean{SchwartzFrame.not_forall_frameUnitary_mem_range}),
-  and $U^{-1} Y U$, the position of the second frame carried back to the first, is not defined
-  at $\psi$ (\lean{SchwartzFrame.toLp_gaussSchwartz_not_mem_domain}). The two frames are not
-  two families of defining observables on the same $V$, as the premise requires. The statement
-  is made in $L^2(\mathbb{R})$, where $U$ lives; it does not need $U$ to be smooth.
 \item The brief does not define isomorphisms of quantum vector spaces. Two notions are
   formalized, each closed under identity, inverse and composition. A \emph{unitary equivalence}
   (\lean{UnitaryEquiv}) is a linear bijection $U\colon V \to W$ that preserves the inner product
@@ -352,7 +330,8 @@ are left implicit.
   each frame are observables of the other; for $V = \mathcal{S}(\mathbb{R})$ these are the
   unitaries that map $\mathcal{S}(\mathbb{R})$ onto itself. The brief does not say so, and the
   change of frame that the brief \emph{Unphysicality of Hilbert spaces for quantum mechanics}
-  uses against QSTO:H is not of this kind (see ``Differences''). The restriction is stated in
+  uses against QSTO:H is not of this kind (see Sec.~1 of
+  \lean{further-results.tex}, beyond this log). The restriction is stated in
   G.~Carcassi, F.~Calder\'on, C.~A.~Aidala, \emph{The unphysicality of Hilbert spaces},
   arXiv:2308.06669v3, Appendix, Sec.~VIII: the change of coordinate is ``automatically ruled
   out''.

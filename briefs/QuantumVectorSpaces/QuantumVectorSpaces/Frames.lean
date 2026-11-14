@@ -6,8 +6,6 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import QuantumVectorSpaces.Countable
-public import HilbertUnphysicality
-public import TauCeti.Analysis.SpecialFunctions.Gaussian.Schwartz
 
 /-!
 # Frame changes
@@ -18,12 +16,10 @@ defining observables of A must be observables in B and vice-versa". This file sh
 premise holds exactly when the two frames give the same topology, and then they have the same
 observables. The premise holds automatically in finite dimension, but not in general.
 
-It fails for Example 3, `V = 𝓢(ℝ)`, with the change of frame `y = tan(π/2 · erf x)` that the
-brief Unphysicality of Hilbert spaces for quantum mechanics uses against [B]WDQ (its
-Proposition 3, in the module `HilbertUnphysicality`). Its unitary `U` sends the Gaussian packet `ψ`, a Schwartz function, to
-`ϕ(y) = (π(1 + y²))^{-1/2}`, which is not one. So the second observer cannot express the first
-observer's `ψ` in `𝓢(ℝ)`, and the second observer's position, carried back to the first frame,
-is not defined at `ψ`. QSTO:V gives [B]WDQ only for changes of frame that map `V` onto itself.
+For Example 3 and the change of frame `y = tan(π/2 · erf x)` of the brief Unphysicality of
+Hilbert spaces for quantum mechanics, where the premise fails, see Sec. 1 of
+`further-results.tex` in this brief's directory and the module
+`QuantumVectorSpaces.FurtherResults.SchwartzFrame`.
 
 ## Main results
 
@@ -35,29 +31,14 @@ is not defined at `ψ`. QSTO:V gives [B]WDQ only for changes of frame that map `
   the algebra of the other;
 * `topology_eq_of_finiteDimensional`  in finite dimension all frames give the same topology;
 * `Diagonal.not_continuous_mulOp`  but on the finitely supported sequences, the multiplication
-  by `n` is not continuous for the frame whose only defining observable is the identity;
-* `SchwartzFrame.toLp_gaussSchwartz`  the Gaussian packet `ψ` of the Hilbert brief is a Schwartz
-  function;
-* `SchwartzFrame.toLp_mem_positionDomain`  every Schwartz function lies in the domain of the
-  position operator on `L²(ℝ)`;
-* `SchwartzFrame.frameUnitary_gaussState_not_mem_range`  `Uψ = ϕ` is not a Schwartz function;
-* `SchwartzFrame.not_forall_frameUnitary_mem_range`  so `U` does not map `𝓢(ℝ)` into itself;
-* `SchwartzFrame.toLp_gaussSchwartz_not_mem_domain`  and `U⁻¹YU`, the position `Y` of the
-  second frame carried back to the first, is not defined at the Schwartz function `ψ`.
+  by `n` is not continuous for the frame whose only defining observable is the identity.
 
 ## References
-
-* G. Carcassi, F. Calderón, C. A. Aidala, The unphysicality of Hilbert spaces,
-  arXiv:2308.06669v3, Appendix, Sec. VIII: on the Schwartz space "the only unitary
-  transformations we are interested in are those that map Schwartz functions to Schwartz
-  functions", so the change of coordinate `y(x)` "is automatically ruled out".
 
 * J.-P. Antoine, Dirac formalism and symmetry problems in quantum mechanics. II. Symmetry
   problems, J. Math. Phys. 10 (1969) 2276–2290, Sec. II: a symmetry group is compatible with the
   space of states when the space is invariant under its representation; Proposition 4:
   observables transforming by a finite-dimensional representation stay continuous.
-* A. Galbis, E. Jordá, Composition operators on the Schwartz space, Rev. Mat. Iberoam. 34
-  (2018) 397–412, Theorem 2.3: the changes of variable that map `𝓢(ℝ)` into itself.
 -/
 
 open Topology
@@ -171,60 +152,5 @@ theorem not_continuous_mulOp :
   exact (hK n).not_gt hn
 
 end Diagonal
-
-/-! ### The change of frame of the Hilbert brief on `𝓢(ℝ)` -/
-
-namespace SchwartzFrame
-
-open HilbertUnphysicality MeasureTheory SchwartzMap QuantumMechanics
-
-/-- The Gaussian packet `ψ(x) = (e^{-x²}/√π)^{1/2} = π^{-1/4} e^{-x²/2}` as a Schwartz
-function. -/
-def gaussSchwartz : 𝓢(ℝ, ℂ) :=
-  ((√(√Real.pi) : ℝ) : ℂ)⁻¹ • TauCeti.gaussianSchwartzMap (b := (1 / 2 : ℂ)) (by norm_num)
-
-lemma gaussSchwartz_apply (x : ℝ) : gaussSchwartz x = gaussFun x := by
-  have h : √(Real.exp (-x ^ 2) / √Real.pi) = (√(√Real.pi))⁻¹ * Real.exp (-(1 / 2) * x ^ 2) := by
-    rw [Real.sqrt_div (Real.exp_pos _).le, div_eq_inv_mul, ← Real.exp_half]
-    ring_nf
-  simp only [gaussSchwartz, smul_apply, TauCeti.gaussianSchwartzMap_apply, smul_eq_mul, gaussFun,
-    gaussDensity, h, Real.norm_eq_abs]
-  rw [← Complex.ofReal_pow, sq_abs]
-  push_cast
-  ring_nf
-
-/-- The Gaussian packet `ψ` of the Hilbert brief is a Schwartz function. -/
-theorem toLp_gaussSchwartz : gaussSchwartz.toLp 2 volume = gaussState :=
-  MemLp.toLp_congr _ _ (ae_of_all _ gaussSchwartz_apply)
-
-/-- Every Schwartz function lies in the domain of the position operator on `L²(ℝ)`. -/
-theorem toLp_mem_positionDomain (f : 𝓢(ℝ, ℂ)) : f.toLp 2 volume ∈ positionDomain := by
-  refine (memLp (posOp f) 2).ae_eq ?_
-  filter_upwards [coeFn_toLp f 2 volume] with x hx
-  rw [posOp_apply, hx]
-
-/-- The change of frame takes `ψ` out of `𝓢(ℝ)`: `Uψ = ϕ` is not a Schwartz function. -/
-theorem frameUnitary_gaussState_not_mem_range :
-    frameUnitary gaussState ∉ Set.range fun f : 𝓢(ℝ, ℂ) => f.toLp 2 volume := by
-  rintro ⟨f, hf⟩
-  exact frameUnitary_gaussState_not_mem (hf ▸ toLp_mem_positionDomain f)
-
-/-- [B]WDQ on `𝓢(ℝ)` fails for this change of frame: `U` does not map `𝓢(ℝ)` into itself. -/
-theorem not_forall_frameUnitary_mem_range :
-    ¬ ∀ f : 𝓢(ℝ, ℂ), ∃ g : 𝓢(ℝ, ℂ), frameUnitary (f.toLp 2 volume) = g.toLp 2 volume := by
-  intro h
-  obtain ⟨g, hg⟩ := h gaussSchwartz
-  rw [toLp_gaussSchwartz] at hg
-  exact frameUnitary_gaussState_not_mem_range ⟨g, hg.symm⟩
-
-/-- The premise of the proof of Theorem 5 fails for this change of frame: the position `Y` of
-the second frame, carried back to the first as `U⁻¹YU`, is not defined at the Schwartz function
-`ψ`, so it is not an operator on `𝓢(ℝ)`. -/
-theorem toLp_gaussSchwartz_not_mem_domain :
-    gaussSchwartz.toLp 2 volume ∉ (conjLinearPMap frameUnitary.symm positionOp).domain := by
-  rw [mem_domain_conjLinearPMap, LinearIsometryEquiv.symm_symm, toLp_gaussSchwartz]
-  exact frameUnitary_gaussState_not_mem
-
-end SchwartzFrame
 
 end QuantumVectorSpaces

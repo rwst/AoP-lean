@@ -12,7 +12,11 @@ import ForMathlib.Analysis.SpecialFunctions.SmoothTransition
 import TauCeti.Analysis.Fourier.Continuous
 
 /-!
-# Unphysicality of Hilbert spaces: no state has finite position variance in every frame
+# Further results: no state has finite position variance in every frame
+
+Not part of the brief. This file formalizes Sec. 2 of `further-results.tex` in the brief's
+directory (R. Stephan, *Further results on the brief "Unphysicality of Hilbert spaces for
+quantum mechanics"*).
 
 [B]WDQ asks that a quantity well-defined in one frame be well-defined in every other. For the
 position of one degree of freedom, and every smooth change of frame `y = e(x)`, this module
@@ -38,8 +42,7 @@ allow it.
 So [B]WDQ, read for all smooth frames, has no solution in any space of quantum states. A model
 can satisfy it only for a restricted group of changes of frame.
 
-This module is separate from the main file of the brief, so that the comparator lane, which
-certifies the main file, is unchanged. No certified statement depends on it.
+The comparator lane, which certifies the main file of the brief, does not depend on this module.
 
 ## Main results
 
@@ -71,7 +74,7 @@ open scoped ContDiff FourierTransform ENNReal
 
 @[expose] public noncomputable section
 
-namespace HilbertUnphysicality
+namespace HilbertUnphysicality.FurtherResults
 
 /-! ### Part 1: all smooth frames -/
 
@@ -313,4 +316,4 @@ theorem not_forall_frames_freeEvolution {ψ : L2R} (hψ : ψ ≠ 0) {t : ℝ} (h
 
 end Evolution
 
-end HilbertUnphysicality
+end HilbertUnphysicality.FurtherResults

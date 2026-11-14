@@ -112,11 +112,11 @@ E. FOR SEC. 6, "FIX THE MATHEMATICAL MODEL": CANDIDATES IN PRINT
 
 14. J. E. Roberts, Rigged Hilbert spaces in quantum mechanics, Commun. Math. Phys. 3 (1966)
     98-119; J.-P. Antoine, J. Math. Phys. 10 (1969) 53-69 and 2276-2290. [read in part]
-    (Antoine II in Lean, HilbertUnphysicality/FrameCutoffs.lean)
+    (Antoine II in Lean, HilbertUnphysicality/FurtherResults/FrameCutoffs.lean)
     See the file of the same name in ../QuantumVectorSpaces/.
     Antoine II, Sec. II, makes a symmetry group compatible with the space of states by requiring
-    that space to be invariant under the group's representation. FrameCutoffs.lean shows that
-    the group cannot be all smooth changes of frame: no nonzero state has finite position
+    that space to be invariant under the group's representation. FrameCutoffs.lean (and further-results.tex,
+    Sec. 2) shows that the group cannot be all smooth changes of frame: no nonzero state has finite position
     variance in every smooth frame both now and after a free evolution.
     PDF: roberts1966.pdf, antoine1969.pdf, antoine1969II.pdf
 

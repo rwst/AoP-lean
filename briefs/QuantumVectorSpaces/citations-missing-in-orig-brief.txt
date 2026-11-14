@@ -107,7 +107,8 @@ this directory.
     PDF: FlatoSimonSnellmanSternheimer1972.pdf
 
 13. A. Galbis, E. Jordá, Composition operators on the Schwartz space, Rev. Mat. Iberoam. 34
-    (2018) 397-412, arXiv:1511.03072, Theorem 2.3. [agent] (in Lean, Frames)
+    (2018) 397-412, arXiv:1511.03072, Theorem 2.3. [agent] (in Lean,
+    FurtherResults/SchwartzFrame)
     Bears on: Theorem 5 ([B]WDQ). Which changes of variable map S(R) into itself. The frame
     change of the brief "Unphysicality of Hilbert spaces" is not one of them.
     PDF: Galbis2018-1511.03072.pdf
@@ -123,7 +124,7 @@ this directory.
 
 16. G. Carcassi, F. Calderón, C. A. Aidala, The unphysicality of Hilbert spaces, Quantum Stud.:
     Math. Found. 12, 13 (2025), arXiv:2308.06669v3, Appendix, Sec. VIII (p. 14). [read]
-    (in Lean)
+    (in Lean, QuantumVectorSpaces/FurtherResults/SchwartzFrame.lean)
     Bears on: Theorem 5 ([B]WDQ). "If we restrict ourselves to the Schwartz space, then the
     only unitary transformations we are interested in are those that map Schwartz functions to
     Schwartz functions. [...] The change of coordinate y(x) we defined in the previous
