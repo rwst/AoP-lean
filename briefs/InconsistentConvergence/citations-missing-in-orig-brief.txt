@@ -4,7 +4,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 
 Citations missing in the original brief
 Brief: Inconsistent convergence in Hilbert space
-Compiled 2026-11-14 from the literature search in ~/physics/plans/report-hilbert.html.
+Compiled 2026-11-14 from a literature search.
 
 The brief has no reference list. Each entry below gives the work, the place in the brief it
 bears on, what it says, and how well this was checked:
