@@ -96,6 +96,14 @@ precise first.
   $f \mapsto f \circ g$ on $\mathcal{S}(\mathbb{R})$, those that map $\mathcal{S}(\mathbb{R})$ into
   itself are characterized by Galbis and Jord\'a (Rev.\ Mat.\ Iberoam.\ 34 (2018), Thm.~2.3); the
   unitary changes of frame carry the extra factor $\sqrt{g'}$.
+  \emph{Partial answer} (\lean{further-results.tex}, Sec.~3). With a group $F$ of changes of
+  frame acting on $V$ by linear bijections that preserve the inner product, the premise holds for
+  every pair of frames in $F$ if and only if every element of $F$ acts continuously on $V$
+  (\lean{FurtherResults.isFrameCompatible_iff_continuous}). Then every change of frame in $F$ is a
+  unitary equivalence (\lean{FurtherResults.IsFrameCompatible.unitaryEquiv}). It suffices that
+  the transformed defining observables lie in the algebra of the original ones
+  (\lean{FurtherResults.isFrameCompatible_of_mem_algebra}); the translations of Example~3 are an
+  instance (\lean{FurtherResults.isFrameCompatible_translate}). The choice of $F$ remains open.
   (Brief, Theorem~5, proof; Log, ``Problems found in the brief'', last item.)
 \end{enumerate}
 

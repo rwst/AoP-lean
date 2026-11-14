@@ -19,7 +19,8 @@ observables. The premise holds automatically in finite dimension, but not in gen
 For Example 3 and the change of frame `y = tan(π/2 · erf x)` of the brief Unphysicality of
 Hilbert spaces for quantum mechanics, where the premise fails, see Sec. 1 of
 `further-results.tex` in this brief's directory and the module
-`QuantumVectorSpaces.FurtherResults.SchwartzFrame`.
+`QuantumVectorSpaces.FurtherResults.SchwartzFrame`. For [B]WDQ relative to a group of frames,
+see Sec. 3 there and the module `QuantumVectorSpaces.FurtherResults.FrameGroups`.
 
 ## Main results
 

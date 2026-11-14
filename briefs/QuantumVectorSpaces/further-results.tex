@@ -87,7 +87,8 @@ Which changes of variable do map $\mathcal S(\mathbb R)$ into itself is known: G
 characterize them~\cite[Thm.~2.3]{galbis}. That the restriction cannot be lifted by choosing a
 different space is shown in the companion note on the Hilbert brief~\cite[Sec.~2]{further-hilbert}:
 no nonzero state of $L^2(\mathbb R)$ has finite position variance in every smooth frame both now
-and after a free evolution. A quantum vector space has to come with its group of changes of frame.
+and after a free evolution. A quantum vector space has to come with its group of changes of frame
+(Sec.~\ref{sec:framegroup}).
 
 \subsection{Lean}
 
@@ -250,6 +251,92 @@ Module:\\ \lean{QuantumVectorSpaces.FurtherResults.Irreducibility},\\ namespace
 \end{itemize}
 Not formalized: that $\Phi_X$ is a quantum vector space, the remark on Theorem~5, and the group
 form.
+
+\section{[B]WDQ relative to a group of frames}
+\label{sec:framegroup}
+
+Section~\ref{sec:schwartz} and the companion note~\cite[Sec.~2]{further-hilbert} show that
+[B]WDQ cannot hold for ``all frames'' as the brief words it: some changes of frame do not map
+$V$ into itself, and no nonzero state serves every smooth frame at once. This section states
+[B]WDQ with the frames as part of the data and shows that the brief's argument then goes through,
+with a condition that can be checked.
+
+\begin{definition}\label{def:framegroup}
+  A \emph{frame group} for $V$ is a group $F$ with a homomorphism $\rho$ from $F$ to the linear
+  bijections of $V$ such that every $\rho(g)$ preserves the inner product. The frame $g$ has the
+  defining observables $X_i^g = \rho(g)^{-1}X_i\,\rho(g)$: the observer in frame $g$ describes the
+  state $v$ by $\rho(g)v$ and measures $X_i$ on it. The frame group satisfies \emph{[B]WDQ} if for
+  all $g, h \in F$ the defining observables of $g$ are observables of $h$, that is, symmetric
+  operators continuous in the topology that Corollary~2 gives to the $X_i^h$.
+\end{definition}
+
+The last condition is the premise of the brief's proof of Theorem~5, for every pair of frames
+in~$F$. The frame $1$ is the original one.
+
+\begin{theorem}\label{thm:framegroup}
+  Let the $X_i$ be symmetric and let $(F, \rho)$ be a frame group.
+  \begin{enumerate}
+    \item $(F, \rho)$ satisfies [B]WDQ if and only if every frame gives the same topology on $V$,
+      and if and only if every $\rho(g)$ is continuous, that is, $F$ acts by automorphisms of the
+      topological vector space~$V$.
+    \item Then all frames have the same observables, and every $\rho(g)$ is a unitary equivalence
+      of $V$ with itself. So it carries the pure states, with their topology, the Born
+      probabilities and the observables of one frame to those of another.
+    \item A sufficient condition is that every $X_i^g$ lies in the algebra $\mathcal A$ generated
+      by the~$X_i$.
+    \item The translations $f \mapsto f(\cdot - a)$, $a \in \mathbb R$, are a frame group of
+      Example~3 that satisfies [B]WDQ, for every $\hbar$.
+    \item The change of frame $y = \tan(\frac\pi2\operatorname{erf}x)$ belongs to no frame group of
+      Example~3: no linear map of $\mathcal S(\mathbb R)$ agrees with its unitary $U$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  (1) Since $\rho(g)$ preserves the inner product, the topology of the frame $g$ is the topology
+  of the frame $1$ pulled back along $\rho(g)$; this is the transport result already used for
+  isomorphisms (checked with the brief, \lean{QuantumVectorSpaces.induced_topology_eq_pullback}).
+  Conjugation by $\rho(g)$ also preserves symmetry. By the brief's frame criterion
+  (\lean{QuantumVectorSpaces.topology_eq_iff_continuous}), [B]WDQ for the pairs $(g, 1)$ and
+  $(1, g)$ says that the topology of the frame $g$ equals that of the frame~$1$, and conversely
+  equal topologies give [B]WDQ for every pair. A topology $t$ equals its pullback along
+  $\rho(g)$ for every $g$ exactly when every $\rho(g)$ is continuous for $t$: continuity of
+  $\rho(g)$ gives one inclusion, and continuity of $\rho(g^{-1}) = \rho(g)^{-1}$ gives the other.
+  (2) follows from (1). (3) If every $X_i^g$ lies in $\mathcal A$, then
+  $X_i = \rho(g)^{-1}X_i^{g^{-1}}\rho(g)$ lies in the algebra of the frame $g$, and two frames whose
+  defining observables lie in each other's algebras give the same topology. (4) Under translation by
+  $a$, position becomes $X + a$ and momentum stays $P$, both in $\mathcal A$; the inner product is
+  preserved because Lebesgue measure is translation invariant. (5) is
+  Theorem~\ref{thm:schwartz}(1).
+\end{proof}
+
+So the brief's argument for [B]WDQ is correct once ``all frames'' is read as ``all frames of a
+given frame group that acts by automorphisms of $V$''. Part~(1) says that this restriction is
+also necessary. Antoine requires the same invariance of his space under the symmetry
+group~\cite[Sec.~II]{antoine2}, and his Proposition~4, on observables that transform by a
+finite-dimensional representation, is related to part~(3). The negative half is not in his paper:
+part~(5), and the companion note's result that no space works for all smooth frames. Which frame
+group a quantum vector space should carry is a choice made with the space. For
+$\mathcal S(\mathbb R)$ the changes of variable that preserve it are those of Galbis and
+Jordá~\cite[Thm.~2.3]{galbis}, with the half-density factor added for unitarity; in the group form
+of Sec.~\ref{sec:irreducible}, $F$ is the group $G$ itself.
+
+\subsection{Lean}
+
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.FrameGroups},\\ namespace
+\lean{QuantumVectorSpaces.FurtherResults}.
+\begin{itemize}
+  \item \lean{FrameGroup}, \lean{frameObs}, \lean{IsFrameCompatible}:
+    Definition~\ref{def:framegroup}.
+  \item \lean{isFrameCompatible_iff_topology_eq}, \lean{isFrameCompatible_iff_continuous}:
+    Theorem~\ref{thm:framegroup}(1).
+  \item \lean{IsFrameCompatible.isObservable_iff}, \lean{IsFrameCompatible.unitaryEquiv}:
+    Theorem~\ref{thm:framegroup}(2); the pure states and observables are carried by the brief's
+    \lean{UnitaryEquiv.pureStates} and \lean{UnitaryEquiv.isObservable_conj_iff}.
+  \item \lean{isFrameCompatible_of_mem_algebra}: Theorem~\ref{thm:framegroup}(3).
+  \item \lean{translate}, \lean{frameObs_translate}, \lean{isFrameCompatible_translate}:
+    Theorem~\ref{thm:framegroup}(4).
+  \item \lean{not_exists_frameUnitary}: Theorem~\ref{thm:framegroup}(5).
+\end{itemize}
 
 \begin{thebibliography}{9}
 \bibitem{brief} G.~Carcassi, \emph{Physical vector spaces for quantum mechanics}, technical
