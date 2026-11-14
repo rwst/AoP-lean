@@ -62,6 +62,15 @@ precise first.
   set of ensembles ``the most natural space to consider'', but no ensemble space over $V$ is
   defined. In particular, whether the ensembles induce on the pure states the quotient topology
   of $V$, under which the pure states are second countable exactly when $V$ is, is open.
+  \emph{Partial answer} (\lean{further-results.tex}, Sec.~4). For Example~3 the positive
+  trace-one Schwartz operators of Keyl, Kiukas and Werner are a natural ensemble space: they are
+  the density operators with all moments $\operatorname{tr}\rho N^j$ finite
+  (\lean{FurtherResults.IsSchwartzDensity}), they contain every pure state of $V$
+  (\lean{FurtherResults.isSchwartzDensity_proj}), and the von Neumann entropy is finite
+  (\lean{FurtherResults.IsSchwartzDensity.vonNeumannEntropy_ne_top}) and continuous on them, by
+  Wehrl's theorem (\lean{QuantumMechanics.tendsto_vonNeumannEntropy},
+  \lean{FurtherResults.tendsto_vonNeumannEntropy_of_tendsto_numberMoment}). The question about
+  the quotient topology remains open.
   (Brief, Sec.~3, QSTO:V; Sec.~5.)
 \item \textbf{Field theories.} \emph{Research.} ``For a field theory, we would expect
   the defining observables to be at least countable''; no field-theory example of a quantum

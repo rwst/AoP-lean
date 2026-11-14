@@ -338,6 +338,131 @@ Module:\\ \lean{QuantumVectorSpaces.FurtherResults.FrameGroups},\\ namespace
   \item \lean{not_exists_frameUnitary}: Theorem~\ref{thm:framegroup}(5).
 \end{itemize}
 
+\section{Ensembles over Example 3 and the continuity of entropy}
+\label{sec:ensembles}
+
+QSTO:V speaks of density operators and of the von Neumann entropy
+$S(\rho) = -\operatorname{tr}(\rho\log\rho)$, and Sec.~5 of the brief calls the set of ensembles
+``the most natural space to consider'', but the brief defines no ensemble space over~$V$. For
+Example~3 this section proposes one and shows that the entropy is finite and continuous on it.
+This is the quantum counterpart of the brief \emph{Entropy is not continuous in standard
+probability spaces}~\cite{entropy}: there the entropy fails to be continuous in the $L^1$
+topology, and here a topology made from the observables of $V$ restores continuity.
+
+Take $\hbar = 1$, so that $N = \frac12(X^2 + P^2) - \frac12$ has the Hermite functions $\psi_n$
+as eigenvectors, $N\psi_n = n\psi_n$. (For other $\hbar$ the Hermite functions are rescaled.) For a
+positive trace-class operator $\rho$ on $L^2(\mathbb R)$ write
+$\operatorname{tr}\rho N^j = \sum_n n^j\langle\psi_n, \rho\,\psi_n\rangle \in [0, \infty]$.
+
+\begin{definition}\label{def:ensembles}
+  A \emph{Schwartz density operator} is a positive operator $\rho$ on $L^2(\mathbb R)$ with
+  $\operatorname{tr}\rho = 1$ and $\operatorname{tr}\rho N^j < \infty$ for every~$j$. The
+  ensembles over Example~3 are the Schwartz density operators, with the topology of Schwartz
+  operators of Keyl, Kiukas and Werner~\cite{kkw}.
+\end{definition}
+
+The definition agrees with theirs. They show that the seminorms
+$\|H^m T H^{m'}\|_2$, $m, m' \in \mathbb N$, with $H = N + \frac12$, induce the topology of
+Schwartz operators~\cite[Sec.~3.3]{kkw}. For positive $T$, the operators $H^m T H^{m'}$ are
+products of the Hilbert--Schmidt operators $H^m T^{1/2}$ and $T^{1/2} H^{m'}$ exactly when every
+$\operatorname{tr}(T H^{2m}) = \|T^{1/2}H^m\|_2^2$ is finite, that is when all moments
+$\operatorname{tr}TN^j$ are finite. The eigenvectors of a Schwartz operator with nonzero eigenvalue are Schwartz
+functions~\cite[Lemma~3.5(c)]{kkw}, so a Schwartz density operator is a mixture of pure states
+of~$V$. The expectation of every polynomial in $X$ and $P$ is continuous on it, since
+$|\operatorname{tr}(A\rho) - \operatorname{tr}(A\sigma)| \le \|A(\rho - \sigma)\|_1$ and the
+right-hand side is a seminorm of the topology~\cite[eq.~(20)]{kkw}. In particular convergence
+of Schwartz operators implies convergence in the trace norm and of $\operatorname{tr}\rho N$.
+
+\begin{theorem}\label{thm:ensembles}
+  \begin{enumerate}
+    \item For every Schwartz function $f$ with $\|f\| = 1$, the pure state $|f\rangle\langle f|$
+      is a Schwartz density operator.
+    \item The entropy of a Schwartz density operator is finite.
+    \item \emph{(Wehrl.)} Let $H = \sum_k \omega_k |b_k\rangle\langle b_k| \ge 0$ on a Hilbert
+      space, with $\operatorname{tr}e^{-\beta H} < \infty$ for all $\beta > 0$. If density
+      operators $\rho_m$ converge to $\sigma$ in the trace norm and
+      $\operatorname{tr}\rho_m H \le h$ for all $m$, then $S(\rho_m) \to S(\sigma) < \infty$.
+    \item Hence the entropy is continuous on the ensembles over Example~3: if
+      $\|\rho_m - \sigma\|_1 \to 0$ and $\operatorname{tr}\rho_m N \to \operatorname{tr}\sigma N
+      < \infty$, then $S(\rho_m) \to S(\sigma)$.
+  \end{enumerate}
+\end{theorem}
+
+Part~(3) is Wehrl's~\cite[Sec.~II.D, p.~241]{wehrl}; that the condition on $H$ is also necessary
+is Shirokov's~\cite[Prop.~1a]{shirokov}. Wehrl derives it from the lower semicontinuity of the
+entropy and of the free energy. The proof below needs neither, nor the ordering of eigenvalues,
+so that it could be checked in Lean with the trace-class theory at hand.
+
+\begin{proof}
+  (1) The Hermite coefficients $c_n = \langle\psi_n, f\rangle$ of a Schwartz function decrease
+  rapidly~\cite{simon}: $(n+1)^{j+1}|c_n| \le C$. So
+  $\operatorname{tr}(|f\rangle\langle f|N^j) = \sum_n n^j|c_n|^2 \le C^2\sum_n (n+1)^{-2}$.
+
+  (3) Write $\rho = \sum_i \lambda_i|e_i\rangle\langle e_i|$ and $\eta(\lambda) = -\lambda\log\lambda$,
+  so that $S(\rho) = \sum_i \eta(\lambda_i)$. For $K \in \mathbb N$ let
+  $g_K(\lambda) = \min(-\log\lambda, K)$, continuous on $[0, 1]$, and split
+  $\eta(\lambda) = \lambda g_K(\lambda) + r_K(\lambda)$ with $r_K \ge 0$.
+
+  \emph{The head is continuous.} For every $n \ge 1$,
+  $\rho^n - \sigma^n = \rho(\rho^{n-1} - \sigma^{n-1}) + (\rho - \sigma)\sigma^{n-1}$, so by
+  induction $\|\rho^n - \sigma^n\|_1 \le n\|\rho - \sigma\|_1$ for density operators, and
+  $|\operatorname{tr}\rho^n - \operatorname{tr}\sigma^n| \le n\|\rho - \sigma\|_1$. Given
+  $\varepsilon > 0$, choose by Weierstrass a polynomial $q$ with $|g_K - q| \le \varepsilon$ on
+  $[0, 1]$. Then $\sum_i\lambda_i q(\lambda_i) = \sum_j q_j\operatorname{tr}\rho^{j+1}$ is
+  continuous in $\rho$, and it is within $\varepsilon\sum_i\lambda_i = \varepsilon$ of
+  $\sum_i\lambda_i g_K(\lambda_i)$. So $\rho \mapsto \sum_i \lambda_i g_K(\lambda_i)$ is a
+  uniform limit of continuous functions.
+
+  \emph{The tail is uniformly small.} Klein's inequality
+  $-a\log a \le -a\log b + b - a$ with $b = e^{-K-1-\beta\omega_k}$ gives
+  $r_K(\lambda) \le \beta\omega_k\lambda + e^{-K-1}e^{-\beta\omega_k}$ for every~$k$ (for
+  $\lambda \ge e^{-K}$ the left side is zero). Average over $k$ with the weights
+  $|\langle b_k, e_i\rangle|^2$, which sum to one in $k$ and in $i$:
+  \[
+    \sum_i r_K(\lambda_i) \le \beta\operatorname{tr}\rho H + e^{-K-1}\operatorname{tr}e^{-\beta H}.
+  \]
+  On $\{\operatorname{tr}\rho H \le h\}$, choose $\beta$ with $\beta h < \varepsilon/4$, then $K$
+  with $e^{-K-1}\operatorname{tr}e^{-\beta H} < \varepsilon/4$. The tails of $\rho_m$ and of
+  $\sigma$ lie in $[0, \varepsilon/2)$, since the energy is lower semicontinuous and so
+  $\operatorname{tr}\sigma H \le h$. Together with the head, $|S(\rho_m) - S(\sigma)| < \varepsilon$
+  eventually. The same bound with $K = 0$ gives $S(\rho) < \infty$ whenever
+  $\operatorname{tr}\rho H < \infty$, and so~(2), since $\operatorname{tr}e^{-\beta N} =
+  (1 - e^{-\beta})^{-1}$.
+
+  (4) If $\operatorname{tr}\rho_m N \to \operatorname{tr}\sigma N$, the energies are eventually
+  bounded, and~(3) applies with $H = N$.
+\end{proof}
+
+The topology of Definition~\ref{def:ensembles} is stronger than needed: by~(4) the entropy is
+already continuous for the trace norm together with $\operatorname{tr}\rho N$, and on each set
+$\{\operatorname{tr}\rho N \le h\}$ for the trace norm alone. Whether the ensembles induce on the
+pure states the quotient topology of~$V$, which the brief needs for its remark on second
+countability, is not settled here. Woronowicz's description of the positive functionals on the
+operators of $\mathcal S(\mathbb R)$ as the positive $\rho$ with $\rho L^2 \subset \mathcal S$
+\cite{woronowicz71} suggests that the class of Definition~\ref{def:ensembles} is the natural one;
+the comparison was not carried out.
+
+\subsection{Lean}
+
+The general theorem is in\\ \lean{ForPhyslib.QuantumMechanics.EntropyContinuity}, namespace
+\lean{QuantumMechanics}; the application in\\
+\lean{QuantumVectorSpaces.FurtherResults.Ensembles}, namespace
+\lean{QuantumVectorSpaces.FurtherResults}.
+\begin{itemize}
+  \item \lean{numberMoment}, \lean{IsSchwartzDensity}: Definition~\ref{def:ensembles}, without the
+    topology; the Hermite basis is TauCeti's \lean{hermiteHilbertBasis}.
+  \item \lean{isSchwartzDensity_proj}: Theorem~\ref{thm:ensembles}(1).
+  \item \lean{IsSchwartzDensity.vonNeumannEntropy_ne_top}, from \lean{vonNeumannEntropy_ne_top}:
+    Theorem~\ref{thm:ensembles}(2).
+  \item \lean{tendsto_vonNeumannEntropy}: Theorem~\ref{thm:ensembles}(3), with the energy bound
+    required only eventually; \lean{traceENorm_pow_sub_pow_le}, \lean{tendsto_eigenSum} (the
+    head), \lean{tailSum_le} (the tail), \lean{energy_le_of_tendsto} (lower semicontinuity of
+    the energy).
+  \item \lean{tendsto_vonNeumannEntropy_of_tendsto_numberMoment}: Theorem~\ref{thm:ensembles}(4).
+\end{itemize}
+Not formalized: the topology of Schwartz operators and the comparison with Keyl, Kiukas and
+Werner's definition; the continuity of the expectations of polynomials in $X$ and $P$.
+
 \begin{thebibliography}{9}
 \bibitem{brief} G.~Carcassi, \emph{Physical vector spaces for quantum mechanics}, technical
   brief, Assumptions of Physics, \url{https://assumptionsofphysics.org/resources/briefs}.
@@ -356,6 +481,17 @@ Module:\\ \lean{QuantumVectorSpaces.FurtherResults.FrameGroups},\\ namespace
   Trans. Amer. Math. Soc. \textbf{143} (1969) 55--76.
 \bibitem{simon} B.~Simon, Distributions and their Hermite expansions, J. Math. Phys.
   \textbf{12} (1971) 140--148.
+\bibitem{entropy} G.~Carcassi, \emph{Entropy is not continuous in standard probability spaces},
+  technical brief, Assumptions of Physics,
+  \url{https://assumptionsofphysics.org/resources/briefs}.
+\bibitem{kkw} M.~Keyl, J.~Kiukas, R.~F.~Werner, Schwartz operators, Rev. Math. Phys.
+  \textbf{28} (2016) 1630001, arXiv:1503.04086.
+\bibitem{wehrl} A.~Wehrl, General properties of entropy, Rev. Mod. Phys. \textbf{50} (1978)
+  221--260.
+\bibitem{shirokov} M.~E.~Shirokov, Entropic characteristics of subsets of states I,
+  arXiv:quant-ph/0510073 (2005).
+\bibitem{woronowicz71} S.~L.~Woronowicz, The quantum problem of moments II, Rep. Math. Phys.
+  \textbf{1} (1971) 175.
 \bibitem{further-hilbert} R.~Stephan, \emph{Further results on the brief ``Unphysicality of
   Hilbert spaces for quantum mechanics''}, \lean{briefs/HilbertUnphysicality/further-results.pdf}.
 \end{thebibliography}

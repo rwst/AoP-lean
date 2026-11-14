@@ -90,8 +90,11 @@ this directory.
    PDF: woronowicz1971.pdf
 
 10. M. Keyl, J. Kiukas, R. F. Werner, Schwartz operators, Rev. Math. Phys. 28 (2016) 1630001,
-    arXiv:1503.04086. [agent, abstract]
-    Bears on: the missing ensemble space over V = S(R^n).
+    arXiv:1503.04086, Secs. 3.1-3.3. [read in part] (in Lean,
+    QuantumVectorSpaces/FurtherResults/Ensembles.lean, without the topology)
+    Bears on: the missing ensemble space over V = S(R^n). Trace-class operators with all
+    moments of Q and P finite, with a Frechet topology in which the expectations of all
+    polynomials in Q and P are continuous.
     PDF: KeylKiukasWerner2016-1503.04086.pdf
 
 11. R. Goodman, Analytic and entire vectors for representations of Lie groups, Trans. Amer.
@@ -137,3 +140,15 @@ this directory.
     [bib] (in Lean, ForMathlib/Analysis/Distribution/SchwartzSpace/HermitePartialSum.lean)
     Bears on: Example 3. Hermite expansions of Schwartz functions converge in S(R); used for
     the irreducibility of Example 3. Not downloaded.
+
+18. A. Wehrl, General properties of entropy, Rev. Mod. Phys. 50 (1978) 221-260, Sec. II.D,
+    p. 241. [read in part] (in Lean, ForPhyslib/QuantumMechanics/EntropyContinuity.lean)
+    Bears on: Sec. 3 (QSTO:V, von Neumann entropy). The entropy is continuous in the trace norm
+    on sets of bounded energy when tr exp(-beta H) is finite for all beta > 0; so it is
+    continuous on the Schwartz density operators of Example 3.
+    PDF: wehrl1978.pdf
+
+19. M. E. Shirokov, Entropic characteristics of subsets of states I, arXiv:quant-ph/0510073,
+    Prop. 1a. [read in part]
+    Bears on: as 18; the condition on H is also necessary.
+    PDF: Shirokov2006-quant-ph0510073.pdf
