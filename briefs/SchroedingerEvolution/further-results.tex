@@ -1,0 +1,176 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\emergencystretch=6em
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{Further results on the brief\\ \emph{Multiple equivalent characterizations of the
+  Schr\"odinger equation}}
+\author{Ralf Stephan}
+\date{15 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  This note collects results that go beyond the technical brief \emph{Multiple equivalent
+  characterizations of the Schr\"odinger equation}~\cite{brief} and partial answers to its open
+  problems. They are not part of the brief. Each section is self-contained, and each names the
+  Lean declarations that check it; the Lean files are in the brief's directory, under
+  \lean{SchroedingerEvolution/FurtherResults/}.
+\end{abstract}
+
+\section{Theorem 3 without time independence, in finite dimension}
+\label{sec:time-dependent}
+
+The brief states [B]EVMIX for a two-parameter family $\Phi_{t_0\to t_1}$, $t_0 \le t_1$, and
+then restricts to the time-independent case: ``We are going to restrict the dynamics to the
+time-independent case'' (Condition EVTI, $\Phi_{t_0\to t_1} = \Phi_{t_1-t_0}$). Its Theorem~3,
+the equivalence of DR-SCEQ, DR-UNIT, DR-EV, DR-PROB and DR-INFO, is proved under EVTI. Here the
+four conditions other than DR-SCEQ are restated for the maps $\Phi_{t_0\to t_1}$, and the theorem
+is proved without EVTI in finite dimension.
+
+\paragraph{Setting.} $\mathcal H$ is a finite-dimensional complex Hilbert space. An
+\emph{evolution} (QST:H + [B]EVMIX) is a family of maps $\Phi_{t_0\to t_1}$, $t_0 \le t_1$, of the
+operators on $\mathcal H$ that sends density operators to density operators and is affine on
+them, with $\Phi_{t\to t} = \mathrm{id}$, $\Phi_{t_1\to t_2}\circ\Phi_{t_0\to t_1} =
+\Phi_{t_0\to t_2}$ and $(\rho, t_0, t_1) \mapsto \Phi_{t_0\to t_1}(\rho)$ jointly continuous
+(\lean{SchroedingerEvolution.TwoParameter.IsEvolution}). This is the setting in which the
+formalization already states Theorem~3 under EVTI and the brief \emph{Schr\"odinger equation is
+equivalent to information conservation}~\cite{info} at every time.
+
+\begin{definition}[\lean{SchroedingerEvolution.FurtherResults.DrUnit}, \lean{DrEv},
+  \lean{DrProb}]
+  For an evolution $\Phi$:
+  \begin{itemize}
+  \item DR-UNIT: there are unitaries $U(t)$, $t \in \mathbb R$, with
+    $\Phi_{t_0\to t_1}(\rho) = U(t_1)U(t_0)^\dagger\,\rho\,\bigl(U(t_1)U(t_0)^\dagger\bigr)^\dagger$
+    for all $t_0 \le t_1$ and density operators $\rho$;
+  \item DR-EV: every $\Phi_{t_0\to t_1}$ is a bijection of the pure states;
+  \item DR-PROB: every $\Phi_{t_0\to t_1}$ maps pure states to pure states and preserves the
+    Born rule $|\langle\psi|\phi\rangle|^2$;
+  \item DR-INFO: every $\Phi_{t_0\to t_1}$ preserves the von Neumann entropy
+    (\lean{UnitaryEntropy.TwoParameter.DrInfo});
+  \item EVDIFF: $t \mapsto \Phi_{r\to t}(\rho)$ is differentiable at every $t > r$, for every
+    $r$ and every density operator $\rho$ (\lean{UnitaryEntropy.TwoParameter.EvDiff});
+  \item DR-SCEQ: $\Phi_{t_0\to t_1}$ is conjugation by $U(t_1)U(t_0)^\dagger$, where
+    $\frac{d}{dt}U(t) = (i\hbar)^{-1}H(t)U(t)$ with self-adjoint $H(t)$ and $U(0) = 1$
+    (\lean{SchroedingerEvolution.TwoParameter.DrSceq}).
+  \end{itemize}
+\end{definition}
+
+DR-UNIT asks for one family $U(t)$, as DR-SCEQ does, and not just for a unitary behind each map.
+Lemma~\ref{lem:propagator} shows that the two readings agree.
+
+\begin{theorem}\label{thm:time-dependent}
+  Let $\Phi$ be an evolution on a finite-dimensional $\mathcal H$, and $\hbar \ne 0$.
+  \begin{enumerate}
+  \item DR-UNIT, DR-EV, DR-PROB and DR-INFO are equivalent
+    (\lean{SchroedingerEvolution.FurtherResults.schrodinger_tfae}).
+  \item DR-SCEQ is equivalent to each of them together with EVDIFF
+    (\lean{SchroedingerEvolution.FurtherResults.drSceq_tfae}).
+  \end{enumerate}
+\end{theorem}
+
+The proof rests on two lemmas.
+
+\begin{lemma}[\lean{SchroedingerEvolution.FurtherResults.drUnit_of_forall}]
+  \label{lem:propagator}
+  If every $\Phi_{t_0\to t_1}$ is conjugation by some unitary $u_{t_0,t_1}$, then DR-UNIT holds.
+\end{lemma}
+
+\begin{proof}
+  Set $U(t) = u_{0,t}$ for $t \ge 0$ and $U(t) = u_{t,0}^\dagger$ for $t < 0$, and write
+  $c_u(\rho) = u\rho u^\dagger$. Then $\Phi_{0\to t} = c_{U(t)}$ for $t \ge 0$ and
+  $\Phi_{s\to 0} = c_{U(s)^\dagger}$ for $s < 0$, on density operators. Let $s \le t$. If
+  $0 \le s$, then $\sigma = \Phi_{0\to s}(c_{U(s)^\dagger}\sigma)$, so
+  $\Phi_{s\to t}(\sigma) = \Phi_{0\to t}(c_{U(s)^\dagger}\sigma) = c_{U(t)}c_{U(s)^\dagger}\sigma$.
+  If $s < 0 \le t$, then $\Phi_{s\to t} = \Phi_{0\to t}\circ\Phi_{s\to 0} =
+  c_{U(t)}c_{U(s)^\dagger}$. If $t < 0$, then $c_{U(t)^\dagger}\Phi_{s\to t}(\sigma) =
+  \Phi_{s\to 0}(\sigma) = c_{U(s)^\dagger}\sigma$; applying $c_{U(t)}$ gives the same formula.
+  Finally $c_{U(t)}c_{U(s)^\dagger} = c_{U(t)U(s)^\dagger}$. The phases of the $u_{t_0,t_1}$
+  never enter.
+\end{proof}
+
+\begin{lemma}[\lean{SchroedingerEvolution.FurtherResults.drUnit_of_implemented}]
+  \label{lem:antiunitary}
+  If every $\Phi_{t_0\to t_1}$ is conjugation by a unitary or an anti-unitary, then DR-UNIT holds.
+\end{lemma}
+
+\begin{proof}
+  Fix $r$. For $t'$ near $t$ the map between the two times is unitary: it is the identity at
+  $t' = t$, and Bargmann's invariant $\operatorname{Im}\langle a|b\rangle\langle b|c\rangle\langle
+  c|a\rangle$ of a suitable triple of pure states is continuous in $t'$, positive at $t' = t$ and
+  of the opposite sign under an anti-unitary~\cite{bargmann}. By the composition law
+  $\Phi_{r\to t}$ and $\Phi_{r\to t'}$ are then of the same type, so the type is locally
+  constant in $t \ge r$ and equal to that of $\Phi_{r\to r} = \mathrm{id}$. Every
+  $\Phi_{t_0\to t_1}$ is therefore conjugation by a unitary (on pure states first, then on all
+  density operators since the map is affine), and Lemma~\ref{lem:propagator} applies.
+  The argument is the one used for DR-INFO in the formalization of~\cite{info}
+  (\lean{UnitaryEntropy.TwoParameter.exists_unitary_of_wigner}, now stated for any such family).
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:time-dependent}]
+  (1) Each of DR-EV, DR-PROB and DR-INFO is a condition on the single maps
+  $\Phi_{t_0\to t_1}$, and each makes every map conjugation by a unitary or an anti-unitary, as in
+  the formalization of Theorem~3 under EVTI: Proposition~1 (Kadison) for DR-EV, Wigner's theorem
+  and the mixed-state extension for DR-PROB, and DR-INFO $\Rightarrow$ DR-PROB by the entropy of
+  equal mixtures of two pure states~\cite{info}. Lemma~\ref{lem:antiunitary} then gives DR-UNIT. Conversely,
+  conjugation by $U(t_1)U(t_0)^\dagger$ is a bijection of the pure states (Proposition~1) and
+  preserves the spectrum, hence the entropy.
+
+  (2) DR-SCEQ is equivalent to DR-INFO together with EVDIFF; this is Theorem~2
+  of~\cite{info} at every time (\lean{UnitaryEntropy.TwoParameter.drSceq_iff_drInfo_and_evDiff}).
+  Combine with~(1).
+\end{proof}
+
+\begin{remark}[EVDIFF cannot be dropped; not formalized]
+  Under EVTI, DR-UNIT gives DR-SCEQ without further hypotheses, because a norm-continuous unitary
+  one-parameter group is $e^{-itH/\hbar}$. Without EVTI it does not. On $\mathbb C^2$ let
+  $U(t) = \operatorname{diag}(e^{i|t|}, 1)$ and $\Phi_{t_0\to t_1} = c_{U(t_1)U(t_0)^\dagger}$.
+  This is an evolution satisfying DR-UNIT, so also DR-EV, DR-PROB and DR-INFO. For
+  $\rho = |{+}\rangle\langle{+}|$ the off-diagonal entry of $\Phi_{-1\to t}(\rho)$ is
+  $\tfrac12 e^{i(|t|-1)}$, which is not differentiable at $t = 0$. So EVDIFF fails, and with it
+  DR-SCEQ.
+\end{remark}
+
+\begin{remark}[Infinite dimension]
+  The argument uses finite dimension in Proposition~1, in the mixed-state extension and in
+  Theorem~2 of~\cite{info}. In infinite dimension, with unbounded $H(t)$, the propagators of
+  DR-SCEQ are known to exist only under conditions on the domains of the $H(t)$, for instance a
+  domain independent of $t$ and regularity in $t$~\cite{kato}. Recovering a family $H(t)$ from a
+  differentiable unitary propagator needs domain conditions that the brief's setting does not
+  supply. This case is open.
+\end{remark}
+
+\begin{thebibliography}{9}
+\bibitem{brief} G.~Carcassi, \emph{Multiple equivalent characterizations of the Schr\"odinger
+  equation}, technical brief, Assumptions of Physics,
+  \url{https://assumptionsofphysics.org/resources/briefs}.
+\bibitem{info} G.~Carcassi, \emph{Schr\"odinger equation is equivalent to information
+  conservation}, technical brief, Assumptions of Physics,
+  \url{https://assumptionsofphysics.org/resources/briefs}.
+\bibitem{bargmann} V.~Bargmann, \emph{Note on Wigner's theorem on symmetry operations},
+  J.~Math.\ Phys.\ \textbf{5} (1964), 862--868.
+\bibitem{kato} T.~Kato, \emph{Integration of the equation of evolution in a Banach space},
+  J.~Math.\ Soc.\ Japan \textbf{5} (1953), 208--234.
+\end{thebibliography}
+
+\end{document}

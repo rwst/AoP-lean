@@ -24,8 +24,9 @@ with unitaries chosen near that time. Here one propagator `U(t)` solves it at ev
 Steps of ⇐:
 * `exists_unitary`  every `Ψ r t` is induced by a unitary, not an anti-unitary: by Wigner's
   theorem it is one of the two, near each time the maps between nearby times are unitary
-  (`eventually_exists_unitary`), so by the composition law the type is locally constant in `t`,
-  and `Ψ r r = id`;
+  (`eventually_exists_unitary_of_unitary_or_antiunitary`), so by the composition law the type is
+  locally constant in `t`, and `Ψ r r = id` (`exists_unitary_of_wigner`, for any evolution whose
+  maps are each induced by a unitary or an anti-unitary);
 * `exists_section`  for each `r`, one differentiable family of unitaries of determinant one
   induces `Ψ r t` for all `t > r` (`QuantumMechanics.Wigner.exists_isDetOneSection`);
 * `exists_propagator`  the families for `r = -1, -2, …`, normalized to `1` at `t = 0`, agree
@@ -113,29 +114,31 @@ lemma unitary_of_antiunitary (h1 : Module.finrank ℂ E ≤ 1) {F : (E →L[ℂ]
   exact (phaseEq_of_finrank_le_one h1 (by rw [U'.norm_map, hψ]) hψ).rankOne_self
 
 omit [CompleteSpace E] in
-/-- **Every `Ψ r t` is unitary.** Under DR-INFO each `Ψ r t` is induced by a unitary or an
+/-- **Every `Ψ r t` is unitary**, once each `Ψ t₀ t₁` is induced on pure states by a unitary or an
 anti-unitary. Near any `t'`, the maps between `t'` and nearby times are unitary, so by the
 composition law `Ψ r t` has the same type as `Ψ r t'`; at `t = r` it is the identity. -/
-theorem exists_unitary (hΨ : IsEvolution Ψ) (hI : DrInfo Ψ) {r t : ℝ} (h : r ≤ t) :
+theorem exists_unitary_of_wigner (hΨ : IsEvolution Ψ)
+    (hW : ∀ t₀ t₁, t₀ ≤ t₁ →
+      (∃ U : E ≃ₗᵢ[ℂ] E, ∀ ψ : E, ‖ψ‖ = 1 → Ψ t₀ t₁ (proj ψ) = proj (U ψ)) ∨
+        ∃ U : E ≃ₗᵢ⋆[ℂ] E, ∀ ψ : E, ‖ψ‖ = 1 → Ψ t₀ t₁ (proj ψ) = proj (U ψ))
+    {r t : ℝ} (h : r ≤ t) :
     ∃ U : E ≃ₗᵢ[ℂ] E, ∀ ψ : E, ‖ψ‖ = 1 → Ψ r t (proj ψ) = proj (U ψ) := by
+  have := FiniteDimensional.complete ℂ E
   by_cases h2 : 1 < Module.finrank ℂ E
   swap
-  · exact (wigner_of_drInfo hΨ hI h).elim id (unitary_of_antiunitary (not_lt.mp h2))
+  · exact (hW r t h).elim id (unitary_of_antiunitary (not_lt.mp h2))
   let Imp : ℝ → Prop := fun s =>
     ∃ U : E ≃ₗᵢ[ℂ] E, ∀ ψ : E, ‖ψ‖ = 1 → Ψ r s (proj ψ) = proj (U ψ)
   have hdich : ∀ s, r ≤ s → (Imp s ↔ ¬∃ U : E ≃ₗᵢ⋆[ℂ] E,
       ∀ ψ : E, ‖ψ‖ = 1 → Ψ r s (proj ψ) = proj (U ψ)) := fun s hs =>
     ⟨fun hU hA => not_unitary_and_antiunitary h2 hU hA,
-      fun hA => (wigner_of_drInfo hΨ hI hs).resolve_right hA⟩
+      fun hA => (hW r s hs).resolve_right hA⟩
   -- The type is locally constant near every `t' ≥ r`.
   have hloc : ∀ t', r ≤ t' → ∀ᶠ s in 𝓝 t', r ≤ s → (Imp s ↔ Imp t') := by
     intro t' ht'
     have hK : ∀ᶠ s in 𝓝 t', ∃ V : E ≃ₗᵢ[ℂ] E, ∀ ψ : E, ‖ψ‖ = 1 →
-        Ψ (min s t') (max s t') (rankOne ℂ ψ ψ) = rankOne ℂ (V ψ) (V ψ) := by
-      have hW s := proj_and_trace_of_preserves (Ψ (min s t') (max s t'))
-        (hΨ.isDensity _ _ min_le_max) (hI _ _ min_le_max)
-        (fun _ _ hρ hσ => (hΨ.affine _ _ min_le_max).map_mix hρ hσ)
-      exact eventually_exists_unitary (fun s => (hW s).1) (fun s => (hW s).2)
+        Ψ (min s t') (max s t') (rankOne ℂ ψ ψ) = rankOne ℂ (V ψ) (V ψ) :=
+      eventually_exists_unitary_of_unitary_or_antiunitary (fun s => hW _ _ min_le_max)
         (fun ψ hψ => by simpa using hΨ.map_self t' _ (isDensity_proj hψ))
         (fun ψ hψ => continuousAt_of_isEvolution hΨ (continuous_id.min continuous_const)
           (continuous_id.max continuous_const) (fun _ => min_le_max) (isDensity_proj hψ) t')
@@ -179,6 +182,13 @@ theorem exists_unitary (hΨ : IsEvolution Ψ) (hI : DrInfo Ψ) {r t : ℝ} (h : 
   change Imp t
   rw [h']
   exact ⟨LinearIsometryEquiv.refl ℂ E, fun ψ hψ => hΨ.map_self r _ (isDensity_proj hψ)⟩
+
+omit [CompleteSpace E] in
+/-- **Every `Ψ r t` is unitary** under DR-INFO: by Wigner's theorem each `Ψ t₀ t₁` is induced by
+a unitary or an anti-unitary (`exists_unitary_of_wigner`). -/
+theorem exists_unitary (hΨ : IsEvolution Ψ) (hI : DrInfo Ψ) {r t : ℝ} (h : r ≤ t) :
+    ∃ U : E ≃ₗᵢ[ℂ] E, ∀ ψ : E, ‖ψ‖ = 1 → Ψ r t (proj ψ) = proj (U ψ) :=
+  exists_unitary_of_wigner hΨ (fun _ _ h => wigner_of_drInfo hΨ hI h) h
 
 /-! ## The propagator -/
 

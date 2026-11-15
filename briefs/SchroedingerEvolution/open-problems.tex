@@ -30,24 +30,42 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 
 \section*{From the brief}
 \begin{enumerate}
-\item \textbf{Time-dependent evolution.} The equivalence of DR-SCEQ, DR-UNIT, DR-EV, DR-PROB and
+\item \textbf{Time-dependent evolution.} \emph{Brief issue in finite dimension, answered there;
+  research in infinite dimension.} The equivalence of DR-SCEQ, DR-UNIT, DR-EV, DR-PROB and
   DR-INFO without EVTI, for two-parameter families $\Phi_{t_0 \to t_1}$ and a time-dependent
   Hamiltonian $H(t)$. The brief only says ``We are going to restrict the dynamics to the
   time-independent case''. That case is formalized as the brief writes it, with the two-parameter
   [B]EVMIX, EVTI, and DR-SCEQ with $H(t)$ (\lean{TwoParameter.schrodinger_tfae}). Without EVTI
-  there is no one-parameter group, and DR-UNIT, DR-EV, DR-PROB and DR-INFO would have to be
-  restated for the propagators $\Phi_{t_0 \to t_1}$. One equivalence without EVTI is formalized,
-  in finite dimension, in the brief ``Schr\"odinger equation is equivalent to information
-  conservation'': DR-SCEQ with $H(t)$ is equivalent to DR-INFO (every $\Phi_{t_0\to t_1}$
-  preserves the von Neumann entropy) together with EVDIFF ($t \mapsto \Phi_{r\to t}(\rho)$ is
-  differentiable at every $t > r$) (\lean{UnitaryEntropy.TwoParameter.drSceq_iff_drInfo_and_evDiff},
-  over the same two-parameter \lean{TwoParameter.IsEvolution}). DR-UNIT, DR-EV and DR-PROB without
-  EVTI remain open. (Brief, Sec.~3, before Condition EVTI, and Condition DR-SCEQ; log, ``The
-  conditions as the brief writes them''.)
-\item \textbf{Isolation as determinism and reversibility.} ``Conceptually, all these are
-  equivalent to saying that the system is isolated, as future and past states are determined,
-  and only determined, by the present state of the system.'' Isolation is not defined, so this
-  equivalence is not stated as a theorem. (Brief, Sec.~6.)
+  there is no one-parameter group, and DR-UNIT, DR-EV, DR-PROB and DR-INFO have to be restated
+  for the propagators $\Phi_{t_0 \to t_1}$, which the brief does not do.
+  \emph{Answer in finite dimension} (\lean{further-results.tex}, Sec.~1). Restated for every
+  $\Phi_{t_0\to t_1}$, with DR-UNIT as conjugation by $U(t_1)U(t_0)^\dagger$ for a family of
+  unitaries $U(t)$, the four conditions are equivalent
+  (\lean{SchroedingerEvolution.FurtherResults.schrodinger_tfae}), and DR-SCEQ with $H(t)$ is
+  equivalent to each of them together with EVDIFF ($t \mapsto \Phi_{r\to t}(\rho)$ is
+  differentiable at every $t > r$) (\lean{SchroedingerEvolution.FurtherResults.drSceq_tfae}).
+  The step DR-INFO + EVDIFF $\Rightarrow$ DR-SCEQ is from the brief ``Schr\"odinger equation is
+  equivalent to information conservation''
+  (\lean{UnitaryEntropy.TwoParameter.drSceq_iff_drInfo_and_evDiff}). Unlike under EVTI, EVDIFF
+  cannot be dropped: a continuous family $U(t)$ need not be differentiable (not formalized).
+  \emph{Open in infinite dimension}. With unbounded $H(t)$ the propagators of DR-SCEQ are known to
+  exist only under conditions on the domains of the $H(t)$ (Kato, J.\ Math.\ Soc.\ Japan 5
+  (1953) 208), and recovering $H(t)$ from a unitary propagator needs domain conditions that the
+  brief's setting does not supply. (Brief, Sec.~3, before Condition EVTI, and Condition DR-SCEQ;
+  log, ``The conditions as the brief writes them''.)
+\item \textbf{Isolation as determinism and reversibility.} \emph{Brief issue; research only with
+  an independent definition of isolation.} ``Conceptually, all these are equivalent to saying
+  that the system is isolated, as future and past states are determined, and only determined, by
+  the present state of the system.'' Isolation is not defined, so this equivalence is not stated
+  as a theorem. If isolation means what the sentence says, determinism and reversibility, as in
+  the book \emph{Assumptions of Physics} (chapter on classical mechanics, ``isolated, i.e.\
+  deterministic and reversible''), then it amounts to every $\Phi_t$ being a bijection of the
+  density operators, and the claim is Proposition~1 together with Theorem~3, both formalized
+  (\lean{affine_pure_state_correspondence}, \lean{schrodinger_tfae}). A theorem with content
+  needs a definition of isolation that does not refer to the evolution itself, for example
+  through a composite system whose reduced dynamics does not depend on the state of the
+  environment; whether that is equivalent to unitary evolution is a research question.
+  (Brief, Sec.~6.)
 \end{enumerate}
 
 \section*{From the formalization}
