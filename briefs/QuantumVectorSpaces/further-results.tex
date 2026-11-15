@@ -216,22 +216,84 @@ representation unique once $\hbar$ is fixed.
 
 \subsection{The group form}
 
-A stronger version of the same repair is to make a group part of the data. Let $G$ be a Lie
-group, $\pi$ an irreducible unitary representation on a Hilbert space $H$, and let $V$ be the
-space $H^\infty$ of smooth vectors, with the seminorms $\|d\pi(u)v\|$ for $u$ in the enveloping
-algebra. These are the seminorms of Corollary~2 for the defining observables $i\,d\pi(Y_k)$, with
-$(Y_k)$ a basis of the Lie algebra. Antoine builds his space from such a representation and
-requires it to be invariant under the symmetry group~\cite{antoine2}; he considers $H^\infty$
-and sets it aside because it need not be nuclear. For the Schr\"odinger representation of the
-Heisenberg group, $H^\infty$ is $\mathcal S(\mathbb R)$ with its usual
-topology~\cite[Secs.~1 and~6]{goodman}. In this form every defining observable is essentially
+A stronger version of the same repair is to make a group part of the data. Let $G$ be a
+connected Lie group with Lie algebra $\mathfrak g$, $\pi$ an irreducible unitary representation
+on a Hilbert space $H$, and let $V$ be the space $H^\infty$ of smooth vectors, with the seminorms
+$\|d\pi(u)v\|$ for $u$ in the enveloping algebra. These are the seminorms of Corollary~2 for the
+defining observables $X_k = i\,d\pi(Y_k)$, with $(Y_k)$ a basis of~$\mathfrak g$. Antoine builds
+his space from such a representation and requires it to be invariant under the symmetry
+group~\cite{antoine2}; he considers $H^\infty$ and sets it aside because it need not be nuclear.
+For the Schr\"odinger representation of the Heisenberg group $H_n$, of dimension $2n + 1$,
+$H^\infty$ is $\mathcal S(\mathbb R^n)$ with its usual topology (\cite[Secs.~1 and~6]{goodman} for
+$n = 1$; for every $n$ it follows from the description of $\mathcal S(\mathbb R^n)$ by the number
+operator~\cite[Sec.~V.3]{reedsimon}). In this form every defining observable is essentially
 self-adjoint on $V$, as Antoine recalls from Segal and from Nelson and Stinespring, and it
-generates a unitary group that maps $V$ onto itself. Every $\pi(g)$ maps $V$ onto itself, which
-is the condition on changes of frame that Sec.~\ref{sec:schwartz} found missing from the brief's
-argument for [B]WDQ. The cost
-is that the definition presupposes the Hilbert space and the group. The Lean files contain only
-the Lie-algebra form above; Theorem~\ref{thm:irreducible}(4) is its instance for the Heisenberg
-group.
+generates a unitary group that maps $V$ onto itself. The rest of this subsection checks the group
+form against Definition~1 and against the three base conditions of the Hilbert
+brief~\cite{hilbert}. None of it is formalized.
+
+\paragraph{Definition~1.} $d\pi$ represents $\mathfrak g$ on $H^\infty$ by skew-symmetric
+operators, so the $X_k$ are symmetric and satisfy commutation relations with the structure
+constants of~$\mathfrak g$. $H^\infty$ is a Fr\'echet space~\cite[Cor.~1.1]{goodman}, so it is
+complete and metrizable. If $G$ is nilpotent and simply connected, $H^\infty$ is isomorphic to
+$\mathcal S(\mathbb R^{d/2})$, where $d$ is the dimension of the coadjoint orbit of~$\pi$
+\cite[proof of Cor.~3.14]{bb}. It is then separable, hence second countable, and $V$ is a quantum
+vector space. For other groups separability was not checked. Irreducibility of $\pi$ refers to
+bounded operators on $H$. That it implies Definition~\ref{def:irreducible}, whose operators need
+only be continuous on $V$, is Theorem~\ref{thm:irreducible}(4) for $H_1$; it was not checked in
+general.
+
+\paragraph{[B]COBS.} The expectation $v \mapsto \langle v, Av\rangle$ of every $A$ in the algebra
+of the $X_k$ is continuous on~$V$ (the brief's Theorem~5, checked with the brief,
+\lean{QuantumVectorSpaces.IsAdmissible.continuous_expectation}). This algebra is $d\pi$ of the
+enveloping algebra. For $H_n$ it contains the number operator $N$, whose expectation is the
+Hilbert brief's example of a discontinuity in QSTO:H.
+
+\paragraph{[B]WDQ.} Take $G$ itself as the frame group of Definition~\ref{def:framegroup}, acting
+by $\rho(g) = \pi(g)|_V$. Every $\pi(g)$ maps $V$ onto itself and preserves the inner product,
+and $\pi(g)^{-1}\,d\pi(Y)\,\pi(g) = d\pi(\operatorname{Ad}(g^{-1})Y)$~\cite[Sec.~3]{goodman}. So
+every $X_k^g$ is a real linear combination of the $X_j$, and Theorem~\ref{thm:framegroup}(3)
+gives [B]WDQ for the frames in~$G$. For $H_n$ these are the translations in position and
+momentum, together with phases; Theorem~\ref{thm:framegroup}(4) is the position half. The change
+of frame of the Hilbert brief lies in no frame group of Example~3
+(Theorem~\ref{thm:framegroup}(5)), and no state space serves all smooth frames at
+once~\cite[Sec.~2]{further-hilbert}. So [B]WDQ holds in the scope that Sec.~\ref{sec:framegroup}
+shows to be necessary, and no further. More frames need a larger group, and $V$ can then only
+shrink: a vector that is smooth for the larger group is smooth for the smaller one.
+
+\paragraph{[B]STDIST.} An isomorphism of two such systems is an isomorphism
+$\varphi\colon G \to G'$ of Lie groups together with a unitary $U\colon H \to H'$ such that
+$U\pi(g) = \pi'(\varphi(g))U$. Then $U$ maps $H^\infty$ onto $H'^\infty$ and carries each defining
+observable to a combination of the other's. Since $\dim H_n = 2n + 1$, Schr\"odinger
+representations with different $n$ are not isomorphic. This is the brief's argument with Lie
+isomorphisms (checked with the brief, \lean{QuantumVectorSpaces.nonempty_lieIso_schwartzN_iff}),
+with the group in place of the Lie algebra. Conversely, by the Stone--von~Neumann theorem, $G = H_n$
+and $\hbar$ determine the system. The number of degrees of freedom is part of the data, not a
+property of~$V$: $V = \mathcal S(\mathbb R^n)$, and these spaces are isomorphic for all~$n$
+(Sec.~\ref{sec:gelfandshilov}). The same holds for every nilpotent~$G$, where
+$V \cong \mathcal S(\mathbb R^{d/2})$ does not see~$d$. So the group form satisfies [B]STDIST as
+the Lie-algebra form does, and adds no invariant of its own.
+
+\paragraph{Analytic vectors.} Inside the group form there is a space that does remember~$n$: the
+space $H^\omega$ of analytic vectors, those $v$ for which $g \mapsto \pi(g)v$ is real analytic. By
+Goodman's Theorem~A, proved in an earlier paper and recalled in~\cite[Introduction]{goodman}, $H^\omega$ consists of the analytic vectors of
+$B = \overline{d\pi(1 - \Delta)}^{1/2}$, $\Delta = \sum_k Y_k^2$. For the Schr\"odinger
+representation of $H_1$, his Theorem~6.1 states that $f \in H^\omega$ if and only if its Hermite
+coefficients are $O(e^{-a\sqrt j})$ for some $a > 0$, so that $H^\omega = S^1_1(\mathbb R)$
+by~\cite[Thm.~1.2]{gpr}. For $H_n$ with Goodman's normalization, $d\pi(1 - \Delta) = 2N + n + 2$.
+The same argument then gives $H^\omega = S^1_1(\mathbb R^n)$. Give $H^\omega$ the inductive limit
+topology of the domains $D(e^{tB})$ with their graph norms. It is then the coefficient space of the
+proof of Theorem~\ref{thm:gs} with $\mu = 1$. So $H^\omega$ for $H_n$ and for $H_m$ are isomorphic
+only for $n = m$. It has the cost of $S^{1/2}_{1/2}$, however. The proofs of
+Theorem~\ref{thm:gs-def1} apply unchanged: in its own topology $H^\omega$ is not metrizable, and
+with the $X_k$ it is a dense proper subspace of $\mathcal S(\mathbb R^n)$, so it is not complete.
+
+\paragraph{Summary.} When $G$ is nilpotent, the group form is a quantum vector space. It satisfies
+[B]COBS, [B]WDQ for the frames in~$G$ and [B]STDIST. What it adds over the Lie-algebra form is the
+frame group, which is part of the data and acts continuously by construction. [B]STDIST is
+obtained as before, from the observables and not from the space. The cost is that the definition
+presupposes the Hilbert space and the group. The Lean files contain only the Lie-algebra form
+above; Theorem~\ref{thm:irreducible}(4) is its instance for the Heisenberg group.
 
 \subsection{Lean}
 
@@ -670,6 +732,10 @@ Theorems~\ref{thm:gs-def1}(1) and~\ref{thm:gs-moments}.
   (1966) 1097--1104.
 \bibitem{antoine2} J.-P.~Antoine, Dirac formalism and symmetry problems in quantum mechanics.
   II. Symmetry problems, J. Math. Phys. \textbf{10} (1969) 2276--2290.
+\bibitem{bb} I.~Belti\c{t}\u{a}, D.~Belti\c{t}\u{a}, Smooth vectors and Weyl--Pedersen calculus
+  for representations of nilpotent Lie groups, arXiv:0910.4746.
+\bibitem{reedsimon} M.~Reed, B.~Simon, \emph{Methods of Modern Mathematical Physics I: Functional
+  Analysis}, revised ed., Academic Press, 1980.
 \bibitem{goodman} R.~Goodman, Analytic and entire vectors for representations of Lie groups,
   Trans. Amer. Math. Soc. \textbf{143} (1969) 55--76.
 \bibitem{simon} B.~Simon, Distributions and their Hermite expansions, J. Math. Phys.

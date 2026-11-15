@@ -101,6 +101,8 @@ this directory.
     Math. Soc. 143 (1969) 55-76, Sec. 1 and 6. [agent]
     Bears on: Example 3. The smooth vectors of the Schrödinger representation of the
     Heisenberg group are the Schwartz space, with the topology of the enveloping algebra.
+    Thm. 6.1: its analytic vectors are the functions with Hermite coefficients
+    O(exp(-a sqrt n)), i.e. the Gelfand-Shilov space S^1_1(R) (with 20).
     PDF: Goodman1969.pdf
 
 12. M. Flato, J. Simon, H. Snellman, D. Sternheimer, Simple facts about analytic vectors and
@@ -187,3 +189,10 @@ this directory.
     state of S^1/2_1/2(R) satisfies it. Counterexample II (states with the same moments) is the
     construction of the brief "Non-uniqueness of the moment problem for Schwartz functions".
     PDF: woronowicz1970.pdf
+
+25. I. Beltiţă, D. Beltiţă, Smooth vectors and Weyl-Pedersen calculus for representations of
+    nilpotent Lie groups, arXiv:0910.4746, proof of Cor. 3.14. [read in part]
+    Bears on: Definition 1 (the group form). For an irreducible unitary representation of a
+    nilpotent Lie group, the smooth vectors are isomorphic to S(R^(d/2)), d the dimension of the
+    coadjoint orbit; so they are second countable, and do not remember d.
+    PDF: BeltitaBeltita2009-0910.4746.pdf
