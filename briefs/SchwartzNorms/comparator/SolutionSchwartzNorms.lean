@@ -7,6 +7,7 @@ module
 
 public import SchwartzNorms
 public import SchwartzNorms.GeneralLp
+public import SchwartzNorms.FiniteMoments
 
 /-!
 # Equivalence of the Schwartz seminorms, re-exported for `lake comparator`

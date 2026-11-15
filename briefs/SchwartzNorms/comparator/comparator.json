@@ -20,7 +20,12 @@
     "SchwartzNorms.lpFamily_top",
     "SchwartzNorms.isBounded_sup_lp",
     "SchwartzNorms.isBounded_lp_l1",
-    "SchwartzNorms.withSeminorms_lp"
+    "SchwartzNorms.withSeminorms_lp",
+    "SchwartzNorms.exists_schwartzMap_of_l2Norm_lt_top",
+    "SchwartzNorms.exists_schwartzMap_of_forall_memL2",
+    "SchwartzNorms.forall_memL2_of_schwartzMap",
+    "SchwartzNorms.exists_schwartzMap_iff_forall_memL2",
+    "SchwartzNorms.exists_schwartzMap_ae_eq"
   ],
   "permitted_axioms": [
     "propext",

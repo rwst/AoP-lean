@@ -9,6 +9,10 @@ public import Mathlib.Analysis.LocallyConvex.WithSeminorms
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
+public import TauCeti.Analysis.Distribution.TemperedDistribution.Lp
+public import TauCeti.Analysis.Distribution.TemperedDistribution.SmulLeft
+public import TauCeti.Analysis.Sobolev.WeakDeriv.Interval
+public import TauCeti.Analysis.Sobolev.WeakDeriv.TemperedDistribution
 
 /-!
 # SchwartzNorms: the statements of record
@@ -263,6 +267,37 @@ theorem withSeminorms_l1_l2 : WithSeminorms l1Family ∧ WithSeminorms l2Family 
   sorry
 theorem enorm_moment_le (ħ : ℝ) (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
     ‖SchwartzMomentProblem.moment ħ F α β‖ₑ ≤ ‖ħ‖ₑ ^ β * (l2Norm 0 0 F * l2Norm α β F) := by
+  sorry
+end SchwartzNorms
+end
+end
+-- SchwartzNorms.FiniteMoments
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Real MeasureTheory TemperedDistribution
+open scoped ENNReal SchwartzMap LineDeriv
+@[expose] public noncomputable section
+namespace SchwartzNorms
+theorem exists_schwartzMap_of_l2Norm_lt_top {f : ℝ → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+    (h : ∀ α β, l2Norm α β f < ⊤) : ∃ F : 𝓢(ℝ, ℂ), ⇑F = f := by
+  sorry
+theorem exists_schwartzMap_of_forall_memL2 (u : 𝓢'(ℝ, ℂ))
+    (h : ∀ α β : ℕ, ∃ g : Lp ℂ 2 (volume : Measure ℝ),
+      smulLeftCLM ℂ (fun x : ℝ => (x : ℂ) ^ α) ((derivCLM ℂ)^[β] u) = g) :
+    ∃ F : 𝓢(ℝ, ℂ), u = F := by
+  sorry
+theorem forall_memL2_of_schwartzMap (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
+    ∃ g : Lp ℂ 2 (volume : Measure ℝ),
+      smulLeftCLM ℂ (fun x : ℝ => (x : ℂ) ^ α) ((derivCLM ℂ)^[β] (F : 𝓢'(ℝ, ℂ))) = g := by
+  sorry
+theorem exists_schwartzMap_iff_forall_memL2 (u : 𝓢'(ℝ, ℂ)) :
+    (∃ F : 𝓢(ℝ, ℂ), u = F) ↔ ∀ α β : ℕ, ∃ g : Lp ℂ 2 (volume : Measure ℝ),
+      smulLeftCLM ℂ (fun x : ℝ => (x : ℂ) ^ α) ((derivCLM ℂ)^[β] u) = g := by
+  sorry
+theorem exists_schwartzMap_ae_eq (f : Lp ℂ 2 (volume : Measure ℝ))
+    (h : ∀ α β : ℕ, ∃ g : Lp ℂ 2 (volume : Measure ℝ),
+      smulLeftCLM ℂ (fun x : ℝ => (x : ℂ) ^ α) ((derivCLM ℂ)^[β] (f : 𝓢'(ℝ, ℂ))) = g) :
+    ∃ F : 𝓢(ℝ, ℂ), (f : ℝ → ℂ) =ᵐ[volume] F := by
   sorry
 end SchwartzNorms
 end

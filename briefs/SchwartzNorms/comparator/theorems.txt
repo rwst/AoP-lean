@@ -22,3 +22,8 @@ SchwartzNorms.lpFamily_top  # Remark "General Lᵖ": p = ∞ gives the sup semin
 SchwartzNorms.isBounded_sup_lp  # Remark "General Lᵖ": sup controls Lᵖ between the families
 SchwartzNorms.isBounded_lp_l1  # Remark "General Lᵖ": Lᵖ controls L¹ between the families
 SchwartzNorms.withSeminorms_lp  # Remark "General Lᵖ": every 1 ≤ p ≤ ∞ gives the same topology
+SchwartzNorms.exists_schwartzMap_of_l2Norm_lt_top  # Theorem 5: finite L² seminorms make a smooth f Schwartz
+SchwartzNorms.exists_schwartzMap_of_forall_memL2  # finite moments imply Schwartz, for tempered distributions
+SchwartzNorms.forall_memL2_of_schwartzMap  # Schwartz functions have finite moments
+SchwartzNorms.exists_schwartzMap_iff_forall_memL2  # 𝓢(ℝ) = ⋂ {u | X^α ∂^β u ∈ L²}
+SchwartzNorms.exists_schwartzMap_ae_eq  # finite moments imply Schwartz, for L² states

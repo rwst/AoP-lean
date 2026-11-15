@@ -54,7 +54,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \paragraph{Files.}\leavevmode
 \begin{itemize}
 \item Files: \lean{briefs/SchwartzNorms/SchwartzNorms.lean},\newline
-  \lean{briefs/SchwartzNorms/SchwartzNorms/GeneralLp.lean} (the Remark ``General $L^p$'')
+  \lean{briefs/SchwartzNorms/SchwartzNorms/GeneralLp.lean} (the Remark ``General $L^p$''),\newline
+  \lean{briefs/SchwartzNorms/SchwartzNorms/FiniteMoments.lean} (the converse of the remark after
+  eq.~(10))
 \item Library: \lean{SchwartzNorms}
 \item Imports: \lean{SchwartzMomentProblem} (for the moments in eq.~(10)) and three new
   \lean{ForMathlib} files:\newline
@@ -64,7 +66,12 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   ($\int (1+x^2)^{-2} = \pi/2$, $\int_{|x|>1} x^{-2} = 2$),\newline
   \lean{ForMathlib/MeasureTheory/Integral/IntegralEqImproper.lean}
   ($\|g(x)\| \le \|g'\|_{L^1}$ for integrable $g$, $g'$);\newline
-  \lean{GeneralLp.lean} imports only \lean{SchwartzNorms}
+  \lean{GeneralLp.lean} imports only \lean{SchwartzNorms};\newline
+  \lean{FiniteMoments.lean} imports \lean{SchwartzNorms} and four TauCeti modules:
+  \lean{TauCeti.Analysis.Distribution.TemperedDistribution.Lp},
+  \lean{TauCeti.Analysis.Distribution.TemperedDistribution.SmulLeft},
+  \lean{TauCeti.Analysis.Sobolev.WeakDeriv.Interval} and
+  \lean{TauCeti.Analysis.Sobolev.WeakDeriv.TemperedDistribution}
 \end{itemize}
 
 \paragraph{Setting.} For $f : \mathbb{R} \to \mathbb{C}$ and $g = x^\alpha \partial^\beta f$
@@ -91,6 +98,11 @@ Step 4, same topology & \lean{withSeminorms_l1_l2}, from \lean{isBounded_sup_l2}
   \lean{isBounded_l2_l1}, \lean{isBounded_l1_sup} and \lean{WithSeminorms.congr_of_cycle} \\
 eq.~(10) & \lean{enorm_moment_le} (with the factor $|\hbar|^\beta$) \\
 Remark ``General $L^p$'': the $L^p$ seminorms, $1 \le p \le \infty$, generate the same topology & \lean{withSeminorms_lp}, from \lean{isBounded_sup_lp} (\lean{eLpNorm_weighted_le}), \lean{isBounded_lp_l1} (\lean{eLpNorm_weighted_one_le}) and \lean{isBounded_l1_sup}; \lean{lpFamily_one}, \lean{lpFamily_two}, \lean{lpFamily_top} (\lean{eLpNorm_top_weighted}) for $p = 1, 2, \infty$ \\
+remark after eq.~(10), converse: finite moments imply $f \in \mathcal{S}(\mathbb{R})$ &
+  \lean{exists_schwartzMap_iff_forall_memL2} (tempered distributions), from
+  \lean{exists_schwartzMap_of_forall_memL2} and \lean{forall_memL2_of_schwartzMap};
+  \lean{exists_schwartzMap_ae_eq} ($L^2$ functions); \lean{exists_schwartzMap_of_l2Norm_lt_top}
+  (smooth functions) \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -125,6 +137,44 @@ essential supremum of the continuous function $x^\alpha \partial^\beta f$ is its
 (\lean{eLpNorm_top_weighted}), so the family is the family of sup seminorms~(1)
 (\lean{lpFamily_top}).
 
+\paragraph{Finite moments imply Schwartz.} The remark after eq.~(10) says that finiteness of
+all expectation values is equivalent to membership in $\mathcal{S}(\mathbb{R})$, and the brief
+proves only the bound (10). The converse is formalized in \lean{FiniteMoments.lean}. For it to
+say something, $X^\alpha$ and $\partial^\beta$ must act on states outside
+$\mathcal{S}(\mathbb{R})$, so the state is an arbitrary tempered distribution $u$, differentiated
+in the sense of distributions (Mathlib's \lean{TemperedDistribution.derivCLM} and
+\lean{TemperedDistribution.smulLeftCLM}). Then
+\[
+  u \in \mathcal{S}(\mathbb{R}) \iff x^\alpha \partial^\beta u \in L^2 \text{ for all }
+  \alpha, \beta
+\]
+(\lean{exists_schwartzMap_iff_forall_memL2}). The finiteness conditions are the $L^2$ seminorms
+(3), $\|x^\alpha \partial^\beta u\|_{L^2}^2 = \braket{X^\alpha \partial^\beta u | X^\alpha
+\partial^\beta u}$. For Schwartz states and $\hbar \ne 0$ these are, up to the factor
+$\hbar^{2\beta}$, the expectation values of the symmetric products $P^\beta X^{2\alpha} P^\beta$
+(\lean{SchwartzMomentProblem.matrixElement_P_pow_X_pow_P_pow}).
+For an $L^2$ state $f$ the conclusion is that $f$ agrees almost everywhere with a Schwartz
+function (\lean{exists_schwartzMap_ae_eq}). For smooth $f$ it is Theorem~5 together with
+\lean{exists_schwartzMap_iff} (\lean{exists_schwartzMap_of_l2Norm_lt_top}).
+
+The proof of $\Leftarrow$ has three steps.
+\begin{itemize}
+\item The derivatives $\partial^\beta u$ are $L^2$ functions $g_\beta$, so $g_{\beta+1}$ is the
+  weak derivative of $g_\beta$ (TauCeti's
+  \lean{hasWeakLineDerivOn_of_lineDerivOp_toTemperedDistribution_eq}), and $g_\beta$ agrees
+  almost everywhere with $G_\beta(x) = c_\beta + \int_0^x g_{\beta+1}$ (TauCeti's
+  \lean{HasWeakLineDerivOn.exists_ae_eq_add_intervalIntegral_top}).
+\item The $G_\beta$ are continuous and $G_\beta(x) = c_\beta + \int_0^x G_{\beta+1}$, so
+  $G_\beta' = G_{\beta+1}$ everywhere by the fundamental theorem of calculus. Hence $G_0$ is
+  smooth with $G_0^{(\beta)} = G_\beta$.
+\item The $L^2$ function given for $x^\alpha \partial^\beta u$ agrees almost everywhere with
+  $x^\alpha G_0^{(\beta)}$ (TauCeti's \lean{Lp.ae_eq_of_toTemperedDistribution_apply_eq}), so
+  all $L^2$ seminorms of $G_0$ are finite and $G_0 \in \mathcal{S}(\mathbb{R})$ by Theorem~5.
+\end{itemize}
+The direction $\Rightarrow$ holds because derivatives and multiplication by $x^\alpha$ of the
+distribution of a Schwartz function are those of the function
+(\lean{forall_memL2_of_schwartzMap}).
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item The seminorms take values in $[0, \infty]$, so that Theorem~5 can be stated for every
@@ -135,7 +185,11 @@ essential supremum of the continuous function $x^\alpha \partial^\beta f$ is its
 \item In Step~3, $g(x) = \int_{-\infty}^x g'$ uses Mathlib's improper FTC and the fact that an
   integrable $g$ with integrable $g'$ tends to $0$ at $-\infty$.
 \item The converse in the remark after eq.~(10) (finite expectation values imply membership in
-  $\mathcal{S}(\mathbb{R})$) is not formalized.
+  $\mathcal{S}(\mathbb{R})$) needs a meaning for $X^\alpha P^\beta f$ outside
+  $\mathcal{S}(\mathbb{R})$. The formalization takes the state to be a tempered distribution and
+  the condition to be $x^\alpha \partial^\beta u \in L^2$, i.e.\ the finiteness of the $L^2$
+  seminorms (3), rather than of the expectation values $\braket{f|X^\alpha P^\beta|f}$ of
+  eq.~(10). The brief does not say which orderings of $X$ and $P$ count.
 \item The Remark ``General $L^p$'' says that ``the same arguments extend''. The formal proof
   replaces the $L^2$ step by Hölder's inequality and the weight $1/(1+x^2)$ by
   $(1+|x|)^{-k}$, with $k$ depending on $p$. It goes $\sup \to L^p \to L^1 \to \sup$, so it

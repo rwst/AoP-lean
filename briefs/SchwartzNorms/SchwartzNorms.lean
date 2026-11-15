@@ -33,6 +33,9 @@ Remark (sesquilinear forms):
 
 Remark "General `Lᵖ`": in `SchwartzNorms/GeneralLp.lean`, every family of `Lᵖ` seminorms,
 `1 ≤ p ≤ ∞`, generates the topology of `𝓢(ℝ, ℂ)`.
+
+The converse of the Remark, finite moments imply Schwartz: in `SchwartzNorms/FiniteMoments.lean`,
+a tempered distribution `u` is a Schwartz function iff every `x^α ∂^β u` is an `L²` function.
 -/
 public import ForMathlib.Analysis.LocallyConvex.WithSeminorms
 public import ForMathlib.Analysis.SpecialFunctions.ImproperIntegrals
