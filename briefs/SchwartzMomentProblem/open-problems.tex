@@ -37,23 +37,6 @@ Open problems raised by the technical brief in this directory, and by its Lean f
   itself is formalized for the brief ``Equivalence of sup-norm, $L^1$, and $L^2$ seminorms on the
   Schwartz space''.) (Brief, Remark after Theorem~1; log, ``Differences from the brief'': not
   formalized.)
-\item \textbf{Locality as the obstruction.} \emph{Formalized; no longer open.} ``The key
-  obstruction is that polynomials of $X$ and $P$ are local operators and can never detect phase
-  differences between spatially separated parts.'' The footnote ties locality to Peetre's
-  theorem. Locality is taken in Peetre's sense: a linear map $A$ of $\mathcal{S}(\mathbb{R})$ is
-  local if $\operatorname{supp} A\varphi \subseteq \operatorname{supp}\varphi$ for every
-  $\varphi$ (\lean{IsLocal}). The local operators form a subalgebra that contains $X$ and $P$, so
-  every polynomial in $X$ and $P$ is local (\lean{adjoin_le_localOps}). A local $A$ has
-  $\braket{f|A|g} = 0$ whenever $f$ and $g$ have disjoint supports, hence
-  $\braket{\psi_\theta|A|\psi_\theta} = \braket{f|A|f} + \braket{g|A|g}$ for every $\theta$
-  (\lean{matrixElement_psi_of_isLocal}, \lean{matrixElement_psi_of_mem_adjoin}). The supports
-  need not be compact, which the brief's eq.~(3) assumes (\lean{moment_psi_of_disjoint}).
-  Peetre's theorem itself, that local operators are differential operators, is not needed and
-  not formalized. Locality is also what matters: the translation $(T\varphi)(x) =
-  \varphi(x+3)$, which is $e^{3iP/\hbar}$ and not a polynomial in $P$, separates all the states
-  $\psi_\theta$ built from the bumps of Fig.~1 (\lean{matrixElement_translate_psi_inj}), and so
-  is not local (\lean{not_isLocal_translate}). (Brief, Sec.~3 and footnote~1; log, ``Locality as
-  the obstruction''.)
 \item \textbf{Other state spaces.} ``Consequently any space that contains functions with compact
   support will suffer the same consequences.'' Not stated or proved beyond
   $\mathcal{S}(\mathbb{R})$, e.g.\ for $\mathbb{R}^n$ or other domains. (Brief, Sec.~3.)
