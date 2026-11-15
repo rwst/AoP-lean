@@ -55,8 +55,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item File: \lean{briefs/SchwartzMomentProblem/SchwartzMomentProblem.lean}
 \item Library: \lean{SchwartzMomentProblem}
 \item Imports: \lean{Mathlib.Analysis.Calculus.BumpFunction.InnerProduct},\newline
-  \lean{Mathlib.Analysis.Distribution.SchwartzSpace.Basic},\newline
-  \lean{Mathlib.MeasureTheory.Measure.Lebesgue.Basic}
+  \lean{Mathlib.Analysis.Distribution.SchwartzSpace.Deriv}
 \end{itemize}
 
 \paragraph{Setting.} Schwartz functions $f, g \in \mathcal{S}(\mathbb{R}, \mathbb{C})$
@@ -79,20 +78,47 @@ eq.~(3): $\braket{\psi_\theta|X^mP^n|\psi_\theta} = \braket{f|X^mP^n|f} + \brake
 each $\theta$ gives a different state & \lean{linearIndependent_psi}: $\psi_\theta, \psi_{\theta'}$ linearly independent when $e^{i\theta} \ne e^{i\theta'}$ \\
 the bump functions of Fig.~1 & \lean{bump}, \lean{tsupport_bump_subset}, \lean{bump_ne_zero} \\
 Theorem~1 & \lean{exists_same_moments}, with $\psi_1 = \psi_0$, $\psi_2 = \psi_\pi$ for bumps centred at $0$ and $3$ \\
+Sec.~3: polynomials of $X$ and $P$ are local operators & \lean{adjoin_le_localOps}: $\mathbb{C}[X, P] \le$ \lean{localOps} \\
+Sec.~3: local operators never detect phase differences between spatially separated parts & \lean{matrixElement_eq_zero_of_isLocal}, \lean{matrixElement_psi_of_isLocal}, \lean{matrixElement_psi_of_mem_adjoin} \\
+eq.~(3) for disjoint supports, compact or not & \lean{moment_eq_matrixElement}, \lean{moment_psi_of_disjoint} \\
 \bottomrule
 \end{tabularx}
 \end{center}
 
+\paragraph{Locality as the obstruction.} The conclusion of the brief (Sec.~3) is formalized with
+locality in Peetre's sense, as in its footnote: a linear map $A$ of $\mathcal{S}(\mathbb{R},
+\mathbb{C})$ is local (\lean{IsLocal}) if $\operatorname{tsupp} A\varphi \subseteq
+\operatorname{tsupp}\varphi$ for every $\varphi$. The local operators form a subalgebra
+(\lean{localOps}) that contains the position operator $X$ (\lean{X}, multiplication by $x$) and
+the momentum operator $P = -i\hbar\, d/dx$ (\lean{P}), so it contains the algebra they generate.
+The matrix element is $\braket{\varphi|A|\chi} = \int \overline{\varphi(x)}\,(A\chi)(x)\,dx$
+(\lean{matrixElement}), and for any $A$
+\[
+  \braket{\psi_\theta|A|\psi_\theta} = \braket{f|A|f} + \braket{g|A|g}
+    + e^{i\theta}\braket{f|A|g} + e^{-i\theta}\braket{g|A|f}
+\]
+(\lean{matrixElement_psi}). For a local $A$ the cross terms vanish pointwise when $f$ and $g$ have
+disjoint supports. Products of Schwartz functions are integrable, so compact supports are not
+needed, and \lean{moment_psi_of_disjoint} drops that hypothesis of \lean{moment_psi}. Peetre's
+theorem itself, that a local operator is a differential operator, is not needed and not
+formalized.
+
+Beyond the brief, the obstruction is sharp: the translation $(T\varphi)(x) = \varphi(x+3)$
+(\lean{translate}), which is $e^{3iP/\hbar}$ and not a polynomial in $P$, maps the bump at $3$
+onto the bump at $0$. So $\braket{\psi_\theta|T|\psi_\theta} = c + e^{i\theta}\|f\|^2$, which
+determines $e^{i\theta}$ (\lean{matrixElement_translate_psi_inj}), and $T$ is not local
+(\lean{not_isLocal_translate}).
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
-\item The moment is defined as an integral for every Schwartz function, but the identity
-  for $\psi_\theta$ is proved only under the brief's hypothesis that $f$ and $g$ have compact
-  support. This makes every integrand continuous with compact support, hence integrable.
+\item The moment is defined as an integral for every Schwartz function. \lean{moment_psi} proves
+  the identity for $\psi_\theta$ under the brief's hypothesis that $f$ and $g$ have compact
+  support, which makes every integrand continuous with compact support, hence integrable;
+  \lean{moment_psi_of_disjoint} proves it for disjoint supports alone.
 \item ``Each $\theta$ defines a different physical state'' is formalized as linear
   independence of $\psi_\theta$ and $\psi_{\theta'}$, which holds exactly when
   $e^{i\theta} \ne e^{i\theta'}$, i.e.\ for $\theta \not\equiv \theta' \pmod{2\pi}$.
-\item The closing remark on Schwartz seminorms and the conclusion about local operators
-  are not formalized.
+\item The closing remark on Schwartz seminorms is not formalized.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No mathematical problems. The argument needs $f$ and

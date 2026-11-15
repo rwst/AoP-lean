@@ -7,7 +7,11 @@
     "SchwartzMomentProblem.hasCompactSupport_bump",
     "SchwartzMomentProblem.tsupport_bump_subset",
     "SchwartzMomentProblem.bump_ne_zero",
-    "SchwartzMomentProblem.exists_same_moments"
+    "SchwartzMomentProblem.exists_same_moments",
+    "SchwartzMomentProblem.adjoin_le_localOps",
+    "SchwartzMomentProblem.matrixElement_psi_of_isLocal",
+    "SchwartzMomentProblem.matrixElement_psi_of_mem_adjoin",
+    "SchwartzMomentProblem.moment_psi_of_disjoint"
   ],
   "permitted_axioms": [
     "propext",

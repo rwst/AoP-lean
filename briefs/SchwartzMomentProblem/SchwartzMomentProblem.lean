@@ -20,6 +20,15 @@ Formalized here:
 * `linearIndependent_psi`  `ψ_θ` and `ψ_θ'` are linearly independent when `e^{iθ} ≠ e^{iθ'}`;
 * `bump`, `tsupport_bump_subset`, `bump_ne_zero`  explicit `f, g` as in Fig. 1;
 * `exists_same_moments`  Theorem 1.
+* Sec. 3, locality as the obstruction. `IsLocal A` is Peetre's condition `supp (Aφ) ⊆ supp φ`;
+  the local operators form a subalgebra `localOps`, which contains `X` and `P`
+  (`adjoin_le_localOps`). A local operator has no matrix elements between disjointly supported
+  functions (`matrixElement_eq_zero_of_isLocal`), so it does not detect the phase of `ψ_θ`
+  (`matrixElement_psi_of_isLocal`), and neither does any polynomial in `X` and `P`
+  (`matrixElement_psi_of_mem_adjoin`). With `moment_eq_matrixElement` this gives eq. (3) for
+  disjoint supports that need not be compact (`moment_psi_of_disjoint`).
+* Beyond the brief: the translation `(Tφ)(x) = φ(x + 3)` separates the states `ψ_θ` built from
+  the bumps (`matrixElement_translate_psi_inj`), so it is not local (`not_isLocal_translate`).
 
 The moment is the integral `∫ conj(ψ x) xᵐ (-iħ)ⁿ ψ⁽ⁿ⁾(x) dx`.
 
@@ -35,8 +44,7 @@ References (the brief cites none):
   arXiv:1503.04086. Operator moment problems for the density-operator analogue of `𝓢`.
 -/
 public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 
 open Complex ComplexConjugate MeasureTheory SchwartzMap
 
@@ -184,5 +192,214 @@ theorem exists_same_moments (ħ : ℝ) :
     linearIndependent_psi (bump_ne_zero 0) (bump_ne_zero 3) hdisj hθ, fun m n => ?_⟩
   rw [moment_psi ħ (hasCompactSupport_bump 0) (hasCompactSupport_bump 3) hdisj,
     moment_psi ħ (hasCompactSupport_bump 0) (hasCompactSupport_bump 3) hdisj]
+
+/-! ### Locality as the obstruction
+
+The conclusion of the brief: polynomials of `X` and `P` are local operators, and local operators
+never detect phase differences between spatially separated parts. Locality is taken in Peetre's
+sense, as in the footnote: `A` does not enlarge supports. -/
+
+/-- The matrix element `⟨φ|A|χ⟩ = ∫ conj (φ x) (Aχ)(x) dx`. -/
+def matrixElement (A : Module.End ℂ 𝓢(ℝ, ℂ)) (φ χ : 𝓢(ℝ, ℂ)) : ℂ := ∫ x, conj (φ x) * A χ x
+
+/-- `A` is local (Peetre): `supp (Aφ) ⊆ supp φ` for every `φ`. -/
+def IsLocal (A : Module.End ℂ 𝓢(ℝ, ℂ)) : Prop := ∀ φ, tsupport (A φ) ⊆ tsupport φ
+
+/-- The local operators form a subalgebra. -/
+def localOps : Subalgebra ℂ (Module.End ℂ 𝓢(ℝ, ℂ)) where
+  carrier := {A | IsLocal A}
+  mul_mem' {A B} hA hB φ := (hA (B φ)).trans (hB φ)
+  add_mem' {A B} hA hB φ := by
+    change tsupport (fun x => A φ x + B φ x) ⊆ _
+    exact (tsupport_add _ _).trans (Set.union_subset (hA φ) (hB φ))
+  algebraMap_mem' c φ := by
+    change tsupport (fun x => c • φ x) ⊆ _
+    exact tsupport_smul_subset_right (fun _ => c) φ
+
+lemma mem_localOps {A : Module.End ℂ 𝓢(ℝ, ℂ)} : A ∈ localOps ↔ IsLocal A := Iff.rfl
+
+/-- The position operator, `(Xφ)(x) = x φ(x)`. -/
+def X : Module.End ℂ 𝓢(ℝ, ℂ) := (smulLeftCLM ℂ (fun x : ℝ => (x : ℂ))).toLinearMap
+
+/-- The momentum operator, `P = -iħ d/dx`. -/
+def P (ħ : ℝ) : Module.End ℂ 𝓢(ℝ, ℂ) := ((-I * ħ) • derivCLM ℂ ℂ).toLinearMap
+
+lemma X_apply (φ : 𝓢(ℝ, ℂ)) (x : ℝ) : X φ x = x * φ x := by
+  simp [X, smulLeftCLM_apply_apply Complex.hasTemperateGrowth_ofReal]
+
+lemma P_apply (ħ : ℝ) (φ : 𝓢(ℝ, ℂ)) (x : ℝ) : P ħ φ x = -I * ħ * deriv φ x := by
+  simp [P]
+
+lemma X_pow_apply (m : ℕ) (φ : 𝓢(ℝ, ℂ)) (x : ℝ) : (X ^ m) φ x = (x : ℂ) ^ m * φ x := by
+  induction m generalizing φ with
+  | zero => simp
+  | succ m ih => rw [pow_succ, mul_apply_eq_comp, ih, X_apply]; ring
+
+lemma P_pow_apply (ħ : ℝ) (n : ℕ) (φ : 𝓢(ℝ, ℂ)) (x : ℝ) :
+    (P ħ ^ n) φ x = (-I * ħ) ^ n * iteratedDeriv n φ x := by
+  induction n generalizing x with
+  | zero => simp
+  | succ n ih =>
+    have h : (⇑((P ħ ^ n) φ)) = fun y => (-I * ħ) ^ n * iteratedDeriv n φ y := funext ih
+    have hd : DifferentiableAt ℝ (iteratedDeriv n ⇑φ) x :=
+      ((φ.smooth ⊤).differentiable_iteratedDeriv n (by exact_mod_cast WithTop.coe_lt_top _)) x
+    rw [pow_succ', mul_apply_eq_comp, P_apply, h, deriv_const_mul _ hd, iteratedDeriv_succ]
+    ring
+
+lemma isLocal_X : IsLocal X := fun φ => by
+  have : (⇑(X φ)) = fun x : ℝ => (x : ℂ) • φ x := funext fun x => X_apply φ x
+  rw [this]
+  exact tsupport_smul_subset_right _ _
+
+lemma isLocal_P (ħ : ℝ) : IsLocal (P ħ) := fun φ => by
+  have : (⇑(P ħ φ)) = fun x => (-I * ħ) • deriv φ x := funext fun x => P_apply ħ φ x
+  rw [this]
+  exact (tsupport_smul_subset_right _ _).trans (tsupport_deriv_subset (f := ⇑φ))
+
+/-- Every polynomial in `X` and `P` is a local operator. -/
+theorem adjoin_le_localOps (ħ : ℝ) : Algebra.adjoin ℂ {X, P ħ} ≤ localOps :=
+  Algebra.adjoin_le (Set.insert_subset_iff.mpr ⟨isLocal_X, Set.singleton_subset_iff.mpr
+    (isLocal_P ħ)⟩)
+
+/-- The moment `⟨ψ|Xᵐ Pⁿ|ψ⟩` is the matrix element of the operator `Xᵐ Pⁿ`. -/
+theorem moment_eq_matrixElement (ħ : ℝ) (ψ : 𝓢(ℝ, ℂ)) (m n : ℕ) :
+    moment ħ ψ m n = matrixElement (X ^ m * P ħ ^ n) ψ ψ := by
+  simp only [moment, matrixElement, density, mul_apply_eq_comp, X_pow_apply, P_pow_apply]
+
+lemma integrable_conj_mul (φ χ : 𝓢(ℝ, ℂ)) : Integrable (fun x => conj (φ x) * χ x) :=
+  χ.integrable.bdd_mul (c := SchwartzMap.seminorm ℂ 0 0 φ)
+    (continuous_conj.comp φ.continuous).aestronglyMeasurable
+    (Filter.Eventually.of_forall fun x => by
+      simpa only [Function.comp_apply, RCLike.norm_conj] using φ.norm_le_seminorm ℂ x)
+
+/-- For any operator, `⟨ψ_θ|A|ψ_θ⟩` is the sum of the diagonal terms and the cross terms
+`e^{iθ} ⟨f|A|g⟩ + e^{-iθ} ⟨g|A|f⟩`. -/
+theorem matrixElement_psi (A : Module.End ℂ 𝓢(ℝ, ℂ)) (f g : 𝓢(ℝ, ℂ)) (θ : ℝ) :
+    matrixElement A (psi f g θ) (psi f g θ) =
+      matrixElement A f f + matrixElement A g g +
+        (exp (θ * I) * matrixElement A f g + conj (exp (θ * I)) * matrixElement A g f) := by
+  have hc : conj (exp (θ * I)) * exp (θ * I) = 1 := by
+    rw [conj_mul', norm_exp_ofReal_mul_I]
+    simp
+  have h : (fun x => conj (psi f g θ x) * A (psi f g θ) x) = fun x =>
+      (conj (f x) * A f x + conj (g x) * A g x) +
+        (exp (θ * I) * (conj (f x) * A g x) + conj (exp (θ * I)) * (conj (g x) * A f x)) := by
+    ext x
+    simp only [psi, map_add, map_smul, add_apply, smul_apply, smul_eq_mul, map_mul]
+    linear_combination (conj (g x) * A g x) * hc
+  simp only [matrixElement, h]
+  have hi := integrable_conj_mul
+  rw [integral_add (by exact (hi f (A f)).add (hi g (A g)))
+      (by exact ((hi f (A g)).const_mul _).add ((hi g (A f)).const_mul _)),
+    integral_add (hi f (A f)) (hi g (A g)),
+    integral_add ((hi f (A g)).const_mul _) ((hi g (A f)).const_mul _),
+    integral_const_mul, integral_const_mul]
+
+/-- A local operator has no matrix elements between disjointly supported functions. -/
+theorem matrixElement_eq_zero_of_isLocal {A : Module.End ℂ 𝓢(ℝ, ℂ)} (hA : IsLocal A)
+    (hfg : Disjoint (tsupport f) (tsupport g)) : matrixElement A f g = 0 := by
+  have h : (fun x => conj (f x) * A g x) = fun _ => 0 := by
+    ext x
+    by_cases hx : f x = 0
+    · simp [hx]
+    · rw [image_eq_zero_of_notMem_tsupport fun h => notMem_tsupport_of_ne_zero hfg hx (hA g h),
+        mul_zero]
+  simp [matrixElement, h]
+
+/-- A local operator does not detect the phase `θ`: `⟨ψ_θ|A|ψ_θ⟩ = ⟨f|A|f⟩ + ⟨g|A|g⟩`. -/
+theorem matrixElement_psi_of_isLocal {A : Module.End ℂ 𝓢(ℝ, ℂ)} (hA : IsLocal A)
+    (hfg : Disjoint (tsupport f) (tsupport g)) (θ : ℝ) :
+    matrixElement A (psi f g θ) (psi f g θ) = matrixElement A f f + matrixElement A g g := by
+  rw [matrixElement_psi, matrixElement_eq_zero_of_isLocal hA hfg,
+    matrixElement_eq_zero_of_isLocal hA hfg.symm]
+  ring
+
+/-- The conclusion of the brief: no polynomial in `X` and `P` detects the phase `θ`. -/
+theorem matrixElement_psi_of_mem_adjoin (ħ : ℝ) {A : Module.End ℂ 𝓢(ℝ, ℂ)}
+    (hA : A ∈ Algebra.adjoin ℂ {X, P ħ}) (hfg : Disjoint (tsupport f) (tsupport g)) (θ : ℝ) :
+    matrixElement A (psi f g θ) (psi f g θ) = matrixElement A f f + matrixElement A g g :=
+  matrixElement_psi_of_isLocal (adjoin_le_localOps ħ hA) hfg θ
+
+/-- Eq. (3) for disjoint supports, compact or not. -/
+theorem moment_psi_of_disjoint (ħ : ℝ) (hfg : Disjoint (tsupport f) (tsupport g)) (θ : ℝ)
+    (m n : ℕ) : moment ħ (psi f g θ) m n = moment ħ f m n + moment ħ g m n := by
+  simp only [moment_eq_matrixElement]
+  exact matrixElement_psi_of_mem_adjoin ħ
+    (Subalgebra.mul_mem _ (Subalgebra.pow_mem _ (Algebra.subset_adjoin (by simp)) m)
+      (Subalgebra.pow_mem _ (Algebra.subset_adjoin (by simp)) n)) hfg θ
+
+/-! ### A non-local operator detects the phase
+
+Beyond the brief: locality is exactly what is lost. The translation `(Tφ)(x) = φ(x + 3)`, which
+is `e^{3iP/ħ}` and not a polynomial in `P`, separates all the states `ψ_θ` built from the bumps
+of Fig. 1. -/
+
+/-- The translation `(Tφ)(x) = φ(x + 3)`. -/
+def translate : Module.End ℂ 𝓢(ℝ, ℂ) := (compSubConstCLM ℂ (-3 : ℝ)).toLinearMap
+
+lemma translate_apply (φ : 𝓢(ℝ, ℂ)) (x : ℝ) : translate φ x = φ (x + 3) := by
+  simp [translate]
+
+lemma bump_apply (c x : ℝ) : bump c x = ((realBump c x : ℝ) : ℂ) := rfl
+
+lemma translate_bump : (⇑(translate (bump 3))) = ⇑(bump 0) := by
+  ext x
+  rw [translate_apply, bump_apply, bump_apply, ContDiffBump.apply, ContDiffBump.apply]
+  simp [realBump]
+
+lemma bump_eq_zero_of_one_lt {c x : ℝ} (hx : 1 < |x - c|) : bump c x = 0 :=
+  image_eq_zero_of_notMem_tsupport fun h => by
+    have := tsupport_bump_subset c h
+    rw [Metric.mem_closedBall, Real.dist_eq] at this
+    linarith
+
+lemma matrixElement_translate_bump_three_zero : matrixElement translate (bump 3) (bump 0) = 0 := by
+  have h : (fun x => conj (bump 3 x) * translate (bump 0) x) = fun _ => 0 := by
+    ext x
+    rw [translate_apply]
+    by_cases hx : |x - 3| ≤ 1
+    · have h2 := (abs_le.mp hx).1
+      rw [bump_eq_zero_of_one_lt (c := 0) (x := x + 3)
+        (by rw [sub_zero, abs_of_pos (by linarith)]; linarith), mul_zero]
+    · rw [bump_eq_zero_of_one_lt (not_le.mp hx), map_zero, zero_mul]
+  simp [matrixElement, h]
+
+lemma matrixElement_translate_bump_zero_three_ne_zero :
+    matrixElement translate (bump 0) (bump 3) ≠ 0 := by
+  have h : (fun x => conj (bump 0 x) * translate (bump 3) x) =
+      fun x => (((realBump 0 x) ^ 2 : ℝ) : ℂ) := by
+    ext x
+    rw [translate_bump, bump_apply, conj_ofReal]
+    push_cast
+    ring
+  have h1 : (realBump 0) 0 = 1 :=
+    (realBump 0).one_of_mem_closedBall (Metric.mem_closedBall_self (by norm_num [realBump]))
+  have hpos : 0 < ∫ x, (realBump 0 x) ^ 2 :=
+    Continuous.integral_pos_of_hasCompactSupport_nonneg_ne_zero (x := 0)
+      ((realBump 0).continuous.pow 2)
+      (by exact (realBump 0).hasCompactSupport.comp_left (g := fun t : ℝ => t ^ 2) (by norm_num))
+      (fun x => sq_nonneg _) (by simp [h1])
+  simp only [matrixElement, h]
+  exact_mod_cast hpos.ne'
+
+/-- The translation separates the states `ψ_θ` of Theorem 1: `⟨ψ_θ|T|ψ_θ⟩` determines `e^{iθ}`. -/
+theorem matrixElement_translate_psi_inj {θ θ' : ℝ} :
+    matrixElement translate (psi (bump 0) (bump 3) θ) (psi (bump 0) (bump 3) θ) =
+        matrixElement translate (psi (bump 0) (bump 3) θ') (psi (bump 0) (bump 3) θ') ↔
+      exp (θ * I) = exp (θ' * I) := by
+  simp only [matrixElement_psi, matrixElement_translate_bump_three_zero, mul_zero, add_zero,
+    add_right_inj]
+  exact mul_left_inj' matrixElement_translate_bump_zero_three_ne_zero
+
+/-- So the translation is not local. -/
+theorem not_isLocal_translate : ¬ IsLocal translate := fun h => by
+  have hdisj : Disjoint (tsupport (bump 0)) (tsupport (bump 3)) :=
+    (Metric.closedBall_disjoint_closedBall (by norm_num [Real.dist_eq])).mono
+      (tsupport_bump_subset 0) (tsupport_bump_subset 3)
+  have hθ : exp ((0 : ℝ) * I) ≠ exp ((Real.pi : ℝ) * I) := by
+    rw [ofReal_zero, zero_mul, exp_zero, exp_pi_mul_I]
+    norm_num
+  exact hθ (matrixElement_translate_psi_inj.mp (by
+    rw [matrixElement_psi_of_isLocal h hdisj, matrixElement_psi_of_isLocal h hdisj]))
 
 end SchwartzMomentProblem

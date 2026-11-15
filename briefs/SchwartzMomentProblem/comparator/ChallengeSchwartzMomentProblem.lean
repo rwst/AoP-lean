@@ -6,8 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
-public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 
 /-!
 # SchwartzMomentProblem: the statements of record
@@ -52,6 +51,32 @@ lemma bump_ne_zero (c : ℝ) : bump c ≠ 0 := by
 theorem exists_same_moments (ħ : ℝ) :
     ∃ ψ₁ ψ₂ : 𝓢(ℝ, ℂ), LinearIndependent ℂ ![ψ₁, ψ₂] ∧
       ∀ m n, moment ħ ψ₁ m n = moment ħ ψ₂ m n := by
+  sorry
+def matrixElement (A : Module.End ℂ 𝓢(ℝ, ℂ)) (φ χ : 𝓢(ℝ, ℂ)) : ℂ := ∫ x, conj (φ x) * A χ x
+def IsLocal (A : Module.End ℂ 𝓢(ℝ, ℂ)) : Prop := ∀ φ, tsupport (A φ) ⊆ tsupport φ
+def localOps : Subalgebra ℂ (Module.End ℂ 𝓢(ℝ, ℂ)) where
+  carrier := {A | IsLocal A}
+  mul_mem' {A B} hA hB φ := (hA (B φ)).trans (hB φ)
+  add_mem' {A B} hA hB φ := by
+    change tsupport (fun x => A φ x + B φ x) ⊆ _
+    exact (tsupport_add _ _).trans (Set.union_subset (hA φ) (hB φ))
+  algebraMap_mem' c φ := by
+    change tsupport (fun x => c • φ x) ⊆ _
+    exact tsupport_smul_subset_right (fun _ => c) φ
+def X : Module.End ℂ 𝓢(ℝ, ℂ) := (smulLeftCLM ℂ (fun x : ℝ => (x : ℂ))).toLinearMap
+def P (ħ : ℝ) : Module.End ℂ 𝓢(ℝ, ℂ) := ((-I * ħ) • derivCLM ℂ ℂ).toLinearMap
+theorem adjoin_le_localOps (ħ : ℝ) : Algebra.adjoin ℂ {X, P ħ} ≤ localOps := by
+  sorry
+theorem matrixElement_psi_of_isLocal {A : Module.End ℂ 𝓢(ℝ, ℂ)} (hA : IsLocal A)
+    (hfg : Disjoint (tsupport f) (tsupport g)) (θ : ℝ) :
+    matrixElement A (psi f g θ) (psi f g θ) = matrixElement A f f + matrixElement A g g := by
+  sorry
+theorem matrixElement_psi_of_mem_adjoin (ħ : ℝ) {A : Module.End ℂ 𝓢(ℝ, ℂ)}
+    (hA : A ∈ Algebra.adjoin ℂ {X, P ħ}) (hfg : Disjoint (tsupport f) (tsupport g)) (θ : ℝ) :
+    matrixElement A (psi f g θ) (psi f g θ) = matrixElement A f f + matrixElement A g g := by
+  sorry
+theorem moment_psi_of_disjoint (ħ : ℝ) (hfg : Disjoint (tsupport f) (tsupport g)) (θ : ℝ)
+    (m n : ℕ) : moment ħ (psi f g θ) m n = moment ħ f m n + moment ħ g m n := by
   sorry
 end SchwartzMomentProblem
 end
