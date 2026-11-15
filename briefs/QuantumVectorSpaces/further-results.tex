@@ -7,7 +7,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage[margin=2.5cm]{geometry}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage[hidelinks]{hyperref}
 
 % Lean names and paths: verbatim, breakable at . _ /
@@ -24,7 +24,7 @@
 
 \title{Further results on the brief\\ \emph{Physical vector spaces for quantum mechanics}}
 \author{Ralf Stephan}
-\date{14 November 2026}
+\date{15 November 2026}
 
 \begin{document}
 \maketitle
@@ -382,6 +382,54 @@ $\mathcal S(\mathbb R)$ the changes of variable that preserve it are those of Ga
 Jordá~\cite[Thm.~2.3]{galbis}, with the half-density factor added for unitarity; in the group form
 of Sec.~\ref{sec:irreducible}, $F$ is the group $G$ itself.
 
+\subsection{Linear changes of frame}
+\label{sec:linearframes}
+
+For Example~3 in $n$ dimensions, part~(1) has a simple form, and it admits all linear changes of
+frame of phase space. A group $F$ of inner-product-preserving linear bijections of $V$ is a frame
+group with $\rho$ the inclusion.
+
+\begin{theorem}\label{thm:linearframes}
+  Let $V = \mathcal S(\mathbb R^n)$ with the positions $X^i$, the momenta $P_i$ and $I$, and
+  $\hbar \ne 0$.
+  \begin{enumerate}
+    \item A group $F$ of inner-product-preserving linear bijections of $V$ satisfies [B]WDQ if and
+      only if every element of $F$ is continuous for the Schwartz topology. So the group of all
+      inner-product-preserving automorphisms of the Fréchet space $\mathcal S(\mathbb R^n)$ is the
+      largest frame group of $V$ with [B]WDQ. The same holds for any quantum vector space, with
+      its topology of Corollary~2 in place of the Schwartz topology.
+    \item The following maps are inner-product-preserving automorphisms of
+      $\mathcal S(\mathbb R^n)$: the translations $f \mapsto f(\cdot - a)$, the modulations
+      $f \mapsto e^{i\langle a, x\rangle}f$, the linear changes of variable
+      $f \mapsto |\det A|^{-1/2}\, f \circ A^{-1}$, the Fourier transform, and the chirps
+      $f \mapsto e^{i\langle x, Bx\rangle} f$, for $a \in \mathbb R^n$ and real $n \times n$
+      matrices $A$ invertible and $B$ arbitrary. So the group they generate is a frame group of
+      $V$ with [B]WDQ.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  (1) By Theorem~\ref{thm:framegroup}(1), [B]WDQ holds if and only if every element of $F$ is
+  continuous for the topology of Corollary~2, which for Example~3 is the Schwartz topology
+  (checked with the brief, \lean{QuantumVectorSpaces.topology_schwartzN}). The inverse of an
+  element of $F$ lies in $F$, so it is continuous too. (2) Each map is a continuous linear map of
+  $\mathcal S(\mathbb R^n)$ whose inverse is a map of the same kind: the multipliers
+  $e^{i\langle a, x\rangle}$ and $e^{i\langle x, Bx\rangle}$ are smooth with all derivatives of
+  polynomial growth, and the Fourier transform is an automorphism of $\mathcal S(\mathbb R^n)$.
+  They preserve the inner product because Lebesgue measure is translation invariant,
+  $|e^{i\theta}| = 1$, $\int h(A^{-1}x)\,dx = |\det A|\int h(x)\,dx$, and by Plancherel's theorem.
+\end{proof}
+
+The translations and modulations represent the translations of phase space. The linear changes of
+variable, the Fourier transform and the chirps represent the symplectic matrices
+$\begin{psmallmatrix} A & 0 \\ 0 & (A^T)^{-1}\end{psmallmatrix}$,
+$\begin{psmallmatrix} 0 & I \\ -I & 0\end{psmallmatrix}$ and
+$\begin{psmallmatrix} I & 0 \\ B & I\end{psmallmatrix}$ with $B$ symmetric. These generate
+$\mathrm{Sp}(2n, \mathbb R)$, and the operators generate the metaplectic representation up to
+phases~\cite[Ch.~4]{folland}. So every affine symplectic change of frame of phase space satisfies
+[B]WDQ in Example~3. The generation theorem is not formalized and is not needed: whatever group
+the five kinds of maps generate, it satisfies [B]WDQ by part~(1).
+
 \subsection{Lean}
 
 Module:\\ \lean{QuantumVectorSpaces.FurtherResults.FrameGroups},\\ namespace
@@ -398,6 +446,18 @@ Module:\\ \lean{QuantumVectorSpaces.FurtherResults.FrameGroups},\\ namespace
   \item \lean{translate}, \lean{frameObs_translate}, \lean{isFrameCompatible_translate}:
     Theorem~\ref{thm:framegroup}(4).
   \item \lean{not_exists_frameUnitary}: Theorem~\ref{thm:framegroup}(5).
+\end{itemize}
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.LinearFrames}, same namespace.
+\begin{itemize}
+  \item \lean{unitaryAut}, \lean{FrameGroup.ofSubgroup}, \lean{isFrameCompatible_ofSubgroup_iff}:
+    Theorem~\ref{thm:linearframes}(1) for any quantum vector space;
+    \lean{schwartzAut}, \lean{isFrameCompatible_schwartzN}: for Example~3 in $n$ dimensions.
+  \item \lean{translateN}, \lean{modulate}, \lean{dilate}, \lean{fourierN}, \lean{chirp} (the
+    last two via \lean{phase}), with \lean{translateN_mem}, \lean{phase_mem}, \lean{dilate_mem},
+    \lean{fourierN_mem}: Theorem~\ref{thm:linearframes}(2); \lean{integral_comp_symm} is the
+    change of variables.
+  \item \lean{linearFrames}, \lean{linearFrames_le_schwartzAut},
+    \lean{isFrameCompatible_linearFrames}: the generated group satisfies [B]WDQ.
 \end{itemize}
 
 \section{Ensembles over Example 3 and the continuity of entropy}
@@ -726,6 +786,8 @@ Theorems~\ref{thm:gs-def1}(1) and~\ref{thm:gs-moments}.
   \url{https://assumptionsofphysics.org/resources/briefs}.
 \bibitem{cca} G.~Carcassi, F.~Calder\'on, C.~A.~Aidala, The unphysicality of Hilbert spaces,
   Quantum Stud.: Math. Found. \textbf{12}, 13 (2025), arXiv:2308.06669v3.
+\bibitem{folland} G.~B.~Folland, \emph{Harmonic Analysis in Phase Space}, Annals of Mathematics
+  Studies 122, Princeton University Press, 1989.
 \bibitem{galbis} A.~Galbis, E.~Jord\'a, Composition operators on the Schwartz space, Rev. Mat.
   Iberoam. \textbf{34} (2018) 397--412.
 \bibitem{roberts} J.~E.~Roberts, The Dirac bra and ket formalism, J. Math. Phys. \textbf{7}

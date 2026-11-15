@@ -124,7 +124,13 @@ precise first.
   unitary equivalence (\lean{FurtherResults.IsFrameCompatible.unitaryEquiv}). It suffices that
   the transformed defining observables lie in the algebra of the original ones
   (\lean{FurtherResults.isFrameCompatible_of_mem_algebra}); the translations of Example~3 are an
-  instance (\lean{FurtherResults.isFrameCompatible_translate}). The choice of $F$ remains open.
+  instance (\lean{FurtherResults.isFrameCompatible_translate}). For Example~3 in $n$ dimensions
+  the largest such $F$ is the group of all inner-product-preserving automorphisms of
+  $\mathcal{S}(\mathbb{R}^n)$ (\lean{FurtherResults.isFrameCompatible_schwartzN}), and it
+  contains the translations, modulations, linear changes of variable, Fourier transform and
+  chirps, which give all affine symplectic changes of frame
+  (\lean{FurtherResults.isFrameCompatible_linearFrames}; \lean{further-results.tex},
+  Sec.~3.1). The choice of $F$ remains open.
   (Brief, Theorem~5, proof; Log, ``Problems found in the brief'', last item.)
 \end{enumerate}
 
@@ -133,17 +139,6 @@ Definition~1 and Examples~3 (in $n$ dimensions) and~4 are checked in full. The g
 concern problem~6 and the coordinate independence of Example~3; none of them blocks
 verification of a claim of the brief.
 \begin{enumerate}
-\item \textbf{Linear changes of frame preserve $\mathcal{S}(\mathbb{R}^n)$.}
-  \emph{Formalization gap.} Only the translations are shown to act continuously on $V$
-  (\lean{FurtherResults.isFrameCompatible_translate}). Missing: the same for the
-  modulations $e^{i\langle a, x\rangle}$, the linear changes of variable with the factor
-  $|\det A|^{1/2}$, the Fourier transform and the chirps $e^{i\langle x, Bx\rangle}$, $B$
-  symmetric, each as a frame-compatible group in the sense of
-  \lean{FurtherResults.IsFrameCompatible}. These generate the metaplectic group up to phases,
-  so the linear symplectic changes of frame would all be admissible; the generation theorem
-  itself is not needed. Mathlib supplies the pieces
-  (\lean{SchwartzMap.compCLMOfContinuousLinearEquiv}, \lean{SchwartzMap.fourierTransformCLM},
-  \lean{SchwartzMap.smulLeftCLM} for multipliers of temperate growth).
 \item \textbf{$\mathcal{S}(\mathbb{R}^n)$ as the joint domain of the powers of the
   oscillator.} \emph{Formalization gap.} With $N$ the closure in $L^2(\mathbb{R}^n)$ of the
   harmonic oscillator, $\mathcal{S}(\mathbb{R}^n) = \bigcap_k D(N^k)$ (B.~Simon,
@@ -176,7 +171,7 @@ verification of a claim of the brief.
   \emph{Harmonic Analysis in Phase Space}, Princeton 1989, Ch.~1). This is the group form of
   problem~1 (\lean{further-results.tex}, Sec.~2), there not formalized. It needs unitary
   representations of Lie groups and their smooth vectors, which neither Mathlib nor TauCeti
-  provides in usable form; gap~2 gives the same space with much less.
+  provides in usable form; gap~1 gives the same space with much less.
 \end{enumerate}
 
 \end{document}
