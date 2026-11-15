@@ -29,6 +29,8 @@ Formalized here:
   disjoint supports that need not be compact (`moment_psi_of_disjoint`).
 * Beyond the brief: the translation `(Tφ)(x) = φ(x + 3)` separates the states `ψ_θ` built from
   the bumps (`matrixElement_translate_psi_inj`), so it is not local (`not_isLocal_translate`).
+* Sec. 3, other state spaces: in `SchwartzMomentProblem/OtherSpaces.lean`, for any space of
+  functions on any domain, and Theorem 1 on `ℝⁿ`.
 
 The moment is the integral `∫ conj(ψ x) xᵐ (-iħ)ⁿ ψ⁽ⁿ⁾(x) dx`.
 

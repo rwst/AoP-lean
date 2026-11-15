@@ -6,6 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import SchwartzMomentProblem
+public import SchwartzMomentProblem.OtherSpaces
 
 /-!
 # Non-uniqueness of the moment problem, re-exported for `lake comparator`

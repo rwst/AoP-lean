@@ -11,7 +11,14 @@
     "SchwartzMomentProblem.adjoin_le_localOps",
     "SchwartzMomentProblem.matrixElement_psi_of_isLocal",
     "SchwartzMomentProblem.matrixElement_psi_of_mem_adjoin",
-    "SchwartzMomentProblem.moment_psi_of_disjoint"
+    "SchwartzMomentProblem.moment_psi_of_disjoint",
+    "SchwartzMomentProblem.OtherSpaces.matrixElement_psi_eq",
+    "SchwartzMomentProblem.OtherSpaces.linearIndependent_psi",
+    "SchwartzMomentProblem.OtherSpaces.exists_same_matrixElements",
+    "SchwartzMomentProblem.OtherSpaces.exists_disjoint_translate",
+    "SchwartzMomentProblem.OtherSpaces.exists_same_matrixElements_of_translate",
+    "SchwartzMomentProblem.OtherSpaces.adjoin_le_localOps",
+    "SchwartzMomentProblem.OtherSpaces.exists_same_moments"
   ],
   "permitted_axioms": [
     "propext",

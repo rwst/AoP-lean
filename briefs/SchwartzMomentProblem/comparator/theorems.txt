@@ -13,3 +13,10 @@ SchwartzMomentProblem.adjoin_le_localOps  # Sec. 3: polynomials in X and P are l
 SchwartzMomentProblem.matrixElement_psi_of_isLocal  # Sec. 3: local operators do not detect the phase
 SchwartzMomentProblem.matrixElement_psi_of_mem_adjoin  # Sec. 3: nor does any polynomial in X and P
 SchwartzMomentProblem.moment_psi_of_disjoint  # eq. (3) for disjoint supports, compact or not
+SchwartzMomentProblem.OtherSpaces.matrixElement_psi_eq  # Sec. 3, any space and domain: local operators do not detect the phase
+SchwartzMomentProblem.OtherSpaces.linearIndependent_psi  # Sec. 3, any space and domain: different phases give different rays
+SchwartzMomentProblem.OtherSpaces.exists_same_matrixElements  # Sec. 3, any space with two disjointly supported functions
+SchwartzMomentProblem.OtherSpaces.exists_disjoint_translate  # Sec. 3: a far translate of a compactly supported function
+SchwartzMomentProblem.OtherSpaces.exists_same_matrixElements_of_translate  # Sec. 3: any translation-invariant space with compact support
+SchwartzMomentProblem.OtherSpaces.adjoin_le_localOps  # Sec. 3 on ℝⁿ: polynomials in positions and momenta are local
+SchwartzMomentProblem.OtherSpaces.exists_same_moments  # Theorem 1 on ℝⁿ, n ≥ 1

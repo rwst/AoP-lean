@@ -136,6 +136,7 @@ srcDir = "briefs/InconsistentConvergence/comparator"
 [[lean_lib]]
 name = "SchwartzMomentProblem"
 srcDir = "briefs/SchwartzMomentProblem"
+globs = ["SchwartzMomentProblem.*"]
 
 # Its comparator lane (not default targets; see COMPARATOR.md).
 [[lean_lib]]

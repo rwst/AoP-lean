@@ -81,3 +81,80 @@ theorem moment_psi_of_disjoint (ħ : ℝ) (hfg : Disjoint (tsupport f) (tsupport
 end SchwartzMomentProblem
 end
 end
+-- SchwartzMomentProblem.OtherSpaces
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Complex ComplexConjugate MeasureTheory SchwartzMap LineDeriv
+@[expose] public noncomputable section
+namespace SchwartzMomentProblem.OtherSpaces
+section General
+variable {D : Type*} [TopologicalSpace D] {V : Type*} [AddCommGroup V] [Module ℂ V]
+  (ev : V →ₗ[ℂ] D → ℂ)
+def IsLocal (A : Module.End ℂ V) : Prop := ∀ φ, tsupport (ev (A φ)) ⊆ tsupport (ev φ)
+def localOps : Subalgebra ℂ (Module.End ℂ V) where
+  carrier := {A | IsLocal ev A}
+  mul_mem' {A B} hA hB φ := (hA (B φ)).trans (hB φ)
+  add_mem' {A B} hA hB φ := by
+    change tsupport (ev (A φ + B φ)) ⊆ _
+    rw [map_add]
+    exact (tsupport_add _ _).trans (Set.union_subset (hA φ) (hB φ))
+  algebraMap_mem' c φ := by
+    change tsupport (ev (c • φ)) ⊆ _
+    rw [map_smul]
+    exact tsupport_smul_subset_right (fun _ => c) (ev φ)
+def psi (f g : V) (θ : ℝ) : V := f + exp (θ * I) • g
+variable {ev} {f g : V}
+theorem matrixElement_psi_eq [MeasurableSpace D] (μ : Measure D) {A : Module.End ℂ V}
+    (hA : IsLocal ev A) (hfg : Disjoint (tsupport (ev f)) (tsupport (ev g))) (θ θ' : ℝ) :
+    ∫ x, conj (ev (psi f g θ) x) * ev (A (psi f g θ)) x ∂μ =
+      ∫ x, conj (ev (psi f g θ') x) * ev (A (psi f g θ')) x ∂μ := by
+  sorry
+theorem linearIndependent_psi (hf0 : ev f ≠ 0) (hg0 : ev g ≠ 0)
+    (hfg : Disjoint (tsupport (ev f)) (tsupport (ev g))) {θ θ' : ℝ}
+    (hθ : exp (θ * I) ≠ exp (θ' * I)) : LinearIndependent ℂ ![psi f g θ, psi f g θ'] := by
+  sorry
+theorem exists_same_matrixElements (hf0 : ev f ≠ 0) (hg0 : ev g ≠ 0)
+    (hfg : Disjoint (tsupport (ev f)) (tsupport (ev g))) :
+    ∃ ψ₁ ψ₂ : V, LinearIndependent ℂ ![ψ₁, ψ₂] ∧
+      ∀ A : Module.End ℂ V, IsLocal ev A → ∀ [MeasurableSpace D] (μ : Measure D),
+        ∫ x, conj (ev ψ₁ x) * ev (A ψ₁) x ∂μ = ∫ x, conj (ev ψ₂ x) * ev (A ψ₂) x ∂μ := by
+  sorry
+end General
+section Translation
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [Nontrivial E]
+theorem exists_disjoint_translate {h : E → ℂ} (hh : HasCompactSupport h) :
+    ∃ a : E, Disjoint (tsupport h) (tsupport fun x => h (x - a)) := by
+  sorry
+variable {V : Type*} [AddCommGroup V] [Module ℂ V] {ev : V →ₗ[ℂ] E → ℂ}
+theorem exists_same_matrixElements_of_translate
+    (htr : ∀ φ : V, ∀ a : E, ∃ φ' : V, ev φ' = fun x => ev φ (x - a))
+    {f : V} (hf : HasCompactSupport (ev f)) (hf0 : ev f ≠ 0) :
+    ∃ ψ₁ ψ₂ : V, LinearIndependent ℂ ![ψ₁, ψ₂] ∧
+      ∀ A : Module.End ℂ V, IsLocal ev A → ∀ [MeasurableSpace E] (μ : Measure E),
+        ∫ x, conj (ev ψ₁ x) * ev (A ψ₁) x ∂μ = ∫ x, conj (ev ψ₂ x) * ev (A ψ₂) x ∂μ := by
+  sorry
+end Translation
+section Schwartz
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+def coeLM : 𝓢(E, ℂ) →ₗ[ℂ] E → ℂ where
+  toFun φ := φ
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+def X (ℓ : E →L[ℝ] ℝ) : Module.End ℂ 𝓢(E, ℂ) :=
+  (smulLeftCLM ℂ (fun x => (ℓ x : ℂ))).toLinearMap
+def P (ħ : ℝ) (v : E) : Module.End ℂ 𝓢(E, ℂ) :=
+  ((-I * ħ) • lineDerivOpCLM ℂ 𝓢(E, ℂ) v).toLinearMap
+theorem adjoin_le_localOps (ħ : ℝ) :
+    Algebra.adjoin ℂ (Set.range X ∪ Set.range (P (E := E) ħ)) ≤ localOps coeLM := by
+  sorry
+variable [FiniteDimensional ℝ E]
+theorem exists_same_moments [Nontrivial E] (ħ : ℝ) :
+    ∃ ψ₁ ψ₂ : 𝓢(E, ℂ), LinearIndependent ℂ ![ψ₁, ψ₂] ∧
+      ∀ A ∈ Algebra.adjoin ℂ (Set.range X ∪ Set.range (P (E := E) ħ)),
+        ∀ [MeasurableSpace E] (μ : Measure E),
+          ∫ x, conj (ψ₁ x) * A ψ₁ x ∂μ = ∫ x, conj (ψ₂ x) * A ψ₂ x ∂μ := by
+  sorry
+end Schwartz
+end SchwartzMomentProblem.OtherSpaces
+end
+end

@@ -52,7 +52,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
-\item File: \lean{briefs/SchwartzMomentProblem/SchwartzMomentProblem.lean}
+\item Files: \lean{briefs/SchwartzMomentProblem/SchwartzMomentProblem.lean},\newline
+  \lean{briefs/SchwartzMomentProblem/SchwartzMomentProblem/OtherSpaces.lean} (other state spaces)
 \item Library: \lean{SchwartzMomentProblem}
 \item Imports: \lean{Mathlib.Analysis.Calculus.BumpFunction.InnerProduct},\newline
   \lean{Mathlib.Analysis.Distribution.SchwartzSpace.Deriv}
@@ -81,6 +82,8 @@ Theorem~1 & \lean{exists_same_moments}, with $\psi_1 = \psi_0$, $\psi_2 = \psi_\
 Sec.~3: polynomials of $X$ and $P$ are local operators & \lean{adjoin_le_localOps}: $\mathbb{C}[X, P] \le$ \lean{localOps} \\
 Sec.~3: local operators never detect phase differences between spatially separated parts & \lean{matrixElement_eq_zero_of_isLocal}, \lean{matrixElement_psi_of_isLocal}, \lean{matrixElement_psi_of_mem_adjoin} \\
 eq.~(3) for disjoint supports, compact or not & \lean{moment_eq_matrixElement}, \lean{moment_psi_of_disjoint} \\
+Sec.~3: ``any space that contains functions with compact support will suffer the same consequences'' & \lean{OtherSpaces.matrixElement_psi_eq}, \lean{OtherSpaces.linearIndependent_psi}, \lean{OtherSpaces.exists_same_matrixElements} (any space, any domain); \lean{OtherSpaces.exists_disjoint_translate}, \lean{OtherSpaces.exists_same_matrixElements_of_translate} (translation-invariant spaces) \\
+Theorem~1 on $\mathbb{R}^n$, $n \ge 1$ & \lean{OtherSpaces.adjoin_le_localOps}, \lean{OtherSpaces.exists_same_moments} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -109,6 +112,34 @@ onto the bump at $0$. So $\braket{\psi_\theta|T|\psi_\theta} = c + e^{i\theta}\|
 determines $e^{i\theta}$ (\lean{matrixElement_translate_psi_inj}), and $T$ is not local
 (\lean{not_isLocal_translate}).
 
+\paragraph{Other state spaces.} The brief's sentence ``Consequently any space that contains
+functions with compact support will suffer the same consequences'' is formalized in
+\lean{OtherSpaces.lean}, in namespace \lean{SchwartzMomentProblem.OtherSpaces}. A state space is
+any complex vector space $V$ with a linear map $\mathrm{ev}\colon V \to (D \to \mathbb{C})$ into
+the functions on a topological space $D$; $\mathrm{ev}$ need not be injective. An operator on $V$
+is local if it does not enlarge the closed supports of the functions, and the local operators
+form a subalgebra (\lean{OtherSpaces.localOps}). If $f, g \in V$ have disjoint supports, then for
+every local $A$ the integrand $\overline{\psi_\theta(x)}\,(A\psi_\theta)(x)$ equals
+$\overline{f(x)}\,(Af)(x) + \overline{g(x)}\,(Ag)(x)$ at every point
+(\lean{OtherSpaces.integrand_psi}). So $\braket{\psi_\theta|A|\psi_\theta}$ does not depend on
+$\theta$, for every measure on $D$ and with no integrability hypothesis
+(\lean{OtherSpaces.matrixElement_psi_eq}), while $\psi_\theta$ and $\psi_{\theta'}$ are linearly
+independent when $f$, $g$ are nonzero and $e^{i\theta} \ne e^{i\theta'}$
+(\lean{OtherSpaces.linearIndependent_psi}).
+
+The hypothesis the argument needs is two nonzero functions with disjoint supports. On a nontrivial
+normed space, a space closed under translations that contains one nonzero function with compact
+support has two such functions, a far enough translate of the first
+(\lean{OtherSpaces.exists_disjoint_translate}, \lean{OtherSpaces.exists_same_matrixElements_of_translate}).
+The instance is $\mathcal{S}(E, \mathbb{C})$ for any nontrivial finite-dimensional real inner
+product space $E$, such as $\mathbb{R}^n$ with $n \ge 1$. Its operators are the positions
+$X_\ell$, multiplication by a linear functional $\ell$ (\lean{OtherSpaces.X}), and the momenta
+$P_v = -i\hbar\,\partial_v$ (\lean{OtherSpaces.P}). Every polynomial in them is local
+(\lean{OtherSpaces.adjoin_le_localOps}), and two linearly independent Schwartz functions give
+the same expectation value for all of them (\lean{OtherSpaces.exists_same_moments}). For
+$n = 0$ the space is $\mathbb{C}$, has a single ray, and the theorem fails, hence the
+nontriviality hypothesis.
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item The moment is defined as an integral for every Schwartz function. \lean{moment_psi} proves
@@ -123,6 +154,10 @@ determines $e^{i\theta}$ (\lean{matrixElement_translate_psi_inj}), and $T$ is no
 
 \paragraph{Problems found in the brief.} No mathematical problems. The argument needs $f$ and
 $g$ to be nonzero, which the brief leaves implicit, and ``different state for each $\theta$''
-holds only modulo $2\pi$.
+holds only modulo $2\pi$. ``Any space that contains functions with compact support'' is not
+quite the right hypothesis. The span of a single bump contains a function with compact support,
+but it has only one ray, so its states are determined. What is needed is two nonzero functions
+with disjoint supports, compact or not, for instance a compactly supported function and its
+translate in a space closed under translations (log, ``Other state spaces'').
 
 \end{document}
