@@ -379,9 +379,11 @@ group~\cite[Sec.~II]{antoine2}, and his Proposition~4, on observables that trans
 finite-dimensional representation, is related to part~(3). The negative half is not in his paper:
 part~(5), and the companion note's result that no space works for all smooth frames. Which frame
 group a quantum vector space should carry is a choice made with the space. For
-$\mathcal S(\mathbb R)$ the changes of variable that preserve it are those of Galbis and
-Jordá~\cite[Thm.~2.3]{galbis}, with the half-density factor added for unitarity; a sufficient
-condition in $n$ dimensions, with the factor, is Theorem~\ref{thm:nonlinearframes}. In the group
+$\mathcal S(\mathbb R)$ the changes of variable $f \mapsto f \circ \varphi$ that map it into itself
+are characterized by Galbis and Jordá~\cite[Thm.~2.3]{galbis} (Theorem~\ref{thm:galbis}). The unitary changes of variable
+$|\det De|^{1/2}\,(f \circ e)$ that map $\mathcal S(\mathbb R^n)$ onto itself are those with $e$ and
+$e^{-1}$ of temperate growth (Theorems~\ref{thm:nonlinearframes}
+and~\ref{thm:nonlinearconverse}). In the group
 form of Sec.~\ref{sec:irreducible}, $F$ is the group $G$ itself.
 
 \subsection{Linear changes of frame}
@@ -438,8 +440,9 @@ the five kinds of maps generate, it satisfies [B]WDQ by part~(1).
 A change of coordinates $y = e(x)$ of $\mathbb R^n$, $e$ a diffeomorphism, acts on wave functions
 by the unitary $U_e f = |\det De|^{1/2}\,(f \circ e)$ of $L^2(\mathbb R^n)$.
 Theorem~\ref{thm:framegroup}(5) shows that $U_e$ need not map $\mathcal S(\mathbb R^n)$ into
-itself. The following condition is sufficient. A function on $\mathbb R^n$ has \emph{temperate
-growth} if it is smooth and each of its derivatives is bounded by a polynomial.
+itself. The following condition is sufficient, and by Theorem~\ref{thm:nonlinearconverse} it is
+also necessary. A function on $\mathbb R^n$ has \emph{temperate growth} if it is smooth and each of
+its derivatives is bounded by a polynomial.
 
 \begin{theorem}\label{thm:nonlinearframes}
   Let $e$ be a bijection of $\mathbb R^n$ such that $e$ and $e^{-1}$ have temperate growth.
@@ -474,8 +477,49 @@ growth} if it is smooth and each of its derivatives is bounded by a polynomial.
   Theorem~\ref{thm:linearframes}(2), and Theorem~\ref{thm:linearframes}(1) applies.
 \end{proof}
 
+The converse rests on a classical fact: the smooth functions $g$ with $g f \in \mathcal S$ for
+every $f \in \mathcal S$ are exactly the functions of temperate growth, L.~Schwartz's space
+$\mathcal O_M$. One direction is used in part~(2) above; the other is part~(1) below.
+
+\begin{theorem}\label{thm:nonlinearconverse}
+  \begin{enumerate}
+    \item Let $g$ be a smooth real function on $\mathbb R^n$ with $g f \in \mathcal S(\mathbb R^n)$
+      for every $f \in \mathcal S(\mathbb R^n)$. Then $g$ has temperate growth.
+    \item Let $e$ be a bijection of $\mathbb R^n$ such that $e$ and $e^{-1}$ are smooth. If $U_e$
+      and $U_{e^{-1}}$ map $\mathcal S(\mathbb R^n)$ into itself, then $e$ and $e^{-1}$ have
+      temperate growth.
+    \item For such $e$, if an inner-product-preserving automorphism of $\mathcal S(\mathbb R^n)$
+      acts as $U_e$, then $e$ and $e^{-1}$ have temperate growth, and the automorphism lies in the
+      group of Theorem~\ref{thm:nonlinearframes}(3).
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  (1) Suppose the $k$-th derivative of $g$ is not bounded by a polynomial. Then there are points
+  $x_j$ with $|D^k g(x_j)| > j(1 + |x_j|)^j$. They run to infinity, because $D^k g$ is bounded on
+  every compact set. Pass to a subsequence with $|x_{j+1}| \ge |x_j| + 1$; it keeps the bound,
+  since its $j$-th term is some $x_m$ with $m \ge j$. Let $\rho$ be a smooth function equal to $1$
+  on the ball of radius $1/8$ and vanishing outside the ball of radius $1/4$, and put
+  \[
+    f(x) = \sum_j (1 + |x_j|)^{-j} \rho(x - x_j).
+  \]
+  The points $x_j$ are at distance at least $1$ from each other, so near every point at most one
+  term is non-zero. Hence $f$ is smooth, and $f \in \mathcal S(\mathbb R^n)$, since
+  $|x|^m |D^l f(x)| \le (1 + |x_j|)^{m-j} \sup|D^l\rho|$ near $x_j$. Near $x_j$,
+  $g f = (1 + |x_j|)^{-j} g$, so $|D^k(gf)(x_j)| > j$, and $gf$ is not a Schwartz function.
+  (2) By the identity in the proof of Theorem~\ref{thm:nonlinearframes}(2), which needs only the
+  chain rule, $U_{e^{-1}}(\ell\, U_e f) = (\ell \circ e^{-1}) f$ for every linear functional $\ell$.
+  Multiplication by $\ell$ maps $\mathcal S$ into itself, so by~(1) every coordinate of $e^{-1}$
+  has temperate growth. Exchanging $e$ and $e^{-1}$ gives the same for $e$.
+  (3) If $U$ acts as $U_e$, then its inverse acts as $U_{e^{-1}}$, by the same identity. So $U_e$
+  and $U_{e^{-1}}$ map $\mathcal S(\mathbb R^n)$ into itself, (2) applies, and $U$ is one of the
+  generators of the group of Theorem~\ref{thm:nonlinearframes}(3).
+\end{proof}
+
 These are the point transformations of classical mechanics, $q \mapsto e(q)$ with the momenta
-transformed by the transposed inverse Jacobian, together with the gauge transformations. In the
+transformed by the transposed inverse Jacobian, together with the gauge transformations. By
+Theorem~\ref{thm:nonlinearconverse}(3) they include every point transformation in the largest
+frame group of Example~3 with [B]WDQ. In the
 frame $U_e$ the position is the multiplication by $e^{-1}$; it lies in the algebra of the $X^i$
 and $P_i$ only if $e^{-1}$ is a polynomial map, so Theorem~\ref{thm:framegroup}(3) does not
 apply and part~(1) of that theorem is needed. For $n \ge 2$ the shears
@@ -484,11 +528,80 @@ the condition with inverse $x \mapsto x - \varphi(x)\,v$; an example is
 $(x_1, x_2) \mapsto (x_1, x_2 + x_1^2)$. For $n = 1$ an example is $e(x) = x + x^3$: the inverse
 satisfies $|e^{-1}(y)| \le |y|$, and its derivatives are rational functions of $e^{-1}(y)$
 with denominators powers of $1 + 3e^{-1}(y)^2$, so they are bounded; this example is not
-formalized. Whether the condition is also necessary is not decided here; for $n = 1$ and without
-the factor $|e'|^{1/2}$, Galbis and Jordá characterize the composition operators that map
-$\mathcal S(\mathbb R)$ into itself~\cite[Thm.~2.3]{galbis}. The
-change of frame $y = \tan(\frac\pi2\operatorname{erf}x)$ grows like $e^{x^2}$, so it or its
+formalized. For $n = 1$ and without the factor $|e'|^{1/2}$, Galbis and Jordá characterize the
+composition operators that map $\mathcal S(\mathbb R)$ into itself, invertible or
+not~\cite[Thm.~2.3]{galbis} (Sec.~\ref{sec:galbis}); the proof of
+Theorem~\ref{thm:nonlinearconverse}(1) uses their gluing of bump functions. The change of frame $y = \tan(\frac\pi2\operatorname{erf}x)$ grows like $e^{x^2}$, so it or its
 inverse lacks temperate growth, as Theorem~\ref{thm:framegroup}(5) requires.
+
+\subsection{Plain changes of variable}
+\label{sec:galbis}
+
+Without the factor $|\det De|^{1/2}$, the map $f \mapsto f \circ \varphi$ need not be invertible,
+and more maps $\varphi$ keep Schwartz functions Schwartz. Galbis and Jordá characterize them for
+$\varphi : \mathbb R \to \mathbb R$, and state the same in several
+variables~\cite[Thm.~2.3, Remark~2.4]{galbis}. The theorem is checked in the following form.
+
+\begin{theorem}\label{thm:galbis}
+  Let $D$ be a real normed space, $E$ a finite-dimensional real normed space, $F \ne 0$ a real
+  normed space, and $\varphi : D \to E$ smooth.
+  \begin{enumerate}
+    \item $f \circ \varphi \in \mathcal S(D, F)$ for every $f \in \mathcal S(E, F)$ if and only if
+      \begin{enumerate}
+        \item[(i)] for every $n$ there are $C, l$ with
+          $\|D^n\varphi(x)\| \le C(1 + \|\varphi(x)\|)^l$, and
+        \item[(ii)] there are $C, k$ with $\|x\| \le C(1 + \|\varphi(x)\|)^k$.
+      \end{enumerate}
+      Then $f \mapsto f \circ \varphi$ is continuous.
+    \item If $D$ is finite-dimensional and $\varphi$ is a bijection with smooth inverse, then
+      $f \mapsto f \circ \varphi$ maps $\mathcal S(E, F)$ onto $\mathcal S(D, F)$ if and only if
+      $\varphi$ and $\varphi^{-1}$ have temperate growth.
+  \end{enumerate}
+\end{theorem}
+
+Condition~(i) is weaker than temperate growth: $\varphi(x) = e^{x^2}$ satisfies it (not
+formalized). The paper states (i) with $(1 + |\varphi|^2)^p$, which is equivalent since
+$\frac12(1 + t)^2 \le 1 + t^2 \le (1 + t)^2$, and (ii) as $|\varphi(x)| \ge |x|^{1/k}$ for
+$|x| \ge k$. That implies our (ii) with the same $k$ and $C = k$; conversely our (ii) gives
+$\|\varphi(x)\| \ge (\|x\|/C)^{1/k} - 1 \ge \|x\|^{1/m}$ for $\|x\| \ge m$ and $m$ large. This
+equivalence is not formalized. Part~(2) explains why the paper's generality does not matter for
+frames: a change of frame is invertible, and then the conditions for $\varphi$ and
+$\varphi^{-1}$ together amount to temperate growth.
+
+\begin{proof}
+  (1) Sufficiency is the proof of Mathlib's \lean{SchwartzMap.compCLM} with
+  $1 + \|\varphi(x)\|$ in place of $1 + \|x\|$. By (ii),
+  $(1 + \|x\|)^k \le C'(1 + \|\varphi(x)\|)^{k_\varphi k}$. By Faà di Bruno's bound,
+  $\|D^n(f \circ \varphi)(x)\|$ is at most $n!$ times $\max_{i \le n}\|D^i f(\varphi(x))\|$ times
+  $((C + 1)(1 + \|\varphi(x)\|)^l)^n$, and $\|D^i f(y)\| \le C''(1 + \|y\|)^{-k_\varphi k - ln}$.
+  The powers of $1 + \|\varphi(x)\|$ cancel, and the bound is a seminorm of $f$.
+
+  For necessity, suppose a bound fails along a sequence $x_j$, by a factor
+  $j(1 + \|\varphi(x_j)\|)^j$, and put $y_j = \varphi(x_j)$. Either a subsequence of the $y_j$
+  stays in a ball of radius $R$, or the $y_j$ run to infinity. In the first case one smooth
+  compactly supported $f$ that equals a given smooth $\psi$ on the ball of radius $R + 1$ serves
+  for all $j$, with $c_j = 1$. In the second case pass to a subsequence with
+  $\|y_{j+1}\| \ge \|y_j\| + 1$ and glue $c_j\,\rho(\cdot - y_j)$, with
+  $c_j = (1 + \|y_j\|)^{-j}$ and $\rho$ equal to $\psi$ near $0$, as in the proof of
+  Theorem~\ref{thm:nonlinearconverse}(1). Either way $f = c_j\,\psi(\cdot - z_j)$ near $y_j$, and
+  $f \circ \varphi$ is a Schwartz function by assumption. For (ii) take $\psi = a \ne 0$
+  constant: then $(f \circ \varphi)(x_j) = c_j a$ while $c_j \|x_j\| > j$, against the decay of
+  $f \circ \varphi$. For (i) at order $n \ge 1$ take a basis $b_i$ of $E$ with dual basis
+  $b_i^*$, $\|a\| = 1$, and $\psi = L_i$ with $L_i(v) = b_i^*(v)\,a$. Near $x_j$,
+  $f_i \circ \varphi = c_j L_i(\varphi - z_j)$, so
+  $D^n(f_i \circ \varphi)(x_j) = c_j\,L_i \circ D^n\varphi(x_j)$; these are bounded, and
+  $\|M\| \le \sum_i \|b_i\|\,\|L_i \circ M\|$ for every multilinear map $M$. So
+  $c_j\|D^n\varphi(x_j)\|$ is bounded, while it exceeds $j$.
+  (2) Condition~(ii) for $\varphi^{-1}$ says $\|\varphi(x)\| \le C(1 + \|x\|)^k$, which turns (i)
+  for $\varphi$ into temperate growth; the same holds with $\varphi$ and $\varphi^{-1}$
+  exchanged. Conversely, use Mathlib's \lean{SchwartzMap.compCLM}.
+\end{proof}
+
+The paper uses bumps with prescribed derivatives at $0$ and Faà di Bruno's formula for
+necessity; the bumps above are linear near their centres, so the $n$-th derivative is read off
+directly. The paper also takes a subsequence with $|x_j| + 1 < |x_{j+1}|$, which uses that
+$\varphi^{(n)}$ is bounded on compact sets. The case distinction above avoids this, so the
+domain $D$ may be any real normed space.
 
 \subsection{Lean}
 
@@ -534,6 +647,30 @@ any inner product space:
     Theorem~\ref{thm:nonlinearframes}(1).
   \item \lean{compDiffeoCLE}, \lean{compDiffeoCLE_symm}, \lean{integral_abs_jacobianDet_smul_comp},
     \lean{integral_inner_compDiffeoCLE}: Theorem~\ref{thm:nonlinearframes}(2).
+  \item \lean{hasTemperateGrowth_symm_of_forall_exists}, \lean{forall_exists_compDiffeo_iff}:
+    Theorem~\ref{thm:nonlinearconverse}(2), for values in any real normed space $\ne 0$;
+    \lean{eq_jacobianWeight_symm_smul} is the identity used in part~(3).
+\end{itemize}
+Modules:\\ \lean{ForMathlib.Analysis.Distribution.SchwartzSpace.GlueBumps},\\
+\lean{ForMathlib.Analysis.Distribution.SchwartzSpace.Multiplier}, namespace
+\lean{SchwartzMap}. For any real normed space as domain (finite-dimensional for the multipliers)
+and values in any real normed space:
+\begin{itemize}
+  \item \lean{exists_eqOn_ball_smul}: the glued function $f$ in the proof of
+    Theorem~\ref{thm:nonlinearconverse}(1), for any bump $\rho$ vanishing outside a ball of
+    radius $< 1/2$ and any rapidly decreasing coefficients;
+    \lean{exists_strictMono_pairwise_one_le}: the subsequence.
+  \item \lean{hasTemperateGrowth_of_forall_smul_mem}: Theorem~\ref{thm:nonlinearconverse}(1).
+\end{itemize}
+Module:\\ \lean{ForMathlib.Analysis.Distribution.SchwartzSpace.CompSymbol}, namespace
+\lean{SchwartzMap}.
+\begin{itemize}
+  \item \lean{compSymbolCLM}: sufficiency in Theorem~\ref{thm:galbis}(1), with continuity.
+  \item \lean{exists_strictMono_testFunctions}: the test functions in the proof of necessity;
+    \lean{exists_norm_le_of_forall_exists_comp}: necessity of (ii);
+    \lean{exists_norm_iteratedFDeriv_le_of_forall_exists_comp}: necessity of (i).
+  \item \lean{forall_exists_comp_iff}: Theorem~\ref{thm:galbis}(1);
+    \lean{forall_exists_comp_equiv_iff}: Theorem~\ref{thm:galbis}(2).
 \end{itemize}
 Module:\\ \lean{QuantumVectorSpaces.FurtherResults.NonlinearFrames}, namespace
 \lean{QuantumVectorSpaces.FurtherResults}.
@@ -543,6 +680,8 @@ Module:\\ \lean{QuantumVectorSpaces.FurtherResults.NonlinearFrames}, namespace
   \item \lean{pointFrames}, \lean{pointFrames_le_schwartzAut},
     \lean{isFrameCompatible_pointFrames}, \lean{isFrameCompatible_linearFrames_sup_pointFrames}:
     Theorem~\ref{thm:nonlinearframes}(3).
+  \item \lean{exists_mem_schwartzAut_iff}, \lean{mem_pointFrames_of_mem_schwartzAut}:
+    Theorem~\ref{thm:nonlinearconverse}(3).
   \item \lean{shear}, \lean{shear_mem_pointFrames}: the shears.
 \end{itemize}
 

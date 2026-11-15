@@ -115,8 +115,10 @@ precise first.
   which group of changes of frame should be part of the data of a quantum vector space, and how
   it relates to the Lie algebra of the defining observables. For plain changes of variable
   $f \mapsto f \circ g$ on $\mathcal{S}(\mathbb{R})$, those that map $\mathcal{S}(\mathbb{R})$ into
-  itself are characterized by Galbis and Jord\'a (Rev.\ Mat.\ Iberoam.\ 34 (2018), Thm.~2.3); the
-  unitary changes of frame carry the extra factor $\sqrt{g'}$.
+  itself are characterized by Galbis and Jord\'a (Rev.\ Mat.\ Iberoam.\ 34 (2018), Thm.~2.3),
+  checked in several variables (\lean{SchwartzMap.forall_exists_comp_iff};
+  \lean{further-results.tex}, Sec.~3.3); the unitary changes of frame carry the extra factor
+  $\sqrt{g'}$.
   \emph{Partial answer} (\lean{further-results.tex}, Sec.~3). With a group $F$ of changes of
   frame acting on $V$ by linear bijections that preserve the inner product, the premise holds for
   every pair of frames in $F$ if and only if every element of $F$ acts continuously on $V$
@@ -134,27 +136,17 @@ precise first.
   $f \mapsto |\det De|^{1/2}\,(f \circ e)$ for bijections $e$ of $\mathbb{R}^n$ such that $e$ and
   $e^{-1}$ have temperate growth, and the phases $e^{i\varphi}$ for real $\varphi$ of temperate
   growth (\lean{FurtherResults.isFrameCompatible_linearFrames_sup_pointFrames};
-  \lean{further-results.tex}, Sec.~3.2). The choice of $F$ remains open.
+  \lean{further-results.tex}, Sec.~3.2). For a diffeomorphism $e$ the condition is also
+  necessary, so these are all the point transformations in the largest $F$
+  (\lean{FurtherResults.mem_pointFrames_of_mem_schwartzAut}). The choice of $F$ remains open.
   (Brief, Theorem~5, proof; Log, ``Problems found in the brief'', last item.)
 \end{enumerate}
 
 \section*{From the formalization}
-Definition~1 and Examples~3 (in $n$ dimensions) and~4 are checked in full. The gaps below
-concern problem~6 and the coordinate independence of Example~3; none of them blocks
-verification of a claim of the brief.
+Definition~1 and Examples~3 (in $n$ dimensions) and~4 are checked in full. The gap below
+concerns the coordinate independence of Example~3; it does not block verification of a claim of
+the brief.
 \begin{enumerate}
-\item \textbf{The Galbis--Jord\'a characterization.} \emph{Formalization gap.} By
-  Galbis and Jord\'a (Rev.\ Mat.\ Iberoam.\ 34 (2018), Thm.~2.3 and Remark~2.4), $f \circ
-  \varphi \in \mathcal{S}(\mathbb{R})$ for every $f \in \mathcal{S}(\mathbb{R})$ if and only if
-  (i) for every $j$ there are $C, p$ with $|\varphi^{(j)}(x)| \le C(1 + |\varphi(x)|^2)^p$, and
-  (ii) there is $k$ with $|\varphi(x)| \ge |x|^{1/k}$ for $|x| \ge k$; the same holds in
-  several variables. Condition~(i) is weaker than temperate growth: $\varphi(x) = e^{x^2}$
-  qualifies. Sufficiency follows from the Faà di Bruno bounds in Mathlib
-  (\lean{norm_iteratedFDeriv_comp_le}); necessity glues infinitely many bump functions along a
-  sequence into one Schwartz function. The version for the unitaries $U_\varphi$, with the
-  factor $\sqrt{|\varphi'|}$, is not in the paper; a sufficient condition for them, temperate
-  growth of $\varphi$ and $\varphi^{-1}$ in $n$ variables, is checked
-  (\lean{further-results.tex}, Sec.~3.2).
 \item \textbf{$\mathcal{S}(\mathbb{R}^n)$ as the smooth vectors of the Schr\"odinger
   representation.} \emph{Formalization gap.} The Schwartz space is the space of smooth vectors
   of the Schr\"odinger representation of the Heisenberg group $H_n$ (G.~B.~Folland,

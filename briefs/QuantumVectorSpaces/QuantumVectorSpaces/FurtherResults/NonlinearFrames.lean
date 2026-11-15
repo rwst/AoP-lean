@@ -18,9 +18,11 @@ A change of coordinates `y = e(x)` of `ℝⁿ` acts on wave functions by the uni
 `U_e f = |det De|^{1/2} (f ∘ e)` of `L²(ℝⁿ)`. If `e` and `e⁻¹` both have temperate growth, `U_e` is
 an automorphism of `𝓢(ℝⁿ)` that preserves the inner product (`SchwartzMap.compDiffeoCLE`). So the
 point transformations, the `U_e` together with the gauge phases `e^{iφ}` for real `φ` of temperate
-growth, form a frame group with [B]WDQ for Example 3. Whether the condition is also necessary is
-not decided here. The change of frame `y = tan(π/2 · erf x)` of problem 6 fails it: `e` grows like `e^{x²}` and `e⁻¹`
-only like `√(log |y|)`, and that change of frame does not preserve `𝓢(ℝ)`
+growth, form a frame group with [B]WDQ for Example 3. The condition is also necessary: for a
+diffeomorphism `e`, some element of the largest frame group with [B]WDQ acts as `U_e` only if `e`
+and `e⁻¹` have temperate growth (`exists_mem_schwartzAut_iff`). The change of frame
+`y = tan(π/2 · erf x)` of problem 6 fails the condition: `e` grows like `e^{x²}` and `e⁻¹` only like
+`√(log |y|)`, and that change of frame does not preserve `𝓢(ℝ)`
 (`not_forall_frameUnitary_mem_range`).
 
 ## Main definitions
@@ -35,10 +37,14 @@ only like `√(log |y|)`, and that change of frame does not preserve `𝓢(ℝ)`
 * `pointFrames_le_schwartzAut`, `isFrameCompatible_pointFrames`: the point transformations satisfy
   [B]WDQ;
 * `isFrameCompatible_linearFrames_sup_pointFrames`: so do the point transformations and the linear
-  changes of frame together.
+  changes of frame together;
+* `exists_mem_schwartzAut_iff`, `mem_pointFrames_of_mem_schwartzAut`: conversely, an element of
+  the largest frame group with [B]WDQ that acts as `U_e` for a diffeomorphism `e` lies in
+  `pointFrames n`.
 -/
 
 open SchwartzMap MeasureTheory Complex ComplexConjugate
+open scoped ContDiff
 
 @[expose] public noncomputable section
 
@@ -100,6 +106,34 @@ theorem isFrameCompatible_linearFrames_sup_pointFrames {ħ : ℝ} (hħ : ħ ≠ 
         (sup_le linearFrames_le_schwartzAut pointFrames_le_schwartzAut he).1) :=
   (isFrameCompatible_schwartzN hħ _ _).2 (sup_le linearFrames_le_schwartzAut
     pointFrames_le_schwartzAut)
+
+/-! ### The converse -/
+
+/-- **Which nonlinear changes of frame satisfy [B]WDQ.** For a diffeomorphism `e` of `ℝⁿ`, some
+inner-product-preserving automorphism of `𝓢(ℝⁿ)` acts as `U_e` if and only if `e` and `e⁻¹` have
+temperate growth. -/
+theorem exists_mem_schwartzAut_iff (e : Eₙ ≃ Eₙ) (he : ContDiff ℝ ∞ e)
+    (he' : ContDiff ℝ ∞ e.symm) :
+    (∃ U ∈ schwartzAut n, ∀ f x, U f x = jacobianWeight e x * f (e x)) ↔
+      (e : Eₙ → Eₙ).HasTemperateGrowth ∧ (e.symm : Eₙ → Eₙ).HasTemperateGrowth := by
+  refine ⟨fun ⟨U, _, hU⟩ => (forall_exists_compDiffeo_iff (F := ℂ) he he').1
+    ⟨fun f => ⟨U f, fun x => by rw [hU, Complex.real_smul]⟩, fun f => ⟨U.symm f, fun y => ?_⟩⟩,
+    fun ⟨hte, hte'⟩ => ⟨_, diffeoFrame_mem e hte hte', diffeoFrame_apply e hte hte'⟩⟩
+  refine eq_jacobianWeight_symm_smul (he.differentiable (by simp))
+    (he'.differentiable (by simp)) (fun x => ?_) y
+  rw [Complex.real_smul, ← hU, U.apply_symm_apply]
+
+/-- **The point transformations in the largest frame group with [B]WDQ.** An
+inner-product-preserving automorphism of `𝓢(ℝⁿ)` that acts as `U_e` for a diffeomorphism `e` lies
+in `pointFrames n`. -/
+theorem mem_pointFrames_of_mem_schwartzAut {U : 𝓢ₙ ≃ₗ[ℂ] 𝓢ₙ} (hU : U ∈ schwartzAut n)
+    (e : Eₙ ≃ Eₙ) (he : ContDiff ℝ ∞ e) (he' : ContDiff ℝ ∞ e.symm)
+    (hUe : ∀ f x, U f x = jacobianWeight e x * f (e x)) : U ∈ pointFrames n := by
+  obtain ⟨hte, hte'⟩ := (exists_mem_schwartzAut_iff e he he').1 ⟨U, hU, hUe⟩
+  have : U = (diffeoFrame e hte hte').toLinearEquiv :=
+    LinearEquiv.ext fun f => SchwartzMap.ext fun x => by
+      rw [hUe]; exact (diffeoFrame_apply e hte hte' f x).symm
+  exact this ▸ Subgroup.subset_closure (Or.inl ⟨e, hte, hte', rfl⟩)
 
 /-! ### A nonlinear example -/
 
