@@ -15,3 +15,10 @@ SchwartzNorms.isBounded_l2_l1  # Step 2 between the seminorm families
 SchwartzNorms.isBounded_l1_sup  # Step 3 between the seminorm families
 SchwartzNorms.withSeminorms_l1_l2  # Theorem 5, Step 4: same topology
 SchwartzNorms.enorm_moment_le  # Remark, eq. (10)
+SchwartzNorms.eLpNorm_weighted_le  # Remark "General Lᵖ": sup controls Lᵖ
+SchwartzNorms.eLpNorm_weighted_one_le  # Remark "General Lᵖ": Lᵖ controls L¹ (Hölder)
+SchwartzNorms.eLpNorm_top_weighted  # Remark "General Lᵖ": for p = ∞ the ess sup is the sup
+SchwartzNorms.lpFamily_top  # Remark "General Lᵖ": p = ∞ gives the sup seminorms (1)
+SchwartzNorms.isBounded_sup_lp  # Remark "General Lᵖ": sup controls Lᵖ between the families
+SchwartzNorms.isBounded_lp_l1  # Remark "General Lᵖ": Lᵖ controls L¹ between the families
+SchwartzNorms.withSeminorms_lp  # Remark "General Lᵖ": every 1 ≤ p ≤ ∞ gives the same topology

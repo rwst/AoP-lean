@@ -180,6 +180,7 @@ srcDir = "briefs/HilbertUnphysicality/comparator"
 [[lean_lib]]
 name = "SchwartzNorms"
 srcDir = "briefs/SchwartzNorms"
+globs = ["SchwartzNorms.*"]
 
 # Its comparator lane (not default targets; see COMPARATOR.md).
 [[lean_lib]]

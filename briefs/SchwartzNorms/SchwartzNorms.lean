@@ -30,6 +30,9 @@ Theorem 5:
 Remark (sesquilinear forms):
 * `enorm_moment_le`  eq. (10), `|⟨f|X^α P^β|f⟩| ≤ |ħ|^β ‖f‖^{L²}_{0,0} ‖f‖^{L²}_{α,β}`, with the
   moments of `SchwartzMomentProblem`. The brief omits the factor `|ħ|^β`.
+
+Remark "General `Lᵖ`": in `SchwartzNorms/GeneralLp.lean`, every family of `Lᵖ` seminorms,
+`1 ≤ p ≤ ∞`, generates the topology of `𝓢(ℝ, ℂ)`.
 -/
 public import ForMathlib.Analysis.LocallyConvex.WithSeminorms
 public import ForMathlib.Analysis.SpecialFunctions.ImproperIntegrals

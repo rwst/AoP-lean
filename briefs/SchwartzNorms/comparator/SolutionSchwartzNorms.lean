@@ -6,6 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import SchwartzNorms
+public import SchwartzNorms.GeneralLp
 
 /-!
 # Equivalence of the Schwartz seminorms, re-exported for `lake comparator`

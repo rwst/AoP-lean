@@ -13,7 +13,14 @@
     "SchwartzNorms.isBounded_l2_l1",
     "SchwartzNorms.isBounded_l1_sup",
     "SchwartzNorms.withSeminorms_l1_l2",
-    "SchwartzNorms.enorm_moment_le"
+    "SchwartzNorms.enorm_moment_le",
+    "SchwartzNorms.eLpNorm_weighted_le",
+    "SchwartzNorms.eLpNorm_weighted_one_le",
+    "SchwartzNorms.eLpNorm_top_weighted",
+    "SchwartzNorms.lpFamily_top",
+    "SchwartzNorms.isBounded_sup_lp",
+    "SchwartzNorms.isBounded_lp_l1",
+    "SchwartzNorms.withSeminorms_lp"
   ],
   "permitted_axioms": [
     "propext",

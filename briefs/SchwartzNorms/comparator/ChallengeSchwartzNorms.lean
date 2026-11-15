@@ -8,7 +8,7 @@ module
 public import Mathlib.Analysis.LocallyConvex.WithSeminorms
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
-public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 
 /-!
 # SchwartzNorms: the statements of record
@@ -263,6 +263,72 @@ theorem withSeminorms_l1_l2 : WithSeminorms l1Family ∧ WithSeminorms l2Family 
   sorry
 theorem enorm_moment_le (ħ : ℝ) (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
     ‖SchwartzMomentProblem.moment ħ F α β‖ₑ ≤ ‖ħ‖ₑ ^ β * (l2Norm 0 0 F * l2Norm α β F) := by
+  sorry
+end SchwartzNorms
+end
+end
+-- SchwartzNorms.GeneralLp
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Real MeasureTheory SchwartzMap
+open scoped ENNReal NNReal
+@[expose] public noncomputable section
+namespace SchwartzNorms
+lemma one_add_pow_le {t : ℝ} (ht : 0 ≤ t) (k : ℕ) : (1 + t) ^ k ≤ 2 ^ k * (1 + t ^ k) := by
+  rcases le_total t 1 with h | h
+  · calc (1 + t) ^ k ≤ 2 ^ k := pow_le_pow_left₀ (by linarith) (by linarith) k
+      _ ≤ 2 ^ k * (1 + t ^ k) :=
+        le_mul_of_one_le_right (by positivity) (by linarith [pow_nonneg ht k])
+  · calc (1 + t) ^ k ≤ (2 * t) ^ k := pow_le_pow_left₀ (by linarith) (by linarith) k
+      _ = 2 ^ k * t ^ k := mul_pow _ _ _
+      _ ≤ 2 ^ k * (1 + t ^ k) := by gcongr; linarith
+lemma norm_weighted (α β : ℕ) (f : ℝ → ℂ) (x : ℝ) :
+    ‖weighted α β f x‖ = |x| ^ α * ‖iteratedDeriv β f x‖ := by
+  simp [weighted, norm_pow]
+lemma one_add_pow_mul_norm_weighted_le (k α β : ℕ) (f : ℝ → ℂ) (x : ℝ) :
+    (1 + ‖x‖) ^ k * ‖weighted α β f x‖ ≤
+      2 ^ k * (‖weighted α β f x‖ + ‖weighted (α + k) β f x‖) := by
+  have h : ‖weighted (α + k) β f x‖ = |x| ^ k * ‖weighted α β f x‖ := by
+    rw [norm_weighted, norm_weighted, pow_add]; ring
+  rw [h, Real.norm_eq_abs]
+  calc (1 + |x|) ^ k * ‖weighted α β f x‖ ≤ 2 ^ k * (1 + |x| ^ k) * ‖weighted α β f x‖ := by
+        gcongr; exact one_add_pow_le (abs_nonneg x) k
+    _ = _ := by ring
+def weight (k : ℕ) (x : ℝ) : ℝ := (1 + ‖x‖) ^ (-k : ℝ)
+lemma weight_pos (k : ℕ) (x : ℝ) : 0 < weight k x := by unfold weight; positivity
+lemma weight_mul (k : ℕ) (x : ℝ) : weight k x * (1 + ‖x‖) ^ k = 1 := by
+  rw [weight, Real.rpow_neg (by positivity), Real.rpow_natCast, inv_mul_cancel₀ (by positivity)]
+lemma exists_eLpNorm_weight_lt_top (p : ℝ≥0∞) : ∃ k : ℕ, eLpNorm (weight k) p volume < ⊤ :=
+  (inferInstance : (volume : Measure ℝ).HasTemperateGrowth).exists_eLpNorm_lt_top p
+theorem eLpNorm_weighted_le (p : ℝ≥0∞) (k α β : ℕ) (F : 𝓢(ℝ, ℂ)) :
+    eLpNorm (weighted α β F) p volume ≤
+      ENNReal.ofReal (2 ^ k * (SchwartzMap.seminorm ℂ α β F +
+        SchwartzMap.seminorm ℂ (α + k) β F)) * eLpNorm (weight k) p volume := by
+  sorry
+theorem eLpNorm_weighted_lt_top (p : ℝ≥0∞) (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
+    eLpNorm (weighted α β F) p volume < ⊤ := by
+  obtain ⟨k, hk⟩ := exists_eLpNorm_weight_lt_top p
+  exact (eLpNorm_weighted_le p k α β F).trans_lt (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hk)
+def lpFamily (p : ℝ≥0∞) [Fact (1 ≤ p)] : SeminormFamily ℂ 𝓢(ℝ, ℂ) (ℕ × ℕ) := fun i =>
+  lpSeminorm p i.1 i.2 fun F => (eLpNorm_weighted_lt_top p F i.1 i.2).ne
+lemma eLpNorm_top_weighted (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
+    eLpNorm (weighted α β F) ⊤ volume = supNorm α β F := by
+  sorry
+lemma lpFamily_top : lpFamily ⊤ = schwartzSeminormFamily ℂ ℝ ℂ := by
+  sorry
+theorem isBounded_sup_lp (p : ℝ≥0∞) [Fact (1 ≤ p)] :
+    Seminorm.IsBounded (schwartzSeminormFamily ℂ ℝ ℂ) (lpFamily p) LinearMap.id := by
+  sorry
+theorem eLpNorm_weighted_one_le {p q : ℝ≥0∞} [Fact (1 ≤ p)] [ENNReal.HolderConjugate q p]
+    (k α β : ℕ) (F : 𝓢(ℝ, ℂ)) :
+    eLpNorm (weighted α β F) 1 volume ≤ eLpNorm (weight k) q volume *
+      (2 ^ k * (eLpNorm (weighted α β F) p volume +
+        eLpNorm (weighted (α + k) β F) p volume)) := by
+  sorry
+theorem isBounded_lp_l1 (p : ℝ≥0∞) [Fact (1 ≤ p)] :
+    Seminorm.IsBounded (lpFamily p) l1Family LinearMap.id := by
+  sorry
+theorem withSeminorms_lp (p : ℝ≥0∞) [Fact (1 ≤ p)] : WithSeminorms (lpFamily p) := by
   sorry
 end SchwartzNorms
 end

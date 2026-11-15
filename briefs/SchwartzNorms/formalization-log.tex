@@ -53,7 +53,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 
 \paragraph{Files.}\leavevmode
 \begin{itemize}
-\item File: \lean{briefs/SchwartzNorms/SchwartzNorms.lean}
+\item Files: \lean{briefs/SchwartzNorms/SchwartzNorms.lean},\newline
+  \lean{briefs/SchwartzNorms/SchwartzNorms/GeneralLp.lean} (the Remark ``General $L^p$'')
 \item Library: \lean{SchwartzNorms}
 \item Imports: \lean{SchwartzMomentProblem} (for the moments in eq.~(10)) and three new
   \lean{ForMathlib} files:\newline
@@ -62,7 +63,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForMathlib/Analysis/SpecialFunctions/ImproperIntegrals.lean}
   ($\int (1+x^2)^{-2} = \pi/2$, $\int_{|x|>1} x^{-2} = 2$),\newline
   \lean{ForMathlib/MeasureTheory/Integral/IntegralEqImproper.lean}
-  ($\|g(x)\| \le \|g'\|_{L^1}$ for integrable $g$, $g'$)
+  ($\|g(x)\| \le \|g'\|_{L^1}$ for integrable $g$, $g'$);\newline
+  \lean{GeneralLp.lean} imports only \lean{SchwartzNorms}
 \end{itemize}
 
 \paragraph{Setting.} For $f : \mathbb{R} \to \mathbb{C}$ and $g = x^\alpha \partial^\beta f$
@@ -88,9 +90,40 @@ definition (4) is Mathlib's $\mathcal{S}(\mathbb{R})$ & \lean{exists_schwartzMap
 Step 4, same topology & \lean{withSeminorms_l1_l2}, from \lean{isBounded_sup_l2},
   \lean{isBounded_l2_l1}, \lean{isBounded_l1_sup} and \lean{WithSeminorms.congr_of_cycle} \\
 eq.~(10) & \lean{enorm_moment_le} (with the factor $|\hbar|^\beta$) \\
+Remark ``General $L^p$'': the $L^p$ seminorms, $1 \le p \le \infty$, generate the same topology & \lean{withSeminorms_lp}, from \lean{isBounded_sup_lp} (\lean{eLpNorm_weighted_le}), \lean{isBounded_lp_l1} (\lean{eLpNorm_weighted_one_le}) and \lean{isBounded_l1_sup}; \lean{lpFamily_one}, \lean{lpFamily_two}, \lean{lpFamily_top} (\lean{eLpNorm_top_weighted}) for $p = 1, 2, \infty$ \\
 \bottomrule
 \end{tabularx}
 \end{center}
+
+\paragraph{General $L^p$ seminorms.} The Remark ``General $L^p$'' is formalized in
+\lean{GeneralLp.lean}. For $1 \le p \le \infty$ the seminorms
+$\|f\|^{L^p}_{\alpha,\beta} = \|x^\alpha \partial^\beta f\|_{L^p}$ (\lean{eLpNorm}, with the
+essential supremum for $p = \infty$) form the family \lean{lpFamily}~$p$, and every such family
+generates the topology of $\mathcal{S}(\mathbb{R})$ (\lean{withSeminorms_lp}). The cycle has
+three steps.
+\begin{itemize}
+\item Sup controls $L^p$. With the weight $w_k(x) = (1+|x|)^{-k}$ (\lean{weight}) and
+  $(1+|x|)^k \le 2^k(1+|x|^k)$,
+  \[
+    \|f\|^{L^p}_{\alpha,\beta} \le 2^k \|w_k\|_{L^p}
+      \bigl(\|f\|^{\sup}_{\alpha,\beta} + \|f\|^{\sup}_{\alpha+k,\beta}\bigr)
+  \]
+  (\lean{eLpNorm_weighted_le}), and $\|w_k\|_{L^p} < \infty$ for $k$ large
+  (Mathlib's \lean{Measure.HasTemperateGrowth.exists_eLpNorm_lt_top}).
+\item $L^p$ controls $L^1$. Write $x^\alpha \partial^\beta f = w_k \cdot (1+|x|)^k x^\alpha
+  \partial^\beta f$ and apply Hölder's inequality with the conjugate exponent $q$,
+  $1/p + 1/q = 1$:
+  \[
+    \|f\|^{L^1}_{\alpha,\beta} \le 2^k \|w_k\|_{L^q}
+      \bigl(\|f\|^{L^p}_{\alpha,\beta} + \|f\|^{L^p}_{\alpha+k,\beta}\bigr)
+  \]
+  (\lean{eLpNorm_weighted_one_le}), with $k$ chosen for $q$.
+\item $L^1$ controls sup: Step~3 of the brief (\lean{isBounded_l1_sup}).
+\end{itemize}
+For $p = 1, 2$ the family is \lean{l1Family}, \lean{l2Family} by definition. For $p = \infty$ the
+essential supremum of the continuous function $x^\alpha \partial^\beta f$ is its supremum
+(\lean{eLpNorm_top_weighted}), so the family is the family of sup seminorms~(1)
+(\lean{lpFamily_top}).
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
@@ -102,7 +135,11 @@ eq.~(10) & \lean{enorm_moment_le} (with the factor $|\hbar|^\beta$) \\
 \item In Step~3, $g(x) = \int_{-\infty}^x g'$ uses Mathlib's improper FTC and the fact that an
   integrable $g$ with integrable $g'$ tends to $0$ at $-\infty$.
 \item The converse in the remark after eq.~(10) (finite expectation values imply membership in
-  $\mathcal{S}(\mathbb{R})$) and the remark on general $L^p$ are not formalized.
+  $\mathcal{S}(\mathbb{R})$) is not formalized.
+\item The Remark ``General $L^p$'' says that ``the same arguments extend''. The formal proof
+  replaces the $L^2$ step by Hölder's inequality and the weight $1/(1+x^2)$ by
+  $(1+|x|)^{-k}$, with $k$ depending on $p$. It goes $\sup \to L^p \to L^1 \to \sup$, so it
+  reuses Step~3 but not Steps~1 and~2.
 \end{itemize}
 
 \paragraph{Problems found in the brief.}
