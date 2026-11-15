@@ -18,8 +18,8 @@ A change of coordinates `y = e(x)` of `ℝⁿ` acts on wave functions by the uni
 `U_e f = |det De|^{1/2} (f ∘ e)` of `L²(ℝⁿ)`. If `e` and `e⁻¹` both have temperate growth, `U_e` is
 an automorphism of `𝓢(ℝⁿ)` that preserves the inner product (`SchwartzMap.compDiffeoCLE`). So the
 point transformations, the `U_e` together with the gauge phases `e^{iφ}` for real `φ` of temperate
-growth, form a frame group with [B]WDQ for Example 3. The condition is sufficient, not necessary.
-The change of frame `y = tan(π/2 · erf x)` of problem 6 fails it: `e` grows like `e^{x²}` and `e⁻¹`
+growth, form a frame group with [B]WDQ for Example 3. Whether the condition is also necessary is
+not decided here. The change of frame `y = tan(π/2 · erf x)` of problem 6 fails it: `e` grows like `e^{x²}` and `e⁻¹`
 only like `√(log |y|)`, and that change of frame does not preserve `𝓢(ℝ)`
 (`not_forall_frameUnitary_mem_range`).
 
