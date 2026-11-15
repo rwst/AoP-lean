@@ -130,7 +130,11 @@ precise first.
   contains the translations, modulations, linear changes of variable, Fourier transform and
   chirps, which give all affine symplectic changes of frame
   (\lean{FurtherResults.isFrameCompatible_linearFrames}; \lean{further-results.tex},
-  Sec.~3.1). The choice of $F$ remains open.
+  Sec.~3.1). It also contains the nonlinear changes of frame
+  $f \mapsto |\det De|^{1/2}\,(f \circ e)$ for bijections $e$ of $\mathbb{R}^n$ such that $e$ and
+  $e^{-1}$ have temperate growth, and the phases $e^{i\varphi}$ for real $\varphi$ of temperate
+  growth (\lean{FurtherResults.isFrameCompatible_linearFrames_sup_pointFrames};
+  \lean{further-results.tex}, Sec.~3.2). The choice of $F$ remains open.
   (Brief, Theorem~5, proof; Log, ``Problems found in the brief'', last item.)
 \end{enumerate}
 
@@ -139,15 +143,6 @@ Definition~1 and Examples~3 (in $n$ dimensions) and~4 are checked in full. The g
 concern problem~6 and the coordinate independence of Example~3; none of them blocks
 verification of a claim of the brief.
 \begin{enumerate}
-\item \textbf{A sufficient condition for nonlinear changes of frame.}
-  \emph{Formalization gap.} For a diffeomorphism $g$ of $\mathbb{R}$, the unitary
-  $U_g f = \sqrt{|g'|}\,(f \circ g)$ maps $\mathcal{S}(\mathbb{R})$ onto itself when $g$ and
-  $g^{-1}$ have temperate growth and $|g'|$ is bounded below by a negative power of
-  $1 + |x|$. Mathlib's \lean{SchwartzMap.compCLM} covers $f \mapsto f \circ g$ (temperate
-  growth of $g$, polynomial growth of $g^{-1}$); the factor $\sqrt{|g'|}$ and the
-  $n$-dimensional version with $\sqrt{|\det Dg|}$ are missing. The change of frame
-  $y = \tan(\frac{\pi}{2}\operatorname{erf} x)$ of problem~6 fails both growth conditions: it
-  grows like $e^{x^2}$, and its inverse only like $\sqrt{\log |y|}$.
 \item \textbf{The Galbis--Jord\'a characterization.} \emph{Formalization gap.} By
   Galbis and Jord\'a (Rev.\ Mat.\ Iberoam.\ 34 (2018), Thm.~2.3 and Remark~2.4), $f \circ
   \varphi \in \mathcal{S}(\mathbb{R})$ for every $f \in \mathcal{S}(\mathbb{R})$ if and only if
@@ -157,7 +152,9 @@ verification of a claim of the brief.
   qualifies. Sufficiency follows from the Faà di Bruno bounds in Mathlib
   (\lean{norm_iteratedFDeriv_comp_le}); necessity glues infinitely many bump functions along a
   sequence into one Schwartz function. The version for the unitaries $U_\varphi$, with the
-  factor $\sqrt{|\varphi'|}$, is not in the paper.
+  factor $\sqrt{|\varphi'|}$, is not in the paper; a sufficient condition for them, temperate
+  growth of $\varphi$ and $\varphi^{-1}$ in $n$ variables, is checked
+  (\lean{further-results.tex}, Sec.~3.2).
 \item \textbf{$\mathcal{S}(\mathbb{R}^n)$ as the smooth vectors of the Schr\"odinger
   representation.} \emph{Formalization gap.} The Schwartz space is the space of smooth vectors
   of the Schr\"odinger representation of the Heisenberg group $H_n$ (G.~B.~Folland,
