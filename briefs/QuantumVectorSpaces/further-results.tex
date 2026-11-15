@@ -33,7 +33,8 @@
   This note collects results that go beyond the technical brief \emph{Physical vector spaces for
   quantum mechanics}~\cite{brief} and partial answers to its open problems. They are not part of
   the brief. Each section is self-contained, and each names the Lean declarations that check it;
-  the Lean files are in the brief's directory, under \lean{QuantumVectorSpaces/FurtherResults/}.
+  the Lean files are in the brief's directory, under \lean{QuantumVectorSpaces/FurtherResults/},
+  and, for results of general interest, in the repository's \lean{ForMathlib/}.
 \end{abstract}
 
 \section{The Hilbert brief's change of frame is not a map of Schwartz space}
@@ -226,7 +227,7 @@ group~\cite{antoine2}; he considers $H^\infty$ and sets it aside because it need
 For the Schr\"odinger representation of the Heisenberg group $H_n$, of dimension $2n + 1$,
 $H^\infty$ is $\mathcal S(\mathbb R^n)$ with its usual topology (\cite[Secs.~1 and~6]{goodman} for
 $n = 1$; for every $n$ it follows from the description of $\mathcal S(\mathbb R^n)$ by the number
-operator~\cite[Sec.~V.3]{reedsimon}). In this form every defining observable is essentially
+operator~\cite[Sec.~V.3]{reedsimon}, which is formalized in Sec.~\ref{sec:oscillator}). In this form every defining observable is essentially
 self-adjoint on $V$, as Antoine recalls from Segal and from Nelson and Stinespring, and it
 generates a unitary group that maps $V$ onto itself. The rest of this subsection checks the group
 form against Definition~1 and against the three base conditions of the Hilbert
@@ -777,6 +778,71 @@ its Hermite coefficients~\cite[Remark~1.3]{gpr}, not by the Gelfand--Shilov esti
 Not formalized: Theorem~\ref{thm:gs}, which needs the Gelfand--Shilov estimates for Hermite
 expansions, inductive limit topologies and the classification of power series spaces; and
 Theorems~\ref{thm:gs-def1}(1) and~\ref{thm:gs-moments}.
+
+\section{Example 3 from a single operator}
+\label{sec:oscillator}
+
+Example~3 defines $V = \mathcal S(\mathbb R^n)$ by the Cartesian seminorms, or equivalently by
+the defining observables $X^i$, $P_i$. The space can also be obtained from one operator of the
+Hilbert space, the harmonic oscillator, without reference to Cartesian coordinates. This is
+Simon's characterization~\cite{simon} (see also~\cite[Sec.~V.3]{reedsimon}).
+
+\begin{theorem}\label{thm:oscillator}
+  Let $n \ge 1$, let $H = \frac12 \sum_i (X_i^2 + P_i^2)$ be the harmonic oscillator on
+  $\mathcal S(\mathbb R^n)$, with $\hbar = 1$, as an operator of $L^2(\mathbb R^n)$, and let
+  $h_\alpha$ be the Hermite functions, $\alpha \in \mathbb N^n$.
+  \begin{enumerate}
+    \item $H$ lies in the algebra of the defining observables of Example~3, for every
+      $\hbar \ne 0$.
+    \item $\langle h_\alpha, Hf\rangle = (|\alpha| + \frac n2)\langle h_\alpha, f\rangle$ for
+      $f \in \mathcal S(\mathbb R^n)$.
+    \item $H$ is closable. Its closure $N$ satisfies
+      $\langle h_\alpha, Ng\rangle = (|\alpha| + \frac n2)\langle h_\alpha, g\rangle$ for
+      $g \in D(N)$, and $N f = H f$ for $f \in \mathcal S(\mathbb R^n)$.
+    \item $\mathcal S(\mathbb R^n) = \bigcap_{k} D(N^k)$, where $D(N^0) = L^2(\mathbb R^n)$ and
+      $D(N^{k+1}) = \{g \in D(N) \mid Ng \in D(N^k)\}$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  (1) $P_i^2$ at $\hbar = 1$ is a multiple of $P_i^2$ at $\hbar$. (2) With
+  $(x_i + \partial_i)(x_i - \partial_i) = x_i^2 - \partial_i^2 + 1$, this is the coefficient
+  formula for the number operator that is used for the Hermite expansions in~\lean{ForMathlib}.
+  (3) The condition $\langle h_\alpha, w\rangle = (|\alpha| + \frac n2)\langle h_\alpha, g\rangle$
+  defines a closed set of pairs $(g, w)$, and it contains the graph of $H$ by~(2); so it contains
+  the closure of the graph. A pair $(0, w)$ in that closure has $w = 0$, since its Hermite
+  coefficients vanish; hence the closure is the graph of an operator. (4) If $g \in D(N^k)$, then
+  by~(3) the vector $N^k g$ has the coefficients $(|\alpha| + \frac n2)^k\langle h_\alpha,
+  g\rangle$, so $(1 + |\alpha|)^k|\langle h_\alpha, g\rangle| \le 2^k\|N^k g\|$. If this holds
+  for every $k$, the coefficients of $g$ decrease rapidly and $g$ is the Hermite series of a
+  Schwartz function. Conversely $H$ maps $\mathcal S(\mathbb R^n)$ into itself, and $N = H$ there.
+\end{proof}
+
+So $V$ is the joint domain of the powers of a single observable, the energy of the oscillator,
+and the Cartesian coordinates enter only through the choice of the oscillator. A change of frame
+$U$ in the group of Theorem~\ref{thm:linearframes} replaces $N$ by $UNU^{-1}$, in general a
+different operator, but with the same joint domain $U(V) = V$. The topology of Corollary~2 is
+that of the norms $\|N^k f\|$~\cite{simon}; this is not formalized here.
+
+\subsection{Lean}
+
+Module:\\ \lean{ForMathlib.Analysis.Distribution.SchwartzSpace.HermiteOscillator}, namespace
+\lean{SchwartzMap}, for $\mathbb R^\iota$ with $\iota$ finite and, in~(4), nonempty.
+\begin{itemize}
+  \item \lean{oscillatorCLM}, \lean{hermiteCoeff_oscillatorCLM}: Theorem~\ref{thm:oscillator}(2).
+  \item \lean{oscillator}, \lean{isClosable_oscillator}, \lean{inner_closure_oscillator},
+    \lean{exists_mem_domain_closure}: Theorem~\ref{thm:oscillator}(3).
+  \item \lean{LinearPMap.powDomain}, \lean{forall_mem_powDomain_iff}:
+    Theorem~\ref{thm:oscillator}(4).
+\end{itemize}
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.OscillatorDomain}, namespace
+\lean{QuantumVectorSpaces.FurtherResults}.
+\begin{itemize}
+  \item \lean{oscillatorCLM_eq}, \lean{oscillatorCLM_mem_algebra}:
+    Theorem~\ref{thm:oscillator}(1).
+  \item \lean{forall_mem_powDomain_iff_schwartzN}: Theorem~\ref{thm:oscillator}(4) for
+    Example~3.
+\end{itemize}
 
 \begin{thebibliography}{9}
 \bibitem{brief} G.~Carcassi, \emph{Physical vector spaces for quantum mechanics}, technical

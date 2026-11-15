@@ -139,13 +139,6 @@ Definition~1 and Examples~3 (in $n$ dimensions) and~4 are checked in full. The g
 concern problem~6 and the coordinate independence of Example~3; none of them blocks
 verification of a claim of the brief.
 \begin{enumerate}
-\item \textbf{$\mathcal{S}(\mathbb{R}^n)$ as the joint domain of the powers of the
-  oscillator.} \emph{Formalization gap.} With $N$ the closure in $L^2(\mathbb{R}^n)$ of the
-  harmonic oscillator, $\mathcal{S}(\mathbb{R}^n) = \bigcap_k D(N^k)$ (B.~Simon,
-  J.\ Math.\ Phys.\ 12 (1971) 140). This defines $V$ without the Cartesian seminorms. It
-  should follow quickly from the Hermite characterization
-  (\lean{SchwartzMap.exists_toLp_eq_iff} and its multi-index form), since $N$ is diagonal in
-  the Hermite basis.
 \item \textbf{A sufficient condition for nonlinear changes of frame.}
   \emph{Formalization gap.} For a diffeomorphism $g$ of $\mathbb{R}$, the unitary
   $U_g f = \sqrt{|g'|}\,(f \circ g)$ maps $\mathcal{S}(\mathbb{R})$ onto itself when $g$ and
@@ -171,7 +164,8 @@ verification of a claim of the brief.
   \emph{Harmonic Analysis in Phase Space}, Princeton 1989, Ch.~1). This is the group form of
   problem~1 (\lean{further-results.tex}, Sec.~2), there not formalized. It needs unitary
   representations of Lie groups and their smooth vectors, which neither Mathlib nor TauCeti
-  provides in usable form; gap~1 gives the same space with much less.
+  provides in usable form. The oscillator gives the same space with much less
+  (\lean{further-results.tex}, Sec.~6).
 \end{enumerate}
 
 \end{document}
