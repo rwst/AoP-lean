@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
+public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 /-!
 # SchwartzMomentProblem: the statements of record
@@ -18,6 +19,87 @@ theorems with `sorry`. Each part opens by clearing Lean's auxiliary-proof cache,
 boundary does. See `COMPARATOR.md`.
 -/
 
+-- ForMathlib.Analysis.SpecialFunctions.ImproperIntegrals
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Real Filter Topology Set MeasureTheory
+@[expose] public section
+theorem integrable_inv_one_add_sq_sq : Integrable fun x : ℝ => ((1 + x ^ 2) ^ 2)⁻¹ := by
+  refine integrable_inv_one_add_sq.mono' (by fun_prop) (ae_of_all _ fun x => ?_)
+  have h1 : 1 ≤ 1 + x ^ 2 := by nlinarith
+  rw [Real.norm_of_nonneg (by positivity)]
+  exact inv_anti₀ (by positivity) (by nlinarith)
+lemma hasDerivAt_antideriv_inv_one_add_sq_sq (x : ℝ) :
+    HasDerivAt (fun x => x / (2 * (1 + x ^ 2)) + arctan x / 2) ((1 + x ^ 2) ^ 2)⁻¹ x := by
+  have h1 : (1 + x ^ 2) ≠ 0 := by positivity
+  have := ((hasDerivAt_id x).div (((hasDerivAt_pow 2 x).const_add 1).const_mul 2)
+    (by positivity)).add ((hasDerivAt_arctan x).div_const 2)
+  refine this.congr_deriv ?_
+  simp only [id, Nat.cast_ofNat]
+  field_simp
+  ring
+lemma tendsto_div_two_mul_one_add_sq (l : Filter ℝ) (hl : Tendsto (fun x : ℝ => |x|) l atTop) :
+    Tendsto (fun x : ℝ => x / (2 * (1 + x ^ 2))) l (𝓝 0) := by
+  have h : Tendsto (fun x : ℝ => (2 * |x|)⁻¹) l (𝓝 0) :=
+    tendsto_inv_atTop_zero.comp (hl.const_mul_atTop two_pos)
+  refine squeeze_zero_norm (fun x => ?_) h
+  rcases eq_or_ne x 0 with rfl | hx
+  · simp
+  have hx' : 0 < |x| := abs_pos.mpr hx
+  rw [norm_div, Real.norm_eq_abs, Real.norm_of_nonneg (by positivity),
+    div_le_iff₀ (by positivity)]
+  have : |x| ^ 2 = x ^ 2 := sq_abs x
+  rw [inv_mul_eq_div, le_div_iff₀ (by positivity)]
+  nlinarith
+theorem integral_univ_inv_one_add_sq_sq : ∫ x : ℝ, ((1 + x ^ 2) ^ 2)⁻¹ = π / 2 := by
+  have hbot : Tendsto (fun x => x / (2 * (1 + x ^ 2)) + arctan x / 2) atBot
+      (𝓝 (0 + -(π / 2) / 2)) :=
+    (tendsto_div_two_mul_one_add_sq _ tendsto_abs_atBot_atTop).add
+      ((tendsto_arctan_atBot.mono_right nhdsWithin_le_nhds).div_const 2)
+  have htop : Tendsto (fun x => x / (2 * (1 + x ^ 2)) + arctan x / 2) atTop
+      (𝓝 (0 + π / 2 / 2)) :=
+    (tendsto_div_two_mul_one_add_sq _ tendsto_abs_atTop_atTop).add
+      ((tendsto_arctan_atTop.mono_right nhdsWithin_le_nhds).div_const 2)
+  rw [integral_of_hasDerivAt_of_tendsto hasDerivAt_antideriv_inv_one_add_sq_sq
+    integrable_inv_one_add_sq_sq hbot htop]
+  ring
+lemma inv_sq_eq_rpow {x : ℝ} (hx : 0 < x) : (x ^ 2)⁻¹ = x ^ (-2 : ℝ) := by
+  rw [rpow_neg hx.le, show (2 : ℝ) = (2 : ℕ) by norm_num, rpow_natCast]
+theorem integrableOn_Ioi_one_inv_sq : IntegrableOn (fun x : ℝ => (x ^ 2)⁻¹) (Ioi 1) :=
+  (integrableOn_Ioi_rpow_of_lt (by norm_num : (-2 : ℝ) < -1) one_pos).congr_fun
+    (fun x hx => (inv_sq_eq_rpow (one_pos.trans hx)).symm) measurableSet_Ioi
+theorem integral_Ioi_one_inv_sq : ∫ x in Ioi (1 : ℝ), (x ^ 2)⁻¹ = 1 := by
+  rw [setIntegral_congr_fun measurableSet_Ioi fun x hx => inv_sq_eq_rpow (one_pos.trans hx),
+    integral_Ioi_rpow_of_lt (by norm_num) one_pos]
+  norm_num
+theorem integrableOn_Iio_neg_one_inv_sq : IntegrableOn (fun x : ℝ => (x ^ 2)⁻¹) (Iio (-1)) := by
+  have := integrableOn_Ioi_one_inv_sq.comp_neg
+  simpa using this
+theorem integral_Iio_neg_one_inv_sq : ∫ x in Iio (-1 : ℝ), (x ^ 2)⁻¹ = 1 := by
+  have := integral_comp_neg_Ioi (1 : ℝ) fun x : ℝ => (x ^ 2)⁻¹
+  simp only [neg_sq] at this
+  rw [← integral_Iic_eq_integral_Iio, ← this, integral_Ioi_one_inv_sq]
+end
+end
+-- ForMathlib.MeasureTheory.Integral.IntegralEqImproper
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Set Filter Topology
+@[expose] public section
+namespace MeasureTheory
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+theorem enorm_le_lintegral_enorm_deriv {f f' : ℝ → E} (hderiv : ∀ x, HasDerivAt f (f' x) x)
+    (hf' : Integrable f') (hf : Integrable f) (x : ℝ) : ‖f x‖ₑ ≤ ∫⁻ y, ‖f' y‖ₑ := by
+  have h0 := tendsto_zero_of_hasDerivAt_of_integrableOn_Iic (a := x) (fun y _ => hderiv y)
+    hf'.integrableOn hf.integrableOn
+  have hx := integral_Iic_of_hasDerivAt_of_tendsto' (a := x) (fun y _ => hderiv y)
+    hf'.integrableOn h0
+  rw [sub_zero] at hx
+  rw [← hx]
+  exact (enorm_integral_le_lintegral_enorm _).trans (setLIntegral_le_lintegral _ _)
+end MeasureTheory
+end
+end
 -- SchwartzMomentProblem
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
@@ -156,5 +238,280 @@ theorem exists_same_moments [Nontrivial E] (ħ : ℝ) :
   sorry
 end Schwartz
 end SchwartzMomentProblem.OtherSpaces
+end
+end
+-- SchwartzNorms
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Real MeasureTheory Filter Topology Set
+open scoped ENNReal NNReal
+@[expose] public noncomputable section
+namespace SchwartzNorms
+def weighted (α β : ℕ) (f : ℝ → ℂ) (x : ℝ) : ℂ := (x : ℂ) ^ α * iteratedDeriv β f x
+def supNorm (α β : ℕ) (f : ℝ → ℂ) : ℝ≥0∞ := ⨆ x, ‖weighted α β f x‖ₑ
+def l1Norm (α β : ℕ) (f : ℝ → ℂ) : ℝ≥0∞ := eLpNorm (weighted α β f) 1 volume
+def l2Norm (α β : ℕ) (f : ℝ → ℂ) : ℝ≥0∞ := eLpNorm (weighted α β f) 2 volume
+variable {f : ℝ → ℂ}
+lemma enorm_ofReal (x : ℝ) : ‖(x : ℂ)‖ₑ = ‖x‖ₑ := by
+  rw [← ofReal_norm, ← ofReal_norm, Complex.norm_real]
+lemma enorm_weighted_succ (α β : ℕ) (f : ℝ → ℂ) (x : ℝ) :
+    ‖weighted (α + 1) β f x‖ₑ = ‖x‖ₑ * ‖weighted α β f x‖ₑ := by
+  simp only [weighted, pow_succ, enorm_mul, enorm_ofReal]
+  ring
+lemma continuous_weighted (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) : Continuous (weighted α β f) :=
+  (Complex.continuous_ofReal.pow α).mul (hf.continuous_iteratedDeriv β (by exact_mod_cast le_top))
+lemma l1Norm_eq (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
+    l1Norm α β f = ∫⁻ x, ‖weighted α β f x‖ₑ :=
+  eLpNorm_one_eq_lintegral_enorm (continuous_weighted hf α β).aestronglyMeasurable
+lemma l2Norm_eq (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
+    l2Norm α β f = (∫⁻ x, ‖weighted α β f x‖ₑ ^ (2 : ℝ)) ^ (1 / 2 : ℝ) := by
+  rw [l2Norm, eLpNorm_eq_lintegral_rpow_enorm_toReal two_ne_zero ENNReal.ofNat_ne_top
+    (continuous_weighted hf α β).aestronglyMeasurable]
+  simp
+lemma l2Norm_sq (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
+    l2Norm α β f ^ 2 = ∫⁻ x, ‖weighted α β f x‖ₑ ^ 2 := by
+  rw [l2Norm_eq hf, ← ENNReal.rpow_two, ← ENNReal.rpow_mul]
+  simp
+lemma lintegral_compl_Icc_inv_sq :
+    ∫⁻ x in (Icc (-1 : ℝ) 1)ᶜ, ENNReal.ofReal (x ^ 2)⁻¹ = 2 := by
+  have hc : (Icc (-1 : ℝ) 1)ᶜ = Iio (-1) ∪ Ioi 1 := by
+    ext x
+    rw [mem_compl_iff, mem_Icc, mem_union, mem_Iio, mem_Ioi, not_and_or, not_le, not_le]
+  rw [hc, lintegral_union measurableSet_Ioi
+      (disjoint_left.mpr fun x (h1 : x < -1) (h2 : 1 < x) => by linarith),
+    ← ofReal_integral_eq_lintegral_ofReal integrableOn_Iio_neg_one_inv_sq
+      (ae_of_all _ fun _ => by positivity),
+    ← ofReal_integral_eq_lintegral_ofReal integrableOn_Ioi_one_inv_sq
+      (ae_of_all _ fun _ => by positivity),
+    integral_Iio_neg_one_inv_sq, integral_Ioi_one_inv_sq]
+  norm_num
+theorem l2Norm_sq_le (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
+    l2Norm α β f ^ 2 ≤ 2 * supNorm α β f ^ 2 + 2 * supNorm (α + 1) β f ^ 2 := by
+  set a := supNorm α β f
+  set b := supNorm (α + 1) β f
+  set S := Icc (-1 : ℝ) 1
+  have hpt : ∀ x, ‖weighted α β f x‖ₑ ^ 2 ≤
+      S.indicator (fun _ => a ^ 2) x +
+        Sᶜ.indicator (fun x => b ^ 2 * ENNReal.ofReal (x ^ 2)⁻¹) x := by
+    intro x
+    by_cases hx : x ∈ S
+    · rw [indicator_of_mem hx, indicator_of_notMem (notMem_compl_iff.mpr hx), add_zero]
+      exact pow_le_pow_left₀ (by simp) (le_iSup (fun x => ‖weighted α β f x‖ₑ) x) 2
+    · rw [indicator_of_notMem hx, indicator_of_mem (mem_compl hx), zero_add]
+      have h1 : 1 < |x| := by
+        by_contra h
+        exact hx (abs_le.mp (not_lt.mp h))
+      have hb : ‖x‖ₑ * ‖weighted α β f x‖ₑ ≤ b := by
+        rw [← enorm_weighted_succ]
+        exact le_iSup (fun x => ‖weighted (α + 1) β f x‖ₑ) x
+      have hx0' : x ≠ 0 := by rintro rfl; norm_num at h1
+      have hx2 : ENNReal.ofReal (x ^ 2)⁻¹ = (‖x‖ₑ ^ 2)⁻¹ := by
+        rw [ENNReal.ofReal_inv_of_pos (pow_pos (abs_pos.mpr hx0') 2 |>.trans_eq (sq_abs x)),
+          Real.enorm_eq_ofReal_abs, ← ENNReal.ofReal_pow (abs_nonneg x), sq_abs]
+      have hx0 : ‖x‖ₑ ^ 2 ≠ 0 := by simpa using hx0'
+      rw [hx2, ← div_eq_mul_inv, ENNReal.le_div_iff_mul_le (Or.inl hx0) (Or.inl (by simp)),
+        ← mul_pow, mul_comm]
+      exact pow_le_pow_left₀ (by simp) hb 2
+  calc l2Norm α β f ^ 2 = ∫⁻ x, ‖weighted α β f x‖ₑ ^ 2 := l2Norm_sq hf α β
+    _ ≤ ∫⁻ x, (S.indicator (fun _ => a ^ 2) x +
+          Sᶜ.indicator (fun x => b ^ 2 * ENNReal.ofReal (x ^ 2)⁻¹) x) := lintegral_mono hpt
+    _ = a ^ 2 * 2 + b ^ 2 * 2 := by
+      rw [lintegral_add_left (measurable_const.indicator measurableSet_Icc),
+        lintegral_indicator_const measurableSet_Icc, Real.volume_Icc,
+        lintegral_indicator measurableSet_Icc.compl,
+        lintegral_const_mul _ (by fun_prop), lintegral_compl_Icc_inv_sq]
+      norm_num
+    _ = 2 * a ^ 2 + 2 * b ^ 2 := by ring
+lemma lintegral_inv_one_add_sq_sq :
+    ∫⁻ x : ℝ, ((1 + ‖x‖ₑ ^ 2) ^ 2)⁻¹ = ENNReal.ofReal (π / 2) := by
+  rw [← integral_univ_inv_one_add_sq_sq, ofReal_integral_eq_lintegral_ofReal
+    integrable_inv_one_add_sq_sq (ae_of_all _ fun _ => by positivity)]
+  congr 1
+  funext x
+  rw [ENNReal.ofReal_inv_of_pos (by positivity), ENNReal.ofReal_pow (by positivity),
+    ENNReal.ofReal_add zero_le_one (sq_nonneg x), ENNReal.ofReal_one, Real.enorm_eq_ofReal_abs,
+    ← ENNReal.ofReal_pow (abs_nonneg x), sq_abs]
+lemma rpow_half_le (A B C : ℝ≥0∞) :
+    (A ^ 2 + 2 * B ^ 2 + C ^ 2) ^ (1 / 2 : ℝ) ≤ A + 2 * B + C := by
+  calc (A ^ 2 + 2 * B ^ 2 + C ^ 2) ^ (1 / 2 : ℝ) ≤ ((A + 2 * B + C) ^ 2) ^ (1 / 2 : ℝ) := by
+        refine ENNReal.rpow_le_rpow ?_ (by norm_num)
+        calc A ^ 2 + 2 * B ^ 2 + C ^ 2
+            ≤ A ^ 2 + 2 * B ^ 2 + C ^ 2 + (2 * B ^ 2 + 4 * A * B + 2 * A * C + 4 * B * C) :=
+              le_self_add
+          _ = (A + 2 * B + C) ^ 2 := by ring
+    _ = A + 2 * B + C := by
+      rw [show (1 / 2 : ℝ) = ((2 : ℕ) : ℝ)⁻¹ by norm_num, ENNReal.pow_rpow_inv_natCast two_ne_zero]
+theorem l1Norm_le (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
+    l1Norm α β f ≤ ENNReal.ofReal √(π / 2) *
+      (l2Norm α β f + 2 * l2Norm (α + 1) β f + l2Norm (α + 2) β f) := by
+  let w : ℕ → ℝ → ℝ≥0∞ := fun k x => ‖weighted k β f x‖ₑ
+  have hw : ∀ k, Measurable (w k) := fun k => (continuous_weighted hf k β).measurable.enorm
+  let ρ : ℝ → ℝ≥0∞ := fun x => 1 + ‖x‖ₑ ^ 2
+  have hρ : Measurable ρ := by fun_prop
+  have key : ∀ x, (ρ x * w α x) ^ 2 = w α x ^ 2 + 2 * w (α + 1) x ^ 2 + w (α + 2) x ^ 2 := by
+    intro x
+    simp only [w, ρ, enorm_weighted_succ]
+    ring
+  calc l1Norm α β f = ∫⁻ x, ((fun x => (ρ x)⁻¹) * fun x => ρ x * w α x) x := by
+        rw [l1Norm_eq hf]
+        congr 1
+        funext x
+        have h0 : ρ x ≠ 0 := by simp [ρ]
+        have hT : ρ x ≠ ⊤ := by simp [ρ]
+        simp only [Pi.mul_apply]
+        rw [← mul_assoc, ENNReal.inv_mul_cancel h0 hT, one_mul]
+    _ ≤ (∫⁻ x, (ρ x)⁻¹ ^ (2 : ℝ)) ^ (1 / 2 : ℝ) * (∫⁻ x, (ρ x * w α x) ^ (2 : ℝ)) ^ (1 / 2 : ℝ) :=
+        ENNReal.lintegral_mul_le_Lp_mul_Lq volume Real.HolderConjugate.two_two
+          hρ.inv.aemeasurable (hρ.mul (hw α)).aemeasurable
+    _ = ENNReal.ofReal √(π / 2) *
+          (l2Norm α β f ^ 2 + 2 * l2Norm (α + 1) β f ^ 2 + l2Norm (α + 2) β f ^ 2) ^
+            (1 / 2 : ℝ) := by
+        have hinv (a : ℝ≥0∞) (n : ℕ) : a⁻¹ ^ n = (a ^ n)⁻¹ := ENNReal.inv_pow.symm
+        simp only [ENNReal.rpow_two, hinv, key, ρ]
+        rw [lintegral_inv_one_add_sq_sq, lintegral_add_right _ ((hw _).pow_const 2),
+          lintegral_add_left ((hw _).pow_const 2), lintegral_const_mul _ ((hw _).pow_const 2),
+          l2Norm_sq hf, l2Norm_sq hf, l2Norm_sq hf, Real.sqrt_eq_rpow,
+          ENNReal.ofReal_rpow_of_nonneg (by positivity) (by norm_num)]
+    _ ≤ _ := by gcongr; exact rpow_half_le _ _ _
+lemma hasDerivAt_weighted (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) (x : ℝ) :
+    HasDerivAt (weighted α β f) (α * weighted (α - 1) β f x + weighted α (β + 1) f x) x := by
+  have h1 : HasDerivAt (fun y : ℝ => (y : ℂ) ^ α) (α * (x : ℂ) ^ (α - 1)) x :=
+    (hasDerivAt_pow α (x : ℂ)).comp_ofReal
+  have h2 : HasDerivAt (iteratedDeriv β f) (iteratedDeriv (β + 1) f x) x := by
+    rw [iteratedDeriv_succ]
+    exact ((hf.differentiable_iteratedDeriv β
+      (by exact_mod_cast ENat.natCast_lt_top β)) x).hasDerivAt
+  refine (h1.mul h2).congr_deriv ?_
+  simp only [weighted]
+  ring
+theorem supNorm_le (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) (h : l1Norm α β f ≠ ⊤) :
+    supNorm α β f ≤ α * l1Norm (α - 1) β f + l1Norm α (β + 1) f := by
+  have hbound : ∫⁻ x, ‖(α : ℂ) * weighted (α - 1) β f x + weighted α (β + 1) f x‖ₑ ≤
+      α * l1Norm (α - 1) β f + l1Norm α (β + 1) f := by
+    calc ∫⁻ x, ‖(α : ℂ) * weighted (α - 1) β f x + weighted α (β + 1) f x‖ₑ
+        ≤ ∫⁻ x, ((α : ℝ≥0∞) * ‖weighted (α - 1) β f x‖ₑ + ‖weighted α (β + 1) f x‖ₑ) :=
+          lintegral_mono fun x => (enorm_add_le _ _).trans <| by
+            rw [enorm_mul, ← ofReal_norm, Complex.norm_natCast, ENNReal.ofReal_natCast]
+      _ = _ := by
+        rw [lintegral_add_left ((continuous_weighted hf _ β).measurable.enorm.const_mul _),
+          lintegral_const_mul _ (continuous_weighted hf _ β).measurable.enorm, l1Norm_eq hf,
+          l1Norm_eq hf]
+  rcases eq_or_ne (α * l1Norm (α - 1) β f + l1Norm α (β + 1) f) ⊤ with hR | hR
+  · rw [hR]
+    exact le_top
+  have hint : Integrable (weighted α β f) :=
+    memLp_one_iff_integrable.mp h.lt_top
+  have hint' : Integrable fun x => (α : ℂ) * weighted (α - 1) β f x + weighted α (β + 1) f x :=
+    ⟨((continuous_const.mul (continuous_weighted hf _ β)).add
+      (continuous_weighted hf _ _)).aestronglyMeasurable, hbound.trans_lt hR.lt_top⟩
+  exact iSup_le fun x =>
+    (enorm_le_lintegral_enorm_deriv (hasDerivAt_weighted hf α β) hint' hint x).trans hbound
+theorem tfae_finite (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+    List.TFAE [∀ α β, supNorm α β f < ⊤, ∀ α β, l1Norm α β f < ⊤, ∀ α β, l2Norm α β f < ⊤] := by
+  tfae_have 1 → 3 := fun h α β => by
+    have h' := (l2Norm_sq_le hf α β).trans_lt <| ENNReal.add_lt_top.2
+      ⟨ENNReal.mul_lt_top (by simp) (ENNReal.pow_lt_top (h α β)),
+        ENNReal.mul_lt_top (by simp) (ENNReal.pow_lt_top (h (α + 1) β))⟩
+    simpa using h'
+  tfae_have 3 → 2 := fun h α β =>
+    (l1Norm_le hf α β).trans_lt <| ENNReal.mul_lt_top ENNReal.ofReal_lt_top <|
+      ENNReal.add_lt_top.2 ⟨ENNReal.add_lt_top.2 ⟨h α β,
+        ENNReal.mul_lt_top (by simp) (h (α + 1) β)⟩, h (α + 2) β⟩
+  tfae_have 2 → 1 := fun h α β =>
+    (supNorm_le hf α β (h α β).ne).trans_lt <|
+      ENNReal.add_lt_top.2 ⟨ENNReal.mul_lt_top (by simp) (h (α - 1) β), h α (β + 1)⟩
+  tfae_finish
+open SchwartzMap
+lemma enorm_weighted_eq (α β : ℕ) (f : ℝ → ℂ) (x : ℝ) :
+    ‖weighted α β f x‖ₑ = ENNReal.ofReal (|x| ^ α * ‖iteratedDeriv β f x‖) := by
+  rw [weighted, enorm_mul, enorm_pow, enorm_ofReal, Real.enorm_eq_ofReal_abs, ← ofReal_norm,
+    ← ENNReal.ofReal_pow (abs_nonneg _), ← ENNReal.ofReal_mul (by positivity)]
+theorem supNorm_eq_seminorm (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
+    supNorm α β F = ENNReal.ofReal (SchwartzMap.seminorm ℂ α β F) := by
+  have h1 : supNorm α β F ≤ ENNReal.ofReal (SchwartzMap.seminorm ℂ α β F) :=
+    iSup_le fun x => by
+      rw [enorm_weighted_eq]
+      exact ENNReal.ofReal_le_ofReal (le_seminorm' ℂ α β F x)
+  have hfin : supNorm α β F ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top h1
+  refine le_antisymm h1 ?_
+  rw [ENNReal.ofReal_le_iff_le_toReal hfin]
+  refine seminorm_le_bound' ℂ α β F ENNReal.toReal_nonneg fun x => ?_
+  rw [← ENNReal.ofReal_le_iff_le_toReal hfin, ← enorm_weighted_eq]
+  exact le_iSup (fun x => ‖weighted α β F x‖ₑ) x
+theorem exists_schwartzMap_iff (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+    (∃ F : 𝓢(ℝ, ℂ), ⇑F = f) ↔ ∀ α β, supNorm α β f < ⊤ := by
+  constructor
+  · rintro ⟨F, rfl⟩ α β
+    rw [supNorm_eq_seminorm]
+    exact ENNReal.ofReal_lt_top
+  · intro h
+    refine ⟨⟨f, hf, fun k n => ⟨(supNorm k n f).toReal, fun x => ?_⟩⟩, rfl⟩
+    rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, Real.norm_eq_abs,
+      ← ENNReal.ofReal_le_iff_le_toReal (h k n).ne, ← enorm_weighted_eq]
+    exact le_iSup (fun x => ‖weighted k n f x‖ₑ) x
+lemma supNorm_lt_top (F : 𝓢(ℝ, ℂ)) (α β : ℕ) : supNorm α β F < ⊤ :=
+  (exists_schwartzMap_iff (F.smooth ⊤)).mp ⟨F, rfl⟩ α β
+lemma l2Norm_lt_top (F : 𝓢(ℝ, ℂ)) (α β : ℕ) : l2Norm α β F < ⊤ := by
+  have h := (tfae_finite (F.smooth ⊤)).out 1 3 rfl rfl one_ne_zero three_ne_zero
+  exact h.mp (supNorm_lt_top F) α β
+lemma weighted_add (α β : ℕ) (F G : 𝓢(ℝ, ℂ)) :
+    weighted α β ⇑(F + G) = weighted α β F + weighted α β G := by
+  have hc : ⇑(F + G) = ⇑F + ⇑G := by ext x; simp
+  funext x
+  simp only [weighted, hc, Pi.add_apply]
+  rw [iteratedDeriv_add ((F.smooth β).contDiffAt) ((G.smooth β).contDiffAt), mul_add]
+lemma weighted_smul (α β : ℕ) (c : ℂ) (F : 𝓢(ℝ, ℂ)) :
+    weighted α β ⇑(c • F) = c • weighted α β F := by
+  have hc : ⇑(c • F) = c • ⇑F := by ext x; simp
+  funext x
+  simp only [weighted, hc, iteratedDeriv_const_smul_field, Pi.smul_apply, smul_eq_mul]
+  ring
+def lpSeminorm (p : ℝ≥0∞) [Fact (1 ≤ p)] (α β : ℕ)
+    (hfin : ∀ F : 𝓢(ℝ, ℂ), eLpNorm (weighted α β F) p volume ≠ ⊤) : Seminorm ℂ 𝓢(ℝ, ℂ) :=
+  Seminorm.of (fun F => (eLpNorm (weighted α β F) p volume).toReal)
+    (fun F G => by
+      rw [weighted_add, ← ENNReal.toReal_add (hfin F) (hfin G)]
+      exact ENNReal.toReal_mono (ENNReal.add_ne_top.2 ⟨hfin F, hfin G⟩)
+        (eLpNorm_add_le Fact.out))
+    (fun c F => by
+      rw [weighted_smul, eLpNorm_const_smul, ENNReal.toReal_mul, ← ofReal_norm,
+        ENNReal.toReal_ofReal (norm_nonneg c)])
+def l2Seminorm (α β : ℕ) : Seminorm ℂ 𝓢(ℝ, ℂ) :=
+  lpSeminorm 2 α β fun F => (l2Norm_lt_top F α β).ne
+end SchwartzNorms
+end
+end
+-- SchwartzMomentProblem.Seminorms
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Complex ComplexConjugate MeasureTheory SchwartzMap SchwartzNorms
+@[expose] public noncomputable section
+namespace SchwartzMomentProblem
+def monomials (ħ : ℝ) : Submodule ℂ (Module.End ℂ 𝓢(ℝ, ℂ)) :=
+  Submodule.span ℂ (Set.range fun mn : ℕ × ℕ => X ^ mn.1 * P ħ ^ mn.2)
+variable {ħ : ℝ}
+theorem adjoin_le_monomials {A : Module.End ℂ 𝓢(ℝ, ℂ)} (hA : A ∈ Algebra.adjoin ℂ {X, P ħ}) :
+    A ∈ monomials ħ := by
+  sorry
+theorem matrixElement_eq_of_moment_eq {ψ₁ ψ₂ : 𝓢(ℝ, ℂ)}
+    (h : ∀ m n, moment ħ ψ₁ m n = moment ħ ψ₂ m n) {A : Module.End ℂ 𝓢(ℝ, ℂ)}
+    (hA : A ∈ Algebra.adjoin ℂ {X, P ħ}) : matrixElement A ψ₁ ψ₁ = matrixElement A ψ₂ ψ₂ := by
+  sorry
+theorem matrixElement_P_pow_X_pow_P_pow (ħ : ℝ) (α β : ℕ) (ψ : 𝓢(ℝ, ℂ)) :
+    matrixElement (P ħ ^ β * (X ^ (2 * α) * P ħ ^ β)) ψ ψ =
+      ((ħ ^ (2 * β) * l2Seminorm α β ψ ^ 2 : ℝ) : ℂ) := by
+  sorry
+theorem l2Seminorm_eq_of_moment_eq (hħ : ħ ≠ 0) {ψ₁ ψ₂ : 𝓢(ℝ, ℂ)}
+    (h : ∀ m n, moment ħ ψ₁ m n = moment ħ ψ₂ m n) (α β : ℕ) :
+    l2Seminorm α β ψ₁ = l2Seminorm α β ψ₂ := by
+  sorry
+theorem l2Seminorm_psi {f g : 𝓢(ℝ, ℂ)} (hfg : Disjoint (tsupport f) (tsupport g)) (θ θ' : ℝ)
+    (α β : ℕ) : l2Seminorm α β (psi f g θ) = l2Seminorm α β (psi f g θ') := by
+  sorry
+theorem exists_same_seminorms :
+    ∃ ψ₁ ψ₂ : 𝓢(ℝ, ℂ), (∀ ħ m n, moment ħ ψ₁ m n = moment ħ ψ₂ m n) ∧
+      (∀ α β, l2Seminorm α β ψ₁ = l2Seminorm α β ψ₂) ∧ 0 < l2Seminorm 0 0 (ψ₁ - ψ₂) := by
+  sorry
+end SchwartzMomentProblem
 end
 end

@@ -18,7 +18,13 @@
     "SchwartzMomentProblem.OtherSpaces.exists_disjoint_translate",
     "SchwartzMomentProblem.OtherSpaces.exists_same_matrixElements_of_translate",
     "SchwartzMomentProblem.OtherSpaces.adjoin_le_localOps",
-    "SchwartzMomentProblem.OtherSpaces.exists_same_moments"
+    "SchwartzMomentProblem.OtherSpaces.exists_same_moments",
+    "SchwartzMomentProblem.adjoin_le_monomials",
+    "SchwartzMomentProblem.matrixElement_eq_of_moment_eq",
+    "SchwartzMomentProblem.matrixElement_P_pow_X_pow_P_pow",
+    "SchwartzMomentProblem.l2Seminorm_eq_of_moment_eq",
+    "SchwartzMomentProblem.l2Seminorm_psi",
+    "SchwartzMomentProblem.exists_same_seminorms"
   ],
   "permitted_axioms": [
     "propext",

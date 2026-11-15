@@ -31,6 +31,9 @@ Formalized here:
   the bumps (`matrixElement_translate_psi_inj`), so it is not local (`not_isLocal_translate`).
 * Sec. 3, other state spaces: in `SchwartzMomentProblem/OtherSpaces.lean`, for any space of
   functions on any domain, and Theorem 1 on `ℝⁿ`.
+* Remark after Theorem 1, the moments see only distances to `0`: in
+  `SchwartzMomentProblem/Seminorms.lean`, the moments determine all `L²` seminorms of a state but
+  not its distances to other states.
 
 The moment is the integral `∫ conj(ψ x) xᵐ (-iħ)ⁿ ψ⁽ⁿ⁾(x) dx`.
 

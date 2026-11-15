@@ -20,3 +20,9 @@ SchwartzMomentProblem.OtherSpaces.exists_disjoint_translate  # Sec. 3: a far tra
 SchwartzMomentProblem.OtherSpaces.exists_same_matrixElements_of_translate  # Sec. 3: any translation-invariant space with compact support
 SchwartzMomentProblem.OtherSpaces.adjoin_le_localOps  # Sec. 3 on ℝⁿ: polynomials in positions and momenta are local
 SchwartzMomentProblem.OtherSpaces.exists_same_moments  # Theorem 1 on ℝⁿ, n ≥ 1
+SchwartzMomentProblem.adjoin_le_monomials  # Remark: polynomials in X and P are spanned by the XᵐPⁿ
+SchwartzMomentProblem.matrixElement_eq_of_moment_eq  # Remark: the moments determine every polynomial in X and P
+SchwartzMomentProblem.matrixElement_P_pow_X_pow_P_pow  # Remark: squared L² seminorms are moments
+SchwartzMomentProblem.l2Seminorm_eq_of_moment_eq  # Remark: the moments determine the L² seminorms
+SchwartzMomentProblem.l2Seminorm_psi  # Remark: all ψ_θ have the same L² seminorms
+SchwartzMomentProblem.exists_same_seminorms  # Remark: same moments and seminorms, positive distance

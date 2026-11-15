@@ -53,10 +53,13 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \paragraph{Files.}\leavevmode
 \begin{itemize}
 \item Files: \lean{briefs/SchwartzMomentProblem/SchwartzMomentProblem.lean},\newline
-  \lean{briefs/SchwartzMomentProblem/SchwartzMomentProblem/OtherSpaces.lean} (other state spaces)
+  \lean{briefs/SchwartzMomentProblem/SchwartzMomentProblem/OtherSpaces.lean} (other state spaces),\newline
+  \lean{briefs/SchwartzMomentProblem/SchwartzMomentProblem/Seminorms.lean} (the Remark on seminorms)
 \item Library: \lean{SchwartzMomentProblem}
 \item Imports: \lean{Mathlib.Analysis.Calculus.BumpFunction.InnerProduct},\newline
-  \lean{Mathlib.Analysis.Distribution.SchwartzSpace.Deriv}
+  \lean{Mathlib.Analysis.Distribution.SchwartzSpace.Deriv}; \lean{Seminorms.lean} imports
+  \lean{SchwartzNorms}, the formalization of the brief ``Equivalence of sup-norm, $L^1$, and $L^2$
+  seminorms on the Schwartz space'', for its seminorms
 \end{itemize}
 
 \paragraph{Setting.} Schwartz functions $f, g \in \mathcal{S}(\mathbb{R}, \mathbb{C})$
@@ -84,6 +87,7 @@ Sec.~3: local operators never detect phase differences between spatially separat
 eq.~(3) for disjoint supports, compact or not & \lean{moment_eq_matrixElement}, \lean{moment_psi_of_disjoint} \\
 Sec.~3: ``any space that contains functions with compact support will suffer the same consequences'' & \lean{OtherSpaces.matrixElement_psi_eq}, \lean{OtherSpaces.linearIndependent_psi}, \lean{OtherSpaces.exists_same_matrixElements} (any space, any domain); \lean{OtherSpaces.exists_disjoint_translate}, \lean{OtherSpaces.exists_same_matrixElements_of_translate} (translation-invariant spaces) \\
 Theorem~1 on $\mathbb{R}^n$, $n \ge 1$ & \lean{OtherSpaces.adjoin_le_localOps}, \lean{OtherSpaces.exists_same_moments} \\
+Remark after Theorem~1: ``the moments, then, can only give information about all distances to 0, and not to all other functions'' & \lean{adjoin_le_monomials}, \lean{matrixElement_eq_of_moment_eq}, \lean{matrixElement_P_pow_X_pow_P_pow}, \lean{l2Seminorm_eq_of_moment_eq}, \lean{l2Seminorm_psi}, \lean{exists_same_seminorms} \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -140,6 +144,30 @@ the same expectation value for all of them (\lean{OtherSpaces.exists_same_moment
 $n = 0$ the space is $\mathbb{C}$, has a single ray, and the theorem fails, hence the
 nontriviality hypothesis.
 
+\paragraph{The moments see only distances to $0$.} The Remark after Theorem~1 is formalized in
+\lean{Seminorms.lean}, with the seminorms $\|f\|^{L^2}_{\alpha,\beta} = \|x^\alpha \partial^\beta
+f\|_{L^2}$ (\lean{SchwartzNorms.l2Seminorm}). The value $\|\psi\|^{L^2}_{\alpha,\beta}$ is the
+distance from $\psi$ to $0$ in that seminorm. The reading is in three steps.
+\begin{itemize}
+\item The moments $\braket{\psi|X^mP^n|\psi}$ determine $\braket{\psi|A|\psi}$ for every
+  polynomial $A$ in $X$ and $P$ (\lean{matrixElement_eq_of_moment_eq}). By the commutation
+  relation $PX = XP - i\hbar$ (\lean{P_mul_X}), such polynomials are linear combinations of the
+  monomials $X^mP^n$ (\lean{adjoin_le_monomials}).
+\item $P$ is symmetric (integration by parts, \lean{matrixElement_P_mul}), so
+  \[
+    \braket{\psi|P^\beta X^{2\alpha} P^\beta|\psi} = \hbar^{2\beta}\,
+    \bigl(\|\psi\|^{L^2}_{\alpha,\beta}\bigr)^2
+  \]
+  (\lean{matrixElement_P_pow_X_pow_P_pow}). Hence for $\hbar \ne 0$ two states with the same
+  moments have the same $L^2$ seminorms (\lean{l2Seminorm_eq_of_moment_eq}), and all the states
+  $\psi_\theta$ have the same $L^2$ seminorms (\lean{l2Seminorm_psi}).
+\item The distances to other functions are not determined: $\psi_0$ and $\psi_\pi$ have the same
+  moments for every $\hbar$ and the same $L^2$ seminorms, while $\|\psi_0 - \psi_\pi\|_{L^2} > 0$
+  (\lean{exists_same_seminorms}). Since the seminorms generate the topology of
+  $\mathcal{S}(\mathbb{R})$, the moments fix the distances from $\psi$ to $0$ but do not locate
+  $\psi$ in the space.
+\end{itemize}
+
 \paragraph{Differences from the brief.}
 \begin{itemize}
 \item The moment is defined as an integral for every Schwartz function. \lean{moment_psi} proves
@@ -149,7 +177,8 @@ nontriviality hypothesis.
 \item ``Each $\theta$ defines a different physical state'' is formalized as linear
   independence of $\psi_\theta$ and $\psi_{\theta'}$, which holds exactly when
   $e^{i\theta} \ne e^{i\theta'}$, i.e.\ for $\theta \not\equiv \theta' \pmod{2\pi}$.
-\item The closing remark on Schwartz seminorms is not formalized.
+\item The Remark after Theorem~1 is informal. It is formalized in the reading above: the moments
+  determine all the $L^2$ seminorms of $\psi$, but not $\psi$'s distance to other functions.
 \end{itemize}
 
 \paragraph{Problems found in the brief.} No mathematical problems. The argument needs $f$ and

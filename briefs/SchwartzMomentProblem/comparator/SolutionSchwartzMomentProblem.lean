@@ -7,6 +7,7 @@ module
 
 public import SchwartzMomentProblem
 public import SchwartzMomentProblem.OtherSpaces
+public import SchwartzMomentProblem.Seminorms
 
 /-!
 # Non-uniqueness of the moment problem, re-exported for `lake comparator`
