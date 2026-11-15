@@ -14,8 +14,6 @@
 % Lean names and paths: verbatim, breakable at . _ /
 \DeclareUrlCommand\lean{\urlstyle{tt}}
 \def\UrlBreaks{\do\.\do\_\do\/}
-% Marks an open problem that blocks checking a main claim of the brief
-\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
 % Extra stretch for paragraphs with long, unbreakable Lean names
 \emergencystretch=6em
 
@@ -28,11 +26,8 @@
 
 \noindent
 Open problems raised by the technical brief in this directory, and by its Lean formalization
-(see \lean{formalization-log.tex}).
-Items marked \textsc{[blocks verification]} stand in the way of checking a main
-claim of the brief as the brief states it: a \emph{formalization gap} can be closed
-in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
-precise first.
+(see \lean{formalization-log.tex}). Items marked \emph{research} are open research questions,
+not needed to check the brief.
 
 \section*{From the brief}
 \begin{enumerate}
@@ -55,6 +50,10 @@ precise first.
   \emph{Related} (\lean{further-results.tex}, Sec.~2, ``The group form''). For a nilpotent group
   the smooth vectors form a quantum vector space that satisfies [B]COBS, [B]WDQ for the frames
   in the group, and [B]STDIST, the last because the group is part of the data (not formalized).
+  For the Heisenberg group $H_n$ the smooth vectors of the Schr\"odinger representation are
+  exactly $V = \mathcal S(\mathbb R^n)$ of Example~3, and its generators are $i$ times the defining
+  observables (\lean{FurtherResults.contDiff_schrodinger_iff_schwartzN},
+  \lean{FurtherResults.fderiv_schrodinger_obsDir}).
   Whether irreducibility of the representation implies the irreducibility condition above, whose
   operators need not be bounded, is open beyond the Heisenberg group $H_1$.
   (Brief, Sec.~5, ``Completeness of the Lie algebra''; Sec.~6.)
@@ -140,21 +139,6 @@ precise first.
   necessary, so these are all the point transformations in the largest $F$
   (\lean{FurtherResults.mem_pointFrames_of_mem_schwartzAut}). The choice of $F$ remains open.
   (Brief, Theorem~5, proof; Log, ``Problems found in the brief'', last item.)
-\end{enumerate}
-
-\section*{From the formalization}
-Definition~1 and Examples~3 (in $n$ dimensions) and~4 are checked in full. The gap below
-concerns the coordinate independence of Example~3; it does not block verification of a claim of
-the brief.
-\begin{enumerate}
-\item \textbf{$\mathcal{S}(\mathbb{R}^n)$ as the smooth vectors of the Schr\"odinger
-  representation.} \emph{Formalization gap.} The Schwartz space is the space of smooth vectors
-  of the Schr\"odinger representation of the Heisenberg group $H_n$ (G.~B.~Folland,
-  \emph{Harmonic Analysis in Phase Space}, Princeton 1989, Ch.~1). This is the group form of
-  problem~1 (\lean{further-results.tex}, Sec.~2), there not formalized. It needs unitary
-  representations of Lie groups and their smooth vectors, which neither Mathlib nor TauCeti
-  provides in usable form. The oscillator gives the same space with much less
-  (\lean{further-results.tex}, Sec.~6).
 \end{enumerate}
 
 \end{document}

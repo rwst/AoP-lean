@@ -221,17 +221,67 @@ A stronger version of the same repair is to make a group part of the data. Let $
 connected Lie group with Lie algebra $\mathfrak g$, $\pi$ an irreducible unitary representation
 on a Hilbert space $H$, and let $V$ be the space $H^\infty$ of smooth vectors, with the seminorms
 $\|d\pi(u)v\|$ for $u$ in the enveloping algebra. These are the seminorms of Corollary~2 for the
-defining observables $X_k = i\,d\pi(Y_k)$, with $(Y_k)$ a basis of~$\mathfrak g$. Antoine builds
+defining observables $X_k = -i\,d\pi(Y_k)$, with $(Y_k)$ a basis of~$\mathfrak g$. Antoine builds
 his space from such a representation and requires it to be invariant under the symmetry
 group~\cite{antoine2}; he considers $H^\infty$ and sets it aside because it need not be nuclear.
 For the Schr\"odinger representation of the Heisenberg group $H_n$, of dimension $2n + 1$,
-$H^\infty$ is $\mathcal S(\mathbb R^n)$ with its usual topology (\cite[Secs.~1 and~6]{goodman} for
-$n = 1$; for every $n$ it follows from the description of $\mathcal S(\mathbb R^n)$ by the number
-operator~\cite[Sec.~V.3]{reedsimon}, which is formalized in Sec.~\ref{sec:oscillator}). In this form every defining observable is essentially
+$H^\infty$ is $\mathcal S(\mathbb R^n)$ (Theorem~\ref{thm:smoothvectors} below;
+\cite[Secs.~1 and~6]{goodman} for $n = 1$), and its topology is the usual one: by part~(3) of the
+theorem, $d\pi$ maps $\mathcal S(\mathbb R^n)$ into itself and $-i\,d\pi(Y_k)$ are the defining
+observables of Example~3 at $\hbar = 1$, so the seminorms $\|d\pi(u)v\|$ are those of
+Corollary~2. In this form every defining observable is essentially
 self-adjoint on $V$, as Antoine recalls from Segal and from Nelson and Stinespring, and it
-generates a unitary group that maps $V$ onto itself. The rest of this subsection checks the group
-form against Definition~1 and against the three base conditions of the Hilbert
-brief~\cite{hilbert}. None of it is formalized.
+generates a unitary group that maps $V$ onto itself.
+
+\begin{theorem}\label{thm:smoothvectors}
+  Let $n \ge 1$. On $\mathbb R^n \times \mathbb R^n \times \mathbb R$ take the group law
+  $(a, b, t)(a', b', t') = (a + a', b + b', t + t' + a \cdot b')$, a form of $H_n$, and let
+  \[
+    \rho(a, b, t)\, g(x) = e^{i(t + x \cdot b)}\, g(x + a), \qquad g \in L^2(\mathbb R^n).
+  \]
+  \begin{enumerate}
+    \item Each $\rho(p)$ is unitary, and $\rho(p)\rho(q) = \rho(pq)$.
+    \item A vector $g \in L^2(\mathbb R^n)$ is smooth, that is, $p \mapsto \rho(p) g$ is a
+      $C^\infty$ map $\mathbb R^{2n+1} \to L^2(\mathbb R^n)$, if and only if
+      $g \in \mathcal S(\mathbb R^n)$.
+    \item For $f \in \mathcal S(\mathbb R^n)$ the derivative of $p \mapsto \rho(p) f$ at $p = 0$
+      is $i P_j f$ in the direction $(e_j, 0, 0)$, $i X^j f$ in the direction $(0, e_j, 0)$ and
+      $i f$ in the direction $(0, 0, 1)$, with $\hbar = 1$.
+  \end{enumerate}
+\end{theorem}
+
+The map $(a, b, t) \mapsto (a, b, t - \frac12 a \cdot b)$ is a polynomial diffeomorphism onto the
+usual form of $H_n$, with the law $t + t' + \frac12(a \cdot b' - b \cdot a')$ in the last
+coordinate, so the smooth vectors do not depend on the form. For $n = 1$ the generators in~(3)
+are Goodman's~\cite[Sec.~6]{goodman}.
+
+\begin{proof}
+  (1) is a computation. For~(2), let first $f \in \mathcal S(\mathbb R^n)$. For $p$ near a
+  fixed point, the derivative in $p$ of $e^{i(t + x \cdot b)} f(x + a)$ is bounded by
+  $C(1 + |x|)^{-n}$, which is square integrable. By dominated convergence the orbit is
+  differentiable as a map into $L^2(\mathbb R^n)$, and its derivative at $p = (a, b, t)$ in the
+  direction $(u, w, s)$ is $\rho(p)$ applied to the Schwartz function
+  $\partial_u f + i (x \cdot w) f + i (s - a \cdot w) f$; at $p = 0$ this is~(3). Induction on
+  the order of differentiability gives $C^\infty$.
+
+  Conversely, let $g$ be smooth, and let $\Delta g$ be the sum over $j$ of the second derivatives
+  of the orbit at $0$ in the directions $(e_j, 0, 0)$ and $(0, e_j, 0)$. For
+  $h \in \mathcal S(\mathbb R^n)$ we have $\langle h, \rho(p) g\rangle = \langle \rho(p)^{-1} h,
+  g\rangle$, and on these two lines $\rho(p)^{-1} = \rho(-p)$. Differentiating twice with the first
+  part gives $\langle h, \Delta g\rangle = \langle \sum_j (\partial_j^2 - x_j^2) h, g\rangle =
+  -2 \langle H h, g\rangle$, with $H$ the oscillator of Theorem~\ref{thm:oscillator}. For the
+  Hermite function $h_\alpha$ this is $-2(|\alpha| + \frac n2)\langle h_\alpha, g\rangle$. Moreover
+  $\rho(p) \Delta g$ is the corresponding second derivative at $q = 0$ of the smooth map
+  $q \mapsto \rho(pq) g$, so $\Delta g$ is again smooth. By induction,
+  $(|\alpha| + \frac n2)^k \langle h_\alpha, g\rangle$ are the Hermite coefficients of the vector
+  $(-\Delta/2)^k g$ of $L^2(\mathbb R^n)$, for every $k$. So the coefficients of $g$ decrease
+  rapidly, and $g \in \mathcal S(\mathbb R^n)$ as in the proof of
+  Theorem~\ref{thm:oscillator}(4).
+\end{proof}
+
+The rest of this subsection checks the group form against Definition~1 and against the three base
+conditions of the Hilbert brief~\cite{hilbert}. Apart from Theorem~\ref{thm:smoothvectors}, none
+of it is formalized.
 
 \paragraph{Definition~1.} $d\pi$ represents $\mathfrak g$ on $H^\infty$ by skew-symmetric
 operators, so the $X_k$ are symmetric and satisfy commutation relations with the structure
@@ -293,8 +343,10 @@ with the $X_k$ it is a dense proper subspace of $\mathcal S(\mathbb R^n)$, so it
 [B]COBS, [B]WDQ for the frames in~$G$ and [B]STDIST. What it adds over the Lie-algebra form is the
 frame group, which is part of the data and acts continuously by construction. [B]STDIST is
 obtained as before, from the observables and not from the space. The cost is that the definition
-presupposes the Hilbert space and the group. The Lean files contain only the Lie-algebra form
-above; Theorem~\ref{thm:irreducible}(4) is its instance for the Heisenberg group.
+presupposes the Hilbert space and the group. The Lean files contain the Lie-algebra form above,
+with Theorem~\ref{thm:irreducible}(4) as its instance for the Heisenberg group, and
+Theorem~\ref{thm:smoothvectors}, which identifies $V$ of Example~3 with the smooth vectors of the
+Schr\"odinger representation.
 
 \subsection{Lean}
 
@@ -312,8 +364,27 @@ Module:\\ \lean{QuantumVectorSpaces.FurtherResults.Irreducibility},\\ namespace
     \lean{SchwartzMap.tendsto_hermiteSum}, in\\
     \lean{ForMathlib.Analysis.Distribution.SchwartzSpace.HermitePartialSum}.
 \end{itemize}
+Modules:\\ \lean{ForMathlib.Analysis.Distribution.SchwartzSpace.SchrodingerRep},\\
+\lean{ForMathlib.Analysis.Distribution.SchwartzSpace.SmoothVectors},\\ namespace
+\lean{Heisenberg}, for $\mathbb R^\iota$ with $\iota$ finite and, in~(2), nonempty.
+\begin{itemize}
+  \item \lean{schrodinger}, \lean{schrodinger_schrodinger}, \lean{inner_schrodinger_right}:
+    Theorem~\ref{thm:smoothvectors}(1).
+  \item \lean{contDiff_schrodinger_toLp}, \lean{contDiff_schrodinger_iff}:
+    Theorem~\ref{thm:smoothvectors}(2). The differentiation under the $L^2$ norm is
+    \lean{MeasureTheory.hasFDerivAt_toLp_of_dominated}, in
+    \lean{ForMathlib.Analysis.Calculus.ParametricLp}; the last step of the proof is
+    \lean{SchwartzMap.exists_toLp_eq_of_forall_exists_inner}.
+  \item \lean{fderiv_schrodinger_toLp_zero}: Theorem~\ref{thm:smoothvectors}(3).
+\end{itemize}
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.SmoothVectors}, namespace
+\lean{QuantumVectorSpaces.FurtherResults}.
+\begin{itemize}
+  \item \lean{contDiff_schrodinger_iff_schwartzN}, \lean{fderiv_schrodinger_obsDir}:
+    Theorem~\ref{thm:smoothvectors}(2) and~(3) for Example~3.
+\end{itemize}
 Not formalized: that $\Phi_X$ is a quantum vector space, the remark on Theorem~5, and the group
-form.
+form apart from Theorem~\ref{thm:smoothvectors}.
 
 \section{[B]WDQ relative to a group of frames}
 \label{sec:framegroup}

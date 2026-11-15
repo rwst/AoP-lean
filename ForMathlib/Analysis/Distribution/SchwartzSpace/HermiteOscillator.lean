@@ -29,6 +29,8 @@ coefficients `λ_αᵏ c_α(g)`, which are bounded by `‖Nᵏ g‖`. So the coe
 ## Main results
 
 * `SchwartzMap.hermiteCoeff_oscillatorCLM`: `c_α(H f) = (|α| + dim/2) c_α(f)`;
+* `SchwartzMap.exists_toLp_eq_of_forall_exists_inner`: a vector of `L²` whose coefficients times
+  every power of `λ_α` are again the coefficients of a vector of `L²` is a Schwartz function;
 * `SchwartzMap.isClosable_oscillator`: `H` is closable;
 * `SchwartzMap.forall_mem_powDomain_iff`: `g ∈ L²(ℝ^ι)` lies in `D(Nᵏ)` for every `k` iff it
   is a Schwartz function.
@@ -206,6 +208,42 @@ lemma hermiteWeight_le_two_mul [Nonempty ι] (α : ι → ℕ) :
   push_cast
   linarith
 
+/-- A vector of `L²(ℝ^ι)` whose Hermite coefficients satisfy `λ_αᵏ c_α(g) = c_α(w_k)` for some
+`w_k ∈ L²` and every `k` is a Schwartz function. -/
+theorem exists_toLp_eq_of_forall_exists_inner [Nonempty ι] {g : 𝓗}
+    (hg : ∀ K, ∃ w : 𝓗, ∀ α, ⟪hermitePiBasis α, w⟫_ℂ =
+      (oscillatorEigenvalue ι α : ℂ) ^ K * ⟪hermitePiBasis α, g⟫_ℂ) :
+    ∃ f : 𝓢(EuclideanSpace ℝ ι, ℂ), f.toLp 2 = g := by
+  set c : (ι → ℕ) → ℂ := fun α => ⟪hermitePiBasis α, g⟫_ℂ
+  have hc : ∀ K, coeffNorm K c ≠ ⊤ := by
+    intro K
+    obtain ⟨w, hw⟩ := hg K
+    refine ne_top_of_le_ne_top (ENNReal.ofReal_ne_top (r := 2 ^ K * ‖w‖)) (iSup_le fun α => ?_)
+    have hb : ‖⟪hermitePiBasis α, w⟫_ℂ‖ ≤ ‖w‖ := by
+      simpa [hermitePiBasis.orthonormal.1 α] using norm_inner_le_norm (hermitePiBasis α) w
+    rw [hw, norm_mul, norm_pow, Complex.norm_of_nonneg (oscillatorEigenvalue_nonneg α)] at hb
+    rw [← ofReal_norm, ← ENNReal.ofReal_natCast, ← ENNReal.ofReal_pow (Nat.cast_nonneg _),
+      ← ENNReal.ofReal_mul (by positivity)]
+    refine ENNReal.ofReal_le_ofReal ?_
+    calc (hermiteWeight α : ℝ) ^ K * ‖c α‖
+        ≤ (2 * oscillatorEigenvalue ι α) ^ K * ‖c α‖ := by
+          gcongr
+          exact hermiteWeight_le_two_mul α
+      _ = 2 ^ K * (oscillatorEigenvalue ι α ^ K * ‖c α‖) := by ring
+      _ ≤ 2 ^ K * ‖w‖ := by gcongr
+  refine ⟨hermiteSeries c hc, eq_of_inner_hermitePiBasis_eq fun α => ?_⟩
+  rw [← hermiteCoeff_apply, hermiteCoeff_hermiteSeries]
+
+/-- The Hermite function `h_α` is an eigenvector of the oscillator: `H h_α = λ_α h_α`. -/
+theorem toLp_oscillatorCLM_hermitePi (α : ι → ℕ) :
+    (oscillatorCLM (hermitePi α)).toLp 2 = (oscillatorEigenvalue ι α : ℂ) • hermitePiBasis α := by
+  refine eq_of_inner_hermitePiBasis_eq fun β => ?_
+  rw [← hermiteCoeff_apply, hermiteCoeff_oscillatorCLM, hermiteCoeff_apply, toLp_hermitePi,
+    inner_smul_right]
+  rcases eq_or_ne β α with rfl | h
+  · rfl
+  · rw [hermitePiBasis.orthonormal.2 h, mul_zero, mul_zero]
+
 /-- **The Schwartz space is the joint domain of the powers of the oscillator** (B. Simon).
 A vector `g ∈ L²(ℝ^ι)` lies in `D(Nᵏ)` for every `k`, where `N` is the closure of the harmonic
 oscillator on `𝓢(ℝ^ι)`, iff it is a Schwartz function. -/
@@ -213,26 +251,7 @@ theorem forall_mem_powDomain_iff [Nonempty ι] (g : 𝓗) :
     (∀ k, g ∈ (oscillator ι).closure.powDomain k) ↔
       ∃ f : 𝓢(EuclideanSpace ℝ ι, ℂ), f.toLp 2 = g := by
   constructor
-  · intro hg
-    set c : (ι → ℕ) → ℂ := fun α => ⟪hermitePiBasis α, g⟫_ℂ
-    have hc : ∀ K, coeffNorm K c ≠ ⊤ := by
-      intro K
-      obtain ⟨w, hw⟩ := exists_inner_eq_pow_mul (hg K)
-      refine ne_top_of_le_ne_top (ENNReal.ofReal_ne_top (r := 2 ^ K * ‖w‖)) (iSup_le fun α => ?_)
-      have hb : ‖⟪hermitePiBasis α, w⟫_ℂ‖ ≤ ‖w‖ := by
-        simpa [hermitePiBasis.orthonormal.1 α] using norm_inner_le_norm (hermitePiBasis α) w
-      rw [hw, norm_mul, norm_pow, Complex.norm_of_nonneg (oscillatorEigenvalue_nonneg α)] at hb
-      rw [← ofReal_norm, ← ENNReal.ofReal_natCast, ← ENNReal.ofReal_pow (Nat.cast_nonneg _),
-        ← ENNReal.ofReal_mul (by positivity)]
-      refine ENNReal.ofReal_le_ofReal ?_
-      calc (hermiteWeight α : ℝ) ^ K * ‖c α‖
-          ≤ (2 * oscillatorEigenvalue ι α) ^ K * ‖c α‖ := by
-            gcongr
-            exact hermiteWeight_le_two_mul α
-        _ = 2 ^ K * (oscillatorEigenvalue ι α ^ K * ‖c α‖) := by ring
-        _ ≤ 2 ^ K * ‖w‖ := by gcongr
-    refine ⟨hermiteSeries c hc, eq_of_inner_hermitePiBasis_eq fun α => ?_⟩
-    rw [← hermiteCoeff_apply, hermiteCoeff_hermiteSeries]
+  · exact fun hg => exists_toLp_eq_of_forall_exists_inner fun K => exists_inner_eq_pow_mul (hg K)
   · rintro ⟨f, rfl⟩ k
     induction k generalizing f with
     | zero => trivial
