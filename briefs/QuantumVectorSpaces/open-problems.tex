@@ -129,6 +129,54 @@ precise first.
 \end{enumerate}
 
 \section*{From the formalization}
-None. Definition~1 and Examples~3 (in $n$ dimensions) and~4 are checked in full.
+Definition~1 and Examples~3 (in $n$ dimensions) and~4 are checked in full. The gaps below
+concern problem~6 and the coordinate independence of Example~3; none of them blocks
+verification of a claim of the brief.
+\begin{enumerate}
+\item \textbf{Linear changes of frame preserve $\mathcal{S}(\mathbb{R}^n)$.}
+  \emph{Formalization gap.} Only the translations are shown to act continuously on $V$
+  (\lean{FurtherResults.isFrameCompatible_translate}). Missing: the same for the
+  modulations $e^{i\langle a, x\rangle}$, the linear changes of variable with the factor
+  $|\det A|^{1/2}$, the Fourier transform and the chirps $e^{i\langle x, Bx\rangle}$, $B$
+  symmetric, each as a frame-compatible group in the sense of
+  \lean{FurtherResults.IsFrameCompatible}. These generate the metaplectic group up to phases,
+  so the linear symplectic changes of frame would all be admissible; the generation theorem
+  itself is not needed. Mathlib supplies the pieces
+  (\lean{SchwartzMap.compCLMOfContinuousLinearEquiv}, \lean{SchwartzMap.fourierTransformCLM},
+  \lean{SchwartzMap.smulLeftCLM} for multipliers of temperate growth).
+\item \textbf{$\mathcal{S}(\mathbb{R}^n)$ as the joint domain of the powers of the
+  oscillator.} \emph{Formalization gap.} With $N$ the closure in $L^2(\mathbb{R}^n)$ of the
+  harmonic oscillator, $\mathcal{S}(\mathbb{R}^n) = \bigcap_k D(N^k)$ (B.~Simon,
+  J.\ Math.\ Phys.\ 12 (1971) 140). This defines $V$ without the Cartesian seminorms. It
+  should follow quickly from the Hermite characterization
+  (\lean{SchwartzMap.exists_toLp_eq_iff} and its multi-index form), since $N$ is diagonal in
+  the Hermite basis.
+\item \textbf{A sufficient condition for nonlinear changes of frame.}
+  \emph{Formalization gap.} For a diffeomorphism $g$ of $\mathbb{R}$, the unitary
+  $U_g f = \sqrt{|g'|}\,(f \circ g)$ maps $\mathcal{S}(\mathbb{R})$ onto itself when $g$ and
+  $g^{-1}$ have temperate growth and $|g'|$ is bounded below by a negative power of
+  $1 + |x|$. Mathlib's \lean{SchwartzMap.compCLM} covers $f \mapsto f \circ g$ (temperate
+  growth of $g$, polynomial growth of $g^{-1}$); the factor $\sqrt{|g'|}$ and the
+  $n$-dimensional version with $\sqrt{|\det Dg|}$ are missing. The change of frame
+  $y = \tan(\frac{\pi}{2}\operatorname{erf} x)$ of problem~6 fails both growth conditions: it
+  grows like $e^{x^2}$, and its inverse only like $\sqrt{\log |y|}$.
+\item \textbf{The Galbis--Jord\'a characterization.} \emph{Formalization gap.} By
+  Galbis and Jord\'a (Rev.\ Mat.\ Iberoam.\ 34 (2018), Thm.~2.3 and Remark~2.4), $f \circ
+  \varphi \in \mathcal{S}(\mathbb{R})$ for every $f \in \mathcal{S}(\mathbb{R})$ if and only if
+  (i) for every $j$ there are $C, p$ with $|\varphi^{(j)}(x)| \le C(1 + |\varphi(x)|^2)^p$, and
+  (ii) there is $k$ with $|\varphi(x)| \ge |x|^{1/k}$ for $|x| \ge k$; the same holds in
+  several variables. Condition~(i) is weaker than temperate growth: $\varphi(x) = e^{x^2}$
+  qualifies. Sufficiency follows from the Faà di Bruno bounds in Mathlib
+  (\lean{norm_iteratedFDeriv_comp_le}); necessity glues infinitely many bump functions along a
+  sequence into one Schwartz function. The version for the unitaries $U_\varphi$, with the
+  factor $\sqrt{|\varphi'|}$, is not in the paper.
+\item \textbf{$\mathcal{S}(\mathbb{R}^n)$ as the smooth vectors of the Schr\"odinger
+  representation.} \emph{Formalization gap.} The Schwartz space is the space of smooth vectors
+  of the Schr\"odinger representation of the Heisenberg group $H_n$ (G.~B.~Folland,
+  \emph{Harmonic Analysis in Phase Space}, Princeton 1989, Ch.~1). This is the group form of
+  problem~1 (\lean{further-results.tex}, Sec.~2), there not formalized. It needs unitary
+  representations of Lie groups and their smooth vectors, which neither Mathlib nor TauCeti
+  provides in usable form; gap~2 gives the same space with much less.
+\end{enumerate}
 
 \end{document}
