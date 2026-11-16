@@ -76,6 +76,12 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   inner product; polarization of $\ket{x}\bra{y}$). Coordinate conjugation in an orthonormal
   basis came from TauCeti (\lean{TauCeti.Analysis.InnerProductSpace.Conjugation}) until the
   library moved to Hilbert bases.
+\item Not in this log: results that go beyond the brief, by R.~Stephan, are in
+  \lean{briefs/UnitaryEntropy/further-results.tex}, with their Lean files under
+  \lean{briefs/UnitaryEntropy/UnitaryEntropy/FurtherResults/} (modules
+  \lean{UnitaryEntropy.FurtherResults.*}). No module of the brief imports them. So far: the
+  classical counterpart cited in the brief's conclusion, Hamiltonian evolution iff the Shannon
+  entropy and the independence of degrees of freedom are preserved.
 \end{itemize}
 
 \paragraph{Setting.} $E$ is a finite-dimensional complex Hilbert space, and operators are

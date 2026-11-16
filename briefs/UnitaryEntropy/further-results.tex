@@ -1,0 +1,254 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\emergencystretch=6em
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{Further results on the brief\\ \emph{Schr\"odinger equation is equivalent to information
+  conservation}}
+\author{Ralf Stephan}
+\date{16 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  This note collects results that go beyond the technical brief \emph{Schr\"odinger equation is
+  equivalent to information conservation}~\cite{brief}. They are not part of the brief. Each
+  section names the Lean declarations that check it; the Lean files are in the brief's
+  directory, under \lean{UnitaryEntropy/FurtherResults/}.
+\end{abstract}
+
+\section{The classical counterpart}
+\label{sec:classical}
+
+The brief's conclusion says that its result ``parallels the classical case where Hamiltonian
+evolution is equivalent to the preservation of Shannon entropy (Liouville's theorem) and of the
+definitional independence of degrees of freedom''. This section states and proves that classical
+result, along the lines of the argument in~\cite[Ch.~\emph{Classical mechanics}, Sec.~\emph{Multiple
+degrees of freedom}]{book}. The proof runs parallel to the brief's: entropy fixes a determinant,
+independence fixes the form $\omega$ up to a factor $\pm1$, continuity in time excludes $-1$, and
+an infinitesimal argument gives the equation of motion.
+
+\subsection{Statement}
+
+The phase space of $n$ degrees of freedom is $\mathbb R^{2n}$ with coordinates
+$\xi = (q_1, \dots, q_n, p_1, \dots, p_n)$ and the symplectic form
+\[
+  \omega(u, v) = \sum_i \bigl(u_{q_i} v_{p_i} - u_{p_i} v_{q_i}\bigr).
+\]
+An \emph{evolution} is a family of maps $\varphi_{t_0\to t_1}\colon \mathbb R^{2n}\to\mathbb R^{2n}$,
+for all times $t_0, t_1$, that is deterministic and reversible,
+\[
+  \varphi_{t\to t} = \mathrm{id}, \qquad \varphi_{t_1\to t_2}\circ\varphi_{t_0\to t_1} =
+  \varphi_{t_0\to t_2},
+\]
+so that $\varphi_{t_1\to t_0}$ reconstructs the past, and differentiable: $(t, \xi) \mapsto
+\varphi_{t_0\to t}(\xi)$ is of class $C^2$ for every $t_0$. Its \emph{displacement field} is
+$S(t, \xi) = \partial_s \varphi_{t\to s}(\xi)|_{s=t}$, and every orbit moves with it:
+$\partial_t \varphi_{t_0\to t}(\xi) = S(t, \varphi_{t_0\to t}(\xi))$. Write $D\varphi$ for the
+derivative in $\xi$.
+
+\begin{description}
+\item[HM.] Hamilton's equations: there is $H(t, \xi)$, differentiable in $\xi$, with
+  $dH_t = \omega(S(t, \cdot), \cdot)$, that is, $\dot q_i = \partial H/\partial p_i$ and
+  $\dot p_i = -\partial H/\partial q_i$ along every orbit.
+\item[DR-INFO.] The evolution preserves the Shannon entropy
+  $I[\rho] = -\int \rho\log\rho\,d\xi$ of every probability density $\rho$. The evolved density
+  is $\rho_{t_1}(\varphi(\xi)) = \rho(\xi)/|\det D\varphi(\xi)|$, $\varphi = \varphi_{t_0\to t_1}$.
+\item[DR-IND.] The evolution preserves the independence of degrees of freedom: if
+  $\omega(u, v) = 0$, then $\omega(D\varphi\,u, D\varphi\,v) = 0$.
+\end{description}
+
+In DR-IND, two degrees of freedom are independent exactly when $\omega$ vanishes across them,
+and $\omega$ measures the area within each~\cite{book}. Asking that $\omega$-orthogonal
+displacements stay $\omega$-orthogonal is the infinitesimal form. For $n \ge 2$ it is the same as
+asking that independent degrees of freedom stay independent: two linearly independent
+$\omega$-orthogonal vectors lie in two independent degrees of freedom (extend them to a
+symplectic basis), and for dependent ones there is nothing to preserve. This equivalence is not
+formalized.
+
+\begin{theorem}\label{thm:classical}
+  For an evolution as above, HM $\Leftrightarrow$ DR-INFO $+$ DR-IND. Both are equivalent to the
+  evolution being symplectic, $\omega(D\varphi\,u, D\varphi\,v) = \omega(u, v)$, and then
+  $\det D\varphi = 1$ (Liouville).
+\end{theorem}
+
+\begin{corollary}\label{cor:one}
+  For one degree of freedom, HM $\Leftrightarrow$ DR-INFO.
+\end{corollary}
+
+\begin{proposition}\label{prop:two}
+  For two degrees of freedom neither condition suffices alone. The squeeze
+  $\varphi_{t_0\to t_1}(q_1, q_2, p_1, p_2) = (e^{t_1-t_0}q_1, e^{t_0-t_1}q_2, p_1, p_2)$ satisfies
+  DR-INFO but not DR-IND, and the dilation $\varphi_{t_0\to t_1}(\xi) = e^{t_1-t_0}\xi$ satisfies
+  DR-IND but not DR-INFO. Neither is Hamiltonian.
+\end{proposition}
+
+The squeeze breaks the independence of $q_1 + q_2$ and $p_1 - p_2$. Like the book's example of
+linear drag, the dilation multiplies the area within every degree of freedom by the same
+factor.
+
+\subsection{Proof}
+
+\begin{lemma}[Entropy]\label{lem:entropy}
+  Let $\varphi$ be injective and $C^1$ with $\det D\varphi \ne 0$. Then $\varphi$ preserves the
+  Shannon entropy of every probability density iff $|\det D\varphi| = 1$ everywhere.
+\end{lemma}
+
+\begin{proof}
+  By the change of variables formula, $I[\rho_{t_1}] = I[\rho] + \int\rho\log|\det D\varphi|$.
+  If $|\det D\varphi| = 1$ the last term vanishes. If not, $g = \log|\det D\varphi|$ is continuous
+  and $g(\xi_0) \ne 0$ somewhere, so $g(\xi_0)\,g > g(\xi_0)^2/2$ on a ball $B$ around $\xi_0$.
+  The uniform density on $B$ then has $\int\rho g \ne 0$.
+\end{proof}
+
+\begin{lemma}[Same orthogonality]\label{lem:ortho}
+  Let $B$ and $B'$ be bilinear forms on a vector space over a field, with $B(u, \cdot) \ne 0$ for
+  $u \ne 0$. If $B'(u, v) = 0$ whenever $B(u, v) = 0$, then $B' = cB$ for a scalar $c$.
+\end{lemma}
+
+\begin{proof}
+  For $u \ne 0$ the functional $B'(u, \cdot)$ vanishes on the kernel of $B(u, \cdot)$, so
+  $B'(u, \cdot) = c_u B(u, \cdot)$; likewise $B'(\cdot, v) = d_v B(\cdot, v)$ when
+  $B(\cdot, v) \ne 0$. If $B(u, v) \ne 0$, comparing the two at $(u, v)$ gives $c_u = d_v$. For
+  $u, u' \ne 0$ there is a $v$ with $B(u, v) \ne 0$ and $B(u', v) \ne 0$ (a vector space is not
+  the union of two proper subspaces), so $c_u = d_v = c_{u'}$.
+\end{proof}
+
+\begin{lemma}[Determinant]\label{lem:det}
+  If a linear map $A$ of $\mathbb R^{2n}$ satisfies $\omega(Au, Av) = c\,\omega(u, v)$, then
+  $(\det A)^2 = c^{2n}$.
+\end{lemma}
+
+\begin{proof}
+  In matrices, $A^{\mathsf T}JA = cJ$; take determinants and cancel $\det J \ne 0$.
+\end{proof}
+
+\begin{lemma}[Variational equation]\label{lem:variational}
+  $DS(t, \xi) = \partial_s D\varphi_{t\to s}(\xi)|_{s=t}$, and
+  $\partial_t D\varphi_{t_0\to t}(\xi) = DS(t, \varphi_{t_0\to t}(\xi))\,D\varphi_{t_0\to t}(\xi)$.
+\end{lemma}
+
+\begin{proof}
+  The first equation exchanges the derivatives in $s$ and $\xi$, which is allowed for a $C^2$
+  function. The second follows from the first, applied at time $t$ to
+  $D\varphi_{t_0\to s} = D\varphi_{t\to s}(\varphi_{t_0\to t}(\xi))\,D\varphi_{t_0\to t}(\xi)$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:classical}]
+  DR-INFO $+$ DR-IND $\Rightarrow$ symplectic. Fix $t_0$ and $\xi$, and let
+  $A_t = D\varphi_{t_0\to t}(\xi)$; it is invertible, since $\varphi_{t\to t_0}$ inverts
+  $\varphi_{t_0\to t}$. By Lemma~\ref{lem:entropy}, $|\det A_t| = 1$. By Lemma~\ref{lem:ortho}
+  with $B = \omega$ and $B'(u, v) = \omega(A_t u, A_t v)$, $\omega(A_t u, A_t v) =
+  \kappa(t)\,\omega(u, v)$, and by Lemma~\ref{lem:det} $\kappa(t)^{2n} = 1$, so $\kappa(t) = \pm1$.
+  This is the analogue of Wigner's theorem in the brief's Step~2, where the map is unitary or
+  anti-unitary. Here $\kappa(t) = \omega(A_t e_{q_1}, A_t e_{p_1})$ is continuous in $t$, by
+  Lemma~\ref{lem:variational}, and $\kappa(t_0) = 1$. By the intermediate value theorem
+  $\kappa \equiv 1$, as joint continuity excludes the anti-unitary case in the brief.
+
+  Symplectic $\Rightarrow$ HM. Differentiating $\omega(D\varphi_{t\to s}a, D\varphi_{t\to s}b) =
+  \omega(a, b)$ at $s = t$, by Lemma~\ref{lem:variational},
+  $\omega(DS\,a, b) + \omega(a, DS\,b) = 0$, that is, $\omega(DS\,a, b) = \omega(DS\,b, a)$. So
+  the 1-form $\alpha_t = \omega(S(t, \cdot), \cdot)$ has a symmetric derivative: it is closed.
+  On $\mathbb R^{2n}$, which is convex, the Poincar\'e lemma gives $H(t, \cdot)$ with
+  $dH_t = \alpha_t$. This is the analogue of the brief's Step~3.
+
+  HM $\Rightarrow$ symplectic. The second derivative of $H(t, \cdot)$ is symmetric, so
+  $\omega(DS\,a, b) = \omega(DS\,b, a)$ as above. By Lemma~\ref{lem:variational}, the derivative
+  in $t$ of $\omega(A_t u, A_t v)$ is $\omega(DS\,A_tu, A_tv) + \omega(A_tu, DS\,A_tv) = 0$, so it
+  stays $\omega(u, v)$.
+
+  Symplectic $\Rightarrow$ DR-INFO $+$ DR-IND. DR-IND is immediate. The matrix of $D\varphi$ is
+  symplectic, so $\det D\varphi = 1$, and Lemma~\ref{lem:entropy} gives DR-INFO.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:one}]
+  For $n = 1$, writing $u = u_q e_q + u_p e_p$ and expanding,
+  $\omega(Au, Av) = \omega(Ae_q, Ae_p)\,\omega(u, v)$ for every linear $A$. So DR-IND always holds.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:two}]
+  The squeeze is diagonal with $\det D\varphi = e^{s}e^{-s} = 1$, $s = t_1 - t_0$, so it satisfies
+  DR-INFO by Lemma~\ref{lem:entropy}. For $u = e_{q_1} + e_{q_2}$ and $v = e_{p_1} - e_{p_2}$,
+  $\omega(u, v) = 0$ but $\omega(D\varphi\,u, D\varphi\,v) = e^{s} - e^{-s} \ne 0$ for $s = 1$.
+  The dilation has $\omega(D\varphi\,u, D\varphi\,v) = e^{2s}\omega(u, v)$, so it satisfies
+  DR-IND but is not symplectic. By Theorem~\ref{thm:classical}, neither is Hamiltonian, and the
+  dilation does not satisfy DR-INFO.
+\end{proof}
+
+\begin{remark}
+  The differentiability of the evolution is assumed on both sides of Theorem~\ref{thm:classical}.
+  In the brief, EVDIFF is part of the conclusion of the direction DR-SCEQ $\Rightarrow$ DR-INFO;
+  classically it would follow from the smooth dependence of the solutions of Hamilton's equations
+  on the initial values, for a smooth $H$, which Mathlib does not have. The Hamiltonian
+  $H(t, \cdot)$ is constructed separately for each $t$, with no regularity in $t$, as the
+  brief's $H(t)$.
+\end{remark}
+
+\subsection{Lean}
+
+Module \lean{UnitaryEntropy.FurtherResults.ClassicalCounterpart}, namespace
+\lean{UnitaryEntropy.FurtherResults}. It does not import the brief's files. The phase space is
+\lean{PhaseSpace}~$\iota$ $= \iota \oplus \iota \to \mathbb R$ for a finite type $\iota$ of degrees
+of freedom, with $q_i$ at \lean{inl}~$i$ and $p_i$ at \lean{inr}~$i$.
+
+\begin{itemize}
+  \item \lean{symplecticForm}: $\omega$, with matrix $-J$ for Mathlib's \lean{Matrix.J}.
+  \item \lean{IsFlow}, \lean{displacement}: evolutions and the displacement field $S$;
+    \lean{IsFlow.hasDerivAt_orbit}: orbits move with $S$.
+  \item \lean{IsHamiltonian}, \lean{PreservesEntropy}, \lean{PreservesIndependence},
+    \lean{IsSymplectic}: the conditions HM, DR-INFO, DR-IND and the symplectic condition;
+    \lean{evolveDensity}: the evolved density. \lean{IsFlow.hamilton_equations}: HM gives
+    Hamilton's equations along every orbit.
+  \item \lean{MeasureTheory.integral_negMulLog_pushDensity_of_abs_det_eq_one},
+    \lean{MeasureTheory.abs_det_eq_one_of_integral_negMulLog_pushDensity}:
+    Lemma~\ref{lem:entropy}, in \lean{ForMathlib/InformationTheory/EntropyPreserving.lean}.
+  \item \lean{LinearMap.exists_eq_smul_of_forall_isOrtho_imp}: Lemma~\ref{lem:ortho}, in
+    \lean{ForMathlib/LinearAlgebra/BilinearMap/OrthogonalityPreserving.lean}.
+  \item \lean{det_sq_eq_of_symplecticForm}: Lemma~\ref{lem:det}.
+  \item \lean{hasDerivAt_fderiv_partial}, \lean{hasFDerivAt_deriv_partial},
+    \lean{IsFlow.hasDerivAt_fderiv}: Lemma~\ref{lem:variational}.
+  \item \lean{IsFlow.isSymplectic_of_preservesEntropy_of_preservesIndependence},
+    \lean{IsFlow.isHamiltonian_of_isSymplectic}, \lean{IsFlow.isSymplectic_of_isHamiltonian},
+    \lean{IsSymplectic.det_eq_one}, \lean{IsFlow.isSymplectic_iff},
+    \lean{IsFlow.isHamiltonian_iff_isSymplectic}, \lean{IsFlow.isHamiltonian_iff}:
+    Theorem~\ref{thm:classical}. The Poincar\'e lemma is Mathlib's
+    \lean{Convex.exists_forall_hasFDerivAt_of_fderiv_symmetric}, and $\det = 1$ for symplectic
+    matrices is Mathlib's \lean{SymplecticGroup.det_eq_one}.
+  \item \lean{symplecticForm_map_of_unique}, \lean{IsFlow.isHamiltonian_iff_preservesEntropy}:
+    Corollary~\ref{cor:one}.
+  \item \lean{squeezeFlow_counterexample}, \lean{dilationFlow_counterexample}:
+    Proposition~\ref{prop:two}. The dilation is stated for any nonempty set of degrees of
+    freedom.
+\end{itemize}
+
+\begin{thebibliography}{9}
+\bibitem{brief} G.~Carcassi, \emph{Schr\"odinger equation is equivalent to information
+  conservation}, technical brief, Assumptions of Physics,
+  \url{https://assumptionsofphysics.org/resources/briefs}.
+\bibitem{book} G.~Carcassi and C.~A.~Aidala, \emph{Assumptions of Physics}, Part \emph{Reverse
+  Physics}, Chapter \emph{Classical mechanics}, \url{https://assumptionsofphysics.org}.
+\end{thebibliography}
+
+\end{document}
