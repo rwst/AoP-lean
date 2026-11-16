@@ -44,6 +44,9 @@ not needed to check the brief. No open problem blocks verification of the brief.
   therefore has to say which changes of frame it supports. It cannot support all smooth ones:
   no nonzero state has finite position variance in every smooth frame both at time~0 and after a
   free evolution (\lean{FurtherResults.not_forall_frames_freeEvolution}; see \lean{further-results.tex}, Sec.~2).
+  This holds for the position $Y$ of each frame, multiplication by its own coordinate. Read
+  covariantly, as $U_e X U_e^{-1}$, the position is well defined in every smooth frame for every
+  Schwartz state at every time (\lean{FurtherResults.exists_forall_frames_freeEvolution}; Sec.~3).
   Carcassi, Calder\'on and Aidala exclude the change of frame of Proposition~3 for Schwartz
   spaces (arXiv:2308.06669v3, Appendix, Sec.~VIII). The remark
   after Theorem~5 that ``Schwartz spaces present the same problem'' concerns [B]STDIST only.

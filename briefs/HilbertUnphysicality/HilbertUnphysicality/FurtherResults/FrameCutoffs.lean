@@ -40,7 +40,9 @@ allow it.
    `ψ = 0`.
 
 So [B]WDQ, read for all smooth frames, has no solution in any space of quantum states. A model
-can satisfy it only for a restricted group of changes of frame.
+can satisfy it only for a restricted group of changes of frame. This reads the position of the
+frame `y = e(x)` as `Y`, multiplication by `y`; read covariantly, as `U_e X U_e⁻¹`, it is well
+defined in every smooth frame at every time (module `CovariantPosition`).
 
 The comparator lane, which certifies the main file of the brief, does not depend on this module.
 

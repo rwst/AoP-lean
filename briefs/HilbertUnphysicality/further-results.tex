@@ -36,8 +36,8 @@
 \begin{abstract}
   This note collects results that go beyond the technical brief \emph{Unphysicality of Hilbert
   spaces for quantum mechanics}~\cite{brief}, which is based on~\cite{cca}, and partial answers to its open problems. They are
-  not part of the brief. Each section is self-contained, and each names the Lean declarations
-  that check it; the Lean files are in the brief's directory, under
+  not part of the brief. Each section names the Lean declarations that check it, and only
+  Section~\ref{sec:covariant} builds on an earlier one; the Lean files are in the brief's directory, under
   \lean{HilbertUnphysicality/FurtherResults/}.
 \end{abstract}
 
@@ -288,6 +288,95 @@ Module:\\ \lean{HilbertUnphysicality.FurtherResults.FrameCutoffs},\\ namespace
     \lean{MeasureTheory.Lp.fourier_coeFn_eq_of_integrable}
     (\lean{ForMathlib/Analysis/Fourier/LpSpace.lean}).
   \item \lean{not_forall_frames_freeEvolution}: Corollary~\ref{cor:frames}.
+\end{itemize}
+
+\section{The covariant position is well defined in every frame}
+\label{sec:covariant}
+
+Section~\ref{sec:frames}, like Proposition~3 of the brief, reads the position in the frame
+$y = e(x)$ as $Y$, multiplication by the new coordinate $y$. The change of frame $U_e$ is a
+unitary of $L^2(\mathbb R)$, and it carries the position $X$ of the frame $x$ to the operator
+$U_e X U_e^{-1}$. This section reads the position covariantly, as $U_e X U_e^{-1}$ in the frame
+$e$, and shows that the obstruction of Section~\ref{sec:frames} disappears.
+
+The two readings differ by a function of the position. The change of variables gives
+$U_e(a\psi) = (a \circ e^{-1})\,U_e\psi$ for every real function $a$, so $U_e$ carries
+multiplication by $a$ to multiplication by $a \circ e^{-1}$. For $a(x) = x$ this is
+multiplication by $e^{-1}(y)$; for $a = e$ it is $Y$. So $Y = U_e\, e(X)\, U_e^{-1}$: asking for
+finite variance of $Y$ in the frame $e$ is asking for finite variance of $e(X)$ in the frame
+$x$, which is the form used in the proof of Theorem~\ref{thm:cutoff}.
+
+\begin{theorem}\label{thm:covariant}
+  Let $e$ be a smooth change of frame.
+  \begin{enumerate}
+    \item $U_e X U_e^{-1}$ is multiplication by $e^{-1}(y)$, with domain $U_e D(X)$, and it is
+      self-adjoint.
+    \item For $\psi \in D(X)$, $U_e X U_e^{-1}(U_e\psi) = U_e(X\psi)$. In particular
+      $\ip{U_e\psi}{U_e X U_e^{-1} U_e\psi} = \ip{\psi}{X\psi}$ and
+      $\|U_e X U_e^{-1} U_e\psi\| = \|X\psi\|$: the expectation and the second moment of the
+      position are the same in every frame.
+    \item $U_e\psi$ lies in the domain of $U_e X U_e^{-1}$ for every smooth change of frame $e$
+      if and only if $\psi \in D(X)$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{proof}
+  (1) The identity above, with $a(x) = x$, and $\int |a(e^{-1}(y))|^2 |U_e\psi(y)|^2\,dy =
+  \int |a(x)|^2|\psi(x)|^2\,dx$ for the domains. $U_e X U_e^{-1}$ is unitarily equivalent to
+  the self-adjoint $X$. (2) $U_e$ is unitary. (3) If $\psi \in D(X)$, then $U_e\psi \in U_e D(X)$
+  for every $e$; conversely take $e = \mathrm{id}$.
+\end{proof}
+
+Compare Theorem~\ref{thm:cutoff}: read with $Y$, the demand of part~(3) forces a cutoff; read
+covariantly it asks only for $\psi \in D(X)$. It remains to see that the free evolution keeps
+some nonzero states in $D(X)$, which Theorem~\ref{thm:evolution} rules out for the reading
+with~$Y$.
+
+\begin{theorem}\label{thm:schwartzevolution}
+  For a Schwartz function $f$ on $\mathbb R$ and every $t$, the free evolution
+  $e^{-itH_0}f = \mathcal F^{-1}\bigl(e^{-2i\pi^2\xi^2 t}\,\hat f\bigr)$ is a Schwartz function.
+  In particular $e^{-itH_0}f \in D(X)$.
+\end{theorem}
+
+\begin{proof}
+  On Schwartz functions the Fourier transform of $L^2(\mathbb R)$ is the Fourier transform of
+  $\mathcal S(\mathbb R)$, which maps $\mathcal S(\mathbb R)$ onto itself. The phase
+  $\xi \mapsto e^{-2i\pi^2\xi^2 t}$ has temperate growth, so multiplication by it maps
+  $\mathcal S(\mathbb R)$ into itself. Schwartz functions $f$ have $xf \in L^2$.
+\end{proof}
+
+\begin{corollary}\label{cor:covariant}
+  Every Schwartz state, at every time of the free evolution, lies in the domain of the covariant
+  position in every smooth frame. Nonzero such states exist.
+\end{corollary}
+
+So Corollary~\ref{cor:frames} is a statement about the coordinate observable $Y$, not about the
+Hilbert space: every smooth change of frame is unitary, and the observable that transforms with
+the frame stays well defined under the dynamics. Whether [B]WDQ asks for $Y$ or for
+$U_e X U_e^{-1}$ is a matter of reading the brief. With $Y$, Section~\ref{sec:frames} applies and
+the frame group has to be restricted; with $U_e X U_e^{-1}$, all smooth frames are allowed, but
+the position of the frame $e$ is no longer multiplication by its own coordinate.
+
+\subsection{Lean}
+
+Module:\\ \lean{HilbertUnphysicality.FurtherResults.CovariantPosition},\\ namespace
+\lean{HilbertUnphysicality.FurtherResults}.
+\begin{itemize}
+  \item \lean{covariantPosition}, \lean{covariantPosition_eq},
+    \lean{isSelfAdjoint_covariantPosition}: Theorem~\ref{thm:covariant}(1), with
+    \lean{Lp.compDiffeo_mulOp} (\lean{ForMathlib/MeasureTheory/Function/LpSpace/ChangeOfVariables.lean}).
+    For the change of frame of Proposition~3 this is the brief's
+    \lean{HilbertUnphysicality.conjLinearPMap_frameUnitary_positionOp}.
+  \item \lean{mem_domain_covariantPosition_iff}, \lean{covariantPosition_apply},
+    \lean{inner_covariantPosition}, \lean{norm_covariantPosition}:
+    Theorem~\ref{thm:covariant}(2).
+  \item \lean{forall_mem_domain_covariantPosition_iff}: Theorem~\ref{thm:covariant}(3).
+  \item \lean{hasTemperateGrowth_kineticPhase}, \lean{freeEvolution_toLp},
+    \lean{freeEvolution_toLp_mem_positionDomain}: Theorem~\ref{thm:schwartzevolution}, with
+    Mathlib's \lean{SchwartzMap.fourierMultiplierCLM} and \lean{SchwartzMap.toLp_fourier_eq}.
+  \item \lean{forall_frames_freeEvolution_toLp}, \lean{exists_toLp_ne_zero},
+    \lean{exists_forall_frames_freeEvolution}: Corollary~\ref{cor:covariant}; the nonzero state
+    is a smooth bump.
 \end{itemize}
 
 \begin{thebibliography}{9}
