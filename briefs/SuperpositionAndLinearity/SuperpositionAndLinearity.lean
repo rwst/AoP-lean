@@ -22,6 +22,10 @@ Formalized here (`H = EuclideanSpace ℂ (Fin 2)`, `|z⁺⟩ = e₀`, `|z⁻⟩ 
 * `blochVector_stateVector`   the state vector has the direction as its Bloch vector;
 * `born_stateVector`          the probability is affine in the components of the directions,
                               `p = (1 + v · w) / 2`; eq. (2) is the case `w = e_z`;
+* `affine_eq_of_rotation_invariant`  why: an affine function of the direction, invariant under
+                              rotations about `e_z`, with the values `1` at `e_z` and `0` at
+                              `-e_z`, is `(1 + v^z) / 2`, which is `p(z⁺)`
+                              (`affine_direction_eq_prob_zp`);
 * `stateVector_add_two_pi`    `θ + 2π` gives the vector `-ψ`, with the same direction
                               (`direction_add_two_pi`) and the same probabilities;
 * `exists_eq_smul_stateVector_iff`  two state vectors give the same state (ray) if and only if
@@ -325,5 +329,49 @@ theorem spinRotation_y_mulVec_stateVector (α θ : ℝ) :
       Real.cos_add, Real.sin_add, -ofReal_cos, -ofReal_sin]
   · linear_combination ((Real.sin (α / 2) : ℂ) * Real.sin (θ / 2)) * I_sq
   · linear_combination (-(Real.sin (α / 2) : ℂ) * Real.cos (θ / 2)) * I_sq
+
+/-- The quarter turn about `e_z`. -/
+lemma axisRotation_z_pi_div_two_mulVec (v : Fin 3 → ℝ) :
+    axisRotation ![0, 0, 1] (Real.pi / 2) *ᵥ v = ![-v 1, v 0, v 2] := by
+  rw [axisRotation_mulVec]
+  ext i
+  fin_cases i <;> simp [cross_apply, dotProduct, Fin.sum_univ_three]
+
+/-- **Why the probability is affine in the direction.** An affine function of the direction that
+is invariant under the rotations about `e_z` and takes the value `1` at `e_z` and `0` at `-e_z` is
+`(1 + v^z) / 2`. Invariance is required on unit vectors only. -/
+theorem affine_eq_of_rotation_invariant {f : (Fin 3 → ℝ) →ᵃ[ℝ] ℝ}
+    (hrot : ∀ α v, v ⬝ᵥ v = 1 → f (axisRotation ![0, 0, 1] α *ᵥ v) = f v)
+    (h1 : f ![0, 0, 1] = 1) (h0 : f ![0, 0, -1] = 0) (v : Fin 3 → ℝ) :
+    f v = (1 + v 2) / 2 := by
+  have F : ∀ w : Fin 3 → ℝ, f w = w 0 * f.linear ![1, 0, 0] + w 1 * f.linear ![0, 1, 0] +
+      w 2 * f.linear ![0, 0, 1] + f 0 := fun w ↦ by
+    have hw : w = w 0 • ![1, 0, 0] + w 1 • ![0, 1, 0] + w 2 • ![0, 0, 1] := by
+      ext i
+      fin_cases i <;> simp
+    conv_lhs => rw [AffineMap.decomp, Pi.add_apply, hw]
+    simp only [map_add, map_smul, smul_eq_mul]
+  obtain ⟨a, b, c, d, F⟩ : ∃ a b c d : ℝ, ∀ w : Fin 3 → ℝ, f w = w 0 * a + w 1 * b + w 2 * c + d :=
+    ⟨_, _, _, _, F⟩
+  have hx := hrot (Real.pi / 2) ![1, 0, 0] (by simp [dotProduct, Fin.sum_univ_three])
+  have hy := hrot (Real.pi / 2) ![0, 1, 0] (by simp [dotProduct, Fin.sum_univ_three])
+  rw [axisRotation_z_pi_div_two_mulVec] at hx hy
+  simp only [F] at hx hy h1 h0 ⊢
+  simp at hx hy h1 h0 ⊢
+  have ha : a = 0 := by linarith
+  have hb : b = 0 := by linarith
+  have hc : c = 1 / 2 := by linarith
+  have hd : d = 1 / 2 := by linarith
+  rw [ha, hb, hc, hd]
+  ring
+
+/-- The requirement of the brief determines eq. (2): such a function, at the direction `v(θ, φ)`,
+is the Born probability `p(z⁺)` of the state vector `ψ(θ, φ)`. -/
+theorem affine_direction_eq_prob_zp {f : (Fin 3 → ℝ) →ᵃ[ℝ] ℝ}
+    (hrot : ∀ α v, v ⬝ᵥ v = 1 → f (axisRotation ![0, 0, 1] α *ᵥ v) = f v)
+    (h1 : f ![0, 0, 1] = 1) (h0 : f ![0, 0, -1] = 0) (θ φ : ℝ) :
+    f (direction θ φ) = ‖inner ℂ zp (stateVector θ φ)‖ ^ 2 := by
+  rw [affine_eq_of_rotation_invariant hrot h1 h0, (prob_zp θ φ).1, (prob_zp θ φ).2]
+  simp [direction]
 
 end SuperpositionAndLinearity

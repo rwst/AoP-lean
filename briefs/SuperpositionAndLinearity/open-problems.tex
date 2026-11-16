@@ -14,8 +14,6 @@
 % Lean names and paths: verbatim, breakable at . _ /
 \DeclareUrlCommand\lean{\urlstyle{tt}}
 \def\UrlBreaks{\do\.\do\_\do\/}
-% Marks an open problem that blocks checking a main claim of the brief
-\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
 % Extra stretch for paragraphs with long, unbreakable Lean names
 \emergencystretch=6em
 
@@ -28,26 +26,15 @@
 
 \noindent
 Open problems raised by the technical brief in this directory, and by its Lean formalization
-(see \lean{formalization-log.tex}).
-Items marked \textsc{[blocks verification]} stand in the way of checking a main
-claim of the brief as the brief states it: a \emph{formalization gap} can be closed
-in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
-precise first.
-
-No item below blocks the verification of a main claim of the brief.
+(see \lean{formalization-log.tex}). Items marked \emph{research} are open research questions,
+not needed to check the brief. No open problem blocks verification of the brief.
 
 \section*{From the brief}
 \begin{enumerate}
-\item \textbf{Why the probability is affine.} The brief requires that ``for any other state, the
-  probability of outcome must be proportional to the component in that direction'' and reads
-  off eq.~(2) from Fig.~2. The requirement is stated, not derived. A precise version, that an
-  affine function of the direction which is invariant under rotations about $z$ and takes the
-  values $1$ at $e_z$ and $0$ at $-e_z$ is $(1 + v^z)/2$, is not formalized; only the resulting
-  law is (\lean{born_stateVector}). (Brief, Sec.~2, before eq.~(2).)
-\item \textbf{Beyond the qubit.} The introduction says in general that quantum states are rays,
-  with linearity in terms of probability. Only the two-state system is formalized, where rays
-  are directions in space; for more levels the pure states are not a sphere of directions, and
-  the brief does not say what replaces eq.~(1). (Brief, Sec.~1.)
+\item \textbf{Beyond the qubit.} \emph{Research.} The introduction says in general that quantum
+  states are rays, with linearity in terms of probability. Only the two-state system is
+  formalized, where rays are directions in space; for more levels the pure states are not a
+  sphere of directions, and the brief does not say what replaces eq.~(1). (Brief, Sec.~1.)
 \end{enumerate}
 
 \end{document}

@@ -109,6 +109,11 @@ abstract: $\psi(\theta,\varphi)$ is the state for the direction $v(\theta,\varph
 Sec.~2, ``linearity is in terms of probability'' & \lean{born_stateVector}:
   $|\braket{\psi(\theta',\varphi')|\psi(\theta,\varphi)}|^2 = (1 + v' \cdot v)/2$; eq.~(2) is
   the case $v' = e_z$ (\lean{stateVector_zero_zero}, \lean{direction_zero_zero}) \\
+Sec.~2, ``the probability of outcome must be proportional to the component in that direction'' &
+  \lean{affine_eq_of_rotation_invariant}: an affine function of the direction, invariant under
+  the rotations about $e_z$, with $f(e_z) = 1$ and $f(-e_z) = 0$, is $(1 + v^z)/2$; at
+  $v(\theta,\varphi)$ it is $p(z^+)$ of $\psi(\theta,\varphi)$
+  (\lean{affine_direction_eq_prob_zp}) \\
 Sec.~2, $\theta + 2\pi$: negative components, same direction & \lean{stateVector_add_two_pi},
   \lean{direction_add_two_pi} \\
 Sec.~1, states are rays, not vectors & \lean{exists_eq_smul_stateVector_iff}: two state vectors
@@ -163,8 +168,13 @@ $SU(2) \to SO(3)$ is two-to-one & \lean{toSO3_eq_toSO3_iff}: same image iff equa
   \lean{exists_direction_eq}).
 \item The brief says the probability ``must be proportional to the component in that
   direction''. It is proportional to the length $\overline{Az^-} = 1 + \cos\theta$ in Fig.~2,
-  that is, affine in the component: $p(z^+) = (1 + v\cdot e_z)/2$. The formalization states the
-  affine law for every pair of directions (\lean{born_stateVector}).
+  that is, affine in the component: $p(z^+) = (1 + v\cdot e_z)/2$. The formalization derives this
+  from the requirement made precise: the probability is an affine function of the direction
+  (the restriction to the sphere of an affine map of $\mathbb{R}^3$), it is invariant under the
+  rotations about the measured direction $e_z$ (required on unit vectors only), and it is $1$ at
+  $e_z$ and $0$ at $-e_z$ (\lean{affine_eq_of_rotation_invariant}). It then states the affine
+  law for every pair of directions (\lean{born_stateVector}). The derivation is not in the
+  comparator lane.
 \item The correspondence between rays and directions is stated twice: pointwise, for state
   vectors and directions given by angles (\lean{exists_eq_smul_stateVector_iff},
   \lean{exists_eq_smul_stateVector}, \lean{exists_direction_eq}), and as a homeomorphism of
