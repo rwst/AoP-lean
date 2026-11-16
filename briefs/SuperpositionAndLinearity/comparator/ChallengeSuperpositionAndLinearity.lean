@@ -10,6 +10,7 @@ public import Physlib.Relativity.PauliMatrices.Basic
 public import TauCeti.LinearAlgebra.Matrix.Pauli
 public import TauCeti.LinearAlgebra.Projectivization.HermitianProjector
 public import TauCeti.Topology.Algebra.Projectivization
+public import TauCeti.RepresentationTheory.SU2.Adjoint
 
 /-!
 # SuperpositionAndLinearity: the statements of record
@@ -23,6 +24,8 @@ boundary does. See `COMPARATOR.md`.
 
 -- ForPhyslib.QuantumMechanics.Qubit.Bloch
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+attribute [-instance] instCommCStarAlgebraComplex
 @[expose] public noncomputable section
 open Complex ComplexConjugate Matrix PauliMatrix
 namespace QuantumMechanics.Qubit
@@ -30,10 +33,11 @@ def blochVector (ψ : EuclideanSpace ℂ (Fin 2)) : Fin 3 → ℝ :=
   ![2 * (conj (ψ 0) * ψ 1).re, 2 * (conj (ψ 0) * ψ 1).im, ‖ψ 0‖ ^ 2 - ‖ψ 1‖ ^ 2]
 end QuantumMechanics.Qubit
 end
+end
 -- SuperpositionAndLinearity
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
-open Complex ComplexConjugate Matrix QuantumMechanics.Qubit
+open Complex ComplexConjugate Matrix QuantumMechanics.Qubit TauCeti
 open scoped LinearAlgebra.Projectivization
 @[expose] public noncomputable section
 namespace SuperpositionAndLinearity

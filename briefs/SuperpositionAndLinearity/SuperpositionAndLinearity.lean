@@ -35,14 +35,23 @@ Formalized here (`H = EuclideanSpace ℂ (Fin 2)`, `|z⁺⟩ = e₀`, `|z⁻⟩ 
                               `ℙ ℂ ℂ²` onto the unit sphere of `ℝ³` takes the ray of the state
                               vector to its direction;
 * `exists_homeomorph_sphere`  so the rays of `ℂ²` form the unit sphere of `ℝ³`, the ray of
-                              `ψ(θ, φ)` going to `v(θ, φ)`.
+                              `ψ(θ, φ)` going to `v(θ, φ)`;
+* `axisRotation_y_mulVec_direction`, `spinRotation_y_mulVec_stateVector`  half a turn: in the
+                              `(x, z)` plane, turning the direction by `α` is turning the state
+                              vector by `α / 2`, by the spin rotation that the double cover
+                              `SU(2) → SO(3)` takes to the rotation by `α`
+                              (`coe_toSO3_spinRotationSU2`); a full turn of the direction is `-1`
+                              on state vectors (`spinRotation_two_pi`);
+* `axisRotation_z_mulVec_direction`, `spinRotation_z_mulVec_stateVector`  the same about `e_z`,
+                              where the rotation shifts `φ`.
 
 The brief writes `|z⁺⟩` for both kets in the abstract and in eq. (3); the second is `|z⁻⟩`, as
 the computation of `p(z⁻)` in eq. (3) shows.
 -/
 public import ForPhyslib.QuantumMechanics.Qubit.BlochSphere
+public import ForPhyslib.QuantumMechanics.Qubit.SpinRotation
 
-open Complex ComplexConjugate Matrix QuantumMechanics.Qubit
+open Complex ComplexConjugate Matrix QuantumMechanics.Qubit TauCeti
 open scoped LinearAlgebra.Projectivization
 
 @[expose] public noncomputable section
@@ -266,5 +275,55 @@ theorem exists_homeomorph_sphere :
         (e (Projectivization.mk ℂ (stateVector θ φ).ofLp h) : EuclideanSpace ℝ (Fin 3)) =
           WithLp.toLp 2 (direction θ φ) :=
   ⟨blochSphere, blochSphere_mk_stateVector⟩
+
+/-- The rotation by `α` about `e_z` takes the direction `v(θ, φ)` to `v(θ, φ + α)`. -/
+theorem axisRotation_z_mulVec_direction (α θ φ : ℝ) :
+    axisRotation ![0, 0, 1] α *ᵥ direction θ φ = direction θ (φ + α) := by
+  rw [axisRotation_mulVec]
+  ext i
+  fin_cases i <;>
+    simp [direction, cross_apply, dotProduct, Fin.sum_univ_three, Real.cos_add, Real.sin_add] <;>
+    ring
+
+/-- In the `(x, z)` plane, the rotation by `α` about `e_y` takes the direction `v(θ, 0)` to
+`v(θ + α, 0)`. -/
+theorem axisRotation_y_mulVec_direction (α θ : ℝ) :
+    axisRotation ![0, 1, 0] α *ᵥ direction θ 0 = direction (θ + α) 0 := by
+  rw [axisRotation_mulVec]
+  ext i
+  fin_cases i <;>
+    simp [direction, cross_apply, dotProduct, Fin.sum_univ_three, Real.cos_add, Real.sin_add] <;>
+    ring
+
+/-- The spin rotation of half the angle about `e_z`, `diag (e^{-iα/2}, e^{iα/2})`, takes the state
+vector `ψ(θ, φ)` to `ψ(θ, φ + α)`. -/
+theorem spinRotation_z_mulVec_stateVector (α θ φ : ℝ) :
+    spinRotation ![0, 0, 1] α *ᵥ (stateVector θ φ).ofLp = (stateVector θ (φ + α)).ofLp := by
+  have hU : spinRotation ![0, 0, 1] α =
+      !![exp (-(α / 2 : ℝ) * I), 0; 0, exp ((α / 2 : ℝ) * I)] := by
+    rw [← ofReal_neg, exp_mul_I, exp_mul_I, ← ofReal_cos, ← ofReal_sin, ← ofReal_cos,
+      ← ofReal_sin, Real.cos_neg, Real.sin_neg]
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp [spinRotation, pauli_apply, -ofReal_cos, -ofReal_sin] <;>
+      ring
+  rw [hU]
+  ext i
+  fin_cases i <;>
+  · simp [stateVector, mulVec, dotProduct, Fin.sum_univ_two]
+    rw [mul_left_comm, ← exp_add]
+    congr 2
+    ring
+
+/-- In the `(x, z)` plane, the spin rotation about `e_y` turns the state vector by half the angle:
+it takes `ψ(θ, 0)` to `ψ(θ + α, 0)`, the vector at angle `(θ + α) / 2` from `|z⁺⟩`. -/
+theorem spinRotation_y_mulVec_stateVector (α θ : ℝ) :
+    spinRotation ![0, 1, 0] α *ᵥ (stateVector θ 0).ofLp = (stateVector (θ + α) 0).ofLp := by
+  have h : (θ + α) / 2 = θ / 2 + α / 2 := by ring
+  ext i
+  fin_cases i <;>
+    simp [stateVector, spinRotation, pauli_apply, mulVec, dotProduct, Fin.sum_univ_two, h,
+      Real.cos_add, Real.sin_add, -ofReal_cos, -ofReal_sin]
+  · linear_combination ((Real.sin (α / 2) : ℂ) * Real.sin (θ / 2)) * I_sq
+  · linear_combination (-(Real.sin (α / 2) : ℂ) * Real.cos (θ / 2)) * I_sq
 
 end SuperpositionAndLinearity

@@ -9,6 +9,8 @@
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs,tabularx}
+% A results table longer than a page
+\usepackage{xltabular}
 \usepackage{braket}
 \usepackage[hidelinks]{hyperref}
 
@@ -55,7 +57,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item File: \lean{briefs/SuperpositionAndLinearity/SuperpositionAndLinearity.lean}
 \item Library: \lean{SuperpositionAndLinearity}
 \item Imports: \lean{ForPhyslib.QuantumMechanics.Qubit.BlochSphere}, which imports
-  \lean{ForPhyslib.QuantumMechanics.Qubit.Bloch}
+  \lean{ForPhyslib.QuantumMechanics.Qubit.Bloch}, and
+  \lean{ForPhyslib.QuantumMechanics.Qubit.SpinRotation}
 \item New file \lean{ForPhyslib/QuantumMechanics/Qubit/Bloch.lean} (imports
   \lean{Mathlib.Analysis.InnerProductSpace.PiL2},\newline
   \lean{Mathlib.LinearAlgebra.Matrix.DotProduct} and physlib's
@@ -66,6 +69,11 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   Pauli and Hermitian-projector files): the homeomorphism \lean{blochSphere} of Mathlib's
   projective line $\mathbb{P}(\mathbb{C}^2)$, with the quotient topology, onto the unit sphere
   of $\mathbb{R}^3$.
+\item New file \lean{ForPhyslib/QuantumMechanics/Qubit/SpinRotation.lean} (imports TauCeti's
+  \lean{TauCeti.RepresentationTheory.SU2.Adjoint}, the double cover $SU(2) \to SO(3)$): the
+  rotation $R_n(\alpha)$ of $\mathbb{R}^3$ about a unit vector $n$ by the angle $\alpha$
+  (Rodrigues' formula, \lean{axisRotation}) and the spin rotation
+  $U_n(\alpha) = \cos\frac\alpha2 - i\sin\frac\alpha2\, n\cdot\sigma$ (\lean{spinRotation}).
 \end{itemize}
 
 \paragraph{Setting.} $H = \mathbb{C}^2$ (\texttt{EuclideanSpace} $\mathbb{C}$ \texttt{(Fin 2)}),
@@ -82,11 +90,15 @@ $\braket{\psi|\sigma_i|\psi}$ (\lean{blochVector_apply}). It is not normalized; 
 $\|\psi\|^2$.
 
 \paragraph{Results.}
-\begin{center}
-\begin{tabularx}{\textwidth}{@{}BL@{}}
+\begin{xltabular}{\textwidth}{@{}BL@{}}
 \toprule
 Brief & Lean \\
 \midrule
+\endfirsthead
+\toprule
+Brief & Lean \\
+\midrule
+\endhead
 eq.~(1), $(v^x)^2 + (v^y)^2 + (v^z)^2 = 1$ & \lean{direction_dotProduct_self} \\
 eqs.~(2), (3), $p(z^+) = \cos^2\frac\theta2 = \frac{1+\cos\theta}2$ & \lean{prob_zp} \\
 eqs.~(2), (3), $p(z^-) = \sin^2\frac\theta2 = \frac{1-\cos\theta}2$ & \lean{prob_zm} \\
@@ -111,6 +123,11 @@ Sec.~1, the states of a qubit are the directions in space & \lean{exists_homeomo
   a homeomorphism of $\mathbb{P}(\mathbb{C}^2)$ onto the unit sphere takes the ray of
   $\psi(\theta,\varphi)$ to $v(\theta,\varphi)$; it is \lean{blochSphere}
   (\lean{blochSphere_mk_stateVector}) \\
+Sec.~2, ``a line returns to itself after half a turn'' & in the $(x,z)$ plane, turning the
+  direction by $\alpha$ about $e_y$ (\lean{axisRotation_y_mulVec_direction}) is turning the state
+  vector by $\alpha/2$ (\lean{spinRotation_y_mulVec_stateVector}):
+  $U_{e_y}(\alpha)\,\psi(\theta,0) = \psi(\theta+\alpha,0)$; about $e_z$ the same shifts
+  $\varphi$ (\lean{axisRotation_z_mulVec_direction}, \lean{spinRotation_z_mulVec_stateVector}) \\
 \midrule
 \multicolumn{2}{@{}l}{\emph{In \lean{ForPhyslib/QuantumMechanics/Qubit/Bloch.lean}}} \\
 \midrule
@@ -121,9 +138,20 @@ length of the Bloch vector & \lean{blochVector_dotProduct_self}: $a\cdot a = \|\
 rays & \lean{exists_eq_smul_iff}: unit vectors span the same ray iff their Bloch vectors agree \\
 orthogonality & \lean{inner_eq_zero_iff}: unit vectors are orthogonal iff their Bloch vectors
   are opposite \\
+\midrule
+\multicolumn{2}{@{}l}{\emph{In \lean{ForPhyslib/QuantumMechanics/Qubit/SpinRotation.lean}}} \\
+\midrule
+a rotation by $\alpha$ acts by the unitary of half the angle &
+  \lean{coe_toSO3_spinRotationSU2}: the double cover takes $U_n(\alpha)$ to $R_n(\alpha)$
+  (\lean{pauli_axisRotation_mulVec}: $\sigma(R_n(\alpha)x) = U_n(\alpha)\,\sigma(x)\,
+  U_n(\alpha)^*$) \\
+a full turn & \lean{axisRotation_two_pi}: $R_n(2\pi) = 1$; \lean{spinRotation_two_pi}:
+  $U_n(2\pi) = -1$ \\
+$SU(2) \to SO(3)$ is two-to-one & \lean{toSO3_eq_toSO3_iff}: same image iff equal up to sign;
+  \lean{coe_toSO3_eq_axisRotation_iff}: the elements above $R_n(\alpha)$ are $U_n(\alpha)$ and
+  $U_n(\alpha + 2\pi) = -U_n(\alpha)$ \\
 \bottomrule
-\end{tabularx}
-\end{center}
+\end{xltabular}
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
@@ -145,6 +173,13 @@ orthogonality & \lean{inner_eq_zero_iff}: unit vectors are orthogonal iff their 
   \texttt{Fin 2} $\to \mathbb{C}$, so the ray of $\psi$ is that of its coordinate vector
   $\psi$\texttt{.ofLp}. The homeomorphism is not in the comparator lane, which certifies the
   main claims of the brief only.
+\item The brief shows ``a line returns to itself after half a turn'' in the $(x,z)$ plane. The
+  formalization makes the turn a rotation: the rotation of the direction about $e_y$, and in
+  general about any axis $n$, acts on state vectors by the unitary of half the angle, the image
+  of the rotation's lifts under TauCeti's double cover \lean{TauCeti.SU2.toSO3}, whose
+  surjectivity and kernel $\{\pm1\}$ are TauCeti's. A full turn of the direction is $-1$ on state
+  vectors, half a turn of the state vector, which keeps its line. The rotation results are not
+  in the comparator lane, which certifies the main claims of the brief only.
 \end{itemize}
 
 \paragraph{Problems found in the brief.}

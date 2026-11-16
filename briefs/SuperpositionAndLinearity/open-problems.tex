@@ -44,11 +44,6 @@ No item below blocks the verification of a main claim of the brief.
   affine function of the direction which is invariant under rotations about $z$ and takes the
   values $1$ at $e_z$ and $0$ at $-e_z$ is $(1 + v^z)/2$, is not formalized; only the resulting
   law is (\lean{born_stateVector}). (Brief, Sec.~2, before eq.~(2).)
-\item \textbf{Half a turn and rotations.} ``A line returns to itself after half a turn'' is
-  formalized only as $\theta \mapsto \theta + 2\pi$ (\lean{stateVector_add_two_pi}). The
-  statement behind it, that a rotation of the direction by an angle $\alpha$ acts on state
-  vectors by a unitary of half the angle, and that $SU(2) \to SO(3)$ is two-to-one, is not
-  formalized. (Brief, Sec.~2, last paragraph.)
 \item \textbf{Beyond the qubit.} The introduction says in general that quantum states are rays,
   with linearity in terms of probability. Only the two-state system is formalized, where rays
   are directions in space; for more levels the pure states are not a sphere of directions, and
