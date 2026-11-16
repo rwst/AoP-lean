@@ -389,6 +389,193 @@ Module \lean{UnitaryEntropy.FurtherResults.DeterminismReversibility}, namespace
     \lean{UnitaryEntropy.TwoParameter.DrInfo}.
 \end{itemize}
 
+\section{The propagator of an unbounded time-dependent Hamiltonian}
+\label{sec:perturbed}
+
+The proof of the brief's Theorem~2 ($\Rightarrow$) starts from ``the Schr\"odinger equation gives
+rise to a differentiable unitary propagator $U_{t_0\to t_1}$''. The formalization proves this
+for a continuous, or only strongly continuous, family of bounded self-adjoint $H(t)$, from the
+existence and uniqueness theorem for linear ODEs. Physical Hamiltonians are unbounded, and then
+existence needs hypotheses: the general results are Kato's theorems on evolution equations of
+``hyperbolic'' type~\cite{kato,pazy}. This section proves existence and uniqueness for a class
+of unbounded, time-dependent Hamiltonians, $H(t) = H_0 + V(t)$, together with DR-INFO and EVDIFF
+on a dense set of states.
+
+\subsection{Statement}
+
+Let $\mathcal H$ be a complex Hilbert space of any dimension, $\hbar \ne 0$, and $H_0$ a
+self-adjoint, in general unbounded, operator with domain $D$.
+
+\begin{definition}[Regular perturbation]\label{def:regular}
+  A family $V(t)$, $t\in\mathbb R$, of bounded self-adjoint operators is a \emph{regular
+  perturbation} of $H_0$ if
+  \begin{enumerate}
+    \item[(a)] $t\mapsto V(t)\psi$ is continuous for every $\psi\in\mathcal H$;
+    \item[(b)] $V(t)$ maps $D$ into $D$ for every $t$;
+    \item[(c)] $t\mapsto H_0V(t)\psi$ is continuous for every $\psi\in D$.
+  \end{enumerate}
+\end{definition}
+
+A family $U(t)$ of bounded operators \emph{solves the Schr\"odinger equation} for $H(t) = H_0 +
+V(t)$ if for every $\psi\in D$ and every $t$, $U(t)\psi\in D$ and
+\[
+  \frac{d}{dt}U(t)\psi = (i\hbar)^{-1}\bigl(H_0 + V(t)\bigr)U(t)\psi.
+\]
+
+\begin{theorem}\label{thm:perturbed}
+  Let $V$ be a regular perturbation of $H_0$. Exactly one family $U(t)$ of bounded operators with
+  $U(0) = 1$ solves the Schr\"odinger equation for $H_0 + V(t)$. Every $U(t)$ is unitary,
+  $t\mapsto U(t)\psi$ is continuous, and $U(t)^\dagger$ maps $D$ into $D$. For every $s$, the
+  propagator $U_{s\to t} = U(t)U(s)^\dagger$ is the unique solution with $U_{s\to s} = 1$; it
+  satisfies $U_{r\to t}U_{s\to r} = U_{s\to t}$ and is jointly strongly continuous in $(s, t)$.
+\end{theorem}
+
+\begin{corollary}[DR-SCEQ $\Rightarrow$ DR-INFO $+$ EVDIFF]\label{cor:perturbed}
+  For the evolution $\rho\mapsto U_{t_0\to t_1}\rho\,U_{t_0\to t_1}^\dagger$ of
+  Theorem~\ref{thm:perturbed}:
+  \begin{enumerate}
+    \item[(i)] density operators go to density operators, the past is reconstructed by
+      $U_{t_0\to t_1}^\dagger$, and the von Neumann entropy is conserved (DR-INFO);
+    \item[(ii)] for every unit vector $\psi\in D$, $t\mapsto U_{t_0\to t}|\psi\rangle\langle\psi|
+      U_{t_0\to t}^\dagger$ is differentiable in operator norm at every $t$ (EVDIFF on the dense
+      set of states $D$);
+    \item[(iii)] Howland's quasi-energy operator exists: a self-adjoint $K$ on
+      $L^2(\mathbb R;\mathcal H)$, formally $-i\hbar\,\partial_t + H_0 + V(t)$, with
+      $(e^{-i\sigma K/\hbar}f)(t) = U_{t-\sigma\to t}f(t-\sigma)$.
+  \end{enumerate}
+\end{corollary}
+
+\subsection{Proof}
+
+\begin{lemma}[Strongly continuous families]\label{lem:strong}
+  Let $A(t)$ be bounded operators on a Banach space with $t\mapsto A(t)x$ continuous for every
+  $x$. Then $A$ is bounded in norm on compact sets (Banach--Steinhaus), $t\mapsto A(t)u(t)$ is
+  continuous for continuous $u$, and if $u$ is differentiable at $t$ and $s\mapsto A(s)u(t)$ has
+  derivative $a'$ at $t$, then $\frac{d}{ds}A(s)u(s)|_{s=t} = A(t)u'(t) + a'$.
+\end{lemma}
+
+\begin{proof}
+  The bound is the uniform boundedness principle on a compact neighbourhood. Then
+  $A(s)u(s) - A(t)u(t) = A(s)(u(s)-u(t)) + (A(s)-A(t))u(t)$ gives continuity, and the same
+  splitting of difference quotients gives the product rule.
+\end{proof}
+
+\begin{lemma}[Graph space]\label{lem:graph}
+  The graph $G = \{(x, H_0x) : x\in D\}$ is a closed subspace of $\mathcal H\times\mathcal H$,
+  hence a Banach space. A bounded operator $A$ with $AD\subseteq D$ acts on it by
+  $(x, H_0x)\mapsto(Ax, H_0Ax)$, and this action is bounded. A family $B(t)$ with (a)--(c) is
+  strongly continuous on $G$.
+\end{lemma}
+
+\begin{proof}
+  $H_0$ is closed, being self-adjoint. The action has a closed graph: if $(x_n, H_0x_n)\to(x,
+  H_0x)$ and $(Ax_n, H_0Ax_n)\to(y, z)$ in $G$, then $y = Ax$, and a point of $G$ is determined
+  by its first coordinate. The closed graph theorem applies. Strong continuity on $G$ means
+  continuity of both coordinates, which are (a) and (c).
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:perturbed}]
+  \emph{The interaction picture.} Let $W(t) = e^{-itH_0/\hbar}$, a strongly continuous unitary
+  group that maps $D$ into $D$ and commutes with $H_0$ there, and put $V_I(t) =
+  W(-t)V(t)W(t)$. It is bounded, self-adjoint, and strongly continuous by
+  Lemma~\ref{lem:strong}. So the bounded case gives a unitary $U_I$ with $U_I(0) = 1$ and
+  $\frac{d}{dt}U_I(t)\psi = (i\hbar)^{-1}V_I(t)U_I(t)\psi$ for every $\psi$.
+
+  \emph{Invariance of $D$.} The operators $W(t)$, $W(-t)$ and $V(t)$ preserve $D$, and $W$
+  satisfies (a)--(c) as it commutes with $H_0$. By Lemma~\ref{lem:graph} and
+  Lemma~\ref{lem:strong}, $V_I(t)$ acts on $G$ as a strongly continuous family, so the same
+  equation has a solution $U_G$ on the Banach space $G$, with $U_G(0) = 1$. Its first coordinate
+  solves the equation on $\mathcal H$, so by uniqueness $U_I(t)x$ is the first coordinate of
+  $U_G(t)(x, H_0x)$ for $x\in D$, and lies in $D$. The solution $U_G(t)$ is invertible, as the
+  solution started at time $t$ runs it backwards. If $z = U_G(t)^{-1}(x, H_0x)$, then
+  $U_I(t)z_1 = x$, so $U_I(t)^\dagger x = z_1 \in D$.
+
+  \emph{Existence.} Let $U(t) = W(t)U_I(t)$. It is unitary, $U(t)$ and $U(t)^\dagger =
+  U_I(t)^\dagger W(-t)$ preserve $D$, and for $\psi\in D$, by Lemma~\ref{lem:strong},
+  \[
+    \frac{d}{dt}U(t)\psi = W(t)(i\hbar)^{-1}V_I(t)U_I(t)\psi + (i\hbar)^{-1}H_0W(t)U_I(t)\psi =
+    (i\hbar)^{-1}\bigl(V(t) + H_0\bigr)U(t)\psi.
+  \]
+
+  \emph{Uniqueness.} Let $\tilde U$ be another solution with $\tilde U(s) = U(s)$. For
+  $\phi, \psi\in D$, $\langle U(t)\phi, \tilde U(t)\psi\rangle$ has derivative
+  $(i\hbar)^{-1}\bigl(\langle U\phi, H\tilde U\psi\rangle - \langle HU\phi, \tilde
+  U\psi\rangle\bigr) = 0$, as $H(t) = H_0 + V(t)$ is symmetric on $D$. So it equals $\langle
+  \phi, \psi\rangle = \langle U(t)\phi, U(t)\psi\rangle$. Hence $U(t)^\dagger(\tilde U(t)\psi -
+  U(t)\psi)$ is orthogonal to the dense set $D$, so it vanishes, and $\tilde U(t) = U(t)$ on $D$
+  and by continuity everywhere.
+
+  \emph{The propagator.} $U_{s\to t} = U(t)U(s)^\dagger$ solves the equation from time $s$,
+  since $U(s)^\dagger$ preserves $D$, and uniqueness applies to it. The composition law follows
+  from $U(r)^\dagger U(r) = 1$. Joint strong continuity follows from Lemma~\ref{lem:strong}, as
+  $t\mapsto U(t)^\dagger x$ is continuous for a strongly continuous family of unitaries:
+  $\|U(t)^\dagger x - U(t_0)^\dagger x\| = \|x - U(t)U(t_0)^\dagger x\|$.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:perturbed}]
+  (i) is unitary conjugation, as in the brief's direction DR-SCEQ $\Rightarrow$ DR-INFO in any
+  dimension. (ii): $U_{t_0\to t}|\psi\rangle\langle\psi|U_{t_0\to t}^\dagger =
+  |U_{t_0\to t}\psi\rangle\langle U_{t_0\to t}\psi|$, and $t\mapsto U_{t_0\to t}\psi$ is
+  differentiable since $\psi\in D$. (iii) is Howland's construction~\cite{howland} for a strongly
+  continuous unitary propagator, with Stone's theorem.
+\end{proof}
+
+\begin{remark}
+  The hypotheses are of the kind used in Kato's theory of hyperbolic evolution
+  equations~\cite{kato}, \cite[Ch.~5]{pazy}, with the space $Y = D$ carrying the graph norm:
+  conditions (b) and (c) say that $D$ is invariant and that $V(t)$ is strongly continuous on $D$
+  in the graph norm. Here only strong continuity in $t$ is needed, since $H_0$ itself does not
+  depend on $t$ and the interaction picture removes it. Other sufficient conditions, for
+  instance differentiability of $t\mapsto V(t)\psi$ in place of (b) and (c), are not
+  formalized.
+\end{remark}
+
+\begin{remark}
+  An example, not formalized: $H_0 = -\frac{\hbar^2}{2m}\Delta$ on $L^2(\mathbb R^n)$ with
+  domain $H^2(\mathbb R^n)$, and $V(t)$ multiplication by a real potential $v(t, x)$ that is
+  bounded together with its first and second derivatives in $x$, all continuous in $t$
+  uniformly in $x$. Then $V(t)$ maps $H^2$ into itself, and $H_0V(t)\psi = V(t)H_0\psi -
+  \frac{\hbar^2}{2m}\bigl(2\nabla v\cdot\nabla\psi + (\Delta v)\psi\bigr)$ is continuous in $t$.
+  This covers a particle in a bounded, smooth, time-dependent external potential.
+\end{remark}
+
+\begin{remark}
+  Kato's general theorem, for self-adjoint $H(t)$ with a common domain that are not bounded
+  perturbations of one operator, is not formalized. Nor is the converse direction for unbounded
+  $H(t)$: Step~3 of the brief then gives only a symmetric $H(t_0)$ (see the open problems).
+\end{remark}
+
+\subsection{Lean}
+
+Module \lean{UnitaryEntropy.FurtherResults.PerturbedPropagator}, namespace
+\lean{UnitaryEntropy.FurtherResults}.
+
+\begin{itemize}
+  \item \lean{IsRegularPerturbation}, \lean{SolvesPerturbed}: Definition~\ref{def:regular} and
+    the Schr\"odinger equation for $H_0 + V(t)$ on $D$.
+  \item \lean{ContinuousLinearMap.exists_norm_le_of_continuous_apply},
+    \lean{ContinuousLinearMap.continuous_apply_apply},
+    \lean{ContinuousLinearMap.hasDerivAt_apply_apply}: Lemma~\ref{lem:strong}, in
+    \lean{ForMathlib/Analysis/Normed/Operator/StronglyContinuous.lean};
+    \lean{ContinuousLinearMap.continuous_star_apply_of_mem_unitary}, in
+    \lean{ForMathlib/Analysis/InnerProductSpace/StronglyContinuousUnitary.lean}.
+  \item \lean{LinearPMap.graphLift}, \lean{LinearPMap.continuous_graphLift_apply}:
+    Lemma~\ref{lem:graph}, for any partially defined linear map with a complete graph, in
+    \lean{ForMathlib/Analysis/Normed/Operator/LinearPMapGraph.lean}; \lean{isClosed_graph}.
+  \item \lean{free_add}, \lean{free_neg}, \lean{free_commute}: the free group $W(t)$ is
+    \lean{QuantumMechanics.schrodingerPropagator}; \lean{interactionOp}, \lean{interactionGraph}:
+    $V_I(t)$ on $\mathcal H$ and on $G$.
+  \item \lean{exists_interactionPropagator}: $U_I$, with the invariance of $D$ under $U_I(t)$ and
+    $U_I(t)^\dagger$.
+  \item \lean{exists_propagator}, \lean{eq_of_solvesPerturbed}, \lean{existsUnique_propagator}:
+    Theorem~\ref{thm:perturbed}, with \lean{propagator} the solution;
+    \lean{twoParam}, \lean{twoParam_comp}, \lean{solvesPerturbed_twoParam}, \lean{eq_twoParam}:
+    the propagator $U_{s\to t}$.
+  \item \lean{twoParam_conserves_vonNeumannEntropy}, \lean{differentiableAt_twoParam_proj},
+    \lean{unitaryPropagator}: Corollary~\ref{cor:perturbed}, (i), (ii) and, with
+    \lean{QuantumMechanics.UnitaryPropagator.exists_howlandGenerator}, (iii).
+\end{itemize}
+
 \begin{thebibliography}{9}
 \bibitem{brief} G.~Carcassi, \emph{Schr\"odinger equation is equivalent to information
   conservation}, technical brief, Assumptions of Physics,
@@ -397,6 +584,12 @@ Module \lean{UnitaryEntropy.FurtherResults.DeterminismReversibility}, namespace
   \url{https://assumptionsofphysics.org}.
 \bibitem{kadison} R.~V.~Kadison, \emph{Transformations of states in operator theory and
   dynamics}, Topology~3, suppl.~2 (1965), 177--198.
+\bibitem{kato} T.~Kato, \emph{Linear evolution equations of ``hyperbolic'' type},
+  J.~Fac.~Sci.~Univ.~Tokyo Sect.~I~17 (1970), 241--258.
+\bibitem{pazy} A.~Pazy, \emph{Semigroups of Linear Operators and Applications to Partial
+  Differential Equations}, Springer (1983), Ch.~5.
+\bibitem{howland} J.~S.~Howland, \emph{Stationary scattering theory for time-dependent
+  Hamiltonians}, Math.~Ann.~207 (1974), 315--335.
 \end{thebibliography}
 
 \end{document}

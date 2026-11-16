@@ -44,10 +44,16 @@ Open problems raised by the technical brief in this directory, and by its Lean f
   (\lean{hasDerivAt_conj_of_continuous_apply}). The propagator itself need not be
   norm-differentiable: on $L^2[0,1]$, multiplication by the indicator of $[0,t]$ is such an
   $H(t)$, and no propagator of it is norm-differentiable on $(0,1)$
-  (\lean{indicatorHamiltonian_counterexample}). For unbounded self-adjoint $H(t)$ existence
-  needs Kato-type hypotheses and remains open. The converse has the same gap: for unbounded
-  $H(t)$, Step~3 gives only a symmetric $H(t_0)$ (next section, first item). (Brief, Sec.~3,
-  proof of Theorem~2 ($\Rightarrow$); Log, ``Differences from the brief''.)
+  (\lean{indicatorHamiltonian_counterexample}). For unbounded $H(t) = H_0 + V(t)$, with $H_0$
+  self-adjoint and $V(t)$ bounded, self-adjoint, strongly continuous, mapping the domain $D$ of
+  $H_0$ into itself and strongly continuous on $D$ in the graph norm, the propagator also
+  exists, is unique and unitary, and satisfies DR-INFO and EVDIFF on the dense set $D$
+  (\lean{FurtherResults.existsUnique_propagator}; further results, Sec.~3). Open: existence
+  for general unbounded self-adjoint $H(t)$ under Kato-type hypotheses, for instance a common
+  domain on which $H(t)$ is not a bounded perturbation of one operator. The converse has the
+  same gap: for unbounded $H(t)$, Step~3 gives only a symmetric $H(t_0)$ (next section, first
+  item). (Brief, Sec.~3, proof of Theorem~2 ($\Rightarrow$); Log, ``Differences from the
+  brief''.)
 \end{enumerate}
 
 \section*{From the formalization}
