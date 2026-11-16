@@ -29,6 +29,9 @@ Formalized here, for a complex inner product space `E` of any dimension, with pu
                                rank, and of trace one over any Hilbert basis: a density operator;
 * `QSupMix.ne_zero`, `QSupMix.isDensity`
                                so the `ρ` of QSUP-MIX is a density operator.
+* `classicalMixture_injective`, `not_cSupMix`
+                               no classical superpositions: a mixture of Dirac measures determines
+                               its weights, and the classical analogue of QSUP-MIX never holds.
 
 QSUP-MIX ⇒ QSUP-PUR uses neither that `ρ` is mixed nor that the weight on the other state is
 positive: the linear independence of `ψ₁` and `ψ₂` follows from `ρ_ϕ ∉ {ρ_ψ₁, ρ_ψ₂}`.
@@ -36,6 +39,7 @@ positive: the linear independence of `ψ₁` and `ψ₂` follows from `ρ_ϕ ∉
 public import ForMathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
 public import ForPhyslib.QuantumMechanics.Wigner.Density
 public import Mathlib.Analysis.InnerProductSpace.l2Space
+public import Mathlib.MeasureTheory.Measure.Dirac.Def
 
 open scoped InnerProductSpace ComplexOrder
 open InnerProductSpace QuantumMechanics.Wigner Submodule
@@ -336,5 +340,61 @@ theorem QSupMix.isDensity [FiniteDimensional ℂ E] {ϕ ψ₁ ψ₂ : E} (hϕ : 
     (h : QSupMix ϕ ψ₁ ψ₂) {p₁ p₂ : ℝ} (hp₁ : 0 ≤ p₁) (hp₂ : 0 ≤ p₂) (hp : p₁ + p₂ = 1) :
     IsDensity (mixture p₁ ψ₁ p₂ ψ₂) :=
   isDensity_mixture (h.ne_zero hϕ).1 (h.ne_zero hϕ).2 hp₁ hp₂ hp
+
+/-! ### No classical superpositions
+
+A classical state is a point `x` of a measurable space `X` in which points are measurable; an
+ensemble is a measure on `X`, and the pure state of `x` is the Dirac measure `δ_x`. -/
+
+section Classical
+
+open MeasureTheory Measure
+open scoped ENNReal
+
+variable {X : Type*} [MeasurableSpace X] [MeasurableSingletonClass X]
+
+/-- The classical mixture `∑ₓ wₓ δ_x` of finitely many pure states with weights `w`. -/
+def classicalMixture (w : X →₀ ℝ≥0∞) : Measure X := w.sum fun x a => a • dirac x
+
+/-- The mixture gives the point `x` its weight: `(∑ᵧ w_y δ_y) {x} = wₓ`. -/
+lemma classicalMixture_apply_singleton (w : X →₀ ℝ≥0∞) (x : X) :
+    classicalMixture w {x} = w x := by
+  rw [classicalMixture, Finsupp.sum, _root_.sum_apply]
+  simp_rw [smul_apply, dirac_apply, smul_eq_mul]
+  rw [Finset.sum_eq_single x (fun y _ hyx => by simp [hyx])
+    (fun hx => by simp [Finsupp.notMem_support_iff.mp hx])]
+  simp
+
+/-- The decomposition of a classical ensemble into pure states is unique: different mixtures of
+classical states give different ensembles. -/
+theorem classicalMixture_injective : Function.Injective (classicalMixture (X := X)) :=
+  fun w v h => Finsupp.ext fun x => by
+    rw [← classicalMixture_apply_singleton, h, classicalMixture_apply_singleton]
+
+/-- The classical analogue of QSUP-MIX: an ensemble `ρ = p₁ δ_x₁ + p₂ δ_x₂ = q δ_y + q' δ_y'` that
+is not pure, with `δ_y ∉ {δ_x₁, δ_x₂}`, all weights in `(0, 1)` and `p₁ + p₂ = q + q' = 1`. -/
+def CSupMix (y x₁ x₂ : X) : Prop :=
+  ∃ (p₁ p₂ q q' : ℝ≥0∞) (y' : X),
+    p₁ ∈ Set.Ioo 0 1 ∧ p₂ ∈ Set.Ioo 0 1 ∧ q ∈ Set.Ioo 0 1 ∧ q' ∈ Set.Ioo 0 1 ∧
+    p₁ + p₂ = 1 ∧ q + q' = 1 ∧
+    (∀ z, p₁ • dirac x₁ + p₂ • dirac x₂ ≠ dirac z) ∧
+    p₁ • dirac x₁ + p₂ • dirac x₂ = q • dirac y + q' • dirac y' ∧
+    dirac y ≠ dirac x₁ ∧ dirac y ≠ dirac x₂
+
+/-- **No classical superpositions.** The classical analogue of QSUP-MIX never holds: a mixture of
+`δ_x₁` and `δ_x₂` gives no weight to a third point `y`, so it is not a mixture of `δ_y` and some
+other state with a positive weight on `δ_y`. -/
+theorem not_cSupMix (y x₁ x₂ : X) : ¬ CSupMix y x₁ x₂ := by
+  rintro ⟨p₁, p₂, q, q', y', -, -, hq, -, -, -, -, heq, h₁, h₂⟩
+  have hx₁ : x₁ ∉ ({y} : Set X) := fun h => h₁ (by rw [Set.mem_singleton_iff.mp h])
+  have hx₂ : x₂ ∉ ({y} : Set X) := fun h => h₂ (by rw [Set.mem_singleton_iff.mp h])
+  have h := congrArg (fun μ : Measure X => μ {y}) heq
+  simp only [add_apply, smul_apply, dirac_apply, smul_eq_mul, Set.indicator_of_notMem hx₁,
+    Set.indicator_of_notMem hx₂, Set.indicator_of_mem (Set.mem_singleton y), Pi.one_apply,
+    mul_one, mul_zero, add_zero] at h
+  have h0 : q + q' * ({y} : Set X).indicator 1 y' = 0 := h.symm
+  exact hq.1.ne' (le_antisymm (le_self_add.trans h0.le) bot_le)
+
+end Classical
 
 end SuperpositionAndMultipleMixtures

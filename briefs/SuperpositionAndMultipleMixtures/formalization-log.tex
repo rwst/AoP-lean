@@ -58,7 +58,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \item Imports: \lean{ForPhyslib.QuantumMechanics.Wigner.Density} (for \lean{proj},
   $\ket\psi\bra\psi$, its parallelogram law, and \lean{IsDensity}),\newline
   \lean{ForMathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional},\newline
-  \lean{Mathlib.Analysis.InnerProductSpace.l2Space} (for \lean{HilbertBasis})
+  \lean{Mathlib.Analysis.InnerProductSpace.l2Space} (for \lean{HilbertBasis}),\newline
+  \lean{Mathlib.MeasureTheory.Measure.Dirac.Def} (for Dirac measures)
 \item New \lean{ForMathlib} material:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Projection/FiniteDimensional.lean}
   (\lean{Submodule.mem_span_of_forall_inner_eq_zero}: a vector orthogonal to everything that is
@@ -105,6 +106,11 @@ $\rho$ is a density operator & \lean{isPositive_mixture}: $p\rho_\psi + q\rho_\c
 (QSUP-MIX) & \lean{QSupMix.ne_zero}: for $\phi \ne 0$, $\psi_1, \psi_2 \ne 0$;
   \lean{QSupMix.isDensity}: in finite dimension, $\rho = p_1\rho_{\psi_1} + p_2\rho_{\psi_2}$ is a
   density operator \\
+``mixtures of different classical states always yield a different ensemble'' &
+  \lean{classicalMixture_injective}: on a measurable space with measurable points, the finite
+  mixture $\sum_x w_x\delta_x$ determines the weights $w$ \\
+``classical superpositions are not possible'' & \lean{not_cSupMix}: the classical analogue
+  \lean{CSupMix} of QSUP-MIX, with Dirac measures in place of pure states, never holds \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -122,6 +128,13 @@ $\rho$ is a density operator & \lean{isPositive_mixture}: $p\rho_\psi + q\rho_\c
   \phi, \hat\phi$ are nonzero, so both decompositions are of this kind. Mathlib has no trace-class
   operators; in infinite dimension, trace one is stated as the sum over a Hilbert basis, which
   for a positive operator also shows that it is trace class.
+\item The classical side of the introduction is formalized with classical states as points of a
+  measurable space $X$ in which points are measurable, ensembles as measures on $X$, and pure
+  states as Dirac measures $\delta_x$. \lean{CSupMix}~$y\ x_1\ x_2$ copies QSUP-MIX: a
+  non-pure $\rho = p_1\delta_{x_1} + p_2\delta_{x_2} = q\delta_y + q'\delta_{y'}$ with
+  $\delta_y \notin \{\delta_{x_1}, \delta_{x_2}\}$ and the same conditions on the weights.
+  It fails because $\rho(\{y\}) = 0 < q$; only $q > 0$ is used. These results are not in the
+  comparator lane.
 \item QSUP-MIX $\Rightarrow$ QSUP-PUR uses neither that $\rho$ is mixed nor that
   $p_{\hat\phi} > 0$; only $p_\phi > 0$, $p_{\hat\phi} \ge 0$ and $\rho_\phi \notin
   \{\rho_{\psi_1}, \rho_{\psi_2}\}$.
