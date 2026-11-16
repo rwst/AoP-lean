@@ -23,16 +23,22 @@ Formalized here, for a complex inner product space `E` of any dimension, with pu
                                is a mixture of `ψ₁` and `ψ₂`, then `ϕ ∈ span {ψ₁, ψ₂}`;
 * `isMixed_mixture`            a mixture of two independent states is not pure;
 * `QSupMix.qSupPur`            QSUP-MIX ⇒ QSUP-PUR;
-* `qSupPur_iff_qSupMix`        Theorem 1, for `ϕ ≠ 0`.
+* `qSupPur_iff_qSupMix`        Theorem 1, for `ϕ ≠ 0`;
+* `isPositive_mixture`, `mixture_apply_mem_span`, `hasSum_inner_mixture`, `isDensity_mixture`
+                               a convex combination of two pure states is positive, of finite
+                               rank, and of trace one over any Hilbert basis: a density operator;
+* `QSupMix.ne_zero`, `QSupMix.isDensity`
+                               so the `ρ` of QSUP-MIX is a density operator.
 
 QSUP-MIX ⇒ QSUP-PUR uses neither that `ρ` is mixed nor that the weight on the other state is
 positive: the linear independence of `ψ₁` and `ψ₂` follows from `ρ_ϕ ∉ {ρ_ψ₁, ρ_ψ₂}`.
 -/
 public import ForMathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
 public import ForPhyslib.QuantumMechanics.Wigner.Density
+public import Mathlib.Analysis.InnerProductSpace.l2Space
 
-open scoped InnerProductSpace
-open QuantumMechanics.Wigner Submodule
+open scoped InnerProductSpace ComplexOrder
+open InnerProductSpace QuantumMechanics.Wigner Submodule
 
 @[expose] public noncomputable section
 
@@ -249,5 +255,86 @@ theorem QSupMix.qSupPur {ϕ ψ₁ ψ₂ : E} (hϕ : ϕ ≠ 0) (h : QSupMix ϕ ψ
 theorem qSupPur_iff_qSupMix {ϕ ψ₁ ψ₂ : E} (hϕ : ϕ ≠ 0) :
     QSupPur ϕ ψ₁ ψ₂ ↔ QSupMix ϕ ψ₁ ψ₂ :=
   ⟨QSupPur.qSupMix, QSupMix.qSupPur hϕ⟩
+
+/-! ### The mixtures are density operators -/
+
+/-- A pure state is a positive operator. -/
+lemma isPositive_pureState (ψ : E) : (pureState ψ : E →ₗ[ℂ] E).IsPositive := by
+  have h : (0 : ℂ) ≤ (((‖ψ‖ ^ 2)⁻¹ : ℝ) : ℂ) := by
+    exact_mod_cast (by positivity : (0 : ℝ) ≤ (‖ψ‖ ^ 2)⁻¹)
+  rw [pureState, ContinuousLinearMap.toLinearMap_smul]
+  exact (isPositive_rankOne_self ψ).toLinearMap.smul_of_nonneg h
+
+/-- A mixture with nonnegative weights is a positive operator. -/
+theorem isPositive_mixture {p q : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) (ψ χ : E) :
+    (mixture p ψ q χ : E →ₗ[ℂ] E).IsPositive := by
+  rw [mixture, ContinuousLinearMap.toLinearMap_add, ContinuousLinearMap.toLinearMap_smul,
+    ContinuousLinearMap.toLinearMap_smul]
+  exact ((isPositive_pureState ψ).smul_of_nonneg (by exact_mod_cast hp)).add
+    ((isPositive_pureState χ).smul_of_nonneg (by exact_mod_cast hq))
+
+/-- A mixture of `ψ` and `χ` has finite rank: its range lies in `span {ψ, χ}`. -/
+theorem mixture_apply_mem_span (p : ℝ) (ψ : E) (q : ℝ) (χ : E) (x : E) :
+    mixture p ψ q χ x ∈ span ℂ {ψ, χ} := by
+  rw [mixture, add_apply, smul_apply, smul_apply, pureState_apply, pureState_apply]
+  exact add_mem (smul_mem _ _ (smul_mem _ _ (subset_span (by simp))))
+    (smul_mem _ _ (smul_mem _ _ (subset_span (by simp))))
+
+/-- The trace of a pure state over a Hilbert basis: `∑ᵢ ⟪eᵢ, ρ_ψ eᵢ⟫ = 1`. -/
+lemma hasSum_inner_pureState {ι : Type*} (b : HilbertBasis ι ℂ E) {ψ : E} (hψ : ψ ≠ 0) :
+    HasSum (fun i => ⟪b i, pureState ψ (b i)⟫_ℂ) 1 := by
+  have hn : (‖ψ‖ : ℂ) ≠ 0 := by exact_mod_cast (norm_pos_iff.mpr hψ).ne'
+  convert (b.hasSum_inner_mul_inner ψ ψ).mul_left (((‖ψ‖ ^ 2)⁻¹ : ℝ) : ℂ) using 1
+  · ext i
+    rw [pureState_apply, inner_smul_right, mul_assoc]
+  · rw [inner_self_eq_norm_sq_to_K]
+    push_cast
+    field_simp
+    rfl
+
+/-- The trace of a mixture over any Hilbert basis: `∑ᵢ ⟪eᵢ, (p ρ_ψ + q ρ_χ) eᵢ⟫ = p + q`. With
+positivity (`isPositive_mixture`), a mixture with `p + q = 1` is a density operator of trace one in
+any Hilbert space, and trace class. -/
+theorem hasSum_inner_mixture {ι : Type*} (b : HilbertBasis ι ℂ E) {ψ χ : E} (hψ : ψ ≠ 0)
+    (hχ : χ ≠ 0) (p q : ℝ) :
+    HasSum (fun i => ⟪b i, mixture p ψ q χ (b i)⟫_ℂ) (p + q) := by
+  have h := ((hasSum_inner_pureState b hψ).mul_left (p : ℂ)).add
+    ((hasSum_inner_pureState b hχ).mul_left (q : ℂ))
+  rw [mul_one, mul_one] at h
+  convert h using 2 with i
+  rw [mixture, add_apply, smul_apply, smul_apply, inner_add_right, inner_smul_right,
+    inner_smul_right]
+
+/-- In finite dimension, the trace of a pure state is one. -/
+lemma trace_pureState [FiniteDimensional ℂ E] {ψ : E} (hψ : ψ ≠ 0) :
+    LinearMap.trace ℂ E (pureState ψ) = 1 := by
+  have hn : (‖ψ‖ : ℂ) ≠ 0 := by exact_mod_cast (norm_pos_iff.mpr hψ).ne'
+  rw [pureState, ContinuousLinearMap.toLinearMap_smul, map_smul, trace_rankOne,
+    inner_self_eq_norm_sq_to_K, smul_eq_mul]
+  push_cast
+  field_simp
+  rfl
+
+/-- In finite dimension, a convex combination of two pure states is a density operator. -/
+theorem isDensity_mixture [FiniteDimensional ℂ E] {ψ χ : E} (hψ : ψ ≠ 0) (hχ : χ ≠ 0) {p q : ℝ}
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hpq : p + q = 1) : IsDensity (mixture p ψ q χ) where
+  isPositive := isPositive_mixture hp hq ψ χ
+  trace_eq_one := by
+    rw [mixture, ContinuousLinearMap.toLinearMap_add, ContinuousLinearMap.toLinearMap_smul,
+      ContinuousLinearMap.toLinearMap_smul, map_add, map_smul, map_smul, trace_pureState hψ,
+      trace_pureState hχ, smul_eq_mul, smul_eq_mul, mul_one, mul_one, ← Complex.ofReal_add, hpq,
+      Complex.ofReal_one]
+
+/-- In QSUP-MIX with `ϕ ≠ 0`, the vectors `ψ₁` and `ψ₂` are nonzero, as are `ϕ` and `ϕ̂`; so
+both decompositions of `ρ` are convex combinations of two pure states, and `ρ` is a density
+operator (`isPositive_mixture`, `hasSum_inner_mixture`, `isDensity_mixture`). -/
+theorem QSupMix.ne_zero {ϕ ψ₁ ψ₂ : E} (hϕ : ϕ ≠ 0) (h : QSupMix ϕ ψ₁ ψ₂) : ψ₁ ≠ 0 ∧ ψ₂ ≠ 0 :=
+  ⟨by simpa using (h.qSupPur hϕ).1.ne_zero 0, by simpa using (h.qSupPur hϕ).1.ne_zero 1⟩
+
+/-- In finite dimension, the mixed state `ρ` of QSUP-MIX is a density operator. -/
+theorem QSupMix.isDensity [FiniteDimensional ℂ E] {ϕ ψ₁ ψ₂ : E} (hϕ : ϕ ≠ 0)
+    (h : QSupMix ϕ ψ₁ ψ₂) {p₁ p₂ : ℝ} (hp₁ : 0 ≤ p₁) (hp₂ : 0 ≤ p₂) (hp : p₁ + p₂ = 1) :
+    IsDensity (mixture p₁ ψ₁ p₂ ψ₂) :=
+  isDensity_mixture (h.ne_zero hϕ).1 (h.ne_zero hϕ).2 hp₁ hp₂ hp
 
 end SuperpositionAndMultipleMixtures

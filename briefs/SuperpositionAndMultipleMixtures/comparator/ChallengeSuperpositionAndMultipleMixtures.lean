@@ -8,6 +8,7 @@ module
 public import Mathlib.Analysis.InnerProductSpace.Projection.Submodule
 public import Mathlib.Analysis.InnerProductSpace.Positive
 public import Mathlib.Analysis.InnerProductSpace.Trace
+public import Mathlib.Analysis.InnerProductSpace.l2Space
 
 /-!
 # SuperpositionAndMultipleMixtures: the statements of record
@@ -32,8 +33,8 @@ end
 -- SuperpositionAndMultipleMixtures
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
-open scoped InnerProductSpace
-open QuantumMechanics.Wigner Submodule
+open scoped InnerProductSpace ComplexOrder
+open InnerProductSpace QuantumMechanics.Wigner Submodule
 @[expose] public noncomputable section
 namespace SuperpositionAndMultipleMixtures
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]

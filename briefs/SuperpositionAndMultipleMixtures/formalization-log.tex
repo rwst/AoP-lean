@@ -56,8 +56,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{briefs/SuperpositionAndMultipleMixtures/SuperpositionAndMultipleMixtures.lean}
 \item Library: \lean{SuperpositionAndMultipleMixtures}
 \item Imports: \lean{ForPhyslib.QuantumMechanics.Wigner.Density} (for \lean{proj},
-  $\ket\psi\bra\psi$, and its parallelogram law),\newline
-  \lean{ForMathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional}
+  $\ket\psi\bra\psi$, its parallelogram law, and \lean{IsDensity}),\newline
+  \lean{ForMathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional},\newline
+  \lean{Mathlib.Analysis.InnerProductSpace.l2Space} (for \lean{HilbertBasis})
 \item New \lean{ForMathlib} material:\newline
   \lean{ForMathlib/Analysis/InnerProductSpace/Projection/FiniteDimensional.lean}
   (\lean{Submodule.mem_span_of_forall_inner_eq_zero}: a vector orthogonal to everything that is
@@ -95,6 +96,15 @@ QSUP-MIX $\Rightarrow$ QSUP-PUR & \lean{QSupMix.qSupPur}, for $\phi \ne 0$ \\
 Theorem~1 & \lean{qSupPur_iff_qSupMix}, for $\phi \ne 0$ \\
 (used for QSUP-MIX) & \lean{isMixed_mixture}: a mixture of two linearly independent states with
   positive weights is not pure \\
+$\rho$ is a density operator & \lean{isPositive_mixture}: $p\rho_\psi + q\rho_\chi$ is positive
+  for $p, q \ge 0$; \lean{mixture_apply_mem_span}: its range lies in
+  $\operatorname{span}\{\psi, \chi\}$ (finite rank, so trace class);
+  \lean{hasSum_inner_mixture}: $\sum_i \braket{e_i|\rho|e_i} = p + q$ for every Hilbert basis
+  $(e_i)$, if $\psi, \chi \ne 0$; \lean{isDensity_mixture}: in finite dimension, a density
+  operator (positive, trace one) if $p + q = 1$ \\
+(QSUP-MIX) & \lean{QSupMix.ne_zero}: for $\phi \ne 0$, $\psi_1, \psi_2 \ne 0$;
+  \lean{QSupMix.isDensity}: in finite dimension, $\rho = p_1\rho_{\psi_1} + p_2\rho_{\psi_2}$ is a
+  density operator \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -103,8 +113,15 @@ Theorem~1 & \lean{qSupPur_iff_qSupMix}, for $\phi \ne 0$ \\
 \begin{itemize}
 \item The equivalence is proved for each triple $\phi, \psi_1, \psi_2$ with $\phi \ne 0$; no
   other vector needs to be nonzero, and $E$ need not be complete or finite-dimensional.
-\item The brief writes $\rho$ as a density operator. The formalization does not use the trace:
-  $\rho$ is a convex combination of two pure states, which is all the argument needs.
+\item The brief writes $\rho$ as a density operator. The conditions and the proof of Theorem~1
+  do not use the trace: $\rho$ is a convex combination of two pure states, which is all the
+  argument needs. That such a $\rho$ is a density operator is proved separately and is not
+  in the comparator lane: it is positive and of finite rank in any dimension, its trace over
+  any Hilbert basis is one, and in finite dimension it satisfies \lean{IsDensity} (positive, with
+  \lean{LinearMap.trace} one). In QSUP-MIX with $\phi \ne 0$ all four vectors $\psi_1, \psi_2,
+  \phi, \hat\phi$ are nonzero, so both decompositions are of this kind. Mathlib has no trace-class
+  operators; in infinite dimension, trace one is stated as the sum over a Hilbert basis, which
+  for a positive operator also shows that it is trace class.
 \item QSUP-MIX $\Rightarrow$ QSUP-PUR uses neither that $\rho$ is mixed nor that
   $p_{\hat\phi} > 0$; only $p_\phi > 0$, $p_{\hat\phi} \ge 0$ and $\rho_\phi \notin
   \{\rho_{\psi_1}, \rho_{\psi_2}\}$.
