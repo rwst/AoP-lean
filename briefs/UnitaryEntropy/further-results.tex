@@ -243,12 +243,160 @@ of freedom, with $q_i$ at \lean{inl}~$i$ and $p_i$ at \lean{inr}~$i$.
     freedom.
 \end{itemize}
 
+\section{Entropy conservation as determinism and reversibility}
+\label{sec:detrev}
+
+The brief reads DR-INFO as ``an information theoretic way to characterize determinism and
+reversibility'', but defines neither notion. This section gives a precise definition and proves
+it equivalent to DR-INFO, for a single evolution map and without continuity in time.
+
+\subsection{Statement}
+
+The setting is the brief's: a finite-dimensional complex Hilbert space $\mathcal H$ (QST:H), the
+density operators $\mathcal D(\mathcal H)$, the pure states
+$\mathcal P(\mathcal H) = \{|\psi\rangle\langle\psi| : \|\psi\| = 1\}$, and a map
+$\Phi\colon\mathcal D(\mathcal H)\to\mathcal D(\mathcal H)$ that preserves equal mixtures,
+$\Phi(\frac12\rho + \frac12\sigma) = \frac12\Phi(\rho) + \frac12\Phi(\sigma)$ ([B]EVMIX). The
+entropy is the von Neumann entropy $S(\rho) = -\operatorname{tr}\rho\log\rho$.
+
+The book states the assumption of determinism and reversibility as: ``specifying the state of
+the system at a particular time is equivalent to specifying the state at a future (determinism)
+or past (reversibility) time''~\cite[Ch.~\emph{Classical mechanics}, Sec.~\emph{Reversing
+Hamiltonian mechanics}]{book}. In the quantum case, it applies this to pure states, where ``there is a
+one-to-one correspondence between initial and final state''~\cite[Ch.~\emph{Quantum mechanics},
+Sec.~\emph{Schroedinger equation and unitary evolution}]{book}. The states of maximal
+information are the pure states. A mixed final state would leave the outcome undetermined, and
+it would also carry less information than the initial state. This gives the definition.
+
+\begin{definition}[DR]\label{def:detrev}
+  $\Phi$ is \emph{deterministic} if it maps pure states to pure states, and \emph{reversible} if
+  it is injective on the pure states.
+\end{definition}
+
+So a deterministic $\Phi$ assigns to each initial state one final state, and a reversible one
+lets the final state determine the initial one. Surjectivity is not part of the definition; it
+follows (Theorem~\ref{thm:detrev}).
+
+\begin{theorem}\label{thm:detrev}
+  For $\Phi$ as above the following are equivalent:
+  \begin{enumerate}
+    \item[(i)] $\Phi$ is deterministic and reversible (DR);
+    \item[(ii)] $\Phi$ is a bijection of $\mathcal P(\mathcal H)$;
+    \item[(iii)] $\Phi$ is a bijection of $\mathcal D(\mathcal H)$, an isomorphism of the
+      state space in the sense of~\cite[Preface, Sec.~\emph{Project overview}]{book};
+    \item[(iv)] $S(\Phi(\rho)) = S(\rho)$ for every $\rho\in\mathcal D(\mathcal H)$ (DR-INFO);
+    \item[(v)] $\Phi(\rho) = W\rho W^{-1}$ for a unitary or an anti-unitary $W$.
+  \end{enumerate}
+\end{theorem}
+
+\begin{corollary}\label{cor:detrev}
+  For an evolution $\Psi_{t_0\to t_1}$, $t_0\le t_1$, as in the brief's time-dependent setting,
+  DR-INFO holds if and only if every $\Psi_{t_0\to t_1}$ is deterministic and reversible.
+\end{corollary}
+
+\subsection{Proof}
+
+\begin{lemma}[Anti-unitary conjugation]\label{lem:antiunitary}
+  If $W$ is anti-unitary and $\rho$ is a density operator, then $S(W\rho W^{-1}) = S(\rho)$.
+\end{lemma}
+
+\begin{proof}
+  Let $\rho = \sum_i \mu_i |v_i\rangle\langle v_i|$ with $(v_i)$ an orthonormal eigenbasis and
+  $\mu_i\ge0$. Then $W\rho W^{-1} = \sum_i \mu_i |Wv_i\rangle\langle Wv_i|$, as the $\mu_i$ are
+  real. The vectors $Wv_i$ form an orthonormal basis, so the unitary $U$ with $Uv_i = Wv_i$ gives
+  $W\rho W^{-1} = U\rho U^{-1}$. The entropy depends only on the characteristic polynomial, which
+  unitary conjugation preserves.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:detrev}]
+  Since $\Phi$ preserves equal mixtures and maps density operators to density operators, it is
+  affine on $\mathcal D(\mathcal H)$.
+
+  (iv) $\Rightarrow$ (i). These are the brief's Steps~1 and~2. The pure states are exactly the
+  density operators of zero entropy, so $\Phi$ maps them to pure states. The entropy of the equal
+  mixture of two pure states $\psi, \phi$ is a strictly decreasing function of the transition
+  probability $|\langle\psi,\phi\rangle|^2$, so $\Phi$ preserves transition probabilities. If
+  $\Phi(|\psi\rangle\langle\psi|) = \Phi(|\phi\rangle\langle\phi|)$, the images have transition
+  probability $1$, hence so do $\psi$ and $\phi$, and $|\psi\rangle\langle\psi| =
+  |\phi\rangle\langle\phi|$.
+
+  (i) $\Rightarrow$ (v). This is Kadison's theorem~\cite{kadison}, which assumes a bijection, in
+  a version for maps that are only injective on the pure states. An affine map of $\mathcal D(\mathcal H)$ that is injective on pure states
+  and maps them to pure states preserves orthogonality, and then all transition probabilities.
+  Wigner's theorem gives a unitary or anti-unitary $W$ with $\Phi(|\psi\rangle\langle\psi|) =
+  |W\psi\rangle\langle W\psi|$. As $\Phi$ is affine and every density operator is a convex
+  combination of pure states, $\Phi(\rho) = W\rho W^{-1}$.
+
+  (v) $\Rightarrow$ (ii) $\Leftrightarrow$ (iii). Conjugation by $W$ is a bijection of
+  $\mathcal D(\mathcal H)$ with inverse conjugation by $W^{-1}$. An affine bijection of
+  $\mathcal D(\mathcal H)$ maps its extreme points, the pure states, bijectively onto themselves.
+  Conversely a bijection of the pure states satisfies (i), hence (v), hence (iii).
+
+  (ii) $\Rightarrow$ (i) is immediate, and (v) $\Rightarrow$ (iv) is unitary invariance together
+  with Lemma~\ref{lem:antiunitary}.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:detrev}]
+  Apply Theorem~\ref{thm:detrev}, (i) $\Leftrightarrow$ (iv), to each $\Psi_{t_0\to t_1}$.
+\end{proof}
+
+\begin{remark}
+  For a single map the anti-unitary case in (v) is genuine: complex conjugation in a basis is
+  deterministic, reversible and preserves the entropy. Along a continuous evolution with
+  $\Psi_{t\to t} = \mathrm{id}$ and the composition law it is excluded, and every
+  $\Psi_{t_0\to t_1}$ is unitary. As in the brief's proof of Theorem~2, this step needs
+  continuity in time.
+\end{remark}
+
+\begin{remark}
+  In dimension at least two neither half of Definition~\ref{def:detrev} implies DR-INFO alone.
+  The constant map onto one pure state is deterministic but not reversible, and it lowers the
+  entropy of every mixed state. The depolarizing map $\rho\mapsto\frac12\rho +
+  \frac1{2n}\mathbb 1$ is injective on all of $\mathcal D(\mathcal H)$ but not deterministic,
+  and it raises the entropy of every pure state. These examples are not formalized.
+\end{remark}
+
+\begin{remark}
+  Finite dimension is used in (i) $\Rightarrow$ (ii): in infinite dimension an isometry that is
+  not unitary is deterministic and reversible in the sense of Definition~\ref{def:detrev} and
+  preserves the entropy, but it is not a bijection of the pure states. The companion brief
+  \emph{Multiple equivalent characterizations of the Schr\"odinger equation} formalizes such an
+  example, the semigroup of right shifts on $L^2(0, \infty)$. Whether (i) $\Leftrightarrow$
+  (iv) holds in infinite dimension is not addressed here.
+\end{remark}
+
+\subsection{Lean}
+
+Module \lean{UnitaryEntropy.FurtherResults.DeterminismReversibility}, namespace
+\lean{UnitaryEntropy.FurtherResults}. Pure states and Kadison's theorem come from
+\lean{ForPhyslib/QuantumMechanics/Wigner/}, and Steps~1 and~2 from the brief's main file.
+
+\begin{itemize}
+  \item \lean{IsDetRev}, \lean{PreservesEntropy}: Definition~\ref{def:detrev} and DR-INFO.
+    The pure states are \lean{QuantumMechanics.Wigner.IsPure}, (ii) is
+    \lean{QuantumMechanics.Wigner.BijOnPure} and (v) is
+    \lean{QuantumMechanics.Wigner.ImplementedByUnitaryOrAntiunitary}.
+  \item \lean{exists_conjOp_eq_conjOp}, \lean{vonNeumann_conjOp_antiunitary}:
+    Lemma~\ref{lem:antiunitary}; \lean{vonNeumann_conjOp}: (v) $\Rightarrow$ (iv).
+  \item \lean{isDetRev_of_preservesEntropy}: (iv) $\Rightarrow$ (i), from
+    \lean{UnitaryEntropy.pure_and_born_of_preserves}.
+  \item \lean{QuantumMechanics.Wigner.AffineOnDensities.implemented_of_injOn}: (i)
+    $\Rightarrow$ (v); \lean{QuantumMechanics.Wigner.kadison_tfae}: (ii) $\Leftrightarrow$
+    (iii) $\Leftrightarrow$ (v).
+  \item \lean{detRev_tfae}, \lean{isDetRev_iff_preservesEntropy}: Theorem~\ref{thm:detrev}.
+  \item \lean{detRev_iff_drInfo}: Corollary~\ref{cor:detrev}, for
+    \lean{SchroedingerEvolution.TwoParameter.IsEvolution} and the brief's
+    \lean{UnitaryEntropy.TwoParameter.DrInfo}.
+\end{itemize}
+
 \begin{thebibliography}{9}
 \bibitem{brief} G.~Carcassi, \emph{Schr\"odinger equation is equivalent to information
   conservation}, technical brief, Assumptions of Physics,
   \url{https://assumptionsofphysics.org/resources/briefs}.
-\bibitem{book} G.~Carcassi and C.~A.~Aidala, \emph{Assumptions of Physics}, Part \emph{Reverse
-  Physics}, Chapter \emph{Classical mechanics}, \url{https://assumptionsofphysics.org}.
+\bibitem{book} G.~Carcassi and C.~A.~Aidala, \emph{Assumptions of Physics},
+  \url{https://assumptionsofphysics.org}.
+\bibitem{kadison} R.~V.~Kadison, \emph{Transformations of states in operator theory and
+  dynamics}, Topology~3, suppl.~2 (1965), 177--198.
 \end{thebibliography}
 
 \end{document}
