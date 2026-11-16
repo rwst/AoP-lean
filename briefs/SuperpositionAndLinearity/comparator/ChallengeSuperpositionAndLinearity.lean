@@ -6,8 +6,10 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.LinearAlgebra.Matrix.DotProduct
 public import Physlib.Relativity.PauliMatrices.Basic
+public import TauCeti.LinearAlgebra.Matrix.Pauli
+public import TauCeti.LinearAlgebra.Projectivization.HermitianProjector
+public import TauCeti.Topology.Algebra.Projectivization
 
 /-!
 # SuperpositionAndLinearity: the statements of record
@@ -32,6 +34,7 @@ end
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
 open Complex ComplexConjugate Matrix QuantumMechanics.Qubit
+open scoped LinearAlgebra.Projectivization
 @[expose] public noncomputable section
 namespace SuperpositionAndLinearity
 abbrev H := EuclideanSpace ℂ (Fin 2)

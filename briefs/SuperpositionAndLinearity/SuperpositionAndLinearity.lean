@@ -30,14 +30,20 @@ Formalized here (`H = EuclideanSpace ℂ (Fin 2)`, `|z⁺⟩ = e₀`, `|z⁻⟩ 
                               opposite (the outcomes `z⁺`, `z⁻` are opposite directions);
 * `exists_eq_smul_stateVector` every unit vector of `H` is a phase times a state vector of the
                               brief's form, with `0 ≤ θ ≤ π`;
-* `exists_direction_eq`       every unit vector of `ℝ³` is a direction of the brief's form.
+* `exists_direction_eq`       every unit vector of `ℝ³` is a direction of the brief's form;
+* `blochSphere_mk_stateVector` the homeomorphism `blochSphere` of the projective line
+                              `ℙ ℂ ℂ²` onto the unit sphere of `ℝ³` takes the ray of the state
+                              vector to its direction;
+* `exists_homeomorph_sphere`  so the rays of `ℂ²` form the unit sphere of `ℝ³`, the ray of
+                              `ψ(θ, φ)` going to `v(θ, φ)`.
 
 The brief writes `|z⁺⟩` for both kets in the abstract and in eq. (3); the second is `|z⁻⟩`, as
 the computation of `p(z⁻)` in eq. (3) shows.
 -/
-public import ForPhyslib.QuantumMechanics.Qubit.Bloch
+public import ForPhyslib.QuantumMechanics.Qubit.BlochSphere
 
 open Complex ComplexConjugate Matrix QuantumMechanics.Qubit
+open scoped LinearAlgebra.Projectivization
 
 @[expose] public noncomputable section
 
@@ -243,5 +249,22 @@ theorem exists_direction_eq {v : Fin 3 → ℝ} (hv : v ⬝ᵥ v = 1) :
   · simp only [direction, Fin.reduceFinMk, Matrix.cons_val]
     exact Real.cos_arccos (by nlinarith [sq_nonneg (v 0), sq_nonneg (v 1)])
       (by nlinarith [sq_nonneg (v 0), sq_nonneg (v 1)])
+
+/-- The homeomorphism `blochSphere` of the projective line onto the unit sphere takes the ray of
+`ψ(θ, φ)` to `v(θ, φ)`. -/
+theorem blochSphere_mk_stateVector (θ φ : ℝ) (h : (stateVector θ φ).ofLp ≠ 0) :
+    (blochSphere (Projectivization.mk ℂ (stateVector θ φ).ofLp h) : EuclideanSpace ℝ (Fin 3)) =
+      WithLp.toLp 2 (direction θ φ) := by
+  rw [coe_blochSphere, blochPoint_mk, unitBlochVector, WithLp.toLp_ofLp, norm_stateVector,
+    one_pow, inv_one, one_smul, blochVector_stateVector]
+
+/-- The rays of `ℂ²` form the unit sphere of `ℝ³`: Mathlib's projective line `ℙ ℂ ℂ²` is
+homeomorphic to the sphere, by a homeomorphism that takes the ray of `ψ(θ, φ)` to `v(θ, φ)`. -/
+theorem exists_homeomorph_sphere :
+    ∃ e : ℙ ℂ (Fin 2 → ℂ) ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1,
+      ∀ (θ φ : ℝ) (h : (stateVector θ φ).ofLp ≠ 0),
+        (e (Projectivization.mk ℂ (stateVector θ φ).ofLp h) : EuclideanSpace ℝ (Fin 3)) =
+          WithLp.toLp 2 (direction θ φ) :=
+  ⟨blochSphere, blochSphere_mk_stateVector⟩
 
 end SuperpositionAndLinearity
