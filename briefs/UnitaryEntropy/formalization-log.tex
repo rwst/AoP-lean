@@ -311,6 +311,10 @@ Theorem 2, at every time & \lean{drSceq_iff_drInfo_and_evDiff} \\
   \lean{ForMathlib/Analysis/InnerProductSpace/StrongDerivative.lean}\newline (by Banach--Steinhaus,
   the strong derivative of an operator family is a bounded operator; for unitaries with
   $U(t_0) = 1$ it is skew-adjoint).
+\item New \lean{ForMathlib} file
+  \lean{ForMathlib/Analysis/InnerProductSpace/WoldDecomposition.lean}: the Wold decomposition of
+  a semigroup of isometries into its unitary and pure parts (``Problems found in the brief'',
+  second item). No file of the brief imports it, and it is not in the comparator lane.
 \item The Wigner library \lean{ForPhyslib/QuantumMechanics/Wigner/} (\lean{Basic},
   \lean{Normalize}, \lean{Rigidity}, \lean{Theorem}) now works over a Hilbert basis of any
   Hilbert space. \lean{Theorem} proves Wigner's theorem in any dimension, with isometries, and
@@ -452,11 +456,27 @@ Theorem 2 ($\Leftarrow$), complete & \lean{schrodinger_of_preserves_vonNeumannEn
   shifts $(V_tf)(x) = f(x-t)$ for $x > t$ and $0$ otherwise are isometries forming a strongly
   continuous semigroup with $V_0 = I$. Then $\Phi_{t_0 \to t_1}(\rho) =
   V_{t_1-t_0}\rho V_{t_1-t_0}^\dagger$ satisfies [B]EVMIX, preserves the entropy, and is induced
-  by no unitary for $t_1 > t_0$; it has no reconstructed past. (By the Wold--Cooper
-  decomposition, every strongly continuous semigroup of isometries is a unitary group plus copies of
-  this one.) The example is formalized as \lean{shift_semigroup_counterexample} in the brief
-  ``Multiple equivalent characterizations of the Schr\"odinger equation''; the Wold--Cooper
-  decomposition is not. A norm-continuous semigroup of isometries is $V_t = e^{tA}$ with
+  by no unitary for $t_1 > t_0$; it has no reconstructed past. The example is formalized as
+  \lean{shift_semigroup_counterexample} in the brief ``Multiple equivalent characterizations of
+  the Schr\"odinger equation''.
+
+  The Wold decomposition shows that this is the only way the time structure can fail. Let $V_t$
+  be any semigroup of isometries, $V_{s+t} = V_sV_t$; no continuity in $t$ is needed. The
+  \emph{unitary part} $H_u = \bigcap_t V_tH$ is closed, and every $V_t$ maps it onto itself
+  (\lean{IsIsometrySemigroup.map_mem_woldUnitaryPart},
+  \lean{IsIsometrySemigroup.exists_mem_woldUnitaryPart}). There $\|V_t^\dagger x\| = \|x\|$, so the
+  past is recovered (\lean{IsIsometrySemigroup.norm_adjoint_apply_of_mem_woldUnitaryPart}). The
+  \emph{pure part} $H_s = H_u^\perp$ is invariant (\lean{IsIsometrySemigroup.map_mem_woldPurePart})
+  and has no unitary part left (\lean{IsIsometrySemigroup.iInf_map_woldPurePart}). It consists
+  exactly of the vectors whose past is lost, $\|V_t^\dagger x\| \to 0$ as $t \to \infty$
+  (\lean{IsIsometrySemigroup.mem_woldPurePart_iff_tendsto}). Every $V_t$ is unitary iff
+  $H_s = 0$ (\lean{IsIsometrySemigroup.forall_surjective_iff}), and in continuous time one $V_{t_0}$,
+  $t_0 > 0$, being unitary already makes all of them unitary
+  (\lean{IsIsometrySemigroup.surjective_of_surjective}). All of this is in
+  \lean{ForMathlib/Analysis/InnerProductSpace/WoldDecomposition.lean}, namespace
+  \lean{ContinuousLinearMap}. Not formalized is Cooper's theorem that, for a strongly continuous
+  semigroup, $V$ on $H_s$ is unitarily equivalent to the right shift on $L^2((0,\infty);K)$ for
+  some Hilbert space $K$, that is, to copies of the example. A norm-continuous semigroup of isometries is $V_t = e^{tA}$ with
   bounded $A$, and differentiating $V_t^\dagger V_t = I$ at $0$ gives $A^\dagger = -A$, so it is
   unitary. The example therefore needs an unbounded generator, which Step~3 does not cover
   anyway.
