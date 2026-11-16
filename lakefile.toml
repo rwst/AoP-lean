@@ -58,6 +58,7 @@ srcDir = "briefs/SuperpositionAndLinearity/comparator"
 [[lean_lib]]
 name = "SuperpositionAndMultipleMixtures"
 srcDir = "briefs/SuperpositionAndMultipleMixtures"
+globs = ["SuperpositionAndMultipleMixtures.*"]
 
 # Its comparator lane (not default targets; see COMPARATOR.md).
 [[lean_lib]]

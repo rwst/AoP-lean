@@ -1,0 +1,194 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+\emergencystretch=6em
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{Further results on the brief\\ \emph{Superpositions correspond to multiple decompositions}}
+\author{Ralf Stephan}
+\date{16 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  This note collects results that go beyond the technical brief \emph{Superpositions correspond
+  to multiple decompositions}~\cite{brief}. They are not part of the brief. Each section names
+  the Lean declarations that check it; the Lean files are in the brief's directory, under
+  \lean{SuperpositionAndMultipleMixtures/FurtherResults/}.
+\end{abstract}
+
+\section{Superpositions of more than two states}
+\label{sec:many}
+
+The brief treats a superposition $\ket\phi = c_1\ket{\psi_1} + c_2\ket{\psi_2}$ of two states.
+This section states and proves its Theorem~1 for a superposition of $n$ states. The proof
+follows the brief. The vector $\ket{\hat\phi} = c_1\ket{\psi_1} - c_2\ket{\psi_2}$ becomes the
+family of all sign changes of $\ket\phi$, and the only new point is the condition that replaces
+$\rho_\phi \notin \{\rho_{\psi_1}, \rho_{\psi_2}\}$.
+
+\subsection{Statement}
+
+Let $\mathcal H$ be a complex inner product space, of any dimension, and for $\psi \ne 0$ let
+$\rho_\psi = \ket\psi\bra\psi / \braket{\psi|\psi}$ (set $\rho_0 = 0$).
+
+\begin{definition}
+  A vector $\phi \ne 0$ is a \emph{component} of an operator $\rho$ if $\rho = \sum_{k=1}^m r_k
+  \rho_{\chi_k}$ for finitely many vectors $\chi_k$ and probabilities $r_k \ge 0$,
+  $\sum_k r_k = 1$, with $\chi_{k_0} = \phi$ and $r_{k_0} > 0$ for some $k_0$. That is, the
+  ensemble $\rho$ can be prepared as a mixture in which $\phi$ occurs.
+\end{definition}
+
+Let $\psi_1, \dots, \psi_n \in \mathcal H$ and $\phi \in \mathcal H$.
+\begin{description}
+\item[QSUP-PUR$_n$.] $\ket\phi = \sum_i c_i\ket{\psi_i}$ with $\psi_1, \dots, \psi_n$ linearly
+  independent and $c_1, \dots, c_n \ne 0$.
+\item[QSUP-MIX$_n$.] (a) $\phi$ is a component of some mixture $\sum_i p_i\rho_{\psi_i}$ with
+  all $p_i > 0$ and $\sum_i p_i = 1$; and (b) for no $i$ is $\phi$ a component of a mixture
+  $\sum_{j \ne i} w_j\rho_{\psi_j}$ of the other states.
+\end{description}
+
+For $n = 2$, clause (b) asks that $\phi$ not be a component of $\rho_{\psi_2}$ or of
+$\rho_{\psi_1}$. A pure state has no other decomposition, so this is the brief's
+$\rho_\phi \notin \{\rho_{\psi_1}, \rho_{\psi_2}\}$. Clause (a) with $n = 2$ is the brief's
+$\rho = p_1\rho_{\psi_1} + p_2\rho_{\psi_2} = p_\phi\rho_\phi + \dots$, where the other part of the
+decomposition may consist of several states.
+
+\begin{theorem}\label{thm:many}
+  For $\phi \ne 0$, QSUP-PUR$_n$ and QSUP-MIX$_n$ are equivalent.
+\end{theorem}
+
+\begin{corollary}\label{cor:two}
+  For $n = 2$ and $\phi \ne 0$, QSUP-PUR$_2$ is the brief's QSUP-PUR and QSUP-MIX$_2$ is the brief's
+  QSUP-MIX.
+\end{corollary}
+
+As in the brief, linear independence is not assumed in QSUP-MIX$_n$; it follows.
+
+\subsection{Proof}
+
+\begin{lemma}[Eq.~(2) for $n$ states]\label{lem:signs}
+  For vectors $a_1, \dots, a_n$ and a sign vector $\varepsilon \in \{\pm1\}^n$ let
+  $\phi_\varepsilon = \sum_i \varepsilon_i a_i$. Then
+  \[
+    \sum_{\varepsilon \in \{\pm1\}^n} \ket{\phi_\varepsilon}\bra{\phi_\varepsilon}
+      = 2^n \sum_i \ket{a_i}\bra{a_i},
+    \qquad
+    \sum_{\varepsilon} \|\phi_\varepsilon\|^2 = 2^n \sum_i \|a_i\|^2.
+  \]
+\end{lemma}
+
+\begin{proof}
+  Expanding, $\ket{\phi_\varepsilon}\bra{\phi_\varepsilon} = \sum_{i,j} \varepsilon_i\varepsilon_j
+  \ket{a_j}\bra{a_i}$, and $\sum_\varepsilon \varepsilon_i\varepsilon_j = 2^n\delta_{ij}$: for
+  $i \ne j$, flipping the sign $\varepsilon_j$ is a bijection of $\{\pm1\}^n$ that negates
+  $\varepsilon_i\varepsilon_j$. The norms are the same computation with $\braket{a_i|a_j}$.
+\end{proof}
+
+For $n = 2$ and $a_i = c_i\psi_i$, the sign vectors give $\pm\phi$ and $\pm\hat\phi$, and the lemma
+is twice eq.~(2) of the brief.
+
+\begin{lemma}[Eqs.~(3), (4) for $n$ states]\label{lem:weights}
+  Let $\phi = \sum_i c_i\psi_i \ne 0$, put $S = \sum_j \|c_j\psi_j\|^2 > 0$ and
+  $p_i = \|c_i\psi_i\|^2 / S$. Then $\sum_i p_i = 1$, and $\phi$ is a component of
+  $\sum_i p_i\rho_{\psi_i}$:
+  \[
+    \sum_i p_i\rho_{\psi_i} = \frac1S \sum_i \ket{c_i\psi_i}\bra{c_i\psi_i}
+      = \sum_\varepsilon \frac{\|\phi_\varepsilon\|^2}{2^n S}\,\rho_{\phi_\varepsilon},
+  \]
+  with $\phi_\varepsilon = \sum_i \varepsilon_i c_i\psi_i$, weights that sum to one, and
+  $\phi_{(1,\dots,1)} = \phi$. If $c_i = 0$, then $p_i = 0$.
+\end{lemma}
+
+\begin{proof}
+  $\|v\|^2\rho_v = \ket v\bra v$ for every $v$, and Lemma~\ref{lem:signs} with $a_i = c_i\psi_i$.
+\end{proof}
+
+\begin{lemma}[Support]\label{lem:support}
+  If $\phi \ne 0$ is a component of $\sum_i p_i\rho_{\psi_i}$, $p_i \ge 0$, then $\phi$ lies in
+  the span of the $\psi_i$ with $p_i \ne 0$.
+\end{lemma}
+
+\begin{proof}
+  As in the brief's main file: if $x$ is orthogonal to those $\psi_i$, then
+  $\braket{x|\rho|x} = 0$. In the other decomposition this is a sum of nonnegative terms, one of
+  them $r_{k_0}|\braket{\phi|x}|^2/\|\phi\|^2$, so $\braket{\phi|x} = 0$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:many}]
+  QSUP-PUR$_n$ $\Rightarrow$ QSUP-MIX$_n$. The $\psi_i$ are nonzero and all $c_i \ne 0$, so the
+  weights of Lemma~\ref{lem:weights} are positive, which is (a). For (b), suppose $\phi$ is a
+  component of a mixture of the $\psi_j$, $j \ne i$. By Lemma~\ref{lem:support}, $\phi$ lies in
+  their span, and so does $c_i\psi_i = \phi - \sum_{j \ne i} c_j\psi_j$. Since $c_i \ne 0$, this
+  contradicts linear independence.
+
+  QSUP-MIX$_n$ $\Rightarrow$ QSUP-PUR$_n$. Clause (b) says that $\phi$ is never a combination
+  $\sum_j c'_j\psi_j$ with $c'_i = 0$: by Lemma~\ref{lem:weights} it would then be a component of a
+  mixture with $p_i = 0$. By (a) and Lemma~\ref{lem:support}, $\phi = \sum_i c_i\psi_i$ for some
+  $c$, so every $c_i \ne 0$. If $\sum_j g_j\psi_j = 0$ with $g_i \ne 0$, then
+  $\phi = \sum_j (c_j - \tfrac{c_i}{g_i}g_j)\psi_j$ has $i$-th coefficient $0$, which is excluded.
+  So the $\psi_i$ are linearly independent.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:two}]
+  For QSUP-PUR, this is the definition with $n = 2$. Then QSUP-MIX$_2$ $\Leftrightarrow$ QSUP-PUR$_2$
+  $\Leftrightarrow$ QSUP-PUR $\Leftrightarrow$ QSUP-MIX, by Theorem~\ref{thm:many} and the brief's
+  Theorem~1.
+\end{proof}
+
+\begin{remark}
+  Clause (b) cannot be weakened to $\rho_\phi \notin \{\rho_{\psi_1}, \dots, \rho_{\psi_n}\}$
+  for $n \ge 3$. For orthonormal $\psi_1, \psi_2, \psi_3$ and $\phi = \psi_1 + \psi_2$, that
+  condition and (a) hold, but $\phi$ is a superposition of two of the states, not three. Neither
+  would it give linear independence. (This example is not formalized.)
+\end{remark}
+
+\subsection{Lean}
+
+Module \lean{SuperpositionAndMultipleMixtures.FurtherResults.ManyStates}, namespace
+\lean{SuperpositionAndMultipleMixtures.FurtherResults}. It imports the brief's main file for
+\lean{pureState} ($\rho_\psi$) and the brief's conditions. The states are indexed by a finite
+type $\iota$, so $n = |\iota|$.
+
+\begin{itemize}
+  \item \lean{mixtureOf}, \lean{IsComponent}: the mixture $\sum_k r_k\rho_{\chi_k}$ and the
+    component relation.
+  \item \lean{QSupPurN}, \lean{QSupMixN}: the conditions QSUP-PUR$_n$ and QSUP-MIX$_n$.
+  \item \lean{sum_sgn_mul_sgn}, \lean{sum_proj_signSum}, \lean{sum_norm_sq_signSum}:
+    Lemma~\ref{lem:signs}.
+  \item \lean{weights}, \lean{sum_weights}, \lean{weights_pos}, \lean{weights_eq_zero},
+    \lean{isComponent_weights}: Lemma~\ref{lem:weights}.
+  \item \lean{mem_span_of_isComponent}: Lemma~\ref{lem:support}.
+  \item \lean{QSupPurN.qSupMixN}, \lean{QSupMixN.qSupPurN}, \lean{qSupPurN_iff_qSupMixN}:
+    Theorem~\ref{thm:many}.
+  \item \lean{qSupPurN_pair_iff}, \lean{qSupMixN_pair_iff}: Corollary~\ref{cor:two}, with the
+    brief's \lean{QSupPur}, \lean{QSupMix} and \lean{qSupPur_iff_qSupMix}.
+\end{itemize}
+
+\begin{thebibliography}{9}
+\bibitem{brief} G.~Carcassi, \emph{Superpositions correspond to multiple decompositions},
+  technical brief, Assumptions of Physics,
+  \url{https://assumptionsofphysics.org/resources/briefs}.
+\end{thebibliography}
+
+\end{document}
