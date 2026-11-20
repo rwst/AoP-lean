@@ -38,7 +38,7 @@ be unique across the project.
 | brief | certified | Lean | challenge |
 | --- | --- | --- | --- |
 | The Born rule is equivalent to the von Neumann entropy | Theorem 9 | `BornRuleEntropy.two_conditions_imply_third` | 142 lines, 7 KiB |
-| Classical uncertainty relation | Proposition 3 (eq. 4), Proposition 5 given its coordinates, Proposition 6 (`U_ρ(T) ≥ S`, and eq. 7 from its approximation step), Theorem 8, Theorem 9 (GCUR, CUR, eq. 10), Theorem 11, Theorem 12 and the equivalence from the approximation step of Proposition 6 | 11 theorems, see `theorems.txt` | 207 lines, 10 KiB |
+| Classical uncertainty relation | Proposition 3 (eq. 4), Proposition 5 given its coordinates, Proposition 6 (`U_ρ(T) ≥ S`, and eq. 7 from its approximation step), Theorem 8, Theorem 9 (GCUR, CUR, eq. 10), Theorem 11; not Theorem 12 | 9 theorems, see `theorems.txt` | 199 lines, 10 KiB |
 | Physical vector spaces for quantum mechanics | Corollary 2, Example 3 (in `n` dimensions) and its Remark, Example 4, Theorem 5 ([B]COBS) | 6 theorems, see `theorems.txt` | 163 lines, 7 KiB |
 | Directional vectors vs quantum state vectors | eqs. (1)–(3), linearity in terms of probability, half a turn, states as rays, the outcomes as opposite directions, completeness of the forms (1) and (3) | 13 theorems, see `theorems.txt` | 83 lines, 4 KiB |
 | Superpositions correspond to multiple decompositions | Theorem 1 and its two directions (eqs. 3 and 4), eq. (2), the support argument, mixtures of independent states are not pure | 6 theorems, see `theorems.txt` | 73 lines, 4 KiB |
@@ -53,10 +53,13 @@ be unique across the project.
 | Schrödinger equation is equivalent to information conservation | Corollary 1 (the entropy of the equal mixture, strictly decreasing in `p`, the iff), Theorem 2 in both directions, in finite dimension, at every time for a two-parameter evolution, in any dimension, and with an unbounded `H` for a time-independent evolution | 11 theorems, see `theorems.txt` | 357 lines, 19 KiB |
 
 Lanes are meant for the briefs whose `open-problems.tex` has no item marked
-`[blocks verification]`: BornRuleEntropy, ClassicalUncertaintyPrinciple, EntropyTopology,
-HilbertUnphysicality, InconsistentConvergence, NonLinearQuantum, ProjectiveMeasurement,
-QuantumVectorSpaces, SchroedingerEvolution, SchwartzMomentProblem, SchwartzNorms,
-SuperpositionAndLinearity, SuperpositionAndMultipleMixtures and UnitaryEntropy.
+`[blocks verification]`: BornRuleEntropy, EntropyTopology, HilbertUnphysicality,
+InconsistentConvergence, NonLinearQuantum, ProjectiveMeasurement, QuantumVectorSpaces,
+SchroedingerEvolution, SchwartzMomentProblem, SchwartzNorms, SuperpositionAndLinearity,
+SuperpositionAndMultipleMixtures and UnitaryEntropy. ClassicalUncertaintyPrinciple has a lane for
+the main theorems that are not blocked: its Theorem 12 is proved only from the conclusion of
+Proposition 6 (`HasGaussianFrames`), which its `open-problems.tex` marks as blocking, and is left
+out of the lane.
 
 ## Running it
 
@@ -150,9 +153,10 @@ rejected with `Const does not match between challenge and target 'BornRuleEntrop
 
 On the ClassicalUncertaintyPrinciple lane, changing `hbar h` from `h / (2 * π)` to `h / π` is
 rejected with `Const does not match between challenge and target
-'ClassicalUncertaintyPrinciple.hbar'`, and dropping the hypothesis `hF` of
-`lowerEntropicBound_of_generalizedUncertaintyRelation` with `Challenge and solution theorem
-statement do not match: 'ClassicalUncertaintyPrinciple.lowerEntropicBound_of_generalizedUncertaintyRelation'`.
+'ClassicalUncertaintyPrinciple.hbar'`, and dropping the hypothesis `hs` of
+`exists_uncertaintyRelation_not_lowerEntropicBound` with `Challenge and solution theorem
+statement do not match:
+'ClassicalUncertaintyPrinciple.exists_uncertaintyRelation_not_lowerEntropicBound'`.
 
 On the QuantumVectorSpaces lane, changing `-I * ħ` to `I * ħ` in `momOpN` is rejected with
 `Const does not match between challenge and target 'QuantumVectorSpaces.momOpN'`, changing the

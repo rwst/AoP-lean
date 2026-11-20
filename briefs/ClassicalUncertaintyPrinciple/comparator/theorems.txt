@@ -12,5 +12,3 @@ ClassicalUncertaintyPrinciple.generalizedUncertaintyRelation_of_lowerEntropicBou
 ClassicalUncertaintyPrinciple.uncertaintyRelation_of_lowerEntropicBound  # Theorem 9, CUR
 ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_mul_exp_mul_exp  # Theorem 9, eq. (10)
 ClassicalUncertaintyPrinciple.exists_uncertaintyRelation_not_lowerEntropicBound  # Theorem 11
-ClassicalUncertaintyPrinciple.lowerEntropicBound_of_generalizedUncertaintyRelation  # Theorem 12, from HasGaussianFrames
-ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation  # Theorem 12, from HasGaussianFrames

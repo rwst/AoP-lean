@@ -193,14 +193,6 @@ theorem isGLB_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) (hF : Has
     IsGLB {u | ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (Integrable fun x => f x ^ 2 * ρ x) ∧
       (Integrable fun x => g x ^ 2 * ρ x) ∧ u = coordinateUncertainty h ρ f g} (entropy h ρ) := by
   sorry
-theorem lowerEntropicBound_of_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hF : HasGaussianFrames ρ) (hG : GeneralizedUncertaintyRelation h ρ) :
-    LowerEntropicBound h ρ := by
-  sorry
-theorem lowerEntropicBound_iff_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hF : HasGaussianFrames ρ) :
-    LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ := by
-  sorry
 end Theorem12
 end ClassicalUncertaintyPrinciple
 end

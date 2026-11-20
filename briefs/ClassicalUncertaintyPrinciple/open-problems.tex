@@ -1,0 +1,108 @@
+% (C) 2026 Ralf Stephan, in collaboration with Claude Code.
+% Released under CC0 1.0 Universal (public-domain dedication).
+% See https://creativecommons.org/publicdomain/zero/1.0/
+
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{braket}
+\usepackage[hidelinks]{hyperref}
+
+% Lean names and paths: verbatim, breakable at . _ /
+\DeclareUrlCommand\lean{\urlstyle{tt}}
+\def\UrlBreaks{\do\.\do\_\do\/}
+% Marks an open problem that blocks checking a main claim of the brief
+\newcommand{\blocker}[1]{\textsc{[blocks verification: #1]}~}
+% Extra stretch for paragraphs with long, unbreakable Lean names
+\emergencystretch=6em
+
+\title{Open problems:\\ Classical uncertainty relation}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent
+Open problems raised by the technical brief in this directory, and by its Lean formalization
+(see \lean{formalization-log.tex}).
+Items marked \textsc{[blocks verification]} stand in the way of checking a main
+claim of the brief as the brief states it: a \emph{formalization gap} can be closed
+in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
+precise first.
+
+\section*{From the brief}
+\begin{enumerate}
+\item \textbf{Proposition~6 is a proof sketch.} The approximation it rests on is stated without
+  proof: positive smooth densities $\eta_j$ with $D(\rho_{qp}\,\|\,\eta_j) \to 0$ and
+  $E[|\ln\eta_j| \mid \rho_{qp}] < \infty$; that ``the entropy variational inequality ensures
+  finite coordinate variances'' after transport; and, for $S[\rho_{qp}] = -\infty$, densities
+  $\eta_j$ with finite logarithmic expectations tending to $+\infty$ whose transports to a
+  uniform density on a bounded rectangle keep the variances bounded. Each step is standard, but
+  a complete argument, with the integrability of $\ln J_{T_j}$ that admissibility needs, is
+  wanted before the proposition can be checked in full. Theorem~12 uses it for densities that
+  are not positive and smooth. (Brief, Sec.~2, Proposition~6; Sec.~4, Theorem~12.)
+\item \textbf{The quantum case in the conclusion.} The conclusion places the lower entropic bound
+  in quantum mechanics: pure states have zero entropy and mixed states non-negative entropy. The
+  von Neumann entropy vanishes on every pure state whatever its $\sigma_q\sigma_p$, so this bound
+  constrains no uncertainty product, and the classical argument turns $S \ge 0$ into
+  $\hbar/e$, not $\hbar/2$. Which entropic bound plays the role of [B]ZENT in quantum mechanics is
+  open in the brief; two candidates, both strictly stronger than zero entropy, are formalized as
+  hypotheses (next section, last item). Not a main claim. (Brief, Sec.~6; Log, ``Problems
+  found in the brief''.)
+\end{enumerate}
+
+\section*{From the formalization}
+\begin{enumerate}
+\item \blocker{formalization gap}\textbf{Theorem~12 and Propositions~5--6.} Theorem~12
+  (GCUR implies [B]ZENT, hence their equivalence) is proved from \lean{HasGaussianFrames}, the
+  conclusion of Proposition~6 for finite entropy: admissible coordinates with finite variances
+  in which $D(\rho_{fg}\,\|\,G_{fg})$ is arbitrarily small
+  (\lean{lowerEntropicBound_of_generalizedUncertaintyRelation},
+  \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation}; eq.~(7) likewise,
+  \lean{isGLB_coordinateUncertainty}). Coordinates in which $\rho_{fg}$ is a product of
+  Gaussians provide it (\lean{hasGaussianFrames_of_densityFG_eq}). Missing:
+  \begin{itemize}
+  \item Proposition~5, the existence of such coordinates for a positive smooth density, which the
+    brief takes from the volume-transport theorem of Greene and Shiohama. In the plane a
+    Knothe--Rosenblatt map (conditional distribution functions composed with the Gaussian
+    quantile) may be a more elementary route.
+  \item Proposition~6: approximation of a measurable density in relative entropy by positive
+    smooth ones with integrable logarithm, transport, invariance of relative entropy under
+    admissible coordinate changes, and the Gaussian moment identity
+    $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$ for every product of Gaussians
+    $\gamma$.
+  \end{itemize}
+  None of this is in Mathlib. (Log, ``Differences from the brief''.)
+\item \textbf{Extended variance and infinite entropy.} Variances are Bochner integrals and
+  entropies real numbers, so the brief's extended variance
+  $\inf_a E[(X - a)^2] \in [0, \infty]$ and well-defined infinite entropies are not modelled.
+  GCUR and CUR are stated for coordinates with finite variances, where the brief also counts
+  the automatic case of an infinite variance. Open: the infinite-entropy part of
+  Proposition~6 ($\inf_T U_\rho(T) = \mp\infty$), and the remarks ``Infinite and undefined
+  entropy'' (the generalized inequalities cannot guarantee that the entropy exists; admitting
+  every density with extended entropy breaks convexity) and ``Entropy and variance'' (finite
+  entropy without finite canonical variances).
+\item \textbf{Definition~2 in full.} \lean{IsAdmissible} asks for $C^1$ coordinates, injectivity
+  and a nowhere vanishing Jacobian. That the range is open and the inverse $C^1$ follows from the
+  inverse function theorem, but is not formalized, since nothing uses it. The remark ``Bounded
+  coordinate ranges'' is not formalized either.
+\item \textbf{Convexity in KL form.} The remark on convexity is formalized as its two bounds
+  (\lean{entropy_mix_bounds}); the identity
+  $S[\rho_\lambda] - \lambda S[\rho] - (1 - \lambda)S[\sigma] = \lambda D(\rho\,\|\,\rho_\lambda)
+  + (1 - \lambda)D(\sigma\,\|\,\rho_\lambda)$ in between is not.
+\item \textbf{Several degrees of freedom.} For $(\mathbb R^2)^{n+1}$, [B]ZENT and the inequality
+  of CUR are stated for the marginals of the coordinate pairs $(q_i, p_i)$, and Theorem~9 is
+  proved for CUR there. GCUR for the marginals, and independent DOFs in canonical coordinates
+  that mix the pairs, are not considered.
+\item \textbf{Quantum entropic bounds.} The bounds of Bia\l{}ynicki-Birula and Mycielski and of
+  Lieb on the Wehrl entropy, from which Heisenberg's relation is derived with the brief's
+  Gaussian bound (\lean{heisenberg_of_entropicUncertainty}, \lean{heisenberg_of_wehrlBound}),
+  are hypotheses. Proving them needs Beckner's sharp Hausdorff--Young inequality, and the
+  Fourier transform and Husimi function of a wave function, none of which are formed here.
+\end{enumerate}
+
+\end{document}
