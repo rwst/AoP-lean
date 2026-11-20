@@ -16,6 +16,9 @@ import Mathlib.Analysis.Calculus.FDeriv.OfCompLeft
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
+import Mathlib.Analysis.Calculus.BumpFunction.Basic
+import Mathlib.Analysis.Calculus.BumpFunction.Convolution
+import Mathlib.MeasureTheory.Function.Floor
 
 /-!
 # ClassicalUncertaintyPrinciple: the statements of record
@@ -196,14 +199,17 @@ theorem entropy_le_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) (T :
     coordinateUncertainty h ρ f g = entropy h ρ + gaussianDivergence (densityFG f g ρ) ∧
       entropy h ρ ≤ coordinateUncertainty h ρ f g := by
   sorry
-def HasGaussianFrames (ρ : ℝ × ℝ → ℝ) : Prop :=
-  ∀ ε > 0, ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (Integrable fun x => f x ^ 2 * ρ x) ∧
-    (Integrable fun x => g x ^ 2 * ρ x) ∧ gaussianDivergence (densityFG f g ρ) < ε
-theorem isGLB_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) (hF : HasGaussianFrames ρ) :
+end Theorem12
+section Proposition6
+variable {ρ : ℝ × ℝ → ℝ} {h : ℝ} {v : ℝ≥0}
+theorem isGLB_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) :
     IsGLB {u | ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (Integrable fun x => f x ^ 2 * ρ x) ∧
       (Integrable fun x => g x ^ 2 * ρ x) ∧ u = coordinateUncertainty h ρ f g} (entropy h ρ) := by
   sorry
-end Theorem12
+theorem lowerEntropicBound_iff_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ) :
+    LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ := by
+  sorry
+end Proposition6
 end ClassicalUncertaintyPrinciple
 end
 end

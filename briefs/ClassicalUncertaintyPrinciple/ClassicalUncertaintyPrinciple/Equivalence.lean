@@ -8,6 +8,9 @@ module
 public import ClassicalUncertaintyPrinciple
 public import ForMathlib.Probability.Distributions.Gaussian.PolarTransport
 
+import ForMathlib.InformationTheory.SmoothApproximation
+import ForMathlib.InformationTheory.YoungInequality
+
 /-!
 # Classical uncertainty relation: the equivalence with the lower entropic bound
 
@@ -30,10 +33,12 @@ in which `D` is arbitrarily small (**Proposition 6**) turn GCUR into `S_h[ρ] �
 For a positive `C¹` density the coordinates exist (**Proposition 5**): `ρ_{fg}` is exactly a
 product of Gaussians in the coordinates of a polar Knothe–Rosenblatt map
 (`PolarTransport.exists_transport_gaussian`), which replaces the brief's appeal to the
-volume-transport theorem of Greene and Shiohama. For a general density the brief approximates it by
-smooth positive ones (Proposition 6, a proof sketch); this is not formalized, and Theorem 12 is
-proved from its conclusion, the hypothesis `HasGaussianFrames`, which Proposition 5 provides for
-positive `C¹` densities.
+volume-transport theorem of Greene and Shiohama. For a general density of finite entropy
+(**Proposition 6**, a proof sketch in the brief), `ρ` is approximated in relative entropy by a
+positive `C¹` density `η` (`MeasureTheory.exists_contDiff_integral_mul_log_div_lt`), which is
+transported to a product `γ` of Gaussians; the change of variables, Young's inequality for the
+variances and the Gaussian moment identity `D(ρ_{fg} ‖ G_{fg}) ≤ D(ρ_{fg} ‖ γ)` give
+`HasGaussianFrames`, from which Theorem 12 follows.
 
 ## Main definitions
 
@@ -53,6 +58,9 @@ positive `C¹` densities.
 * `ClassicalUncertaintyPrinciple.exists_isAdmissible_densityFG_eq_gaussProd`: Proposition 5;
   `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_of_entropy_densityFG_eq_zero`: its
   conclusion in any such coordinates, with their admissibility and finite variances derived.
+* `ClassicalUncertaintyPrinciple.hasGaussianFrames`: Proposition 6 for finite entropy;
+  `ClassicalUncertaintyPrinciple.gaussianDivergence_le_integral_mul_log_div`: the Gaussian moment
+  identity it uses.
 * `ClassicalUncertaintyPrinciple.entropy_le_coordinateUncertainty`,
   `ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty`: Proposition 6, eq. (7).
 * `ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions`: Theorem 8.
@@ -62,9 +70,9 @@ positive `C¹` densities.
 * `ClassicalUncertaintyPrinciple.exists_uncertaintyRelation_not_lowerEntropicBound`: Theorem 11.
 * `ClassicalUncertaintyPrinciple.lowerEntropicBound_of_generalizedUncertaintyRelation`,
   `ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation`:
-  Theorem 12, from `HasGaussianFrames`;
+  Theorem 12;
   `ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff`:
-  for a positive `C¹` density, unconditionally.
+  its case of a positive `C¹` density, from Proposition 5 alone, as in the brief's proof.
 * `ClassicalUncertaintyPrinciple.isEnsemble_mix`,
   `ClassicalUncertaintyPrinciple.entropy_mix_bounds`: the remark on convexity.
 -/
@@ -524,7 +532,8 @@ theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsembl
       mul_self_sqrt hv0.le, mul_div_cancel₀ _ (by positivity), sub_self]
   obtain ⟨hlog, hsd, hS⟩ := hNV.sd_mul_sd_eq_of_entropy_densityFG_eq_zero hh hρ hv hv
     (Filter.Eventually.of_forall hD) h0
-  exact ⟨_, _, ⟨contDiff_fst.comp hT1, contDiff_snd.comp hT1, hNV.injective,
+  exact ⟨fun x => (T x).1, fun x => (T x).2, ⟨contDiff_fst.comp hT1, contDiff_snd.comp hT1,
+    hNV.injective,
     hNV.poissonBracket_ne_zero, hlog⟩, hD, h0, hsd, hS⟩
 
 end Proposition5
@@ -851,9 +860,8 @@ lemma hbar_div_exp_mul_exp_le_iff_coordinateUncertainty_nonneg (hh : 0 < h) (hρ
   constructor <;> intro <;> linarith
 
 /-- The conclusion of **Proposition 6** for finite entropy: admissible coordinates with finite
-variances in which `D(ρ_{fg} ‖ G_{fg})` is arbitrarily small. The brief obtains them by
-approximating `ρ` with smooth positive densities and transporting these to a fixed product of
-Gaussians; this is not formalized. -/
+variances in which `D(ρ_{fg} ‖ G_{fg})` is arbitrarily small. Every density of finite entropy
+has them (`hasGaussianFrames`). -/
 def HasGaussianFrames (ρ : ℝ × ℝ → ℝ) : Prop :=
   ∀ ε > 0, ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (Integrable fun x => f x ^ 2 * ρ x) ∧
     (Integrable fun x => g x ^ 2 * ρ x) ∧ gaussianDivergence (densityFG f g ρ) < ε
@@ -871,7 +879,7 @@ lemma gaussianDivergence_eq_zero {a b : ℝ} {v w : ℝ≥0} (hv : v ≠ 0) (hw 
   rw [hx, div_self (gaussProd_pos hv hw x).ne', log_one, mul_zero]
 
 /-- **Proposition 5 gives Gaussian frames.** Coordinates in which `ρ_{fg}` is a product of
-Gaussians, as Greene–Shiohama provide for a positive smooth `ρ`, make the divergence vanish. -/
+Gaussians, as Proposition 5 provides for a positive `C¹` `ρ`, make the divergence vanish. -/
 theorem hasGaussianFrames_of_densityFG_eq (T : IsAdmissible ρ f g) {a b : ℝ} {v w : ℝ≥0}
     (hv : v ≠ 0) (hw : w ≠ 0) (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w) :
     HasGaussianFrames ρ :=
@@ -879,9 +887,10 @@ theorem hasGaussianFrames_of_densityFG_eq (T : IsAdmissible ρ f g) {a b : ℝ} 
     T.isNewVariables.integrable_snd_sq_of_densityFG_ae_eq hw hG,
     (gaussianDivergence_eq_zero hv hw hG).symm ▸ hε⟩
 
-/-- **Proposition 6, eq. (7)**, for finite entropy and from `HasGaussianFrames`:
+/-- **Proposition 6, eq. (7)**, from `HasGaussianFrames`:
 `inf_T U_ρ(T) = S_h[ρ]` over admissible coordinates with finite variances. -/
-theorem isGLB_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) (hF : HasGaussianFrames ρ) :
+theorem isGLB_coordinateUncertainty_of_hasGaussianFrames (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hF : HasGaussianFrames ρ) :
     IsGLB {u | ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (Integrable fun x => f x ^ 2 * ρ x) ∧
       (Integrable fun x => g x ^ 2 * ρ x) ∧ u = coordinateUncertainty h ρ f g} (entropy h ρ) := by
   refine ⟨?_, fun b hb => le_of_forall_pos_lt_add fun ε hε => ?_⟩
@@ -894,8 +903,8 @@ theorem isGLB_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) (hF : Has
 
 /-- **Theorem 12**, from the conclusion of Proposition 6. Over finite entropy, GCUR implies
 ZENT. -/
-theorem lowerEntropicBound_of_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hF : HasGaussianFrames ρ) (hG : GeneralizedUncertaintyRelation h ρ) :
+theorem lowerEntropicBound_of_generalizedUncertaintyRelation_of_hasGaussianFrames (hh : 0 < h)
+    (hρ : IsEnsemble ρ) (hF : HasGaussianFrames ρ) (hG : GeneralizedUncertaintyRelation h ρ) :
     LowerEntropicBound h ρ := by
   refine le_of_forall_pos_lt_add fun ε hε => ?_
   obtain ⟨f, g, T, hf2, hg2, hD⟩ := hF ε hε
@@ -906,11 +915,11 @@ theorem lowerEntropicBound_of_generalizedUncertaintyRelation (hh : 0 < h) (hρ :
 
 /-- **Theorem 12**, from the conclusion of Proposition 6. Over finite entropy, GCUR and ZENT
 are equivalent. -/
-theorem lowerEntropicBound_iff_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hF : HasGaussianFrames ρ) :
+theorem lowerEntropicBound_iff_generalizedUncertaintyRelation_of_hasGaussianFrames (hh : 0 < h)
+    (hρ : IsEnsemble ρ) (hF : HasGaussianFrames ρ) :
     LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ :=
   ⟨generalizedUncertaintyRelation_of_lowerEntropicBound hh hρ,
-    lowerEntropicBound_of_generalizedUncertaintyRelation hh hρ hF⟩
+    lowerEntropicBound_of_generalizedUncertaintyRelation_of_hasGaussianFrames hh hρ hF⟩
 
 /-- A positive `C¹` density of finite entropy has Gaussian frames (Proposition 5). -/
 theorem hasGaussianFrames_of_contDiff (hh : 0 < h) (hρ : IsEnsemble ρ) (hρ1 : ContDiff ℝ 1 ρ)
@@ -920,15 +929,234 @@ theorem hasGaussianFrames_of_contDiff (hh : 0 < h) (hρ : IsEnsemble ρ) (hρ1 :
     rw [Ne, Real.toNNReal_eq_zero, not_le]; positivity
   exact hasGaussianFrames_of_densityFG_eq T hv hv (Filter.Eventually.of_forall hD)
 
-/-- **Theorem 12 for a positive `C¹` density**, without `HasGaussianFrames`: the case of the brief's
-proof that rests on Proposition 5 alone. -/
+/-- **Theorem 12 for a positive `C¹` density**: the case of the brief's proof that rests on
+Proposition 5 alone. -/
 theorem lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff (hh : 0 < h)
     (hρ : IsEnsemble ρ) (hρ1 : ContDiff ℝ 1 ρ) (hpos : ∀ x, 0 < ρ x) :
     LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ :=
-  lowerEntropicBound_iff_generalizedUncertaintyRelation hh hρ
+  lowerEntropicBound_iff_generalizedUncertaintyRelation_of_hasGaussianFrames hh hρ
     (hasGaussianFrames_of_contDiff hh hρ hρ1 hpos)
 
 end Theorem12
+
+/-! ### Proposition 6: Gaussian frames for every density of finite entropy -/
+
+section Proposition6
+
+variable {ρ : ℝ × ℝ → ℝ} {h : ℝ} {v : ℝ≥0}
+
+lemma contDiff_gaussProd (a b : ℝ) (v w : ℝ≥0) {n : ℕ∞} : ContDiff ℝ n (gaussProd a v b w) := by
+  unfold gaussProd gaussianPDFReal
+  fun_prop
+
+/-- The centred product of Gaussians of variance `v` has the exponential moment
+`E[exp (|u|² / 4v)] < ∞`. -/
+lemma integrable_exp_mul_gaussProd (hv : v ≠ 0) :
+    Integrable fun u : ℝ × ℝ => exp ((u.1 ^ 2 + u.2 ^ 2) / (4 * v)) * gaussProd 0 v 0 v u := by
+  have hv0 : (0 : ℝ) < v := NNReal.coe_pos.2 (pos_iff_ne_zero.2 hv)
+  have h1 : Integrable fun t : ℝ => exp (-(1 / (4 * v)) * t ^ 2) :=
+    integrable_exp_neg_mul_sq (by positivity)
+  rw [Measure.volume_eq_prod]
+  refine ((h1.mul_prod h1).const_mul ((√(2 * π * v))⁻¹ * (√(2 * π * v))⁻¹)).congr
+    (ae_of_all _ fun u => ?_)
+  have e : exp ((u.1 ^ 2 + u.2 ^ 2) / (4 * v)) * exp (-(u.1 - 0) ^ 2 / (2 * v)) *
+      exp (-(u.2 - 0) ^ 2 / (2 * v)) =
+      exp (-(1 / (4 * v)) * u.1 ^ 2) * exp (-(1 / (4 * v)) * u.2 ^ 2) := by
+    rw [← exp_add, ← exp_add, ← exp_add]
+    congr 1
+    field_simp
+    ring
+  simp only [gaussProd, gaussianPDFReal]
+  linear_combination (-((√(2 * π * v))⁻¹ * (√(2 * π * v))⁻¹)) * e
+
+/-- A differentiable injective `T` with nowhere vanishing Jacobian gives new variables. -/
+lemma isNewVariables_of_transport {T : ℝ × ℝ → ℝ × ℝ} (hTd : Differentiable ℝ T)
+    (hTi : Function.Injective T) (hdet : ∀ x, (fderiv ℝ T x).det ≠ 0) :
+    IsNewVariables (fun x => (T x).1) (fun x => (T x).2) :=
+  ⟨fun x => ((hTd x).hasFDerivAt.fst).differentiableAt,
+    fun x => ((hTd x).hasFDerivAt.snd).differentiableAt,
+    by simpa using hTi, fun x => by rw [poissonBracket_eq_det hTd]; exact hdet x⟩
+
+/-- The density in the variables `T = (T₁, T₂)`: `ρ_T(T x) = ρ x / |det DT x|`. -/
+lemma densityFG_apply_of_transport {T : ℝ × ℝ → ℝ × ℝ} (hTd : Differentiable ℝ T)
+    (hNV : IsNewVariables (fun x => (T x).1) (fun x => (T x).2)) (x : ℝ × ℝ) :
+    densityFG (fun x => (T x).1) (fun x => (T x).2) ρ (T x) = ρ x / |(fderiv ℝ T x).det| := by
+  have h1 : densityFG (fun x => (T x).1) (fun x => (T x).2) ρ ((T x).1, (T x).2) =
+      ρ x / |poissonBracket (fun x => (T x).1) (fun x => (T x).2) x| := by
+    rw [densityFG, pushDensity_apply hNV.injective, abs_det_prod_fderiv]
+  rwa [Prod.mk.eta, poissonBracket_eq_det hTd] at h1
+
+lemma log_two_pi_div_two_add_le {s E w : ℝ} (hs : 0 < s) (hw : 0 < w) (hsE : s ≤ E) :
+    log (2 * π * s) / 2 + s / (2 * s) ≤ log (2 * π * w) / 2 + E / (2 * w) := by
+  have h2π : (0 : ℝ) < 2 * π := by positivity
+  have h1 : log (2 * π * s) = log (2 * π) + log s := log_mul h2π.ne' hs.ne'
+  have h2 : log (2 * π * w) = log (2 * π) + log w := log_mul h2π.ne' hw.ne'
+  have h3 : log s - log w ≤ s / w - 1 := by
+    rw [← log_div hs.ne' hw.ne']
+    exact log_le_sub_one_of_pos (div_pos hs hw)
+  have h4 : s / (2 * s) = 1 / 2 := by field_simp
+  have h5 : s / w ≤ E / w := div_le_div_of_nonneg_right hsE hw.le
+  have h6 : E / (2 * w) = E / w / 2 := by ring
+  rw [h1, h2, h4, h6]
+  linarith
+
+lemma var_le_integral_sq_mul (hρ : IsEnsemble ρ) {f : ℝ × ℝ → ℝ} (hf : Measurable f)
+    (hf2 : Integrable fun x => f x ^ 2 * ρ x) : var ρ f ≤ ∫ x, f x ^ 2 * ρ x := by
+  have hm : ∫ x, f x * ρ x = mean ρ f := rfl
+  rw [var, integral_sub_sq_mul_eq hρ.integrable (hρ.integrable_mul hf hf2) hf2,
+    hρ.integral_eq_one, hm]
+  nlinarith [sq_nonneg (mean ρ f)]
+
+/-- **The Gaussian moment identity**, in the form Proposition 6 uses: `D(ρ ‖ G_ρ) ≤ D(ρ ‖ γ)`
+for the centred product `γ` of Gaussians of variance `v`. The difference is
+`∫ ρ log (G_ρ / γ)`, a sum over the coordinates of `(x - 1 - log x) / 2 + m² / 2v ≥ 0`, with `x`
+the ratio of the variances and `m` the mean. -/
+theorem gaussianDivergence_le_integral_mul_log_div (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
+    (hv : v ≠ 0) :
+    Integrable (fun u => ρ u * log (ρ u / gaussProd 0 v 0 v u)) ∧
+      gaussianDivergence ρ ≤ ∫ u, ρ u * log (ρ u / gaussProd 0 v 0 v u) := by
+  have H := hyp_canonical hρ hq hp
+  obtain ⟨hi, he⟩ := H.integral_mul_log 0 0 hv hv
+  simp only [one_mul, Prod.mk.eta, sub_zero, log_one, mul_zero, integral_zero] at hi he
+  have hpt : (fun u => ρ u * log (ρ u / gaussProd 0 v 0 v u)) =
+      fun u => -negMulLog (ρ u) - ρ u * log (gaussProd 0 v 0 v u) := by
+    ext u
+    rcases (hρ.nonneg u).eq_or_lt with h0 | h0
+    · simp [← h0]
+    · rw [log_div h0.ne' (gaussProd_pos hv hv u).ne', negMulLog]
+      ring
+  have hint : Integrable fun u => -negMulLog (ρ u) - ρ u * log (gaussProd 0 v 0 v u) :=
+    hρ.integrable_negMulLog.neg.sub hi
+  refine ⟨hpt ▸ hint, ?_⟩
+  have hv0 : (0 : ℝ) < v := NNReal.coe_pos.2 (pos_iff_ne_zero.2 hv)
+  rw [hpt, integral_sub (f := fun u => -negMulLog (ρ u)) hρ.integrable_negMulLog.neg hi,
+    integral_neg, gaussianDivergence_eq hρ hq hp, sd, sd,
+    log_two_pi_exp_mul_sd H.var_pos_fst H.var_pos_snd]
+  have h1 := log_two_pi_div_two_add_le H.var_pos_fst hv0
+    (var_le_integral_sq_mul hρ measurable_fst hq)
+  have h2 := log_two_pi_div_two_add_le H.var_pos_snd hv0
+    (var_le_integral_sq_mul hρ measurable_snd hp)
+  linarith
+
+/-- **Proposition 6** for finite entropy: every density of finite entropy has Gaussian frames,
+admissible coordinates with finite variances in which `D(ρ_{fg} ‖ G_{fg})` is arbitrarily small.
+Following the brief: approximate `ρ` in relative entropy by a positive `C¹` density `η`
+(`MeasureTheory.exists_contDiff_integral_mul_log_div_lt`), transport `η` to a product `γ` of
+Gaussians (`PolarTransport.exists_transport_gaussian`); then `D(ρ_{fg} ‖ γ) = D(ρ ‖ η)` by the
+change of variables, the variances are finite by Young's inequality
+(`MeasureTheory.integrable_mul_of_integrable_mul_log_div`), and `D(ρ_{fg} ‖ G_{fg}) ≤
+D(ρ_{fg} ‖ γ)` by the Gaussian moment identity. The coordinates are `C¹`. -/
+theorem hasGaussianFrames (hρ : IsEnsemble ρ) : HasGaussianFrames ρ := by
+  intro ε hε
+  have hv : (1 : ℝ≥0) ≠ 0 := one_ne_zero
+  set γ := gaussProd 0 1 0 1 with hγ
+  have hρl : Integrable fun x => ρ x * log (ρ x) :=
+    hρ.integrable_negMulLog.neg.congr (ae_of_all _ fun x => by simp [negMulLog])
+  -- a positive `C¹` density close to `ρ` in relative entropy
+  obtain ⟨η, hηc, hηpos, -, hη1, hdi, hd⟩ := exists_contDiff_integral_mul_log_div_lt
+    (μ := volume) (n := 1) hρ.nonneg hρ.integrable hρ.integral_eq_one hρl
+    (contDiff_gaussProd 0 0 1 1) (gaussProd_pos hv hv) (integrable_gaussProd 0 0 1 1)
+    (integral_gaussProd hv hv) hε
+  -- its transport to `γ`
+  obtain ⟨T, hT1, hTb, hTη⟩ := PolarTransport.exists_transport_gaussian hηc hηpos hη1 hv
+  have hTd : Differentiable ℝ T := hT1.differentiable one_ne_zero
+  have hTm : Measurable T := hT1.continuous.measurable
+  have hG : ∀ x, η x = γ (T x) * |(fderiv ℝ T x).det| := hTη
+  have hdet : ∀ x, (fderiv ℝ T x).det ≠ 0 := fun x h0 => by
+    have := hG x
+    rw [h0, abs_zero, mul_zero] at this
+    exact (hηpos x).ne' this
+  have hdpos : ∀ x, 0 < |(fderiv ℝ T x).det| := fun x => abs_pos.2 (hdet x)
+  have hNV := isNewVariables_of_transport hTd hTb.1 hdet
+  have hP : ∀ x, densityFG (fun x => (T x).1) (fun x => (T x).2) ρ (T x) =
+      ρ x / |(fderiv ℝ T x).det| := densityFG_apply_of_transport hTd hNV
+  have hPη : ∀ u, densityFG (fun x => (T x).1) (fun x => (T x).2) η u = γ u := fun u => by
+    obtain ⟨x, rfl⟩ := hTb.2 u
+    rw [densityFG_apply_of_transport hTd hNV, hG x, mul_div_cancel_right₀ _ (hdpos x).ne']
+  -- finite variances, by Young's inequality
+  set ψ : ℝ × ℝ → ℝ := fun x => ((T x).1 ^ 2 + (T x).2 ^ 2) / 4 with hψ
+  have hψm : Measurable ψ := by
+    simp only [hψ]
+    fun_prop
+  have he : Integrable fun x => η x * exp (ψ x) := by
+    have := (hNV.integrable_mul_densityFG_iff (ρ := η)
+      (φ := fun u => exp ((u.1 ^ 2 + u.2 ^ 2) / (4 * ((1 : ℝ≥0) : ℝ))))).1 (by
+        simpa only [hPη] using integrable_exp_mul_gaussProd hv)
+    refine this.congr (ae_of_all _ fun x => ?_)
+    simp only [hψ, NNReal.coe_one, mul_one]
+    ring
+  have hψi := (integrable_mul_of_integrable_mul_log_div hρ.nonneg hηpos
+    (fun x => by positivity) (hρ.integrable.1.mul hψm.aestronglyMeasurable) hρ.integrable hdi
+    he).1
+  have hf2 : Integrable fun x => (T x).1 ^ 2 * ρ x :=
+    (hψi.const_mul 4).mono' ((hTm.fst.pow_const 2).aestronglyMeasurable.mul hρ.integrable.1)
+      (ae_of_all _ fun x => by
+        rw [Real.norm_of_nonneg (mul_nonneg (sq_nonneg _) (hρ.nonneg x))]
+        simp only [hψ]
+        nlinarith [mul_nonneg (hρ.nonneg x) (sq_nonneg (T x).2)])
+  have hg2 : Integrable fun x => (T x).2 ^ 2 * ρ x :=
+    (hψi.const_mul 4).mono' ((hTm.snd.pow_const 2).aestronglyMeasurable.mul hρ.integrable.1)
+      (ae_of_all _ fun x => by
+        rw [Real.norm_of_nonneg (mul_nonneg (sq_nonneg _) (hρ.nonneg x))]
+        simp only [hψ]
+        nlinarith [mul_nonneg (hρ.nonneg x) (sq_nonneg (T x).1)])
+  -- admissibility: `log |det DT| = log η - log γ(T)`
+  have hlη := integrable_mul_log_of_integrable_mul_log_div hρ.nonneg hηpos hρl hdi
+  have hlog : Integrable fun x =>
+      ρ x * log |poissonBracket (fun x => (T x).1) (fun x => (T x).2) x| := by
+    refine ((hlη.add (hρ.integrable.const_mul (log (2 * π)))).add
+      ((hf2.add hg2).div_const 2)).congr (ae_of_all _ fun x => ?_)
+    have h1 : log |(fderiv ℝ T x).det| = log (η x) - log (γ (T x)) := by
+      rw [hG x, log_mul (gaussProd_pos hv hv _).ne' (hdpos x).ne']
+      ring
+    have h2 : log (γ (T x)) = -log (2 * π) - ((T x).1 ^ 2 + (T x).2 ^ 2) / 2 := by
+      simp only [hγ, gaussProd]
+      rw [log_mul (gaussianPDFReal_pos _ _ _ hv).ne' (gaussianPDFReal_pos _ _ _ hv).ne',
+        log_gaussianPDFReal hv, log_gaussianPDFReal hv]
+      simp only [NNReal.coe_one, mul_one, sub_zero]
+      ring
+    simp only [Pi.add_apply]
+    rw [poissonBracket_eq_det hTd, h1, h2]
+    ring
+  -- invariance: `D(ρ_{fg} ‖ γ) = D(ρ ‖ η)`
+  set P := densityFG (fun x => (T x).1) (fun x => (T x).2) ρ with hPdef
+  have hPe : IsEnsemble P := hNV.isEnsemble_densityFG hρ hlog
+  have hq : Integrable fun u => u.1 ^ 2 * P u := hNV.integrable_fst_sq_densityFG hf2
+  have hp : Integrable fun u => u.2 ^ 2 * P u := hNV.integrable_snd_sq_densityFG hg2
+  obtain ⟨-, hDle⟩ := gaussianDivergence_le_integral_mul_log_div hPe hq hp hv
+  rw [← hγ] at hDle
+  have hinv : ∫ u, P u * log (P u / γ u) = ∫ x, ρ x * log (ρ x / η x) := by
+    have := hNV.integral_mul_densityFG (ρ := ρ) (φ := fun u => log (P u / γ u))
+    rw [show (fun u => P u * log (P u / γ u)) = fun u => log (P u / γ u) * P u from
+      funext fun u => mul_comm _ _]
+    refine this.trans (integral_congr_ae (ae_of_all _ fun x => ?_))
+    simp only [Prod.mk.eta]
+    rw [hP x, hG x, div_div, mul_comm |(fderiv ℝ T x).det|, mul_comm]
+  exact ⟨fun x => (T x).1, fun x => (T x).2, ⟨contDiff_fst.comp hT1, contDiff_snd.comp hT1,
+    hNV.injective,
+    hNV.poissonBracket_ne_zero, hlog⟩, hf2, hg2, by linarith⟩
+
+/-- **Proposition 6, eq. (7)**, for finite entropy: `inf_T U_ρ(T) = S_h[ρ]` over admissible
+coordinates with finite variances. -/
+theorem isGLB_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) :
+    IsGLB {u | ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (Integrable fun x => f x ^ 2 * ρ x) ∧
+      (Integrable fun x => g x ^ 2 * ρ x) ∧ u = coordinateUncertainty h ρ f g} (entropy h ρ) :=
+  isGLB_coordinateUncertainty_of_hasGaussianFrames hh hρ (hasGaussianFrames hρ)
+
+/-- **Theorem 12.** Over finite entropy, GCUR implies ZENT. -/
+theorem lowerEntropicBound_of_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hG : GeneralizedUncertaintyRelation h ρ) : LowerEntropicBound h ρ :=
+  lowerEntropicBound_of_generalizedUncertaintyRelation_of_hasGaussianFrames hh hρ
+    (hasGaussianFrames hρ) hG
+
+/-- **Theorem 12.** Over finite entropy, GCUR and ZENT are equivalent. -/
+theorem lowerEntropicBound_iff_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ) :
+    LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ :=
+  lowerEntropicBound_iff_generalizedUncertaintyRelation_of_hasGaussianFrames hh hρ
+    (hasGaussianFrames hρ)
+
+end Proposition6
 
 /-! ### Convexity of the finite-entropy domain -/
 

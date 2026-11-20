@@ -63,7 +63,7 @@ relation. This log follows the revised numbering; the formalization of the first
   \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/Equivalence.lean}
   (Propositions~3, 5, 6, Theorems~8, 9, 11, 12, and the remark on convexity)
 \item Library: \lean{ClassicalUncertaintyPrinciple}
-\item Imports: six new \lean{ForMathlib} files, the first two through
+\item Imports: nine new \lean{ForMathlib} files, the first two through
   \lean{Subadditivity.lean}:
   \begin{itemize}
   \item \lean{ForMathlib/InformationTheory/GibbsInequality.lean}:\newline Gibbs' inequality
@@ -96,6 +96,19 @@ relation. This log follows the revised numbering; the formalization of the first
   $-\int\rho_\Phi\log\rho_\Phi = \int(-\rho\log\rho + \rho\log|\det\Phi'|)$
   (\lean{MeasureTheory.integral_negMulLog_pushDensity}), the coordinate-transformation law the
   brief cites from Rioul and Costa.
+  \item \lean{ForMathlib/Probability/Distributions/Gaussian/PolarTransport.lean}:\newline a
+  $C^1$ bijection $T$ of the plane with $\rho = G(T)\,|\det DT|$ for a positive $C^1$ probability
+  density $\rho$ and a centred isotropic Gaussian $G$
+  (\lean{PolarTransport.exists_transport_gaussian})
+  \item \lean{ForMathlib/InformationTheory/SmoothApproximation.lean}:\newline a probability
+  density with finite entropy on a finite-dimensional space is approximated in relative entropy
+  by positive $C^n$ probability densities
+  (\lean{MeasureTheory.exists_contDiff_integral_mul_log_div_lt}), each shell
+  $k \le |x| < k + 1$ smoothed at a scale of its own
+  \item \lean{ForMathlib/InformationTheory/YoungInequality.lean}:\newline
+  $ab \le a\log a - a + e^b$ (\lean{Real.mul_le_mul_log_sub_add_exp}), and so
+  $\int\rho\psi \le D(\rho\,\|\,\eta) - \int\rho + \int\eta e^\psi$
+  (\lean{MeasureTheory.integrable_mul_of_integrable_mul_log_div})
   \end{itemize}
 \end{itemize}
 
@@ -202,8 +215,13 @@ Proposition~5, admissibility of $T$, $\sigma_f\sigma_g = h/2\pi e$ and
   \lean{HasGaussianFrames} \\
 Proposition~6, $U_\rho(T) = S[\rho_{qp}] + D(\rho_{fg}\,\|\,G_{fg}) \ge S[\rho_{qp}]$ &
   \lean{entropy_le_coordinateUncertainty} \\
-Proposition~6, eq.~(7), finite entropy & \lean{isGLB_coordinateUncertainty}, from
-  \lean{HasGaussianFrames}; the approximation that provides it is not formalized \\
+Proposition~6, finite entropy: $D(\rho_{f_jg_j}\,\|\,G_j) \to 0$ in admissible coordinates
+  with finite variances & \lean{hasGaussianFrames}, for every density of finite entropy, with
+  $C^1$ coordinates; the Gaussian moment identity as
+  \lean{gaussianDivergence_le_integral_mul_log_div}:
+  $D(\rho\,\|\,G_\rho) \le D(\rho\,\|\,\gamma)$ \\
+Proposition~6, eq.~(7), finite entropy & \lean{isGLB_coordinateUncertainty}; from
+  \lean{HasGaussianFrames} alone, \lean{isGLB_coordinateUncertainty_of_hasGaussianFrames} \\
 Proposition~6, infinite entropy & not formalized \\
 CST, the uniform ensemble: $S[\rho_U] = \ln(\mu(U)/h^n)$, zero iff $\mu(U) = h^n$ &
   \lean{entropy_uniform}, \lean{entropy_uniform_eq_zero_iff} (any measure space, any cell
@@ -230,10 +248,11 @@ Theorem~11 & \lean{exists_uncertaintyRelation_not_lowerEntropicBound}, for every
   its equality criterion, $S = -\ln 2$, and GCUR violated by $(q, p - 2\sqrt2(c/s)q)$; a second
   example, two small squares far apart: \lean{exists_not_lowerEntropicBound} \\
 Theorem~12 & \lean{lowerEntropicBound_of_generalizedUncertaintyRelation},
-  \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation}, from \lean{HasGaussianFrames} \\
+  \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation}; from \lean{HasGaussianFrames}
+  alone, the same names with \lean{_of_hasGaussianFrames} \\
 Theorem~12, positive smooth $\rho_{qp}$ (via Proposition~5) &
   \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff}, for a positive $C^1$
-  density, unconditionally (\lean{hasGaussianFrames_of_contDiff}) \\
+  density (\lean{hasGaussianFrames_of_contDiff}) \\
 Remark ``Convexity of the ensemble space'' & \lean{isEnsemble_mix}: a mixture of ensembles of
   finite entropy is one; \lean{entropy_mix_bounds}:
   $0 \le S[\rho_\lambda] - \lambda S[\rho] - (1 - \lambda)S[\sigma] \le -\lambda\ln\lambda -
@@ -282,13 +301,16 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
   with derivative $\sqrt{2\pi\sigma^2\rho(0)}\,\mathrm{id}$. Proposition~5 is therefore stated for
   a positive $C^1$ density with $C^1$ coordinates, where the brief has smooth ones; $C^1$ is
   what \lean{IsAdmissible} asks for.
-\item Proposition~6 (a proof sketch in the brief) is not formalized beyond what is listed above:
-  approximating $\rho$ in relative entropy by smooth positive densities, transporting these to a
-  fixed product of Gaussians (for which the polar map serves), and the Gaussian moment identity
-  $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$ for any product of Gaussians $\gamma$.
-  Its conclusion for finite entropy is the hypothesis \lean{HasGaussianFrames} of Theorem~12 and
-  of eq.~(7). Proposition~5 provides it for positive $C^1$ densities
-  (\lean{hasGaussianFrames_of_contDiff}), so Theorem~12 holds unconditionally for them.
+\item Proposition~6 is a proof sketch in the brief; for finite entropy it is proved along the
+  sketch, with the steps it leaves open filled in. The approximating density $\eta$ is
+  $(1 - t)\sum_k (1_{A_k}\rho) * \varphi_{N_k} + t\gamma$ over the shells
+  $A_k = \{k \le |x| < k + 1\}$, each smoothed at a scale of its own: a finite entropy gives no
+  moment of $\rho$, so no fixed reference density and no single smoothing scale control
+  $D(\rho\,\|\,\eta)$. The ``entropy variational inequality'' that gives finite variances is
+  Young's inequality $ab \le a\ln a - a + e^b$, with $a = \rho/\eta$ and $b = |T|^2/4$; it also
+  gives the integrability of $\ln J_T = \ln\eta - \ln\gamma(T)$. The Gaussian moment identity is
+  used as the inequality $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$. The coordinates
+  are $C^1$, as in Proposition~5.
 \item Variances are Bochner integrals, so the brief's extended variance
   $\inf_a E[(X - a)^2] \in [0, \infty]$ and infinite or undefined entropies are not modelled.
   GCUR and CUR are stated for coordinates with finite variances; for an infinite variance the

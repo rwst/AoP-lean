@@ -10,7 +10,8 @@
     "ClassicalUncertaintyPrinciple.generalizedUncertaintyRelation_of_lowerEntropicBound",
     "ClassicalUncertaintyPrinciple.uncertaintyRelation_of_lowerEntropicBound",
     "ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_mul_exp_mul_exp",
-    "ClassicalUncertaintyPrinciple.exists_uncertaintyRelation_not_lowerEntropicBound"
+    "ClassicalUncertaintyPrinciple.exists_uncertaintyRelation_not_lowerEntropicBound",
+    "ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation"
   ],
   "permitted_axioms": [
     "propext",
