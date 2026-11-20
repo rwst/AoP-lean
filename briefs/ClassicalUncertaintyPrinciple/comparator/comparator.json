@@ -3,7 +3,7 @@
   "solution_module": "SolutionClassicalUncertaintyPrinciple",
   "theorem_names": [
     "ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq",
-    "ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_of_entropy_densityFG_eq_zero",
+    "ClassicalUncertaintyPrinciple.exists_isAdmissible_densityFG_eq_gaussProd",
     "ClassicalUncertaintyPrinciple.entropy_le_coordinateUncertainty",
     "ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty",
     "ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions",

@@ -57,70 +57,30 @@ precise first.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \blocker{formalization gap}\textbf{Theorem~12 and Propositions~5--6.} Theorem~12
+\item \blocker{formalization gap}\textbf{Theorem~12 and Proposition~6.} Theorem~12
   (GCUR implies [B]ZENT, hence their equivalence) is proved from \lean{HasGaussianFrames}, the
   conclusion of Proposition~6 for finite entropy: admissible coordinates with finite variances
   in which $D(\rho_{fg}\,\|\,G_{fg})$ is arbitrarily small
   (\lean{lowerEntropicBound_of_generalizedUncertaintyRelation},
   \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation}; eq.~(7) likewise,
-  \lean{isGLB_coordinateUncertainty}). Coordinates in which $\rho_{fg}$ is a product of
-  Gaussians provide it (\lean{hasGaussianFrames_of_densityFG_eq}). Missing:
-  \begin{itemize}
-  \item Proposition~5, the existence of such coordinates for a positive smooth density, which the
-    brief takes from the volume-transport theorem of Greene and Shiohama. That the coordinates
-    are then admissible, with finite variances, is formalized. Formalizing Greene--Shiohama would
-    need Moser's argument: global flows of time-dependent vector fields with smooth dependence on
-    the initial point, Liouville's formula for their Jacobian, and an exhaustion of the plane,
-    none of which Mathlib has (it has local existence and uniqueness for ODEs only).
-
-    In the plane there is an elementary route. A Cartesian Knothe--Rosenblatt map (conditional
-    distribution functions composed with the Gaussian quantile) does not work in general: it is
-    $C^1$ only if the marginal density is continuous, and a positive smooth density of finite
-    entropy can have a discontinuous marginal, e.g.\
-    $\rho(q, p) \propto e^{-q^2}\bigl((1 + p^2)^{-1} + \beta(p - 1/q)\bigr)$ for a smooth bump
-    $\beta$ on $[-1, 1]$ (the second term read as $0$ at $q = 0$), whose $q$-marginal jumps at
-    $q = 0$, since mass escapes to infinity along the vertical lines. In polar coordinates
-    $(r, \theta)$ the fibres are circles, which are compact. Take $s = t = \sigma$ with
-    $\sigma^2 = h/2\pi e$, so that $G_{fg}$ is radial, and let
-    \begin{gather*}
-      M(r) = \int_{|x| \le r} \rho, \qquad m(r) = \int_0^{2\pi} \rho(r, \varphi)\,d\varphi,
-      \\
-      R(r) = \sigma\sqrt{-2\ln\bigl(1 - M(r)\bigr)}, \qquad
-      \Theta(r, \theta) = \frac{2\pi}{m(r)} \int_0^\theta \rho(r, \varphi)\,d\varphi .
-    \end{gather*}
-    The map $T(r, \theta) = (R(r), \Theta(r, \theta))$, with $T(0) = 0$, sends discs to discs of
-    the same Gaussian mass ($1 - e^{-R^2/2\sigma^2}$ is the Gaussian mass of a disc) and
-    each circle bijectively onto a circle; $\Theta - \theta$ is $2\pi$-periodic in $\theta$, so
-    $T$ is well defined across $\theta = 0$. Since $M' = r\,m$ and
-    $\partial_\theta\Theta = 2\pi\rho/m$,
-    \[
-      \det DT = R'\,\frac{R}{r}\,\partial_\theta\Theta = \frac{\rho}{G_{fg}(T)} ,
-    \]
-    so $\rho_{fg} = G_{fg}$ everywhere. It needs only $\rho > 0$ of class $C^1$: then $M$, $R$
-    and $\Theta$ are $C^1$ for $r > 0$, and $T$ is $C^1$ at the origin with
-    $DT(0) = c\,I$, $c^2 = \rho(0)/G_{fg}(0)$, because $\Theta - \theta \to 0$ and
-    $\partial_\theta\Theta \to 1$ uniformly and $R\,\partial_r\Theta \to 0$ as $r \to 0$. This
-    is the regularity Definition~2 asks for as formalized (\lean{IsAdmissible}); $T$ is smooth
-    away from the origin, but smoothness at the origin, which the brief claims, is not expected
-    for a non-radial $\rho$, and would need a local Moser correction near $0$.
-
-    Mathlib provides the polar integral (\lean{integral_comp_polarCoord_symm}), the derivative
-    of the inverse polar map (\lean{hasFDerivAt_polarCoord_symm}), and $C^n$ parametric
-    integrals (\lean{ContDiff.parametric_intervalIntegral}). The variable upper limit in
-    $\Theta$ becomes a fixed one through $\int_0^\theta = \theta\int_0^1$. Missing: the map itself, the two angle
-    charts across the branch cut of the argument, the Jacobian through the chain rule, the
-    estimates at the origin, and bijectivity from the monotonicity of $R$ and of each
-    $\Theta(r, \cdot)$.
-  \item Proposition~6: approximation of a measurable density in relative entropy by positive
-    smooth ones with integrable logarithm, transport (the polar map above serves for each
-    positive $C^1$ approximant), invariance of relative entropy under admissible coordinate
-    changes, and the Gaussian moment identity
-    $D(\rho_{fg}\,\|\,\gamma) = D(\rho_{fg}\,\|\,G_{fg}) + D(G_{fg}\,\|\,\gamma)$, which gives
-    $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$ for every product of Gaussians
-    $\gamma$.
-  \end{itemize}
-  Apart from the tools named above, none of this is in Mathlib. (Log, ``Differences from the
-  brief''.)
+  \lean{isGLB_coordinateUncertainty}). For a positive $C^1$ density, Proposition~5 provides it
+  and Theorem~12 is proved unconditionally
+  (\lean{lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff}); the coordinates
+  come from a Knothe--Rosenblatt map in polar coordinates
+  (\lean{PolarTransport.exists_transport_gaussian}). Missing for a general measurable density,
+  Proposition~6: approximation in relative entropy by positive smooth densities with integrable
+  logarithm, transport (the polar map serves for each positive $C^1$ approximant), invariance of
+  relative entropy under admissible coordinate changes, and the Gaussian moment identity
+  $D(\rho_{fg}\,\|\,\gamma) = D(\rho_{fg}\,\|\,G_{fg}) + D(G_{fg}\,\|\,\gamma)$, which gives
+  $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$ for every product of Gaussians
+  $\gamma$. None of this is in Mathlib. (Log, ``Differences from the brief''.)
+\item \textbf{Smooth coordinates in Proposition~5.} The brief's coordinates are smooth; the
+  polar map is smooth away from the origin and $C^1$ at it, which is what \lean{IsAdmissible}
+  asks for. Smoothness at the origin is not expected for a non-radial $\rho$, so smooth
+  coordinates need another construction, such as the volume-transport theorem of Greene and
+  Shiohama the brief cites, or a local Moser correction near the origin; both need global flows
+  of vector fields with smooth dependence on the initial point and Liouville's formula for their
+  Jacobian, which Mathlib lacks. Nothing in the brief uses more than $C^1$.
 \item \textbf{Extended variance and infinite entropy.} Variances are Bochner integrals and
   entropies real numbers, so the brief's extended variance
   $\inf_a E[(X - a)^2] \in [0, \infty]$ and well-defined infinite entropies are not modelled.

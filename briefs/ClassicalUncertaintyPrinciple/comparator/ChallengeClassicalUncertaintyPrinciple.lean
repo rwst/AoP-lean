@@ -10,6 +10,12 @@ public import Mathlib.MeasureTheory.Function.Jacobian
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.MeasureTheory.Integral.Prod
 public import Mathlib.Probability.Distributions.Gaussian.Real
+public import Mathlib.Analysis.SpecialFunctions.PolarCoord
+import Mathlib.Analysis.Calculus.Deriv.Prod
+import Mathlib.Analysis.Calculus.FDeriv.OfCompLeft
+import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
+import Mathlib.Analysis.SpecialFunctions.Sqrt
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
 
 /-!
 # ClassicalUncertaintyPrinciple: the statements of record
@@ -108,16 +114,6 @@ theorem sd_mul_sd_eq (hh : 0 < h) (hρ : IsEnsemble ρ)
     sd ρ f * sd ρ g = h / (2 * π * exp 1) * exp (entropy h ρ) *
       exp (∫ x, ρ x * log |poissonBracket f g x|) * exp (gaussianDivergence (densityFG f g ρ)) := by
   sorry
-section GaussianFrame
-variable {a b : ℝ} {v w : ℝ≥0}
-theorem sd_mul_sd_eq_of_entropy_densityFG_eq_zero (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hv : v ≠ 0) (hw : w ≠ 0) (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w)
-    (h0 : entropy h (densityFG f g ρ) = 0) :
-    (Integrable fun x => ρ x * log |poissonBracket f g x|) ∧
-      sd ρ f * sd ρ g = h / (2 * π * exp 1) ∧
-      entropy h ρ = -∫ x, ρ x * log |poissonBracket f g x| := by
-  sorry
-end GaussianFrame
 end IsNewVariables
 end Identity
 section Conditions
@@ -140,6 +136,18 @@ def GeneralizedUncertaintyRelation (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop :=
         entropy h ρ = 0 ∧ ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧
           densityFG f g ρ =ᵐ[volume] gaussProd a v b w)
 end Conditions
+section Proposition5
+variable {ρ : ℝ × ℝ → ℝ} {h : ℝ}
+theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hρ1 : ContDiff ℝ 1 ρ) (hpos : ∀ x, 0 < ρ x) :
+    ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧
+      (∀ u, densityFG f g ρ u =
+        gaussProd 0 (h / (2 * π * exp 1)).toNNReal 0 (h / (2 * π * exp 1)).toNNReal u) ∧
+      entropy h (densityFG f g ρ) = 0 ∧
+      sd ρ f * sd ρ g = h / (2 * π * exp 1) ∧
+      entropy h ρ = -∫ x, ρ x * log |poissonBracket f g x| := by
+  sorry
+end Proposition5
 section Theorem9
 variable {ρ : ℝ × ℝ → ℝ} {h : ℝ}
 theorem generalizedUncertaintyRelation_of_lowerEntropicBound (hh : 0 < h) (hρ : IsEnsemble ρ)

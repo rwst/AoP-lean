@@ -4,7 +4,7 @@
 #
 # The certified theorems of the brief, one per line; `#` starts a comment.
 ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq  # Proposition 3, eq. (4)
-ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_of_entropy_densityFG_eq_zero  # Proposition 5, its conclusion (with admissibility) given the coordinates
+ClassicalUncertaintyPrinciple.exists_isAdmissible_densityFG_eq_gaussProd  # Proposition 5, for a positive C¹ density
 ClassicalUncertaintyPrinciple.entropy_le_coordinateUncertainty  # Proposition 6, U = S + D >= S
 ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty  # Proposition 6, eq. (7), from HasGaussianFrames
 ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions  # Theorem 8

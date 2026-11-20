@@ -188,9 +188,13 @@ Proposition~3, the Gaussian entropy formula & \lean{entropy_gaussProd} \\
 Proposition~3, eq.~(4) & \lean{IsNewVariables.sd_mul_sd_eq}; in logarithmic form
   \lean{IsNewVariables.log_eq_entropy_add}; in canonical coordinates
   \lean{log_eq_entropy_add_gaussianDivergence} \\
-Proposition~5, existence of the coordinates (Greene--Shiohama) & not formalized \\
+Proposition~5 & \lean{exists_isAdmissible_densityFG_eq_gaussProd}, for a positive $C^1$
+  density: admissible $C^1$ coordinates with $\rho_{fg}$ a product of Gaussians of zero entropy,
+  $\sigma_f\sigma_g = h/2\pi e$ and $S[\rho_{qp}] = -E[\ln J_T]$. The coordinates are the polar
+  Knothe--Rosenblatt map of \lean{ForMathlib/Probability/Distributions/Gaussian/PolarTransport}
+  (\lean{PolarTransport.exists_transport_gaussian}), not Greene--Shiohama \\
 Proposition~5, admissibility of $T$, $\sigma_f\sigma_g = h/2\pi e$ and
-  $S[\rho_{qp}] = -E[\ln J_T]$ in these coordinates &
+  $S[\rho_{qp}] = -E[\ln J_T]$ in any such coordinates &
   \lean{IsNewVariables.sd_mul_sd_eq_of_entropy_densityFG_eq_zero}, given the coordinates, with
   finite variances (\lean{IsNewVariables.integrable_fst_sq_of_densityFG_ae_eq}) and
   $E[|\ln J_T|] < \infty$ (\lean{IsNewVariables.integrable_mul_log_of_densityFG_ae_eq}) derived
@@ -227,6 +231,9 @@ Theorem~11 & \lean{exists_uncertaintyRelation_not_lowerEntropicBound}, for every
   example, two small squares far apart: \lean{exists_not_lowerEntropicBound} \\
 Theorem~12 & \lean{lowerEntropicBound_of_generalizedUncertaintyRelation},
   \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation}, from \lean{HasGaussianFrames} \\
+Theorem~12, positive smooth $\rho_{qp}$ (via Proposition~5) &
+  \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff}, for a positive $C^1$
+  density, unconditionally (\lean{hasGaussianFrames_of_contDiff}) \\
 Remark ``Convexity of the ensemble space'' & \lean{isEnsemble_mix}: a mixture of ensembles of
   finite entropy is one; \lean{entropy_mix_bounds}:
   $0 \le S[\rho_\lambda] - \lambda S[\rho] - (1 - \lambda)S[\sigma] \le -\lambda\ln\lambda -
@@ -264,15 +271,24 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
 
 \paragraph{Differences from the brief.}
 \begin{itemize}
-\item Propositions~5 and~6 are not formalized beyond what is listed above. Proposition~5 rests on
-  the volume-transport theorem of Greene and Shiohama, and Proposition~6 (a proof sketch in the
-  brief) on approximating $\rho$ in relative entropy by smooth positive densities, transporting
-  these to a fixed product of Gaussians, and the Gaussian moment identity
+\item Proposition~5 is proved with a different transport map. The brief takes the coordinates
+  from the volume-transport theorem of Greene and Shiohama, which Mathlib lacks (it needs global
+  flows with smooth dependence on the initial point). In the plane they are given explicitly by
+  a Knothe--Rosenblatt map in polar coordinates: the radius goes to $R(r) =
+  \sigma\sqrt{-2\ln(1 - M(r))}$, $M(r)$ the mass of the disc of radius $r$, and on each circle
+  the angle goes to $\Theta(r, \theta) = 2\pi\int_0^\theta\rho\,d\varphi / \int_0^{2\pi}\rho\,
+  d\varphi$, with $\det DT = \rho/G_{fg}(T)$. The fibres are circles, which are compact, so the
+  map is $C^1$ whenever $\rho$ is; it is smooth away from the origin and $C^1$ at the origin,
+  with derivative $\sqrt{2\pi\sigma^2\rho(0)}\,\mathrm{id}$. Proposition~5 is therefore stated for
+  a positive $C^1$ density with $C^1$ coordinates, where the brief has smooth ones; $C^1$ is
+  what \lean{IsAdmissible} asks for.
+\item Proposition~6 (a proof sketch in the brief) is not formalized beyond what is listed above:
+  approximating $\rho$ in relative entropy by smooth positive densities, transporting these to a
+  fixed product of Gaussians (for which the polar map serves), and the Gaussian moment identity
   $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$ for any product of Gaussians $\gamma$.
-  None of this is in Mathlib. Their conclusion for finite entropy is the hypothesis
-  \lean{HasGaussianFrames} of Theorem~12 and of eq.~(7). It is not vacuous: coordinates in which
-  $\rho_{fg}$ is a product of Gaussians provide it (\lean{hasGaussianFrames_of_densityFG_eq}),
-  for instance the shear of Theorem~11 for its ensemble.
+  Its conclusion for finite entropy is the hypothesis \lean{HasGaussianFrames} of Theorem~12 and
+  of eq.~(7). Proposition~5 provides it for positive $C^1$ densities
+  (\lean{hasGaussianFrames_of_contDiff}), so Theorem~12 holds unconditionally for them.
 \item Variances are Bochner integrals, so the brief's extended variance
   $\inf_a E[(X - a)^2] \in [0, \infty]$ and infinite or undefined entropies are not modelled.
   GCUR and CUR are stated for coordinates with finite variances; for an infinite variance the

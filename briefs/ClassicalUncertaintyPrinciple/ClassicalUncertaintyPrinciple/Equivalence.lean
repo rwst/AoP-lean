@@ -6,6 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import ClassicalUncertaintyPrinciple
+public import ForMathlib.Probability.Distributions.Gaussian.PolarTransport
 
 /-!
 # Classical uncertainty relation: the equivalence with the lower entropic bound
@@ -26,10 +27,13 @@ Kullback–Leibler divergence. `D ≥ 0` gives ZENT ⇒ GCUR (**Theorem 9**). Co
 in which `D` is arbitrarily small (**Proposition 6**) turn GCUR into `S_h[ρ] ≥ 0`
 (**Theorem 12**).
 
-The existence of such coordinates is not formalized: the brief takes it from the volume-transport
-theorem of Greene and Shiohama (Proposition 5) and from an approximation by smooth positive
-densities (Proposition 6, a proof sketch). Here it is the hypothesis `HasGaussianFrames`, the
-conclusion of Proposition 6 for finite entropy, and Theorem 12 is proved from it.
+For a positive `C¹` density the coordinates exist (**Proposition 5**): `ρ_{fg}` is exactly a
+product of Gaussians in the coordinates of a polar Knothe–Rosenblatt map
+(`PolarTransport.exists_transport_gaussian`), which replaces the brief's appeal to the
+volume-transport theorem of Greene and Shiohama. For a general density the brief approximates it by
+smooth positive ones (Proposition 6, a proof sketch); this is not formalized, and Theorem 12 is
+proved from its conclusion, the hypothesis `HasGaussianFrames`, which Proposition 5 provides for
+positive `C¹` densities.
 
 ## Main definitions
 
@@ -46,9 +50,9 @@ conclusion of Proposition 6 for finite entropy, and Theorem 12 is proved from it
 
 * `ClassicalUncertaintyPrinciple.IsNewVariables.log_eq_entropy_add`,
   `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq`: Proposition 3, eq. (4).
-* `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_of_entropy_densityFG_eq_zero`:
-  the conclusion of Proposition 5, given the coordinates; their admissibility and finite
-  variances are derived (`IsNewVariables.integrable_mul_log_of_densityFG_ae_eq`).
+* `ClassicalUncertaintyPrinciple.exists_isAdmissible_densityFG_eq_gaussProd`: Proposition 5;
+  `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_of_entropy_densityFG_eq_zero`: its
+  conclusion in any such coordinates, with their admissibility and finite variances derived.
 * `ClassicalUncertaintyPrinciple.entropy_le_coordinateUncertainty`,
   `ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty`: Proposition 6, eq. (7).
 * `ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions`: Theorem 8.
@@ -58,7 +62,9 @@ conclusion of Proposition 6 for finite entropy, and Theorem 12 is proved from it
 * `ClassicalUncertaintyPrinciple.exists_uncertaintyRelation_not_lowerEntropicBound`: Theorem 11.
 * `ClassicalUncertaintyPrinciple.lowerEntropicBound_of_generalizedUncertaintyRelation`,
   `ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation`:
-  Theorem 12, from `HasGaussianFrames`.
+  Theorem 12, from `HasGaussianFrames`;
+  `ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff`:
+  for a positive `C¹` density, unconditionally.
 * `ClassicalUncertaintyPrinciple.isEnsemble_mix`,
   `ClassicalUncertaintyPrinciple.entropy_mix_bounds`: the remark on convexity.
 -/
@@ -459,6 +465,70 @@ theorem GeneralizedUncertaintyRelation.uncertaintyRelation
 
 end Conditions
 
+/-! ### Proposition 5: Gaussian coordinates -/
+
+section Proposition5
+
+variable {ρ : ℝ × ℝ → ℝ} {h : ℝ}
+
+/-- The Poisson bracket of the components of `T` is the Jacobian determinant of `T`. -/
+lemma poissonBracket_eq_det {T : ℝ × ℝ → ℝ × ℝ} (hT : Differentiable ℝ T) (x : ℝ × ℝ) :
+    poissonBracket (fun x => (T x).1) (fun x => (T x).2) x = (fderiv ℝ T x).det := by
+  have hf : fderiv ℝ (fun x => (T x).1) x = (ContinuousLinearMap.fst ℝ ℝ ℝ).comp (fderiv ℝ T x) :=
+    (hasFDerivAt_fst.comp x (hT x).hasFDerivAt).fderiv
+  have hg : fderiv ℝ (fun x => (T x).2) x = (ContinuousLinearMap.snd ℝ ℝ ℝ).comp (fderiv ℝ T x) :=
+    (hasFDerivAt_snd.comp x (hT x).hasFDerivAt).fderiv
+  have hD : ((ContinuousLinearMap.fst ℝ ℝ ℝ).comp (fderiv ℝ T x)).prod
+      ((ContinuousLinearMap.snd ℝ ℝ ℝ).comp (fderiv ℝ T x)) = fderiv ℝ T x := by
+    ext <;> simp
+  rw [poissonBracket, ← det_prod, hf, hg, hD]
+
+/-- **Proposition 5.** A positive `C¹` density of finite entropy has admissible coordinates
+`(f, g)` in which `ρ_{fg}` is a product of Gaussians of zero entropy; in them
+`σ_f σ_g = h / 2π e` and `S_h[ρ] = -E[log |{f, g}|]`. The coordinates are the polar
+Knothe–Rosenblatt map `PolarTransport.transport`, in place of the brief's appeal to the
+volume-transport theorem of Greene and Shiohama; they are `C¹`, where the brief has smooth. -/
+theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hρ1 : ContDiff ℝ 1 ρ) (hpos : ∀ x, 0 < ρ x) :
+    ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧
+      (∀ u, densityFG f g ρ u =
+        gaussProd 0 (h / (2 * π * exp 1)).toNNReal 0 (h / (2 * π * exp 1)).toNNReal u) ∧
+      entropy h (densityFG f g ρ) = 0 ∧
+      sd ρ f * sd ρ g = h / (2 * π * exp 1) ∧
+      entropy h ρ = -∫ x, ρ x * log |poissonBracket f g x| := by
+  set v := (h / (2 * π * exp 1)).toNNReal with hv_def
+  have hv0 : (0 : ℝ) < h / (2 * π * exp 1) := by positivity
+  have hv : v ≠ 0 := by rw [hv_def, Ne, Real.toNNReal_eq_zero, not_le]; exact hv0
+  obtain ⟨T, hT1, hTb, hTρ⟩ :=
+    PolarTransport.exists_transport_gaussian hρ1 hpos hρ.integral_eq_one hv
+  have hTd : Differentiable ℝ T := hT1.differentiable one_ne_zero
+  have hG : ∀ x, ρ x = gaussProd 0 v 0 v (T x) * |(fderiv ℝ T x).det| := hTρ
+  have hdet : ∀ x, (fderiv ℝ T x).det ≠ 0 := fun x h0 => by
+    have := hG x
+    rw [h0, abs_zero, mul_zero] at this
+    exact (hpos x).ne' this
+  have hNV : IsNewVariables (fun x => (T x).1) (fun x => (T x).2) :=
+    ⟨fun x => ((hTd x).hasFDerivAt.fst).differentiableAt,
+      fun x => ((hTd x).hasFDerivAt.snd).differentiableAt,
+      by simpa using hTb.1, fun x => by rw [poissonBracket_eq_det hTd]; exact hdet x⟩
+  have hD : ∀ u, densityFG (fun x => (T x).1) (fun x => (T x).2) ρ u = gaussProd 0 v 0 v u := by
+    intro u
+    obtain ⟨x, rfl⟩ := hTb.2 u
+    have h1 : densityFG (fun x => (T x).1) (fun x => (T x).2) ρ ((T x).1, (T x).2) =
+        ρ x / |poissonBracket (fun x => (T x).1) (fun x => (T x).2) x| := by
+      rw [densityFG, pushDensity_apply hNV.injective, abs_det_prod_fderiv]
+    rw [Prod.mk.eta] at h1
+    rw [h1, poissonBracket_eq_det hTd, hG x, mul_div_cancel_right₀ _ (abs_ne_zero.2 (hdet x))]
+  have h0 : entropy h (densityFG (fun x => (T x).1) (fun x => (T x).2) ρ) = 0 := by
+    rw [funext hD, entropy_gaussProd hh hv hv, hv_def, Real.coe_toNNReal _ hv0.le,
+      mul_self_sqrt hv0.le, mul_div_cancel₀ _ (by positivity), sub_self]
+  obtain ⟨hlog, hsd, hS⟩ := hNV.sd_mul_sd_eq_of_entropy_densityFG_eq_zero hh hρ hv hv
+    (Filter.Eventually.of_forall hD) h0
+  exact ⟨_, _, ⟨contDiff_fst.comp hT1, contDiff_snd.comp hT1, hNV.injective,
+    hNV.poissonBracket_ne_zero, hlog⟩, hD, h0, hsd, hS⟩
+
+end Proposition5
+
 /-! ### Theorem 9: ZENT implies GCUR and CUR -/
 
 section Theorem9
@@ -841,6 +911,22 @@ theorem lowerEntropicBound_iff_generalizedUncertaintyRelation (hh : 0 < h) (hρ 
     LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ :=
   ⟨generalizedUncertaintyRelation_of_lowerEntropicBound hh hρ,
     lowerEntropicBound_of_generalizedUncertaintyRelation hh hρ hF⟩
+
+/-- A positive `C¹` density of finite entropy has Gaussian frames (Proposition 5). -/
+theorem hasGaussianFrames_of_contDiff (hh : 0 < h) (hρ : IsEnsemble ρ) (hρ1 : ContDiff ℝ 1 ρ)
+    (hpos : ∀ x, 0 < ρ x) : HasGaussianFrames ρ := by
+  obtain ⟨f, g, T, hD, -⟩ := exists_isAdmissible_densityFG_eq_gaussProd hh hρ hρ1 hpos
+  have hv : (h / (2 * π * exp 1)).toNNReal ≠ 0 := by
+    rw [Ne, Real.toNNReal_eq_zero, not_le]; positivity
+  exact hasGaussianFrames_of_densityFG_eq T hv hv (Filter.Eventually.of_forall hD)
+
+/-- **Theorem 12 for a positive `C¹` density**, without `HasGaussianFrames`: the case of the brief's
+proof that rests on Proposition 5 alone. -/
+theorem lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff (hh : 0 < h)
+    (hρ : IsEnsemble ρ) (hρ1 : ContDiff ℝ 1 ρ) (hpos : ∀ x, 0 < ρ x) :
+    LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ :=
+  lowerEntropicBound_iff_generalizedUncertaintyRelation hh hρ
+    (hasGaussianFrames_of_contDiff hh hρ hρ1 hpos)
 
 end Theorem12
 
