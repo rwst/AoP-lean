@@ -108,14 +108,16 @@ theorem sd_mul_sd_eq (hh : 0 < h) (hρ : IsEnsemble ρ)
     sd ρ f * sd ρ g = h / (2 * π * exp 1) * exp (entropy h ρ) *
       exp (∫ x, ρ x * log |poissonBracket f g x|) * exp (gaussianDivergence (densityFG f g ρ)) := by
   sorry
+section GaussianFrame
+variable {a b : ℝ} {v w : ℝ≥0}
 theorem sd_mul_sd_eq_of_entropy_densityFG_eq_zero (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
-    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|) {a b : ℝ} {v w : ℝ≥0}
     (hv : v ≠ 0) (hw : w ≠ 0) (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w)
     (h0 : entropy h (densityFG f g ρ) = 0) :
-    sd ρ f * sd ρ g = h / (2 * π * exp 1) ∧
+    (Integrable fun x => ρ x * log |poissonBracket f g x|) ∧
+      sd ρ f * sd ρ g = h / (2 * π * exp 1) ∧
       entropy h ρ = -∫ x, ρ x * log |poissonBracket f g x| := by
   sorry
+end GaussianFrame
 end IsNewVariables
 end Identity
 section Conditions

@@ -38,7 +38,7 @@ be unique across the project.
 | brief | certified | Lean | challenge |
 | --- | --- | --- | --- |
 | The Born rule is equivalent to the von Neumann entropy | Theorem 9 | `BornRuleEntropy.two_conditions_imply_third` | 142 lines, 7 KiB |
-| Classical uncertainty relation | Proposition 3 (eq. 4), Proposition 5 given its coordinates, Proposition 6 (`U_ρ(T) ≥ S`, and eq. 7 from its approximation step), Theorem 8, Theorem 9 (GCUR, CUR, eq. 10), Theorem 11; not Theorem 12 | 9 theorems, see `theorems.txt` | 199 lines, 10 KiB |
+| Classical uncertainty relation | Proposition 3 (eq. 4), Proposition 5 given its coordinates (admissibility derived), Proposition 6 (`U_ρ(T) ≥ S`, and eq. 7 from its approximation step), Theorem 8, Theorem 9 (GCUR, CUR, eq. 10), Theorem 11; not Theorem 12 | 9 theorems, see `theorems.txt` | 201 lines, 10 KiB |
 | Physical vector spaces for quantum mechanics | Corollary 2, Example 3 (in `n` dimensions) and its Remark, Example 4, Theorem 5 ([B]COBS) | 6 theorems, see `theorems.txt` | 163 lines, 7 KiB |
 | Directional vectors vs quantum state vectors | eqs. (1)–(3), linearity in terms of probability, half a turn, states as rays, the outcomes as opposite directions, completeness of the forms (1) and (3) | 13 theorems, see `theorems.txt` | 83 lines, 4 KiB |
 | Superpositions correspond to multiple decompositions | Theorem 1 and its two directions (eqs. 3 and 4), eq. (2), the support argument, mixtures of independent states are not pure | 6 theorems, see `theorems.txt` | 73 lines, 4 KiB |

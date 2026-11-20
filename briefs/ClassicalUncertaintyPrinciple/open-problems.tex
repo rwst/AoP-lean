@@ -67,9 +67,15 @@ precise first.
   Gaussians provide it (\lean{hasGaussianFrames_of_densityFG_eq}). Missing:
   \begin{itemize}
   \item Proposition~5, the existence of such coordinates for a positive smooth density, which the
-    brief takes from the volume-transport theorem of Greene and Shiohama. In the plane a
-    Knothe--Rosenblatt map (conditional distribution functions composed with the Gaussian
-    quantile) may be a more elementary route.
+    brief takes from the volume-transport theorem of Greene and Shiohama. That the coordinates
+    are then admissible, with finite variances, is formalized. A Knothe--Rosenblatt map
+    (conditional distribution functions composed with the Gaussian quantile) is not a shortcut in
+    general: it is $C^1$ only if the marginal density is continuous, and a positive smooth
+    density of finite entropy can have a discontinuous marginal, e.g.\
+    $\rho(q, p) \propto e^{-q^2}\bigl((1 + p^2)^{-1} + \beta(p - 1/q)\bigr)$ for a smooth bump
+    $\beta$ on $[-1, 1]$ (the second term read as $0$ at $q = 0$), whose $q$-marginal jumps at
+    $q = 0$. It is an elementary route only under extra regularity, such as derivatives of
+    $\rho$ dominated locally uniformly in the other variable.
   \item Proposition~6: approximation of a measurable density in relative entropy by positive
     smooth ones with integrable logarithm, transport, invariance of relative entropy under
     admissible coordinate changes, and the Gaussian moment identity

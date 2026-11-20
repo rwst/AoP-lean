@@ -47,7 +47,8 @@ conclusion of Proposition 6 for finite entropy, and Theorem 12 is proved from it
 * `ClassicalUncertaintyPrinciple.IsNewVariables.log_eq_entropy_add`,
   `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq`: Proposition 3, eq. (4).
 * `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_of_entropy_densityFG_eq_zero`:
-  the conclusion of Proposition 5, given the coordinates.
+  the conclusion of Proposition 5, given the coordinates; their admissibility and finite
+  variances are derived (`IsNewVariables.integrable_mul_log_of_densityFG_ae_eq`).
 * `ClassicalUncertaintyPrinciple.entropy_le_coordinateUncertainty`,
   `ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty`: Proposition 6, eq. (7).
 * `ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions`: Theorem 8.
@@ -326,19 +327,69 @@ theorem sd_mul_sd_eq (hh : 0 < h) (hρ : IsEnsemble ρ)
   exact eq_mul_exp_of_log_eq hh (H.sd_mul_sd_pos hρ hf2 hg2 hlog)
     (H.log_eq_entropy_add hh hρ hf2 hg2 hlog)
 
-/-- **Proposition 5, its conclusion.** In coordinates where `ρ_{fg}` is a product of Gaussians
-with zero entropy, `σ_f σ_g = h / 2π e` and `S_h[ρ] = -E[log |{f, g}|]`. -/
+section GaussianFrame
+
+variable {a b : ℝ} {v w : ℝ≥0}
+
+/-- If `ρ_{fg}` is a product of Gaussians, `f` has a finite variance. -/
+lemma integrable_fst_sq_of_densityFG_ae_eq (hv : v ≠ 0)
+    (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w) :
+    Integrable fun x => f x ^ 2 * ρ x :=
+  (H.integrable_mul_densityFG_iff (φ := fun u => u.1 ^ 2)).1
+    ((integrable_fst_sq_mul_gaussProd (a := a) (b := b) (w := w) hv).congr
+      (hG.symm.mono fun u hu => congrArg (u.1 ^ 2 * ·) hu))
+
+/-- If `ρ_{fg}` is a product of Gaussians, `g` has a finite variance. -/
+lemma integrable_snd_sq_of_densityFG_ae_eq (hw : w ≠ 0)
+    (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w) :
+    Integrable fun x => g x ^ 2 * ρ x :=
+  (H.integrable_mul_densityFG_iff (φ := fun u => u.2 ^ 2)).1
+    ((integrable_snd_sq_mul_gaussProd (a := a) (b := b) (v := v) hw).congr
+      (hG.symm.mono fun u hu => congrArg (u.2 ^ 2 * ·) hu))
+
+/-- **Admissibility in Proposition 5.** If `ρ` has finite entropy and `ρ_{fg}` is a product of
+Gaussians, `E[|log |{f, g}||] < ∞`: `ρ log |{f, g}| = ρ log ρ - ρ log ρ_{fg}(f, g)`, and the last
+term has the expectation `∫ ρ_{fg} log ρ_{fg}`, finite for a Gaussian. -/
+lemma integrable_mul_log_of_densityFG_ae_eq (hρ : IsEnsemble ρ) (hv : v ≠ 0) (hw : w ≠ 0)
+    (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w) :
+    Integrable fun x => ρ x * log |poissonBracket f g x| := by
+  have h1 : Integrable fun x => log (densityFG f g ρ (f x, g x)) * ρ x := by
+    refine (H.integrable_mul_densityFG_iff (φ := fun u => log (densityFG f g ρ u))).1 ?_
+    refine (isEnsemble_gaussProd (a := a) (b := b) hv hw).integrable_negMulLog.neg.congr
+      (hG.symm.mono fun u hu => ?_)
+    simp only [Pi.neg_apply, negMulLog, neg_mul, neg_neg, hu]
+    ring
+  refine (hρ.integrable_negMulLog.neg.sub h1).congr (ae_of_all _ fun x => ?_)
+  have hx := H.densityFG_mul_abs_poissonBracket (ρ := ρ) x
+  simp only [Pi.sub_apply, Pi.neg_apply, negMulLog, neg_mul, neg_neg]
+  by_cases h0 : ρ x = 0
+  · simp [h0]
+  have hd : densityFG f g ρ (f x, g x) ≠ 0 := by
+    rintro hd
+    rw [hd, zero_mul] at hx
+    exact h0 hx.symm
+  have hl : log (ρ x) = log (densityFG f g ρ (f x, g x)) + log |poissonBracket f g x| := by
+    rw [← log_mul hd (abs_ne_zero.2 (H.poissonBracket_ne_zero x)), hx]
+  rw [hl]
+  ring
+
+/-- **Proposition 5, its conclusion.** For `ρ` of finite entropy, in coordinates where `ρ_{fg}`
+is a product of Gaussians with zero entropy, `(f, g)` satisfies the integrability requirement of
+Definition 2, `σ_f σ_g = h / 2π e` and `S_h[ρ] = -E[log |{f, g}|]`. -/
 theorem sd_mul_sd_eq_of_entropy_densityFG_eq_zero (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
-    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|) {a b : ℝ} {v w : ℝ≥0}
     (hv : v ≠ 0) (hw : w ≠ 0) (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w)
     (h0 : entropy h (densityFG f g ρ) = 0) :
-    sd ρ f * sd ρ g = h / (2 * π * exp 1) ∧
+    (Integrable fun x => ρ x * log |poissonBracket f g x|) ∧
+      sd ρ f * sd ρ g = h / (2 * π * exp 1) ∧
       entropy h ρ = -∫ x, ρ x * log |poissonBracket f g x| := by
+  have hlog := H.integrable_mul_log_of_densityFG_ae_eq hρ hv hw hG
   have hS := H.entropy_densityFG hh hρ hlog
-  have hb := (H.sd_mul_sd_eq_iff hh hρ hf2 hg2 hlog).2 ⟨a, b, v, w, hv, hw, hG⟩
+  have hb := (H.sd_mul_sd_eq_iff hh hρ (H.integrable_fst_sq_of_densityFG_ae_eq hv hG)
+    (H.integrable_snd_sq_of_densityFG_ae_eq hw hG) hlog).2 ⟨a, b, v, w, hv, hw, hG⟩
   rw [← hS, h0, exp_zero, mul_one, hbar_div_exp_eq] at hb
-  exact ⟨hb, by linarith⟩
+  exact ⟨hlog, hb, by linarith⟩
+
+end GaussianFrame
 
 end IsNewVariables
 
@@ -751,11 +802,12 @@ lemma gaussianDivergence_eq_zero {a b : ℝ} {v w : ℝ≥0} (hv : v ≠ 0) (hw 
 
 /-- **Proposition 5 gives Gaussian frames.** Coordinates in which `ρ_{fg}` is a product of
 Gaussians, as Greene–Shiohama provide for a positive smooth `ρ`, make the divergence vanish. -/
-theorem hasGaussianFrames_of_densityFG_eq (T : IsAdmissible ρ f g)
-    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
-    {a b : ℝ} {v w : ℝ≥0} (hv : v ≠ 0) (hw : w ≠ 0)
-    (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w) : HasGaussianFrames ρ :=
-  fun _ hε => ⟨f, g, T, hf2, hg2, (gaussianDivergence_eq_zero hv hw hG).symm ▸ hε⟩
+theorem hasGaussianFrames_of_densityFG_eq (T : IsAdmissible ρ f g) {a b : ℝ} {v w : ℝ≥0}
+    (hv : v ≠ 0) (hw : w ≠ 0) (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w) :
+    HasGaussianFrames ρ :=
+  fun _ hε => ⟨f, g, T, T.isNewVariables.integrable_fst_sq_of_densityFG_ae_eq hv hG,
+    T.isNewVariables.integrable_snd_sq_of_densityFG_ae_eq hw hG,
+    (gaussianDivergence_eq_zero hv hw hG).symm ▸ hε⟩
 
 /-- **Proposition 6, eq. (7)**, for finite entropy and from `HasGaussianFrames`:
 `inf_T U_ρ(T) = S_h[ρ]` over admissible coordinates with finite variances. -/
