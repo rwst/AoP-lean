@@ -3,10 +3,14 @@
 # See https://creativecommons.org/publicdomain/zero/1.0/
 #
 # The certified theorems of the brief, one per line; `#` starts a comment.
-ClassicalUncertaintyPrinciple.entropy_uniform  # Corollary 1
-ClassicalUncertaintyPrinciple.entropy_uniform_phaseSpace  # Corollary 1, on phase space
-ClassicalUncertaintyPrinciple.entropy_uniform_eq_zero_iff  # Corollary 1, zero entropy
-ClassicalUncertaintyPrinciple.uncertaintyPrinciple_of_lowerEntropicBound  # Theorem 2, eq. (3)
-ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_iff  # Theorem 2, eq. (3), equality
-ClassicalUncertaintyPrinciple.hbar_div_exp_mul_exp_le_sd_mul_sd  # Theorem 2, eq. (5)
-ClassicalUncertaintyPrinciple.exists_not_lowerEntropicBound  # Remark: CUP does not imply ZENT
+ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq  # Proposition 3, eq. (4)
+ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_of_entropy_densityFG_eq_zero  # Proposition 5, its conclusion given the coordinates
+ClassicalUncertaintyPrinciple.entropy_le_coordinateUncertainty  # Proposition 6, U = S + D >= S
+ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty  # Proposition 6, eq. (7), from HasGaussianFrames
+ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions  # Theorem 8
+ClassicalUncertaintyPrinciple.generalizedUncertaintyRelation_of_lowerEntropicBound  # Theorem 9, GCUR
+ClassicalUncertaintyPrinciple.uncertaintyRelation_of_lowerEntropicBound  # Theorem 9, CUR
+ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_mul_exp_mul_exp  # Theorem 9, eq. (10)
+ClassicalUncertaintyPrinciple.exists_uncertaintyRelation_not_lowerEntropicBound  # Theorem 11
+ClassicalUncertaintyPrinciple.lowerEntropicBound_of_generalizedUncertaintyRelation  # Theorem 12, from HasGaussianFrames
+ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation  # Theorem 12, from HasGaussianFrames

@@ -84,10 +84,11 @@ srcDir = "briefs/BornRuleEntropy/comparator"
 name = "SolutionBornRuleEntropy"
 srcDir = "briefs/BornRuleEntropy/comparator"
 
-# Technical brief: classical uncertainty principle.
+# Technical brief: classical uncertainty relation.
 [[lean_lib]]
 name = "ClassicalUncertaintyPrinciple"
 srcDir = "briefs/ClassicalUncertaintyPrinciple"
+globs = ["ClassicalUncertaintyPrinciple.*"]
 
 # Its comparator lane (not default targets; see COMPARATOR.md).
 [[lean_lib]]

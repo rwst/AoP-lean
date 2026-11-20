@@ -11,26 +11,32 @@ public import ForMathlib.InformationTheory.Subadditivity
 public import ForMathlib.Probability.Distributions.Gaussian.Real
 
 /-!
-# Classical uncertainty principle
+# Classical uncertainty relation
 
 ## i. Overview
 
-Formalization of the technical brief *Classical uncertainty principle* (G. Carcassi,
-Assumptions of Physics). A statistical ensemble on a measure space `(X, μ)` is a probability
-density `ρ` with finite entropy, and its entropy relative to a cell of size `c` is the
-Gibbs/Shannon entropy `S_c[ρ] = -∫ ρ log (c ρ) dμ`, in nats. On the phase space `ℝ²` of one
-degree of freedom (DOF) the cell is `h`, and `ħ = h / 2π`.
+Formalization of the technical brief *Classical uncertainty relation* (G. Carcassi,
+Assumptions of Physics; its first version was titled *Classical uncertainty principle*). This
+file holds the Gaussian bound, Theorem 9 and the material of the first version;
+`ClassicalUncertaintyPrinciple.Equivalence` holds the exact identity of Proposition 3, the
+conditions CUR and GCUR, and Theorems 8, 9, 11 and 12.
 
-**Corollary 1.** The uniform distribution on `U` has entropy `log (μ(U) / c)`, which is zero
-exactly when `μ(U) = c`; for `n` DOFs, `c = hⁿ`.
+A statistical ensemble on a measure space `(X, μ)` is a probability density `ρ` with finite
+entropy, and its entropy relative to a cell of size `c` is the Gibbs/Shannon entropy
+`S_c[ρ] = -∫ ρ log (c ρ) dμ`, in nats. On the phase space `ℝ²` of one degree of freedom (DOF)
+the cell is `h`, and `ħ = h / 2π`.
 
-**Theorem 2.** The lower entropic bound ZENT (`S_h[ρ] ≥ 0`) implies the classical uncertainty
-principle CUP (`σ_q σ_p ≥ ħ / e`), with equality exactly for products of Gaussians in `q` and
-`p` with `σ_q σ_p = ħ / e`. For variables `f, g` such that `(q, p) ↦ (f, g)` is injective, the
-bound becomes `σ_f σ_g ≥ (ħ / e) e^{E[log |{f, g}|]}` (eq. (5)).
+**The uniform ensemble** (the remark after condition CST). The uniform distribution on `U`
+has entropy `log (μ(U) / c)`, which is zero exactly when `μ(U) = c`; for `n` DOFs, `c = hⁿ`.
 
-The brief finds the Gaussian as a critical point of a Lagrangian, which does not show that it
-is a minimum. Here the minimality comes from Gibbs' inequality instead: for any density `G`,
+**Theorem 9.** The lower entropic bound ZENT (`S_h[ρ] ≥ 0`) implies the canonical classical
+uncertainty relation CUR (`σ_q σ_p ≥ ħ / e`), with equality exactly for products of Gaussians in
+`q` and `p` with `σ_q σ_p = ħ / e`. For variables `f, g` such that `(q, p) ↦ (f, g)` is
+injective, the bound becomes `σ_f σ_g ≥ (ħ / e) e^{E[log |{f, g}|]}` (condition GCUR).
+
+The brief's first version found the Gaussian as a critical point of a Lagrangian, which does not
+show that it is a minimum; the revised brief uses the KL divergence to a Gaussian. Here the
+minimality comes from Gibbs' inequality: for any density `G`,
 `-∫ ρ log ρ ≤ -∫ ρ log G`. With `G` the product of Gaussians in `(f, g)` having the means and
 variances of `f, g` under `ρ`, pulled back to phase space with the Jacobian `|{f, g}|`, the
 right side is `log (2π e σ_f σ_g) - E[log |{f, g}|]`. So for every ensemble
@@ -38,14 +44,14 @@ right side is `log (2π e σ_f σ_g) - E[log |{f, g}|]`. So for every ensemble
   `σ_f σ_g ≥ (ħ / e) e^{S_h[ρ] + E[log |{f, g}|]}`,
 
 and for `(f, g) = (q, p)` equality holds exactly when `ρ` is that product of Gaussians. ZENT
-then gives Theorem 2. The final remark of the brief, that CUP does not imply ZENT, holds too:
-a uniform distribution on two small squares far apart has negative entropy and large spread.
+then gives Theorem 9. That CUR does not imply ZENT (Theorem 11) has a second example here: a
+uniform distribution on two small squares far apart has negative entropy and large spread.
 
-The brief's own route is formalized as well. Along the variations `ρ (1 + t φ)`, `φ` bounded,
-the first variation of its Lagrangian `σ_q² σ_p² + λ₁ (∫ ρ - 1) + λ₂ (S_h[ρ] - S)` is the
-brief's `δL = ∫ δρ [(q - μ_q)² σ_p² + σ_q² (p - μ_p)² + λ₁ - λ₂ (log (h ρ) + 1)]`, with
-`δρ = ρ φ`. For `ρ > 0` a.e. it vanishes in every direction exactly when `ρ` is the product
-of Gaussians with the means and variances of `ρ`, `λ₂ = -2 σ_q² σ_p²` and
+The Lagrange computation of the brief's first version is formalized as well. Along the
+variations `ρ (1 + t φ)`, `φ` bounded, the first variation of its Lagrangian
+`σ_q² σ_p² + λ₁ (∫ ρ - 1) + λ₂ (S_h[ρ] - S)` is
+`δL = ∫ δρ [(q - μ_q)² σ_p² + σ_q² (p - μ_p)² + λ₁ - λ₂ (log (h ρ) + 1)]`, with `δρ = ρ φ`.
+For `ρ > 0` a.e. it vanishes in every direction exactly when `ρ` is the product of Gaussians with the means and variances of `ρ`, `λ₂ = -2 σ_q² σ_p²` and
 `λ₁ = λ₂ (1 + log (ħ / (σ_q σ_p)))`. So the Gaussians are the only critical points; that
 they minimize comes from Gibbs' inequality. The variations `ρ φ` vanish where `ρ` does, so
 `ρ > 0` must be assumed: the entropy has no derivative in directions that move mass to
@@ -55,25 +61,27 @@ For several DOFs, on the phase space `(ℝ²)ⁿ⁺¹`, ZENT is a condition on t
 DOF `i`, the integral of `ρ` over the other DOFs. The marginal is again an ensemble: finite
 second moments of the other DOFs give it finite entropy, by Gibbs' inequality against a
 Gaussian in the integrated variables. Its means and variances are those of `qᵢ, pᵢ` under `ρ`,
-so Theorem 2 for one DOF applies to each `ρᵢ`.
+so Theorem 9 for one DOF applies to each `ρᵢ`.
 
-The brief derives eq. (5) through the density `ρ_{fg}` of `(f, g)`, with
+The brief passes to the density `ρ_{fg}` of `(f, g)` (Proposition 3), with
 `ρ_{qp} = ρ_{fg}(f, g) |{f, g}|`. This route is formalized too: `ρ_{fg}` is `ρ / |{f, g}|` on
 the range of `(f, g)` and `0` off it, and the change-of-variables formula gives
-`S_h[ρ_{fg}] = S_h[ρ] + E[log |{f, g}|]`. The bound for one DOF, applied to `ρ_{fg}`, gives
-eq. (5) and its equality case: under ZENT, equality holds exactly when `S_h[ρ] = 0` and `ρ_{fg}`
-is a product of Gaussians in `(f, g)`, which forces `(f, g)` to be onto up to a null set.
+`S_h[ρ_{fg}] = S_h[ρ] + E[log |{f, g}|]` (Rioul–Costa, Lemma 2). The bound for one DOF,
+applied to `ρ_{fg}`, gives GCUR and its equality case: under ZENT, equality holds exactly when
+`S_h[ρ] = 0` and `ρ_{fg}` is a product of Gaussians in `(f, g)`, which forces `(f, g)` to be
+onto up to a null set.
 
-The brief concludes that the quantum uncertainty principle, too, follows from an entropic lower
-bound, since pure states have zero entropy. The von Neumann entropy cannot carry this: it is
-zero for every pure state whatever its `σ_q σ_p`. Two quantum entropic bounds do give exactly
-`σ_q σ_p ≥ ħ / 2` through the brief's Gaussian bound; both are theorems of quantum mechanics
-resting on the sharp Hausdorff–Young inequality, and are taken here as hypotheses.
+The brief concludes that the lower bound is already present in quantum mechanics, where pure
+states have zero entropy and mixed states non-negative entropy. The von Neumann entropy cannot
+carry the uncertainty relation: it is zero for every pure state whatever its `σ_q σ_p`. Two
+quantum entropic bounds do give exactly `σ_q σ_p ≥ ħ / 2` through the brief's Gaussian bound;
+both are theorems of quantum mechanics resting on the sharp Hausdorff–Young inequality, and
+are taken here as hypotheses.
 - The bound of Białynicki-Birula and Mycielski (1975) on the densities `ρ_q = |ψ|²`,
   `ρ_p = |ψ̂|²`: `S_1[ρ_q] + S_1[ρ_p] ≥ log (π e ħ)`. The Gaussian bound for one DOF, applied to
   the product `ρ_q ρ_p`, gives `σ_q σ_p ≥ e^{S_1[ρ_q] + S_1[ρ_p]} / (2π e)`, hence Heisenberg,
   with equality exactly for Gaussians. Classically, ZENT and the subadditivity of the entropy
-  give only `S_1[ρ_q] + S_1[ρ_p] ≥ log h = log (2π ħ)`, which by the same bound is CUP again;
+  give only `S_1[ρ_q] + S_1[ρ_p] ≥ log h = log (2π ħ)`, which by the same bound is CUR again;
   the two differ by `log (e / 2)`, the ratio of `ħ / 2` to `ħ / e`.
 - Lieb's bound (1978) on the Wehrl entropy, the entropy `S_h` of the Husimi function: it is at
   least `1`, not `0`. For coherent states squeezed by `s`, the Husimi function has the variances
@@ -85,19 +93,19 @@ resting on the sharp Hausdorff–Young inequality, and are taken here as hypothe
 ## ii. Key results
 
 - `ClassicalUncertaintyPrinciple.entropy_uniform`,
-  `ClassicalUncertaintyPrinciple.entropy_uniform_eq_zero_iff`: Corollary 1.
+  `ClassicalUncertaintyPrinciple.entropy_uniform_eq_zero_iff`: the uniform ensemble.
 - `ClassicalUncertaintyPrinciple.LowerEntropicBound`,
-  `ClassicalUncertaintyPrinciple.UncertaintyPrinciple`: the conditions ZENT and CUP.
+  `ClassicalUncertaintyPrinciple.UncertaintyPrinciple`: ZENT and the inequality of CUR.
 - `ClassicalUncertaintyPrinciple.Hyp.hbar_div_exp_mul_exp_le`: the Gaussian bound
   `σ_f σ_g ≥ (ħ/e) e^{S + E[log J]}` on any measure space, for any Gaussian weight `J`.
 - `ClassicalUncertaintyPrinciple.hbar_div_exp_mul_exp_entropy_le`: `σ_q σ_p ≥ (ħ/e) e^S`.
 - `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_iff`: equality in it holds exactly for Gaussians.
 - `ClassicalUncertaintyPrinciple.uncertaintyPrinciple_of_lowerEntropicBound`,
-  `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_iff`: Theorem 2, eq. (3).
-- `ClassicalUncertaintyPrinciple.det_prod`: eq. (4), the Poisson bracket is the Jacobian.
+  `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_iff`: Theorem 9 for CUR.
+- `ClassicalUncertaintyPrinciple.det_prod`: the Poisson bracket is the Jacobian, `J_T = |{f, g}|`.
 - `ClassicalUncertaintyPrinciple.hbar_div_exp_mul_exp_entropy_add_le`,
-  `ClassicalUncertaintyPrinciple.hbar_div_exp_mul_exp_le_sd_mul_sd`: Theorem 2, eq. (5).
-- `ClassicalUncertaintyPrinciple.exists_not_lowerEntropicBound`: the final remark.
+  `ClassicalUncertaintyPrinciple.hbar_div_exp_mul_exp_le_sd_mul_sd`: Theorem 9 for GCUR.
+- `ClassicalUncertaintyPrinciple.exists_not_lowerEntropicBound`: CUR does not imply ZENT.
 - `ClassicalUncertaintyPrinciple.hasDerivAt_lagrangian`: the first variation `δL`.
 - `ClassicalUncertaintyPrinciple.hasDerivAt_lagrangian_zero_iff`: its critical points are
   exactly the products of Gaussians.
@@ -105,14 +113,14 @@ resting on the sharp Hausdorff–Young inequality, and are taken here as hypothe
   `σ_q σ_p = (ħ / e) e^{S_h[ρ]}`.
 - `ClassicalUncertaintyPrinciple.isEnsemble_marginal`: the marginal of a DOF is an ensemble.
 - `ClassicalUncertaintyPrinciple.uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace`,
-  `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_iff_marginal`: Theorem 2 for several
+  `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_iff_marginal`: Theorem 9 for several
   DOFs.
 - `ClassicalUncertaintyPrinciple.IsNewVariables.entropy_densityFG`:
   `S_h[ρ_{fg}] = S_h[ρ] + E[log |{f, g}|]`.
-- `ClassicalUncertaintyPrinciple.IsNewVariables.hbar_div_exp_mul_exp_le_sd_mul_sd`: eq. (5),
-  by the brief's route.
+- `ClassicalUncertaintyPrinciple.IsNewVariables.hbar_div_exp_mul_exp_le_sd_mul_sd`: GCUR,
+  through `ρ_{fg}`.
 - `ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq_hbar_div_exp_mul_exp_iff`,
-  `ClassicalUncertaintyPrinciple.volume_compl_range_eq_zero`: the equality case of eq. (5).
+  `ClassicalUncertaintyPrinciple.volume_compl_range_eq_zero`: the equality case of GCUR.
 - `ClassicalUncertaintyPrinciple.exp_entropy_add_div_le_sd_mul_sd`,
   `ClassicalUncertaintyPrinciple.sd_mul_sd_eq_exp_entropy_add_div_iff`: the Gaussian bound for
   two densities on `ℝ` and its equality case.
@@ -121,7 +129,7 @@ resting on the sharp Hausdorff–Young inequality, and are taken here as hypothe
   Białynicki-Birula and Mycielski, with its equality case.
 - `ClassicalUncertaintyPrinciple.log_le_entropy_marginalFst_add_entropy_marginalSnd`,
   `ClassicalUncertaintyPrinciple.uncertaintyPrinciple_of_lowerEntropicBound_marginal`: the
-  classical counterpart, and eq. (3) by the marginal route.
+  classical counterpart, and CUR by the marginal route.
 - `ClassicalUncertaintyPrinciple.heisenberg_of_wehrlBound`,
   `ClassicalUncertaintyPrinciple.entropy_eq_one_of_wehrlBound`: Heisenberg from Lieb's bound on
   the Wehrl entropy, with its equality case.
@@ -130,10 +138,10 @@ resting on the sharp Hausdorff–Young inequality, and are taken here as hypothe
 
 - A. Ensembles, entropy and moments
 - B. Gibbs' inequality against Gaussians
-- C. Canonical variables: Theorem 2, eq. (3)
-- D. Non-conjugate variables: Theorem 2, eq. (5)
-- E. CUP does not imply ZENT
-- F. The Lagrange computation
+- C. Canonical variables: Theorem 9 for CUR
+- D. Non-conjugate variables: Theorem 9 for GCUR
+- E. CUR does not imply ZENT
+- F. The Lagrange computation (the brief's first version)
 - G. Several degrees of freedom
 - H. Entropy in new variables
 - I. The quantum case
@@ -234,7 +242,7 @@ lemma isEnsemble_uniform (hU : MeasurableSet U) (hpos : 0 < μ.real U) :
     rw [h]
     exact (integrableOn_const hfin).integrable_indicator hU
 
-/-- **Corollary 1.** The uniform distribution on `U` has entropy `log (μ(U) / c)`. -/
+/-- **The uniform ensemble.** The uniform distribution on `U` has entropy `log (μ(U) / c)`. -/
 theorem entropy_uniform (hU : MeasurableSet U) (hpos : 0 < μ.real U) (hc : 0 < c) :
     entropy c (uniform μ U) μ = log (μ.real U / c) := by
   have h : (fun x => -(uniform μ U x * log (c * uniform μ U x))) =
@@ -246,7 +254,7 @@ theorem entropy_uniform (hU : MeasurableSet U) (hpos : 0 < μ.real U) (hc : 0 < 
   field_simp
   ring
 
-/-- **Corollary 1.** The uniform distribution on `U` has zero entropy iff `μ(U) = c`. -/
+/-- **The uniform ensemble.** The uniform distribution on `U` has zero entropy iff `μ(U) = c`. -/
 theorem entropy_uniform_eq_zero_iff (hU : MeasurableSet U) (hpos : 0 < μ.real U)
     (hc : 0 < c) : entropy c (uniform μ U) μ = 0 ↔ μ.real U = c := by
   rw [entropy_uniform hU hpos hc]
@@ -260,7 +268,7 @@ theorem entropy_uniform_eq_zero_iff (hU : MeasurableSet U) (hpos : 0 < μ.real U
   · intro h
     rw [h, div_self hc.ne', log_one]
 
-/-- Corollary 1 for `n` DOFs: on the phase space `(ℝ²)ⁿ` the cell is `hⁿ`. -/
+/-- The uniform ensemble for `n` DOFs: on the phase space `(ℝ²)ⁿ` the cell is `hⁿ`. -/
 theorem entropy_uniform_phaseSpace {n : ℕ} {h : ℝ} {U : Set (Fin n → ℝ × ℝ)}
     (hU : MeasurableSet U) (hpos : 0 < volume.real U) (hh : 0 < h) :
     entropy (h ^ n) (uniform volume U) = log (volume.real U / h ^ n) :=
@@ -455,7 +463,7 @@ theorem Hyp.hbar_div_exp_mul_exp_le (H : Hyp μ ρ f g J) (hh : 0 < h) :
 
 end Gibbs
 
-/-! ### C. Canonical variables: Theorem 2, eq. (3) -/
+/-! ### C. Canonical variables: Theorem 9 for CUR -/
 
 section Canonical
 
@@ -563,11 +571,12 @@ theorem sd_mul_sd_eq_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
 /-- Condition ZENT (lower entropic bound) for one DOF: `S_h[ρ] ≥ 0`. -/
 def LowerEntropicBound (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop := 0 ≤ entropy h ρ
 
-/-- Condition CUP (classical uncertainty principle) for one DOF: `σ_q σ_p ≥ ħ / e`. -/
+/-- The inequality of condition CUR (classical uncertainty relation) for one DOF:
+`σ_q σ_p ≥ ħ / e`. -/
 def UncertaintyPrinciple (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop :=
   hbar h / exp 1 ≤ sd ρ Prod.fst * sd ρ Prod.snd
 
-/-- **Theorem 2, eq. (3).** ZENT implies CUP. -/
+/-- **Theorem 9, eq. (10).** ZENT implies the inequality of CUR. -/
 theorem uncertaintyPrinciple_of_lowerEntropicBound (hh : 0 < h) (hρ : IsEnsemble ρ)
     (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
     (hZ : LowerEntropicBound h ρ) : UncertaintyPrinciple h ρ :=
@@ -576,7 +585,7 @@ theorem uncertaintyPrinciple_of_lowerEntropicBound (hh : 0 < h) (hρ : IsEnsembl
       mul_le_mul_of_nonneg_left (one_le_exp hZ) (hbar_div_exp_pos hh).le
     _ ≤ _ := hbar_div_exp_mul_exp_entropy_le hh hρ hq hp
 
-/-- **Theorem 2, equality case.** Under ZENT, `σ_q σ_p = ħ / e` exactly for products of
+/-- **Theorem 9, equality case of CUR.** Under ZENT, `σ_q σ_p = ħ / e` exactly for products of
 Gaussians in `q` and `p` with `σ_q σ_p = ħ / e`. -/
 theorem sd_mul_sd_eq_hbar_div_exp_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
     (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
@@ -602,7 +611,7 @@ theorem sd_mul_sd_eq_hbar_div_exp_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
 
 end Canonical
 
-/-! ### D. Non-conjugate variables: Theorem 2, eq. (5) -/
+/-! ### D. Non-conjugate variables: Theorem 9 for GCUR -/
 
 section NonConjugate
 
@@ -619,7 +628,7 @@ def poissonBracket (f g : ℝ × ℝ → ℝ) (x : ℝ × ℝ) : ℝ :=
 lemma poissonBracket_fst_snd (x : ℝ × ℝ) : poissonBracket Prod.fst Prod.snd x = 1 := by
   simp [poissonBracket, fderiv_fst, fderiv_snd]
 
-/-- Eq. (4): the Poisson bracket is the Jacobian determinant of `(q, p) ↦ (f, g)`. -/
+/-- The Poisson bracket is the Jacobian determinant of `(q, p) ↦ (f, g)`. -/
 lemma det_prod (f' g' : ℝ × ℝ →L[ℝ] ℝ) :
     (f'.prod g').det = f' (1, 0) * g' (0, 1) - f' (0, 1) * g' (1, 0) := by
   rw [ContinuousLinearMap.det, ← LinearMap.det_toMatrix (Module.Basis.finTwoProd ℝ),
@@ -646,7 +655,7 @@ lemma isGaussWeight_poissonBracket (hf : Differentiable ℝ f) (hg : Differentia
   exact setIntegral_le_integral (integrable_gaussProd a b v w)
     (ae_of_all _ fun y => (gaussProd_pos hv hw y).le)
 
-/-- **Theorem 2, eq. (5), for any ensemble.**
+/-- **The Gaussian bound in new variables, for any ensemble.**
 `σ_f σ_g ≥ (ħ / e) e^{S_h[ρ] + E[log |{f, g}|]}`. -/
 theorem hbar_div_exp_mul_exp_entropy_add_le (hh : 0 < h) (hf : Differentiable ℝ f)
     (hg : Differentiable ℝ g) (hinj : Function.Injective fun x => (f x, g x))
@@ -658,7 +667,7 @@ theorem hbar_div_exp_mul_exp_entropy_add_le (hh : 0 < h) (hf : Differentiable �
   Hyp.hbar_div_exp_mul_exp_le ⟨hρ, hf.continuous.measurable, hg.continuous.measurable, hf2, hg2,
     fun x => abs_pos.2 (hfg x), hlog, isGaussWeight_poissonBracket hf hg hinj⟩ hh
 
-/-- **Theorem 2, eq. (5).** Under ZENT, `σ_f σ_g ≥ (ħ / e) e^{E[log |{f, g}|]}`. -/
+/-- **Theorem 9, GCUR.** Under ZENT, `σ_f σ_g ≥ (ħ / e) e^{E[log |{f, g}|]}`. -/
 theorem hbar_div_exp_mul_exp_le_sd_mul_sd (hh : 0 < h) (hf : Differentiable ℝ f)
     (hg : Differentiable ℝ g) (hinj : Function.Injective fun x => (f x, g x))
     (hfg : ∀ x, poissonBracket f g x ≠ 0) (hρ : IsEnsemble ρ)
@@ -672,7 +681,7 @@ theorem hbar_div_exp_mul_exp_le_sd_mul_sd (hh : 0 < h) (hf : Differentiable ℝ 
 
 end NonConjugate
 
-/-! ### E. CUP does not imply ZENT -/
+/-! ### E. CUR does not imply ZENT -/
 
 section Converse
 
@@ -731,7 +740,7 @@ lemma integrable_mul_uniform {K : Set (ℝ × ℝ)} (hK : IsCompact K) (hKm : Me
   rw [h]
   exact ((hψ.mul continuous_const).continuousOn.integrableOn_compact hK).integrable_indicator hKm
 
-/-- **CUP does not imply ZENT.** The uniform distribution on the squares `[L, L + ε]²` and
+/-- **CUR does not imply ZENT.** The uniform distribution on the squares `[L, L + ε]²` and
 `[-L - ε, -L]²` with `ε = √h / 2` and `L = √h` has entropy `log ½ < 0`, while
 `σ_q σ_p ≥ h / 2 ≥ ħ / e`. -/
 theorem exists_not_lowerEntropicBound {h : ℝ} (hh : 0 < h) :
@@ -934,12 +943,12 @@ section Lagrange
 
 variable {ρ φ : ℝ × ℝ → ℝ} {h l₁ l₂ S C : ℝ}
 
-/-- The brief's Lagrangian `L = σ_q² σ_p² + λ₁ (∫ ρ - 1) + λ₂ (S_h[ρ] - S)`, for multipliers
-`λ₁ = l₁`, `λ₂ = l₂`. -/
+/-- The Lagrangian of the brief's first version,
+`L = σ_q² σ_p² + λ₁ (∫ ρ - 1) + λ₂ (S_h[ρ] - S)`, for multipliers `λ₁ = l₁`, `λ₂ = l₂`. -/
 def lagrangian (h l₁ l₂ S : ℝ) (ρ : ℝ × ℝ → ℝ) : ℝ :=
   var ρ Prod.fst * var ρ Prod.snd + l₁ * ((∫ x, ρ x) - 1) + l₂ * (entropy h ρ - S)
 
-/-- The bracket of the brief's first variation, `δL = ∫ δρ · eulerLagrange`:
+/-- The bracket of the first variation, `δL = ∫ δρ · eulerLagrange`:
 `(q - μ_q)² σ_p² + σ_q² (p - μ_p)² + λ₁ - λ₂ (log (h ρ) + 1)`. -/
 def eulerLagrange (h l₁ l₂ : ℝ) (ρ : ℝ × ℝ → ℝ) (x : ℝ × ℝ) : ℝ :=
   (x.1 - mean ρ Prod.fst) ^ 2 * var ρ Prod.snd + var ρ Prod.fst * (x.2 - mean ρ Prod.snd) ^ 2 +
@@ -1154,7 +1163,7 @@ theorem hasDerivAt_lagrangian_zero_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
       show sd ρ Prod.fst volume = √v from rfl, show sd ρ Prod.snd volume = √w from rfl]
     ring
 
-/-- **The brief's final line.** At a critical point of the Lagrangian,
+/-- **The first version's final line.** At a critical point of the Lagrangian,
 `σ_q σ_p = (ħ / e) e^{S_h[ρ]}`, i.e. `S_h[ρ] = log (2π e σ_q σ_p / h)`. -/
 theorem sd_mul_sd_eq_of_hasDerivAt_lagrangian (hh : 0 < h) (hρ : IsEnsemble ρ)
     (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
@@ -1282,11 +1291,12 @@ lemma sd_marginal (hρ : IsEnsemble ρ) (hu : Measurable u) (i : Fin (n + 1))
 def LowerEntropicBoundPhaseSpace (h : ℝ) (ρ : (Fin (n + 1) → ℝ × ℝ) → ℝ) : Prop :=
   ∀ i, LowerEntropicBound h (marginal ρ i)
 
-/-- Condition CUP on the phase space `(ℝ²)ⁿ⁺¹`: `σ_{qᵢ} σ_{pᵢ} ≥ ħ / e` for every DOF `i`. -/
+/-- The inequality of CUR on the phase space `(ℝ²)ⁿ⁺¹`: `σ_{qᵢ} σ_{pᵢ} ≥ ħ / e` for every
+DOF `i`. -/
 def UncertaintyPrinciplePhaseSpace (h : ℝ) (ρ : (Fin (n + 1) → ℝ × ℝ) → ℝ) : Prop :=
   ∀ i, hbar h / exp 1 ≤ sd ρ (fun x => (x i).1) * sd ρ fun x => (x i).2
 
-/-- **Theorem 2 for `n + 1` DOFs.** ZENT implies CUP. -/
+/-- **Theorem 9 for `n + 1` DOFs.** ZENT implies the inequality of CUR. -/
 theorem uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace (hh : 0 < h)
     (hρ : IsEnsemble ρ) (hq : ∀ j, Integrable fun x => (x j).1 ^ 2 * ρ x)
     (hp : ∀ j, Integrable fun x => (x j).2 ^ 2 * ρ x) (hZ : LowerEntropicBoundPhaseSpace h ρ) :
@@ -1297,7 +1307,7 @@ theorem uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace (hh : 0 <
   rwa [UncertaintyPrinciple, sd_marginal hρ measurable_fst i (hq i),
     sd_marginal hρ measurable_snd i (hp i)] at this
 
-/-- **Theorem 2 for `n + 1` DOFs, equality case.** Under ZENT for the DOF `i`,
+/-- **Theorem 9 for `n + 1` DOFs, equality case.** Under ZENT for the DOF `i`,
 `σ_{qᵢ} σ_{pᵢ} = ħ / e` exactly when its marginal is a product of Gaussians in `qᵢ` and `pᵢ`
 with `σ_{qᵢ} σ_{pᵢ} = ħ / e`. -/
 theorem sd_mul_sd_eq_hbar_div_exp_iff_marginal (hh : 0 < h) (hρ : IsEnsemble ρ)
@@ -1407,7 +1417,7 @@ lemma sd_densityFG_snd : sd (densityFG f g ρ) Prod.snd = sd ρ g := by
   rw [sd, sd, var, var, H.mean_densityFG_snd]
   exact congrArg _ this
 
-/-- **Theorem 2, eq. (5), the brief's route.** The Gaussian bound for `ρ_{fg}`:
+/-- **The Gaussian bound for `ρ_{fg}`**, the brief's route:
 `σ_f σ_g ≥ (ħ / e) e^{S_h[ρ_{fg}]}`. -/
 theorem hbar_div_exp_mul_exp_entropy_densityFG_le (hh : 0 < h) (hρ : IsEnsemble ρ)
     (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
@@ -1426,7 +1436,7 @@ theorem integral_mul_log_le_entropy_densityFG (hh : 0 < h) (hρ : IsEnsemble ρ)
   rw [H.entropy_densityFG hh hρ hlog]
   exact le_add_of_nonneg_left hZ
 
-/-- **Theorem 2, eq. (5), the brief's route.** Under ZENT,
+/-- **Theorem 9, GCUR, the brief's route.** Under ZENT,
 `σ_f σ_g ≥ (ħ / e) e^{E[log |{f, g}|]}`. -/
 theorem hbar_div_exp_mul_exp_le_sd_mul_sd (hh : 0 < h) (hρ : IsEnsemble ρ)
     (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
@@ -1450,7 +1460,7 @@ theorem sd_mul_sd_eq_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
     ((H.integrable_mul_densityFG_iff (φ := fun u => u.1 ^ 2)).2 hf2)
     ((H.integrable_mul_densityFG_iff (φ := fun u => u.2 ^ 2)).2 hg2)
 
-/-- **Theorem 2, eq. (5), equality case.** Under ZENT,
+/-- **Theorem 9, equality case of GCUR.** Under ZENT,
 `σ_f σ_g = (ħ / e) e^{E[log |{f, g}|]}` exactly when `S_h[ρ] = 0` and `ρ_{fg}` is a product of
 Gaussians in `(f, g)`. Then `(f, g)` is onto up to a null set (`volume_compl_range_eq_zero`). -/
 theorem sd_mul_sd_eq_hbar_div_exp_mul_exp_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
@@ -1810,7 +1820,7 @@ theorem log_le_entropy_marginalFst_add_entropy_marginalSnd (hh : 0 < h) (hρ : I
   simp only [marginalFst, marginalSnd] at hsub ⊢
   linarith
 
-/-- **Theorem 2, eq. (3), by the marginal route.** ZENT implies CUP through
+/-- **Theorem 9 for CUR, by the marginal route.** ZENT implies the inequality of CUR through
 `S_1[ρ_q] + S_1[ρ_p] ≥ log h` and the Gaussian bound for two densities on `ℝ`. -/
 theorem uncertaintyPrinciple_of_lowerEntropicBound_marginal (hh : 0 < h) (hρ : IsEnsemble ρ)
     (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)

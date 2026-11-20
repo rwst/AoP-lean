@@ -5,10 +5,10 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import ClassicalUncertaintyPrinciple
+public import ClassicalUncertaintyPrinciple.Equivalence
 
 /-!
-# Classical uncertainty principle, re-exported for `lake comparator`
+# Classical uncertainty relation, re-exported for `lake comparator`
 
 `lake comparator` compares the theorems named in `comparator.json` between this module's
 environment and `ChallengeClassicalUncertaintyPrinciple.lean`'s, constant by constant over the

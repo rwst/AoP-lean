@@ -6,7 +6,9 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import Mathlib.MeasureTheory.Function.Jacobian
+public import Mathlib.Analysis.Calculus.ParametricIntegral
+public import Mathlib.MeasureTheory.Integral.Prod
 public import Mathlib.Probability.Distributions.Gaussian.Real
 
 /-!
@@ -19,6 +21,19 @@ states the theorems with `sorry`. Each part opens by clearing Lean's auxiliary-p
 module boundary does. See `COMPARATOR.md`.
 -/
 
+-- ForMathlib.InformationTheory.ChangeOfVariables
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Real Set Function
+public section
+namespace MeasureTheory
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {Φ : E → E}
+  {Φ' : E → E →L[ℝ] E} {ρ g : E → ℝ}
+noncomputable def pushDensity (Φ : E → E) (Φ' : E → E →L[ℝ] E) (ρ : E → ℝ) : E → ℝ :=
+  Function.extend Φ (fun x => ρ x / |(Φ' x).det|) 0
+end MeasureTheory
+end
+end
 -- ClassicalUncertaintyPrinciple
 run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
 section
@@ -39,19 +54,6 @@ def var (ρ f : X → ℝ) (μ : Measure X := by volume_tac) : ℝ :=
   ∫ x, (f x - mean ρ f μ) ^ 2 * ρ x ∂μ
 def sd (ρ f : X → ℝ) (μ : Measure X := by volume_tac) : ℝ := √(var ρ f μ)
 def hbar (h : ℝ) : ℝ := h / (2 * π)
-variable {μ : Measure X} {ρ f : X → ℝ} {c : ℝ}
-def uniform (μ : Measure X) (U : Set X) : X → ℝ := U.indicator fun _ => (μ.real U)⁻¹
-variable {U : Set X}
-theorem entropy_uniform (hU : MeasurableSet U) (hpos : 0 < μ.real U) (hc : 0 < c) :
-    entropy c (uniform μ U) μ = log (μ.real U / c) := by
-  sorry
-theorem entropy_uniform_eq_zero_iff (hU : MeasurableSet U) (hpos : 0 < μ.real U)
-    (hc : 0 < c) : entropy c (uniform μ U) μ = 0 ↔ μ.real U = c := by
-  sorry
-theorem entropy_uniform_phaseSpace {n : ℕ} {h : ℝ} {U : Set (Fin n → ℝ × ℝ)}
-    (hU : MeasurableSet U) (hpos : 0 < volume.real U) (hh : 0 < h) :
-    entropy (h ^ n) (uniform volume U) = log (volume.real U / h ^ n) := by
-  sorry
 end Ensembles
 section Gibbs
 variable {X : Type*} [MeasurableSpace X] {μ : Measure X} {ρ f g J : X → ℝ}
@@ -61,41 +63,145 @@ end Gibbs
 section Canonical
 variable {ρ : ℝ × ℝ → ℝ} {h : ℝ} {a b : ℝ} {v w : ℝ≥0}
 def LowerEntropicBound (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop := 0 ≤ entropy h ρ
-def UncertaintyPrinciple (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop :=
-  hbar h / exp 1 ≤ sd ρ Prod.fst * sd ρ Prod.snd
-theorem uncertaintyPrinciple_of_lowerEntropicBound (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
-    (hZ : LowerEntropicBound h ρ) : UncertaintyPrinciple h ρ := by
-  sorry
-theorem sd_mul_sd_eq_hbar_div_exp_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
-    (hZ : LowerEntropicBound h ρ) :
-    sd ρ Prod.fst * sd ρ Prod.snd = hbar h / exp 1 ↔
-      ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧ √(v : ℝ) * √(w : ℝ) = hbar h / exp 1 ∧
-        ρ =ᵐ[volume] gaussProd a v b w := by
-  sorry
 end Canonical
 section NonConjugate
 variable {ρ f g : ℝ × ℝ → ℝ} {h : ℝ}
 def poissonBracket (f g : ℝ × ℝ → ℝ) (x : ℝ × ℝ) : ℝ :=
   fderiv ℝ f x (1, 0) * fderiv ℝ g x (0, 1) - fderiv ℝ f x (0, 1) * fderiv ℝ g x (1, 0)
-theorem hbar_div_exp_mul_exp_le_sd_mul_sd (hh : 0 < h) (hf : Differentiable ℝ f)
-    (hg : Differentiable ℝ g) (hinj : Function.Injective fun x => (f x, g x))
-    (hfg : ∀ x, poissonBracket f g x ≠ 0) (hρ : IsEnsemble ρ)
-    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
-    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|)
-    (hZ : LowerEntropicBound h ρ) :
-    hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|) ≤ sd ρ f * sd ρ g := by
-  sorry
 end NonConjugate
-section Converse
-variable {X : Type*} [MeasurableSpace X] {μ : Measure X} {A B U : Set X} {φ : X → ℝ} {L : ℝ}
-theorem exists_not_lowerEntropicBound {h : ℝ} (hh : 0 < h) :
-    ∃ ρ : ℝ × ℝ → ℝ, IsEnsemble ρ ∧ (Integrable fun x => x.1 ^ 2 * ρ x) ∧
-      (Integrable fun x => x.2 ^ 2 * ρ x) ∧ UncertaintyPrinciple h ρ ∧
-        ¬ LowerEntropicBound h ρ := by
+section NewVariables
+variable {ρ f g : ℝ × ℝ → ℝ} {h : ℝ}
+structure IsNewVariables (f g : ℝ × ℝ → ℝ) : Prop where
+  differentiable_fst : Differentiable ℝ f
+  differentiable_snd : Differentiable ℝ g
+  injective : Function.Injective fun x => (f x, g x)
+  poissonBracket_ne_zero : ∀ x, poissonBracket f g x ≠ 0
+def densityFG (f g ρ : ℝ × ℝ → ℝ) : ℝ × ℝ → ℝ :=
+  pushDensity (fun x => (f x, g x)) (fun x => (fderiv ℝ f x).prod (fderiv ℝ g x)) ρ
+end NewVariables
+end ClassicalUncertaintyPrinciple
+end
+end
+-- ClassicalUncertaintyPrinciple.Equivalence
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Real MeasureTheory ProbabilityTheory Set
+open scoped NNReal
+@[expose] public noncomputable section
+namespace ClassicalUncertaintyPrinciple
+section Identity
+variable {ρ f g : ℝ × ℝ → ℝ} {h : ℝ}
+def matchedGauss (ρ : ℝ × ℝ → ℝ) : ℝ × ℝ → ℝ :=
+  gaussProd (mean ρ Prod.fst) (var ρ Prod.fst).toNNReal (mean ρ Prod.snd) (var ρ Prod.snd).toNNReal
+def gaussianDivergence (ρ : ℝ × ℝ → ℝ) : ℝ := ∫ x, ρ x * log (ρ x / matchedGauss ρ x)
+theorem sd_mul_sd_eq_hbar_div_exp_mul_exp_mul_exp (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x) :
+    sd ρ Prod.fst * sd ρ Prod.snd =
+      hbar h / exp 1 * exp (entropy h ρ) * exp (gaussianDivergence ρ) := by
   sorry
-end Converse
+namespace IsNewVariables
+variable (H : IsNewVariables f g)
+include H
+theorem sd_mul_sd_eq (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|) :
+    sd ρ f * sd ρ g = h / (2 * π * exp 1) * exp (entropy h ρ) *
+      exp (∫ x, ρ x * log |poissonBracket f g x|) * exp (gaussianDivergence (densityFG f g ρ)) := by
+  sorry
+theorem sd_mul_sd_eq_of_entropy_densityFG_eq_zero (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x)
+    (hlog : Integrable fun x => ρ x * log |poissonBracket f g x|) {a b : ℝ} {v w : ℝ≥0}
+    (hv : v ≠ 0) (hw : w ≠ 0) (hG : densityFG f g ρ =ᵐ[volume] gaussProd a v b w)
+    (h0 : entropy h (densityFG f g ρ) = 0) :
+    sd ρ f * sd ρ g = h / (2 * π * exp 1) ∧
+      entropy h ρ = -∫ x, ρ x * log |poissonBracket f g x| := by
+  sorry
+end IsNewVariables
+end Identity
+section Conditions
+variable {ρ f g : ℝ × ℝ → ℝ} {h : ℝ}
+structure IsAdmissible (ρ f g : ℝ × ℝ → ℝ) : Prop where
+  contDiff_fst : ContDiff ℝ 1 f
+  contDiff_snd : ContDiff ℝ 1 g
+  injective : Function.Injective fun x => (f x, g x)
+  poissonBracket_ne_zero : ∀ x, poissonBracket f g x ≠ 0
+  integrable_log : Integrable fun x => ρ x * log |poissonBracket f g x|
+def UncertaintyRelation (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop :=
+  hbar h / exp 1 ≤ sd ρ Prod.fst * sd ρ Prod.snd ∧
+    (sd ρ Prod.fst * sd ρ Prod.snd = hbar h / exp 1 ↔ entropy h ρ = 0 ∧
+      ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧ ρ =ᵐ[volume] gaussProd a v b w)
+def GeneralizedUncertaintyRelation (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop :=
+  ∀ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g → (Integrable fun x => f x ^ 2 * ρ x) →
+    (Integrable fun x => g x ^ 2 * ρ x) →
+    hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|) ≤ sd ρ f * sd ρ g ∧
+      (sd ρ f * sd ρ g = hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|) ↔
+        entropy h ρ = 0 ∧ ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧
+          densityFG f g ρ =ᵐ[volume] gaussProd a v b w)
+end Conditions
+section Theorem9
+variable {ρ : ℝ × ℝ → ℝ} {h : ℝ}
+theorem generalizedUncertaintyRelation_of_lowerEntropicBound (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hZ : LowerEntropicBound h ρ) : GeneralizedUncertaintyRelation h ρ := by
+  sorry
+theorem uncertaintyRelation_of_lowerEntropicBound (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x)
+    (hZ : LowerEntropicBound h ρ) : UncertaintyRelation h ρ := by
+  sorry
+end Theorem9
+section Theorem8
+variable {h : ℝ}
+theorem exists_ensemble_not_conditions (hh : 0 < h) :
+    ∃ ρ : ℝ × ℝ → ℝ, IsEnsemble ρ ∧ (Integrable fun x => x.1 ^ 2 * ρ x) ∧
+      (Integrable fun x => x.2 ^ 2 * ρ x) ∧ entropy h ρ = -log 2 ∧
+      ¬ LowerEntropicBound h ρ ∧ ¬ UncertaintyRelation h ρ ∧
+      ¬ GeneralizedUncertaintyRelation h ρ := by
+  sorry
+end Theorem8
+section Theorem11
+variable {h s k : ℝ}
+def corrWidth (h s : ℝ) : ℝ := h / (4 * π * exp 1 * s)
+def corrShear (h s : ℝ) : ℝ := 2 * √2 * corrWidth h s / s
+def corrBase (h s : ℝ) : ℝ × ℝ → ℝ :=
+  gaussProd 0 (s ^ 2).toNNReal 0 (corrWidth h s ^ 2).toNNReal
+def correlatedGaussian (h s : ℝ) (x : ℝ × ℝ) : ℝ :=
+  corrBase h s (x.1, x.2 - corrShear h s * x.1)
+theorem exists_uncertaintyRelation_not_lowerEntropicBound (hh : 0 < h) (hs : 0 < s) :
+    IsEnsemble (correlatedGaussian h s) ∧
+      (Integrable fun x => x.1 ^ 2 * correlatedGaussian h s x) ∧
+      (Integrable fun x => x.2 ^ 2 * correlatedGaussian h s x) ∧
+      sd (correlatedGaussian h s) Prod.fst * sd (correlatedGaussian h s) Prod.snd =
+        3 * h / (4 * π * exp 1) ∧
+      UncertaintyRelation h (correlatedGaussian h s) ∧
+      entropy h (correlatedGaussian h s) = -log 2 ∧
+      ¬ LowerEntropicBound h (correlatedGaussian h s) ∧
+      ¬ GeneralizedUncertaintyRelation h (correlatedGaussian h s) := by
+  sorry
+end Theorem11
+section Theorem12
+variable {ρ f g : ℝ × ℝ → ℝ} {h : ℝ}
+def coordinateUncertainty (h : ℝ) (ρ f g : ℝ × ℝ → ℝ) : ℝ :=
+  log (2 * π * exp 1 * (sd ρ f * sd ρ g) / h) - ∫ x, ρ x * log |poissonBracket f g x|
+theorem entropy_le_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) (T : IsAdmissible ρ f g)
+    (hf2 : Integrable fun x => f x ^ 2 * ρ x) (hg2 : Integrable fun x => g x ^ 2 * ρ x) :
+    coordinateUncertainty h ρ f g = entropy h ρ + gaussianDivergence (densityFG f g ρ) ∧
+      entropy h ρ ≤ coordinateUncertainty h ρ f g := by
+  sorry
+def HasGaussianFrames (ρ : ℝ × ℝ → ℝ) : Prop :=
+  ∀ ε > 0, ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (Integrable fun x => f x ^ 2 * ρ x) ∧
+    (Integrable fun x => g x ^ 2 * ρ x) ∧ gaussianDivergence (densityFG f g ρ) < ε
+theorem isGLB_coordinateUncertainty (hh : 0 < h) (hρ : IsEnsemble ρ) (hF : HasGaussianFrames ρ) :
+    IsGLB {u | ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (Integrable fun x => f x ^ 2 * ρ x) ∧
+      (Integrable fun x => g x ^ 2 * ρ x) ∧ u = coordinateUncertainty h ρ f g} (entropy h ρ) := by
+  sorry
+theorem lowerEntropicBound_of_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hF : HasGaussianFrames ρ) (hG : GeneralizedUncertaintyRelation h ρ) :
+    LowerEntropicBound h ρ := by
+  sorry
+theorem lowerEntropicBound_iff_generalizedUncertaintyRelation (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hF : HasGaussianFrames ρ) :
+    LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ := by
+  sorry
+end Theorem12
 end ClassicalUncertaintyPrinciple
 end
 end
