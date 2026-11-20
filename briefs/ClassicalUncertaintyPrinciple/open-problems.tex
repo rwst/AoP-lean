@@ -68,21 +68,59 @@ precise first.
   \begin{itemize}
   \item Proposition~5, the existence of such coordinates for a positive smooth density, which the
     brief takes from the volume-transport theorem of Greene and Shiohama. That the coordinates
-    are then admissible, with finite variances, is formalized. A Knothe--Rosenblatt map
-    (conditional distribution functions composed with the Gaussian quantile) is not a shortcut in
-    general: it is $C^1$ only if the marginal density is continuous, and a positive smooth
-    density of finite entropy can have a discontinuous marginal, e.g.\
+    are then admissible, with finite variances, is formalized. Formalizing Greene--Shiohama would
+    need Moser's argument: global flows of time-dependent vector fields with smooth dependence on
+    the initial point, Liouville's formula for their Jacobian, and an exhaustion of the plane,
+    none of which Mathlib has (it has local existence and uniqueness for ODEs only).
+
+    In the plane there is an elementary route. A Cartesian Knothe--Rosenblatt map (conditional
+    distribution functions composed with the Gaussian quantile) does not work in general: it is
+    $C^1$ only if the marginal density is continuous, and a positive smooth density of finite
+    entropy can have a discontinuous marginal, e.g.\
     $\rho(q, p) \propto e^{-q^2}\bigl((1 + p^2)^{-1} + \beta(p - 1/q)\bigr)$ for a smooth bump
     $\beta$ on $[-1, 1]$ (the second term read as $0$ at $q = 0$), whose $q$-marginal jumps at
-    $q = 0$. It is an elementary route only under extra regularity, such as derivatives of
-    $\rho$ dominated locally uniformly in the other variable.
+    $q = 0$, since mass escapes to infinity along the vertical lines. In polar coordinates
+    $(r, \theta)$ the fibres are circles, which are compact. Take $s = t = \sigma$ with
+    $\sigma^2 = h/2\pi e$, so that $G_{fg}$ is radial, and let
+    \begin{gather*}
+      M(r) = \int_{|x| \le r} \rho, \qquad m(r) = \int_0^{2\pi} \rho(r, \varphi)\,d\varphi,
+      \\
+      R(r) = \sigma\sqrt{-2\ln\bigl(1 - M(r)\bigr)}, \qquad
+      \Theta(r, \theta) = \frac{2\pi}{m(r)} \int_0^\theta \rho(r, \varphi)\,d\varphi .
+    \end{gather*}
+    The map $T(r, \theta) = (R(r), \Theta(r, \theta))$, with $T(0) = 0$, sends discs to discs of
+    the same Gaussian mass ($1 - e^{-R^2/2\sigma^2}$ is the Gaussian mass of a disc) and
+    each circle bijectively onto a circle; $\Theta - \theta$ is $2\pi$-periodic in $\theta$, so
+    $T$ is well defined across $\theta = 0$. Since $M' = r\,m$ and
+    $\partial_\theta\Theta = 2\pi\rho/m$,
+    \[
+      \det DT = R'\,\frac{R}{r}\,\partial_\theta\Theta = \frac{\rho}{G_{fg}(T)} ,
+    \]
+    so $\rho_{fg} = G_{fg}$ everywhere. It needs only $\rho > 0$ of class $C^1$: then $M$, $R$
+    and $\Theta$ are $C^1$ for $r > 0$, and $T$ is $C^1$ at the origin with
+    $DT(0) = c\,I$, $c^2 = \rho(0)/G_{fg}(0)$, because $\Theta - \theta \to 0$ and
+    $\partial_\theta\Theta \to 1$ uniformly and $R\,\partial_r\Theta \to 0$ as $r \to 0$. This
+    is the regularity Definition~2 asks for as formalized (\lean{IsAdmissible}); $T$ is smooth
+    away from the origin, but smoothness at the origin, which the brief claims, is not expected
+    for a non-radial $\rho$, and would need a local Moser correction near $0$.
+
+    Mathlib provides the polar integral (\lean{integral_comp_polarCoord_symm}), the derivative
+    of the inverse polar map (\lean{hasFDerivAt_polarCoord_symm}), and $C^n$ parametric
+    integrals (\lean{ContDiff.parametric_intervalIntegral}). The variable upper limit in
+    $\Theta$ becomes a fixed one through $\int_0^\theta = \theta\int_0^1$. Missing: the map itself, the two angle
+    charts across the branch cut of the argument, the Jacobian through the chain rule, the
+    estimates at the origin, and bijectivity from the monotonicity of $R$ and of each
+    $\Theta(r, \cdot)$.
   \item Proposition~6: approximation of a measurable density in relative entropy by positive
-    smooth ones with integrable logarithm, transport, invariance of relative entropy under
-    admissible coordinate changes, and the Gaussian moment identity
+    smooth ones with integrable logarithm, transport (the polar map above serves for each
+    positive $C^1$ approximant), invariance of relative entropy under admissible coordinate
+    changes, and the Gaussian moment identity
+    $D(\rho_{fg}\,\|\,\gamma) = D(\rho_{fg}\,\|\,G_{fg}) + D(G_{fg}\,\|\,\gamma)$, which gives
     $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$ for every product of Gaussians
     $\gamma$.
   \end{itemize}
-  None of this is in Mathlib. (Log, ``Differences from the brief''.)
+  Apart from the tools named above, none of this is in Mathlib. (Log, ``Differences from the
+  brief''.)
 \item \textbf{Extended variance and infinite entropy.} Variances are Bochner integrals and
   entropies real numbers, so the brief's extended variance
   $\inf_a E[(X - a)^2] \in [0, \infty]$ and well-defined infinite entropies are not modelled.
