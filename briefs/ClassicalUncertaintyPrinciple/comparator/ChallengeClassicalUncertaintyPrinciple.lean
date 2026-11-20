@@ -13,9 +13,8 @@ public import Mathlib.Probability.Distributions.Gaussian.Real
 public import Mathlib.Analysis.SpecialFunctions.PolarCoord
 import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.FDeriv.OfCompLeft
-import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
+import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 import Mathlib.Analysis.SpecialFunctions.Sqrt
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
 import Mathlib.Analysis.Calculus.BumpFunction.Basic
 import Mathlib.Analysis.Calculus.BumpFunction.Convolution
 import Mathlib.MeasureTheory.Function.Floor
@@ -141,9 +140,9 @@ def GeneralizedUncertaintyRelation (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop :=
 end Conditions
 section Proposition5
 variable {ρ : ℝ × ℝ → ℝ} {h : ℝ}
-theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hρ1 : ContDiff ℝ 1 ρ) (hpos : ∀ x, 0 < ρ x) :
-    ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧
+theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsemble ρ) {n : ℕ∞}
+    (hρn : ContDiff ℝ n ρ) (hn : 1 ≤ n) (hpos : ∀ x, 0 < ρ x) :
+    ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ ContDiff ℝ n f ∧ ContDiff ℝ n g ∧
       (∀ u, densityFG f g ρ u =
         gaussProd 0 (h / (2 * π * exp 1)).toNNReal 0 (h / (2 * π * exp 1)).toNNReal u) ∧
       entropy h (densityFG f g ρ) = 0 ∧

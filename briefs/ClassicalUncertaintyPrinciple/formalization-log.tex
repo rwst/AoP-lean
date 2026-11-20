@@ -97,8 +97,8 @@ relation. This log follows the revised numbering; the formalization of the first
   (\lean{MeasureTheory.integral_negMulLog_pushDensity}), the coordinate-transformation law the
   brief cites from Rioul and Costa.
   \item \lean{ForMathlib/Probability/Distributions/Gaussian/PolarTransport.lean}:\newline a
-  $C^1$ bijection $T$ of the plane with $\rho = G(T)\,|\det DT|$ for a positive $C^1$ probability
-  density $\rho$ and a centred isotropic Gaussian $G$
+  $C^n$ bijection $T$ of the plane with $\rho = G(T)\,|\det DT|$ for a positive $C^n$ probability
+  density $\rho$, $n \ge 1$ (smooth for smooth $\rho$), and a centred isotropic Gaussian $G$
   (\lean{PolarTransport.exists_transport_gaussian})
   \item \lean{ForMathlib/InformationTheory/SmoothApproximation.lean}:\newline a probability
   density with finite entropy on a finite-dimensional space is approximated in relative entropy
@@ -201,8 +201,9 @@ Proposition~3, the Gaussian entropy formula & \lean{entropy_gaussProd} \\
 Proposition~3, eq.~(4) & \lean{IsNewVariables.sd_mul_sd_eq}; in logarithmic form
   \lean{IsNewVariables.log_eq_entropy_add}; in canonical coordinates
   \lean{log_eq_entropy_add_gaussianDivergence} \\
-Proposition~5 & \lean{exists_isAdmissible_densityFG_eq_gaussProd}, for a positive $C^1$
-  density: admissible $C^1$ coordinates with $\rho_{fg}$ a product of Gaussians of zero entropy,
+Proposition~5 & \lean{exists_isAdmissible_densityFG_eq_gaussProd}, for a positive $C^n$
+  density, $n \ge 1$: admissible $C^n$ coordinates (for $n = \infty$ the brief's smooth ones)
+  with $\rho_{fg}$ a product of Gaussians of zero entropy,
   $\sigma_f\sigma_g = h/2\pi e$ and $S[\rho_{qp}] = -E[\ln J_T]$. The coordinates are the polar
   Knothe--Rosenblatt map of \lean{ForMathlib/Probability/Distributions/Gaussian/PolarTransport}
   (\lean{PolarTransport.exists_transport_gaussian}), not Greene--Shiohama \\
@@ -296,11 +297,16 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
   a Knothe--Rosenblatt map in polar coordinates: the radius goes to $R(r) =
   \sigma\sqrt{-2\ln(1 - M(r))}$, $M(r)$ the mass of the disc of radius $r$, and on each circle
   the angle goes to $\Theta(r, \theta) = 2\pi\int_0^\theta\rho\,d\varphi / \int_0^{2\pi}\rho\,
-  d\varphi$, with $\det DT = \rho/G_{fg}(T)$. The fibres are circles, which are compact, so the
-  map is $C^1$ whenever $\rho$ is; it is smooth away from the origin and $C^1$ at the origin,
-  with derivative $\sqrt{2\pi\sigma^2\rho(0)}\,\mathrm{id}$. Proposition~5 is therefore stated for
-  a positive $C^1$ density with $C^1$ coordinates, where the brief has smooth ones; $C^1$ is
-  what \lean{IsAdmissible} asks for.
+  d\varphi + c(r)$, with $\det DT = \rho/G_{fg}(T)$. The fibres are circles, which are compact,
+  so the map inherits the regularity of $\rho$ away from the origin. The rotation $c(r)$ gives
+  the displacement $\Theta - \theta$ mean zero on each circle; without it the displacement has a
+  part of order $r$ that is constant on each circle, and $T$ is $C^1$ but not $C^2$ at the origin
+  whenever $\partial_p\rho(0) \ne 0$. With it, $T$ has the Cartesian form $T(y) = a(y)\,
+  e^{iD(y)}y$ (complex multiplication), where $a(y) = R(|y|)/|y|$ and the displacement $D(y)$ are
+  built from integrals, over compact sets, of expressions smooth in $y$
+  (\lean{PolarTransport.IsPosDensity.transport_eq_smul_rot}); so $T$ is $C^n$ whenever $\rho$ is,
+  at the origin as well. Proposition~5 is stated for a positive $C^n$ density, $n \ge 1$, with
+  $C^n$ coordinates; for $n = \infty$ these are the brief's smooth coordinates.
 \item Proposition~6 is a proof sketch in the brief; for finite entropy it is proved along the
   sketch, with the steps it leaves open filled in. The approximating density $\eta$ is
   $(1 - t)\sum_k (1_{A_k}\rho) * \varphi_{N_k} + t\gamma$ over the shells
@@ -310,7 +316,8 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
   Young's inequality $ab \le a\ln a - a + e^b$, with $a = \rho/\eta$ and $b = |T|^2/4$; it also
   gives the integrability of $\ln J_T = \ln\eta - \ln\gamma(T)$. The Gaussian moment identity is
   used as the inequality $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$. The coordinates
-  are $C^1$, as in Proposition~5.
+  are taken $C^1$, which is what \lean{IsAdmissible} asks for; since $\eta$ can be taken smooth,
+  so can they.
 \item Variances are Bochner integrals, so the brief's extended variance
   $\inf_a E[(X - a)^2] \in [0, \infty]$ and infinite or undefined entropies are not modelled.
   GCUR and CUR are stated for coordinates with finite variances; for an infinite variance the

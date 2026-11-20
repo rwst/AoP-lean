@@ -59,13 +59,6 @@ precise first.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \textbf{Smooth coordinates in Proposition~5.} The brief's coordinates are smooth; the
-  polar map is smooth away from the origin and $C^1$ at it, which is what \lean{IsAdmissible}
-  asks for. Smoothness at the origin is not expected for a non-radial $\rho$, so smooth
-  coordinates need another construction, such as the volume-transport theorem of Greene and
-  Shiohama the brief cites, or a local Moser correction near the origin; both need global flows
-  of vector fields with smooth dependence on the initial point and Liouville's formula for their
-  Jacobian, which Mathlib lacks. Nothing in the brief uses more than $C^1$.
 \item \textbf{Extended variance and infinite entropy.} Variances are Bochner integrals and
   entropies real numbers, so the brief's extended variance
   $\inf_a E[(X - a)^2] \in [0, \infty]$ and well-defined infinite entropies are not modelled.

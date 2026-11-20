@@ -10,38 +10,54 @@ public import Mathlib.Probability.Distributions.Gaussian.Real
 
 import Mathlib.Analysis.Calculus.Deriv.Prod
 import Mathlib.Analysis.Calculus.FDeriv.OfCompLeft
-import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
+import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 import Mathlib.Analysis.SpecialFunctions.Sqrt
-import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
 
 /-!
 # Transport of a positive density on the plane to a Gaussian
 
-For a positive `C¹` probability density `ρ` on `ℝ × ℝ` and `v > 0`, the map
-`PolarTransport.transport ρ v` is a `C¹` bijection `T` of the plane with
+For a positive `Cⁿ` probability density `ρ` on `ℝ × ℝ`, `n ≥ 1`, and `v > 0`, the map
+`PolarTransport.transport ρ v` is a `Cⁿ` bijection `T` of the plane with
 `ρ x = G (T x) |det DT x|`, where `G` is the centred isotropic Gaussian density of variance `v`
 in each coordinate. It is a Knothe–Rosenblatt map in polar coordinates: in `(r, θ)`,
 
 * the radius is sent to `R r = √(-2 v log (1 - M r))`, where `M r` is the `ρ`-mass of the disc of
   radius `r`, so that discs go to discs of the same Gaussian mass `1 - exp (-R² / 2v)`;
-* on each circle the angle is sent to `Θ r θ = 2π (∫₀^θ ρ(r, φ) dφ) / m r`, where `m r` is the
-  integral of `ρ` over the circle, so that arcs go to arcs of the same conditional mass.
+* on each circle the angle is sent to `Θ r θ = 2π (∫₀^θ ρ(r, φ) dφ) / m r + c r`, where `m r` is
+  the integral of `ρ` over the circle, so that arcs go to arcs of the same conditional mass; the
+  rotation `c r` gives the displacement `Θ r θ - θ` mean zero on each circle.
 
 The fibres are circles, which are compact, so `M`, `m` and `Θ` inherit the regularity of `ρ`;
 a Cartesian Knothe–Rosenblatt map can fail to be `C¹` because a marginal of a smooth positive
-density can be discontinuous. The map is smooth away from the origin and `C¹` at the origin,
-where its derivative is `√(2π v ρ 0) • id`.
+density can be discontinuous. At the origin, polar coordinates are singular. There `T` is
+handled in Cartesian form, `T y = a y • rot (D y) y` (`transport_eq_smul_rot`), where
+`a y = R |y| / |y|` and the displacement `D y` are built from integrals, over compact sets, of
+expressions smooth in `y`:
+
+* `a y = √(2 v K(y) L(|y|² K(y)))`, with `K(y) = ∫₀¹ t m(t |y|) dt = M |y| / |y|²` and
+  `L u = -log (1 - u) / u`, analytic on `u < 1`;
+* `D y = (1/2π) ∫_{-π}^{π} ∫_s^0 (2π ρ(rot u y) / m |y| - 1) du ds`, the primitive with mean zero
+  of the angular density on the circle through `y` (`angle_sub_eq_angleDisp`).
+
+The rotation `c r` is what makes `D` smooth: measured from the fixed angle `0`, the displacement
+has a part of order `r` that is constant on each circle, and `T` is then `C¹` but not `C²` at the
+origin whenever `∂ρ/∂p (0) ≠ 0`. The density identity at the origin follows from the one elsewhere
+by continuity.
 
 ## Main definitions
 
 * `PolarTransport.circleMass`, `PolarTransport.discMass`: `m r` and `M r`.
 * `PolarTransport.radius`, `PolarTransport.angle`: `R` and `Θ`.
 * `PolarTransport.transport`: the map `T`.
+* `PolarTransport.radiusQuot`, `PolarTransport.angleDisp`: `a` and `D`.
 
 ## Main results
 
-* `PolarTransport.contDiff_transport`, `PolarTransport.bijective_transport`;
-* `PolarTransport.eq_gaussian_mul_abs_det`: `ρ x = G (T x) |det DT x|`.
+* `PolarTransport.IsPosDensity.transport_eq_smul_rot`: the Cartesian form of `T`;
+* `PolarTransport.IsPosDensity.contDiff_transport`: `T` is as smooth as `ρ`;
+* `PolarTransport.IsPosDensity.bijective_transport`;
+* `PolarTransport.IsPosDensity.eq_gauss_mul_abs_det`: `ρ x = G (T x) |det DT x|`;
+* `PolarTransport.exists_transport_gaussian`: the three together.
 -/
 
 open Real MeasureTheory ProbabilityTheory Set Filter Topology
@@ -197,16 +213,6 @@ lemma discMass_eq_sq_mul (r : ℝ) : discMass ρ r = r ^ 2 * discMassQuot ρ r :
   ext t
   ring
 
-lemma continuous_discMassQuot (hρ : Continuous ρ) : Continuous (discMassQuot ρ) :=
-  intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'
-    (f := fun r t => t * circleMass ρ (r * t))
-    (continuous_snd.mul ((continuous_circleMass hρ).comp (continuous_fst.mul continuous_snd)))
-    _ _
-
-lemma discMassQuot_zero : discMassQuot ρ 0 = circleMass ρ 0 / 2 := by
-  simp only [discMassQuot, zero_mul, intervalIntegral.integral_mul_const, integral_id]
-  ring
-
 namespace IsPosDensity
 
 variable (hρ : IsPosDensity ρ) {v : ℝ≥0} {r : ℝ}
@@ -292,76 +298,35 @@ lemma exists_radius_eq (hv : v ≠ 0) {a : ℝ} (ha : 0 < a) : ∃ r, 0 < r ∧ 
   rw [hR0] at hra
   exact ha.ne hra
 
-/-- `R r / r → c = √(v m 0)` as `r → 0⁺`. -/
-lemma tendsto_radius_div (hv : v ≠ 0) :
-    Tendsto (fun r => radius ρ v r / r) (𝓝[>] 0) (𝓝 √(v * circleMass ρ 0)) := by
-  -- `-log (1 - u) / u → 1` as `u → 0`
-  have hlog : Tendsto (fun u : ℝ => -(u⁻¹ * log (1 - u))) (𝓝[≠] 0) (𝓝 1) := by
-    have h := hasDerivAt_iff_tendsto_slope_zero.1
-      (((hasDerivAt_id (0 : ℝ)).const_sub 1).log (by norm_num))
-    simp only [zero_add, smul_eq_mul] at h
-    simpa using h.neg
-  have hM : Tendsto (discMass ρ) (𝓝[>] 0) (𝓝[≠] 0) := by
-    refine tendsto_nhdsWithin_iff.2 ⟨?_, ?_⟩
-    · have := ((continuous_discMass hρ.1).tendsto 0).mono_left (nhdsWithin_le_nhds (s := Ioi 0))
-      rwa [discMass_zero] at this
-    · filter_upwards [self_mem_nhdsWithin] with r hr
-      exact (discMass_pos hρ.1 hρ.2 hr).ne'
-  have hK : Tendsto (discMassQuot ρ) (𝓝[>] 0) (𝓝 (circleMass ρ 0 / 2)) := by
-    rw [← discMassQuot_zero]
-    exact (continuous_discMassQuot hρ.1).continuousAt.tendsto.mono_left nhdsWithin_le_nhds
-  have hlim := ((hK.const_mul (2 * (v : ℝ))).mul (hlog.comp hM)).sqrt
-  rw [show √(2 * (v : ℝ) * (circleMass ρ 0 / 2) * 1) = √(v * circleMass ρ 0) by ring_nf] at hlim
-  refine hlim.congr' ?_
-  filter_upwards [self_mem_nhdsWithin] with r (hr : 0 < r)
-  have hM0 := (discMass_pos hρ.1 hρ.2 hr).ne'
-  have hsq := hρ.radius_sq (v := v) hr.le
-  rw [discMass_eq_sq_mul] at hsq hM0
-  rw [Function.comp_apply, discMass_eq_sq_mul,
-    ← sqrt_sq (div_nonneg (sqrt_nonneg _) hr.le : 0 ≤ radius ρ v r / r), div_pow, hsq]
-  have hK0 : discMassQuot ρ r ≠ 0 := right_ne_zero_of_mul hM0
-  congr 1
-  field_simp
-
-/-- `R' r → c` as `r → 0⁺`. -/
-lemma tendsto_radiusDeriv (hv : v ≠ 0) :
-    Tendsto (radiusDeriv ρ v) (𝓝[>] 0) (𝓝 √(v * circleMass ρ 0)) := by
-  have hv' : (0 : ℝ) < v := by positivity
-  have hc : 0 < √(v * circleMass ρ 0) :=
-    sqrt_pos.2 (mul_pos hv' (circleMass_pos hρ.1 hρ.2 0))
-  have h1 : Tendsto (fun r => 1 - discMass ρ r) (𝓝[>] 0) (𝓝 1) := by
-    have := (((continuous_discMass hρ.1).tendsto 0).mono_left
-      (nhdsWithin_le_nhds (s := Ioi 0))).const_sub 1
-    rwa [discMass_zero, sub_zero] at this
-  have hm : Tendsto (circleMass ρ) (𝓝[>] 0) (𝓝 (circleMass ρ 0)) :=
-    (continuous_circleMass hρ.1).continuousAt.tendsto.mono_left nhdsWithin_le_nhds
-  have hlim := (hm.const_mul (v : ℝ)).div ((hρ.tendsto_radius_div hv).mul h1)
-    (by rw [mul_one]; exact hc.ne')
-  rw [mul_one, show (v : ℝ) * circleMass ρ 0 / √(v * circleMass ρ 0) = √(v * circleMass ρ 0) by
-    rw [div_eq_iff hc.ne', mul_self_sqrt (mul_pos hv' (circleMass_pos hρ.1 hρ.2 0)).le]] at hlim
-  refine hlim.congr' ?_
-  filter_upwards [self_mem_nhdsWithin] with r (hr : 0 < r)
-  have := hr.ne'
-  simp only [Pi.div_apply]
-  rw [radiusDeriv]
-  field_simp
-
 end IsPosDensity
 
 /-! ### The angular map -/
 
-/-- `Θ r θ = 2π (∫₀^θ ρ(r cos φ, r sin φ) dφ) / m r`: the arc from angle `0` to `Θ r θ` has the
+/-- `Θ₀ r θ = 2π (∫₀^θ ρ(r cos φ, r sin φ) dφ) / m r`: the arc from angle `0` to `Θ₀ r θ` has the
 conditional mass on the circle of radius `r` of the arc from `0` to `θ`. -/
-def angle (ρ : ℝ × ℝ → ℝ) (r θ : ℝ) : ℝ :=
+def angle₀ (ρ : ℝ × ℝ → ℝ) (r θ : ℝ) : ℝ :=
   2 * π / circleMass ρ r * ∫ φ in (0 : ℝ)..θ, polar ρ (r, φ)
 
-lemma angle_zero_right (r : ℝ) : angle ρ r 0 = 0 := by
-  simp [angle]
+/-- `c r = -(1/2π) ∫_{-π}^{π} (Θ₀ r s - s) ds`, the rotation that gives the displacement
+`Θ₀ r θ + c r - θ` mean zero on each circle. -/
+def angleShift (ρ : ℝ × ℝ → ℝ) (r : ℝ) : ℝ :=
+  -((2 * π)⁻¹ * ∫ s in (-π)..π, (angle₀ ρ r s - s))
+
+/-- `Θ r θ = Θ₀ r θ + c r`: arcs go to arcs of the same conditional mass, and the displacement
+`Θ r θ - θ` has mean zero on each circle. Measured from the fixed angle `0` instead, the
+displacement has a part of order `r` that is constant on each circle, and the transport map is
+then `C¹` but not `C²` at the origin; with mean zero it is as smooth as `ρ`
+(`angle_sub_eq_angleDisp`). -/
+def angle (ρ : ℝ × ℝ → ℝ) (r θ : ℝ) : ℝ := angle₀ ρ r θ + angleShift ρ r
+
+lemma hasDerivAt_angle₀ (hρ : Continuous ρ) (r θ : ℝ) :
+    HasDerivAt (angle₀ ρ r) (2 * π / circleMass ρ r * polar ρ (r, θ)) θ :=
+  (((continuous_polar hρ).comp (Continuous.prodMk_right r)).integral_hasStrictDerivAt 0 θ
+    |>.hasDerivAt).const_mul _
 
 lemma hasDerivAt_angle (hρ : Continuous ρ) (r θ : ℝ) :
     HasDerivAt (angle ρ r) (2 * π / circleMass ρ r * polar ρ (r, θ)) θ :=
-  (((continuous_polar hρ).comp (Continuous.prodMk_right r)).integral_hasStrictDerivAt 0 θ
-    |>.hasDerivAt).const_mul _
+  (hasDerivAt_angle₀ hρ r θ).add_const _
 
 lemma continuous_angle_right (hρ : Continuous ρ) (r : ℝ) : Continuous (angle ρ r) :=
   continuous_iff_continuousAt.2 fun θ => (hasDerivAt_angle hρ r θ).continuousAt
@@ -382,10 +347,11 @@ lemma angle_add_two_pi (hρ : Continuous ρ) (hpos : ∀ x, 0 < ρ x) (r θ : �
   have h := hper.intervalIntegral_add_eq θ (-π)
   rw [show -π + 2 * π = π by ring] at h
   have hm := (circleMass_pos hρ hpos r).ne'
-  rw [angle, angle, ← intervalIntegral.integral_add_adjacent_intervals (b := θ)
+  rw [angle, angle, angle₀, angle₀, ← intervalIntegral.integral_add_adjacent_intervals (b := θ)
     (hc.intervalIntegrable _ _) (hc.intervalIntegrable _ _), h,
     show (∫ φ in (-π)..π, polar ρ (r, φ)) = circleMass ρ r from rfl]
   field_simp
+  ring
 
 lemma angle_add_int_mul (hρ : Continuous ρ) (hpos : ∀ x, 0 < ρ x) (r θ : ℝ) (k : ℤ) :
     angle ρ r (θ + k * (2 * π)) = angle ρ r θ + k * (2 * π) := by
@@ -401,55 +367,29 @@ lemma integral_zero_eq_mul (g : ℝ → ℝ) (θ : ℝ) :
   simp only [mul_zero, mul_one, smul_eq_mul] at this
   exact this.symm
 
-lemma contDiff_angle {n : ℕ∞} (hρ : ContDiff ℝ n ρ) (hpos : ∀ x, 0 < ρ x) :
-    ContDiff ℝ n fun p : ℝ × ℝ => angle ρ p.1 p.2 := by
+lemma contDiff_angle₀ {n : ℕ∞} (hρ : ContDiff ℝ n ρ) (hpos : ∀ x, 0 < ρ x) :
+    ContDiff ℝ n fun p : ℝ × ℝ => angle₀ ρ p.1 p.2 := by
   have hc : Continuous ρ := hρ.continuous
   have hI : ContDiff ℝ n fun p : ℝ × ℝ => ∫ t in (0 : ℝ)..1, polar ρ (p.1, p.2 * t) :=
     ((contDiff_polar hρ).comp (f := fun q : (ℝ × ℝ) × ℝ => (q.1.1, q.1.2 * q.2))
       (by fun_prop)).parametric_intervalIntegral
   have hm : ContDiff ℝ n fun p : ℝ × ℝ => circleMass ρ p.1 :=
     (contDiff_circleMass hρ).comp contDiff_fst
-  have : (fun p : ℝ × ℝ => angle ρ p.1 p.2) = fun p =>
+  have : (fun p : ℝ × ℝ => angle₀ ρ p.1 p.2) = fun p =>
       2 * π / circleMass ρ p.1 * (p.2 * ∫ t in (0 : ℝ)..1, polar ρ (p.1, p.2 * t)) := by
     ext p
-    rw [angle, integral_zero_eq_mul]
+    rw [angle₀, integral_zero_eq_mul]
   rw [this]
   exact (contDiff_const.div hm fun p => (circleMass_pos hc hpos p.1).ne').mul
     (contDiff_snd.mul hI)
 
-/-- `|Θ r θ - θ| ≤ 4π |θ| ε / m r` if `ρ` is within `ε` of `ρ 0` on the circle of radius `r`. -/
-lemma abs_angle_sub_le (hρ : Continuous ρ) (hpos : ∀ x, 0 < ρ x) {r θ ε : ℝ}
-    (hε : ∀ φ, |polar ρ (r, φ) - ρ 0| ≤ ε) :
-    |angle ρ r θ - θ| ≤ 4 * π * |θ| * ε / circleMass ρ r := by
-  have hc : Continuous fun φ => polar ρ (r, φ) :=
-    (continuous_polar hρ).comp (Continuous.prodMk_right r)
-  have hm := circleMass_pos hρ hpos r
-  have hb : ∀ a b : ℝ, |(∫ φ in a..b, polar ρ (r, φ)) - (b - a) * ρ 0| ≤ ε * |b - a| := by
-    intro a b
-    rw [show (b - a) * ρ 0 = ∫ _ in a..b, ρ 0 by simp,
-      ← intervalIntegral.integral_sub (hc.intervalIntegrable _ _) intervalIntegrable_const]
-    simpa only [Real.norm_eq_abs] using intervalIntegral.norm_integral_le_of_norm_le_const
-      (f := fun φ => polar ρ (r, φ) - ρ 0) (C := ε) fun φ _ => by
-        rw [Real.norm_eq_abs]; exact hε φ
-  have h1 := hb 0 θ
-  have h2 := hb (-π) π
-  rw [sub_zero] at h1
-  rw [show π - -π = 2 * π by ring, abs_of_pos (by positivity : (0 : ℝ) < 2 * π)] at h2
-  change |circleMass ρ r - 2 * π * ρ 0| ≤ ε * (2 * π) at h2
-  rw [angle, show 2 * π / circleMass ρ r * (∫ φ in (0 : ℝ)..θ, polar ρ (r, φ)) - θ =
-    (2 * π * ((∫ φ in (0 : ℝ)..θ, polar ρ (r, φ)) - θ * ρ 0) -
-      θ * (circleMass ρ r - 2 * π * ρ 0)) / circleMass ρ r by field_simp; ring,
-    abs_div, abs_of_pos hm]
-  gcongr
-  calc |2 * π * ((∫ φ in (0 : ℝ)..θ, polar ρ (r, φ)) - θ * ρ 0) -
-        θ * (circleMass ρ r - 2 * π * ρ 0)|
-      ≤ 2 * π * |(∫ φ in (0 : ℝ)..θ, polar ρ (r, φ)) - θ * ρ 0| +
-        |θ| * |circleMass ρ r - 2 * π * ρ 0| := by
-        refine (abs_sub _ _).trans ?_
-        rw [abs_mul (2 * π), abs_of_pos (by positivity : (0 : ℝ) < 2 * π), abs_mul θ]
-    _ ≤ 2 * π * (ε * |θ|) + |θ| * (ε * (2 * π)) := by gcongr
-    _ = 4 * π * |θ| * ε := by ring
+lemma contDiff_angleShift {n : ℕ∞} (hρ : ContDiff ℝ n ρ) (hpos : ∀ x, 0 < ρ x) :
+    ContDiff ℝ n (angleShift ρ) :=
+  (contDiff_const.mul ((contDiff_angle₀ hρ hpos).sub contDiff_snd).parametric_intervalIntegral).neg
 
+lemma contDiff_angle {n : ℕ∞} (hρ : ContDiff ℝ n ρ) (hpos : ∀ x, 0 < ρ x) :
+    ContDiff ℝ n fun p : ℝ × ℝ => angle ρ p.1 p.2 :=
+  (contDiff_angle₀ hρ hpos).add ((contDiff_angleShift hρ hpos).comp contDiff_fst)
 /-! ### Polar coordinates on the whole plane -/
 
 /-- `polarCoord.symm ∘ polarCoord = id` on the whole plane, including the cut `(-∞, 0]`. -/
@@ -551,18 +491,22 @@ lemma surjective_transport (hv : v ≠ 0) : Function.Surjective (transport ρ v)
   rcases eq_or_ne z 0 with rfl | hz
   · exact ⟨0, transport_zero⟩
   obtain ⟨r, hr, hRr⟩ := hρ.exists_radius_eq hv (polarCoord_fst_pos hz)
-  have hm2 : angle ρ r (-2 * π) = -2 * π := by
-    have := angle_add_int_mul hρ.1 hρ.2 r 0 (-1)
-    rw [angle_zero_right] at this
-    convert this using 2 <;> push_cast <;> ring
-  have hp2 : angle ρ r (2 * π) = 2 * π := by
-    have := angle_add_two_pi hρ.1 hρ.2 r 0
-    rwa [zero_add, angle_zero_right, zero_add] at this
-  have hz2 := polarCoord_snd_mem z
-  obtain ⟨θ, -, hθ⟩ := intermediate_value_Icc (by linarith [pi_pos] : -2 * π ≤ 2 * π)
+  obtain ⟨N, hN⟩ := exists_nat_ge (|(polarCoord z).2 - angle ρ r 0| / (2 * π))
+  rw [div_le_iff₀ (by positivity)] at hN
+  have hm : angle ρ r (-N * (2 * π)) = angle ρ r 0 - N * (2 * π) := by
+    have := angle_add_int_mul hρ.1 hρ.2 r 0 (-N)
+    push_cast at this
+    rw [zero_add] at this
+    rw [this]; ring
+  have hp : angle ρ r (N * (2 * π)) = angle ρ r 0 + N * (2 * π) := by
+    have := angle_add_int_mul hρ.1 hρ.2 r 0 N
+    push_cast at this
+    rwa [zero_add] at this
+  have hN0 : (0 : ℝ) ≤ N * (2 * π) := by positivity
+  obtain ⟨θ, -, hθ⟩ := intermediate_value_Icc (by linarith : -N * (2 * π) ≤ N * (2 * π))
     (continuous_angle_right hρ.1 r).continuousOn
-    (show (polarCoord z).2 ∈ Icc (angle ρ r (-2 * π)) (angle ρ r (2 * π)) by
-      rw [hm2, hp2]; constructor <;> linarith [hz2.1, hz2.2, pi_pos])
+    (show (polarCoord z).2 ∈ Icc (angle ρ r (-N * (2 * π))) (angle ρ r (N * (2 * π))) by
+      rw [hm, hp]; constructor <;> linarith [(abs_le.1 hN).1, (abs_le.1 hN).2])
   refine ⟨polarCoord.symm (r, θ), ?_⟩
   rw [hρ.transport_polarCoord_symm hr.le, hRr, hθ, Prod.mk.eta, polarCoord_symm_polarCoord]
 
@@ -706,12 +650,6 @@ def fderivPolarMap (ρ : ℝ × ℝ → ℝ) (v : ℝ≥0) (q : ℝ × ℝ) : �
 def fderivTransport (ρ : ℝ × ℝ → ℝ) (v : ℝ≥0) (q : ℝ × ℝ) : ℝ × ℝ →L[ℝ] ℝ × ℝ :=
   (fderivPolarCoordSymm (polarMap ρ v q)).comp ((fderivPolarMap ρ v q).comp (fderivPolarCoord q))
 
-lemma contDiff_discMass (hρ : Continuous ρ) : ContDiff ℝ 1 (discMass ρ) := by
-  refine contDiff_one_iff_deriv.2 ⟨fun r => (hasDerivAt_discMass hρ r).differentiableAt, ?_⟩
-  rw [show deriv (discMass ρ) = fun r => r * circleMass ρ r from
-    funext fun r => (hasDerivAt_discMass hρ r).deriv]
-  exact continuous_id.mul (continuous_circleMass hρ)
-
 lemma det_comp (f g : ℝ × ℝ →L[ℝ] ℝ × ℝ) : (f.comp g).det = f.det * g.det :=
   LinearMap.det_comp (f : ℝ × ℝ →ₗ[ℝ] ℝ × ℝ) g
 
@@ -725,12 +663,6 @@ namespace IsPosDensity
 
 variable (hρ : IsPosDensity ρ) {v : ℝ≥0}
 include hρ
-
-lemma contDiffAt_radius (hv : v ≠ 0) {r : ℝ} (hr : 0 < r) : ContDiffAt ℝ 1 (radius ρ v) r :=
-  (contDiffAt_const.mul ((contDiffAt_const.sub (contDiff_discMass hρ.1).contDiffAt).log
-    (hρ.one_sub_discMass_pos hr.le).ne')).sqrt
-    (mul_pos_of_neg_of_neg (by have h : (0 : ℝ) < v := (by positivity); linarith)
-      (hρ.log_one_sub_discMass_neg hr)).ne'
 
 lemma transport_eq_comp (y : ℝ × ℝ) :
     transport ρ v = polarCoord.symm ∘ polarMap ρ v ∘ chart y := by
@@ -752,13 +684,6 @@ lemma hasFDerivAt_transport (hv : v ≠ 0) {y : ℝ × ℝ} (hy : y ≠ 0) :
   rw [hρ.transport_eq_comp y]
   exact (hasFDerivAt_polarCoord_symm _).comp y
     ((hρ.hasFDerivAt_polarMap hρ1 hv (chart_self_fst_pos hy)).comp y (hasFDerivAt_chart hy))
-
-lemma contDiffAt_transport (hv : v ≠ 0) {y : ℝ × ℝ} (hy : y ≠ 0) :
-    ContDiffAt ℝ 1 (transport ρ v) y := by
-  rw [hρ.transport_eq_comp y]
-  exact contDiff_polarCoord_symm.contDiffAt.comp y
-    ((((hρ.contDiffAt_radius hv (chart_self_fst_pos hy)).comp _ contDiffAt_fst).prodMk
-      (contDiff_angle hρ1 hρ.2).contDiffAt).comp y (contDiffAt_chart hy))
 
 /-- `∂Θ/∂θ = 2π ρ / m`. -/
 lemma fderiv_angle_snd (q : ℝ × ℝ) :
@@ -826,421 +751,288 @@ lemma eq_gauss_mul_abs_det_of_ne (hv : v ≠ 0) {y : ℝ × ℝ} (hy : y ≠ 0) 
 
 end IsPosDensity
 
-/-! ### Estimates for the derivative near the origin -/
+/-! ### The transport map in Cartesian form -/
 
-lemma apply_pair (L : ℝ × ℝ →L[ℝ] ℝ) (x y : ℝ) : L (x, y) = x * L (1, 0) + y * L (0, 1) := by
-  have : ((x, y) : ℝ × ℝ) = x • ((1, 0) : ℝ × ℝ) + y • ((0, 1) : ℝ × ℝ) := by
-    ext <;> simp
-  rw [this, map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul]
+/-- The rotation of the plane by the angle `α`. -/
+def rot (α : ℝ) (y : ℝ × ℝ) : ℝ × ℝ := (cos α * y.1 - sin α * y.2, sin α * y.1 + cos α * y.2)
 
-lemma norm_le_apply_add_apply (B : ℝ × ℝ →L[ℝ] ℝ × ℝ) : ‖B‖ ≤ ‖B (1, 0)‖ + ‖B (0, 1)‖ := by
-  refine B.opNorm_le_bound (by positivity) fun u => ?_
-  have : B u = u.1 • B (1, 0) + u.2 • B (0, 1) := by
-    rw [← map_smul, ← map_smul, ← map_add]
-    congr 1
-    ext <;> simp
-  rw [this]
-  calc ‖u.1 • B (1, 0) + u.2 • B (0, 1)‖ ≤ ‖u.1‖ * ‖B (1, 0)‖ + ‖u.2‖ * ‖B (0, 1)‖ := by
-        refine (norm_add_le _ _).trans ?_
-        rw [norm_smul, norm_smul]
-    _ ≤ ‖u‖ * ‖B (1, 0)‖ + ‖u‖ * ‖B (0, 1)‖ := by
-        gcongr
-        exacts [norm_fst_le u, norm_snd_le u]
-    _ = (‖B (1, 0)‖ + ‖B (0, 1)‖) * ‖u‖ := by ring
+lemma rot_polarCoord_symm (α r θ : ℝ) :
+    rot α (polarCoord.symm (r, θ)) = polarCoord.symm (r, θ + α) := by
+  simp only [rot, polarCoord_symm_apply, cos_add, sin_add, Prod.mk.injEq]
+  constructor <;> ring
 
-lemma norm_pair_le {a b E : ℝ} (ha : |a| ≤ E) (hb : |b| ≤ E) : ‖((a, b) : ℝ × ℝ)‖ ≤ E := by
-  rw [Prod.norm_def]
-  exact max_le ha hb
+lemma smul_polarCoord_symm (t r θ : ℝ) :
+    t • polarCoord.symm (r, θ) = polarCoord.symm (t * r, θ) := by
+  simp only [polarCoord_symm_apply, Prod.smul_mk, smul_eq_mul, Prod.mk.injEq]
+  constructor <;> ring
 
-lemma abs_comb_le {A B C c t₁ t₂ t₃ t₄ d : ℝ} (h₁ : |t₁| ≤ 1) (h₂ : |t₂| ≤ 1) (h₃ : |t₃| ≤ 1)
-    (h₄ : |t₄| ≤ d) (hc : 0 ≤ c) :
-    |A * t₁ + B * t₂ + C * t₃ + c * t₄| ≤ |A| + |B| + |C| + c * d := by
-  have e₁ : |A * t₁| ≤ |A| := by rw [abs_mul]; exact mul_le_of_le_one_right (abs_nonneg _) h₁
-  have e₂ : |B * t₂| ≤ |B| := by rw [abs_mul]; exact mul_le_of_le_one_right (abs_nonneg _) h₂
-  have e₃ : |C * t₃| ≤ |C| := by rw [abs_mul]; exact mul_le_of_le_one_right (abs_nonneg _) h₃
-  have e₄ : |c * t₄| ≤ c * d := by rw [abs_mul, abs_of_nonneg hc]; gcongr
-  calc _ ≤ |A * t₁| + |B * t₂| + |C * t₃| + |c * t₄| := by
-        refine (abs_add_le _ _).trans ?_
-        gcongr
-        refine (abs_add_le _ _).trans ?_
-        gcongr
-        exact abs_add_le _ _
-    _ ≤ _ := by gcongr
-
-lemma abs_trig_mul_le (a b : ℝ) : |cos a * cos b| ≤ 1 ∧ |cos a * sin b| ≤ 1 ∧
-    |sin a * cos b| ≤ 1 ∧ |sin a * sin b| ≤ 1 := by
-  simp only [abs_mul]
-  refine ⟨?_, ?_, ?_, ?_⟩ <;>
-    exact (mul_le_mul (by first | exact abs_cos_le_one _ | exact abs_sin_le_one _)
-      (by first | exact abs_cos_le_one _ | exact abs_sin_le_one _) (abs_nonneg _)
-      zero_le_one).trans (by norm_num)
-
-/-- The error term `E q = |R' - c| + |R a| + |R b / r - c| + c |Θ - θ|`, where `a, b` are the
-partial derivatives of `Θ`. -/
-def errorTerm (ρ : ℝ × ℝ → ℝ) (v : ℝ≥0) (c : ℝ) (q : ℝ × ℝ) : ℝ :=
-  |radiusDeriv ρ v q.1 - c| +
-    |radius ρ v q.1 * fderiv ℝ (fun p : ℝ × ℝ => angle ρ p.1 p.2) q (1, 0)| +
-    |radius ρ v q.1 * fderiv ℝ (fun p : ℝ × ℝ => angle ρ p.1 p.2) q (0, 1) / q.1 - c| +
-    c * |angle ρ q.1 q.2 - q.2|
-
-lemma norm_fderivTransport_sub_le {v : ℝ≥0} {c : ℝ} (hc : 0 ≤ c) (q : ℝ × ℝ) :
-    ‖fderivTransport ρ v q - c • ContinuousLinearMap.id ℝ (ℝ × ℝ)‖ ≤ 2 * errorTerm ρ v c q := by
-  set R := radius ρ v q.1
-  set R' := radiusDeriv ρ v q.1
-  set Θ := angle ρ q.1 q.2
-  set L := fderiv ℝ (fun p : ℝ × ℝ => angle ρ p.1 p.2) q
-  set a := L (1, 0)
-  set b := L (0, 1)
-  set θ := q.2
-  set r := q.1
-  have happ : ∀ x y : ℝ, fderivTransport ρ v q (x, y) =
-      (cos Θ * (R' * (cos θ * x + sin θ * y)) + -R * sin Θ *
-          ((cos θ * x + sin θ * y) * a + (-sin θ / r * x + cos θ / r * y) * b),
-        sin Θ * (R' * (cos θ * x + sin θ * y)) + R * cos Θ *
-          ((cos θ * x + sin θ * y) * a + (-sin θ / r * x + cos θ / r * y) * b)) := by
-    intro x y
-    simp only [fderivTransport, ContinuousLinearMap.comp_apply, fderivPolarCoord_apply,
-      fderivPolarMap, ContinuousLinearMap.prod_apply, smul_apply,
-      ContinuousLinearMap.coe_fst', smul_eq_mul, fderivPolarCoordSymm_apply, polarMap]
-    rw [apply_pair L]
-  have hδ₁ : |cos (Θ - θ) - 1| ≤ |Θ - θ| := by
-    simpa [cos_zero] using abs_cos_sub_cos_le (Θ - θ) 0
-  have hδ₂ : |sin (Θ - θ)| ≤ |Θ - θ| := by
-    simpa [sin_zero] using abs_sin_sub_sin_le (Θ - θ) 0
-  have hδ₃ : |-sin (Θ - θ)| ≤ |Θ - θ| := by rwa [abs_neg]
-  obtain ⟨t₁, t₂, t₃, t₄⟩ := abs_trig_mul_le Θ θ
-  have hneg : ∀ {t : ℝ}, |t| ≤ 1 → |-t| ≤ 1 := fun h => by rwa [abs_neg]
-  have hRa : |R * a| = |R * a| := rfl
-  refine (norm_le_apply_add_apply _).trans ?_
-  rw [two_mul]
-  simp only [errorTerm]
-  gcongr
-  · rw [sub_apply, smul_apply,
-      ContinuousLinearMap.id_apply, happ, Prod.smul_mk, Prod.mk_sub_mk]
-    refine norm_pair_le ?_ ?_
-    · have : cos Θ * (R' * (cos θ * 1 + sin θ * 0)) + -R * sin Θ *
-          ((cos θ * 1 + sin θ * 0) * a + (-sin θ / r * 1 + cos θ / r * 0) * b) - c • (1 : ℝ) =
-          (R' - c) * (cos Θ * cos θ) + R * a * (-(sin Θ * cos θ)) +
-            (R * b / r - c) * (sin Θ * sin θ) + c * (cos (Θ - θ) - 1) := by
-        rw [cos_sub, smul_eq_mul]; ring
-      rw [this]
-      exact abs_comb_le t₁ (hneg t₃) t₄ hδ₁ hc
-    · have : sin Θ * (R' * (cos θ * 1 + sin θ * 0)) + R * cos Θ *
-          ((cos θ * 1 + sin θ * 0) * a + (-sin θ / r * 1 + cos θ / r * 0) * b) - c • (0 : ℝ) =
-          (R' - c) * (sin Θ * cos θ) + R * a * (cos Θ * cos θ) +
-            (R * b / r - c) * (-(cos Θ * sin θ)) + c * sin (Θ - θ) := by
-        rw [sin_sub, smul_eq_mul]; ring
-      rw [this]
-      exact abs_comb_le t₃ t₁ (hneg t₂) hδ₂ hc
-  · rw [sub_apply, smul_apply,
-      ContinuousLinearMap.id_apply, happ, Prod.smul_mk, Prod.mk_sub_mk]
-    refine norm_pair_le ?_ ?_
-    · have : cos Θ * (R' * (cos θ * 0 + sin θ * 1)) + -R * sin Θ *
-          ((cos θ * 0 + sin θ * 1) * a + (-sin θ / r * 0 + cos θ / r * 1) * b) - c • (0 : ℝ) =
-          (R' - c) * (cos Θ * sin θ) + R * a * (-(sin Θ * sin θ)) +
-            (R * b / r - c) * (-(sin Θ * cos θ)) + c * (-sin (Θ - θ)) := by
-        rw [sin_sub, smul_eq_mul]; ring
-      rw [this]
-      exact abs_comb_le t₂ (hneg t₄) (hneg t₃) hδ₃ hc
-    · have : sin Θ * (R' * (cos θ * 0 + sin θ * 1)) + R * cos Θ *
-          ((cos θ * 0 + sin θ * 1) * a + (-sin θ / r * 0 + cos θ / r * 1) * b) - c • (1 : ℝ) =
-          (R' - c) * (sin Θ * sin θ) + R * a * (cos Θ * sin θ) +
-            (R * b / r - c) * (cos Θ * cos θ) + c * (cos (Θ - θ) - 1) := by
-        rw [cos_sub, smul_eq_mul]; ring
-      rw [this]
-      exact abs_comb_le t₄ t₂ t₁ hδ₁ hc
-
-/-- `‖P(A, α) - P(B, β)‖ ≤ |A - B| + |B| |α - β|`. -/
-lemma norm_polarCoord_symm_sub_le (A α B β : ℝ) :
-    ‖polarCoord.symm (A, α) - polarCoord.symm (B, β)‖ ≤ |A - B| + |B| * |α - β| := by
-  simp only [polarCoord_symm_apply, Prod.mk_sub_mk]
-  refine norm_pair_le ?_ ?_
-  · rw [show A * cos α - B * cos β = (A - B) * cos α + B * (cos α - cos β) by ring]
-    refine (abs_add_le _ _).trans ?_
-    rw [abs_mul, abs_mul]
-    exact add_le_add (mul_le_of_le_one_right (abs_nonneg _) (abs_cos_le_one _))
-      (mul_le_mul_of_nonneg_left (abs_cos_sub_cos_le _ _) (abs_nonneg _))
-  · rw [show A * sin α - B * sin β = (A - B) * sin α + B * (sin α - sin β) by ring]
-    refine (abs_add_le _ _).trans ?_
-    rw [abs_mul, abs_mul]
-    exact add_le_add (mul_le_of_le_one_right (abs_nonneg _) (abs_sin_le_one _))
-      (mul_le_mul_of_nonneg_left (abs_sin_sub_sin_le _ _) (abs_nonneg _))
-
-lemma norm_polarCoord_symm_le {r : ℝ} (hr : 0 ≤ r) (θ : ℝ) : ‖polarCoord.symm (r, θ)‖ ≤ r := by
+lemma sq_add_sq_polarCoord_symm (r θ : ℝ) :
+    (polarCoord.symm (r, θ)).1 ^ 2 + (polarCoord.symm (r, θ)).2 ^ 2 = r ^ 2 := by
   simp only [polarCoord_symm_apply]
-  refine norm_pair_le ?_ ?_
-  · rw [abs_mul, abs_of_nonneg hr]; exact mul_le_of_le_one_right hr (abs_cos_le_one _)
-  · rw [abs_mul, abs_of_nonneg hr]; exact mul_le_of_le_one_right hr (abs_sin_le_one _)
+  linear_combination r ^ 2 * cos_sq_add_sin_sq θ
 
-lemma polarCoord_fst_le (x : ℝ × ℝ) : (polarCoord x).1 ≤ 2 * ‖x‖ := by
-  have h1 : |x.1| ≤ ‖x‖ := norm_fst_le x
-  have h2 : |x.2| ≤ ‖x‖ := norm_snd_le x
-  simp only [polarCoord_apply]
-  refine sqrt_le_iff.2 ⟨by positivity, ?_⟩
-  nlinarith [sq_abs x.1, sq_abs x.2, abs_nonneg x.1, abs_nonneg x.2]
+lemma contDiff_rot {n : WithTop ℕ∞} : ContDiff ℝ n fun p : ℝ × (ℝ × ℝ) => rot p.1 p.2 := by
+  unfold rot; fun_prop
 
-/-! ### The origin -/
+/-- Every point is `polarCoord.symm (r, θ)` with `r ≥ 0`. -/
+lemma exists_polarCoord_symm_eq (x : ℝ × ℝ) : ∃ r θ, 0 ≤ r ∧ polarCoord.symm (r, θ) = x :=
+  ⟨_, _, polarCoord_fst_nonneg x, polarCoord_symm_polarCoord x⟩
 
-/-- The derivative of the transport map at the origin is `slope ρ v • id`, where
-`slope ρ v = √(v m 0) = √(2π v ρ 0)`. -/
-def slope (ρ : ℝ × ℝ → ℝ) (v : ℝ≥0) : ℝ := √(v * circleMass ρ 0)
+/-- `m` in Cartesian form: `circleMassC ρ y = ∫_{-π}^{π} ρ (rot u y) du = m |y|`. -/
+def circleMassC (ρ : ℝ × ℝ → ℝ) (y : ℝ × ℝ) : ℝ := ∫ u in (-π)..π, ρ (rot u y)
 
-lemma tendsto_polarCoord_fst :
-    Tendsto (fun y : ℝ × ℝ => (polarCoord y).1) (𝓝[≠] 0) (𝓝[>] 0) := by
-  refine tendsto_nhdsWithin_iff.2 ⟨?_, ?_⟩
-  · have hc : Continuous fun y : ℝ × ℝ => (polarCoord y).1 := by
-      simp only [polarCoord_apply]; fun_prop
-    simpa [polarCoord_apply] using (hc.tendsto 0).mono_left nhdsWithin_le_nhds
-  · filter_upwards [self_mem_nhdsWithin] with y hy
-    exact polarCoord_fst_pos hy
+lemma circleMassC_polarCoord_symm (r θ : ℝ) :
+    circleMassC ρ (polarCoord.symm (r, θ)) = circleMass ρ r := by
+  have hper : Function.Periodic (fun φ => polar ρ (r, φ)) (2 * π) := fun φ =>
+    polar_add_two_pi r φ
+  have h1 : circleMassC ρ (polarCoord.symm (r, θ)) = ∫ u in (-π)..π, polar ρ (r, θ + u) := by
+    simp only [circleMassC, rot_polarCoord_symm]; rfl
+  rw [h1, intervalIntegral.integral_comp_add_left (fun φ => polar ρ (r, φ)) θ,
+    show θ + π = θ + -π + 2 * π by ring, hper.intervalIntegral_add_eq (θ + -π) (-π),
+    show -π + 2 * π = π by ring]
+  rfl
+
+lemma circleMassC_pos (hρ : Continuous ρ) (hpos : ∀ x, 0 < ρ x) (y : ℝ × ℝ) :
+    0 < circleMassC ρ y := by
+  obtain ⟨r, θ, -, rfl⟩ := exists_polarCoord_symm_eq y
+  rw [circleMassC_polarCoord_symm]
+  exact circleMass_pos hρ hpos r
+
+lemma contDiff_circleMassC {n : ℕ∞} (hρ : ContDiff ℝ n ρ) : ContDiff ℝ n (circleMassC ρ) := by
+  have : ContDiff ℝ n fun q : (ℝ × ℝ) × ℝ => ρ (rot q.2 q.1) :=
+    hρ.comp (contDiff_rot.comp (contDiff_snd.prodMk contDiff_fst))
+  exact this.parametric_intervalIntegral
+
+/-- `K` in Cartesian form: `discMassQuotC ρ y = ∫₀¹ t m(t |y|) dt = K |y|`. -/
+def discMassQuotC (ρ : ℝ × ℝ → ℝ) (y : ℝ × ℝ) : ℝ := ∫ t in (0 : ℝ)..1, t * circleMassC ρ (t • y)
+
+lemma discMassQuotC_polarCoord_symm (r θ : ℝ) :
+    discMassQuotC ρ (polarCoord.symm (r, θ)) = discMassQuot ρ r := by
+  refine intervalIntegral.integral_congr fun t _ => ?_
+  simp only [smul_polarCoord_symm, circleMassC_polarCoord_symm, mul_comm t r]
+
+lemma contDiff_discMassQuotC {n : ℕ∞} (hρ : ContDiff ℝ n ρ) : ContDiff ℝ n (discMassQuotC ρ) := by
+  have : ContDiff ℝ n fun q : (ℝ × ℝ) × ℝ => q.2 * circleMassC ρ (q.2 • q.1) :=
+    contDiff_snd.mul ((contDiff_circleMassC hρ).comp (contDiff_snd.smul contDiff_fst))
+  exact this.parametric_intervalIntegral
+
+lemma discMassQuot_pos (hρ : Continuous ρ) (hpos : ∀ x, 0 < ρ x) (r : ℝ) :
+    0 < discMassQuot ρ r :=
+  intervalIntegral.intervalIntegral_pos_of_pos_on
+    ((continuous_id.mul ((continuous_circleMass hρ).comp
+      (continuous_const.mul continuous_id))).intervalIntegrable _ _)
+    (fun _ ht => mul_pos ht.1 (circleMass_pos hρ hpos _)) one_pos
+
+/-- `L u = -log (1 - u) / u`, extended by `L 0 = 1`; it is analytic on `u < 1`. -/
+def logQuot (u : ℝ) : ℝ := -dslope (fun u => log (1 - u)) 0 u
+
+lemma logQuot_of_ne {u : ℝ} (hu : u ≠ 0) : logQuot u = -log (1 - u) / u := by
+  rw [logQuot, dslope_of_ne _ hu, slope_def_field]
+  simp [neg_div]
+
+lemma logQuot_zero : logQuot 0 = 1 := by
+  have h : HasDerivAt (fun u : ℝ => log (1 - u)) (-1) 0 := by
+    simpa using ((hasDerivAt_id (0 : ℝ)).const_sub 1).log (by norm_num)
+  rw [logQuot, dslope_same, h.deriv, neg_neg]
+
+lemma logQuot_pos {u : ℝ} (hu : u < 1) : 0 < logQuot u := by
+  rcases lt_trichotomy u 0 with h | rfl | h
+  · rw [logQuot_of_ne h.ne]
+    exact div_pos_of_neg_of_neg (neg_neg_of_pos (log_pos (by linarith))) h
+  · rw [logQuot_zero]; exact one_pos
+  · rw [logQuot_of_ne h.ne']
+    exact div_pos (neg_pos.2 (log_neg (by linarith) (by linarith))) h
+
+lemma contDiffOn_logQuot {n : WithTop ℕ∞} : ContDiffOn ℝ n logQuot (Iio 1) := fun u hu =>
+  (((analyticAt_const.sub analyticAt_id).log
+    (by simp only [mem_Iio] at hu; simp only [Pi.sub_apply, id]; linarith)).dslope
+    0).neg.contDiffAt.contDiffWithinAt
+
+/-- `a y = R |y| / |y|` in Cartesian form: `a y = √(2 v K L(|y|² K))` with `K = discMassQuotC ρ y`
+(`radius_eq_mul_radiusQuot`). -/
+def radiusQuot (ρ : ℝ × ℝ → ℝ) (v : ℝ≥0) (y : ℝ × ℝ) : ℝ :=
+  √(2 * v * discMassQuotC ρ y * logQuot ((y.1 ^ 2 + y.2 ^ 2) * discMassQuotC ρ y))
+
+/-- The angular displacement `Θ r θ - θ` in Cartesian form
+(`angle_sub_eq_angleDisp`): `D y = (1/2π) ∫_{-π}^{π} ∫_s^0 (2π ρ(rot u y) / m - 1) du ds`. -/
+def angleDisp (ρ : ℝ × ℝ → ℝ) (y : ℝ × ℝ) : ℝ :=
+  (2 * π)⁻¹ * ∫ s in (-π)..π, ∫ u in s..0, (2 * π * ρ (rot u y) / circleMassC ρ y - 1)
+
+lemma contDiff_angleDisp {n : ℕ∞} (hρ : ContDiff ℝ n ρ) (hpos : ∀ x, 0 < ρ x) :
+    ContDiff ℝ n (angleDisp ρ) := by
+  set h : (ℝ × ℝ) × ℝ → ℝ := fun q => 2 * π * ρ (rot q.2 q.1) / circleMassC ρ q.1 - 1 with hh_def
+  have hh : ContDiff ℝ n h :=
+    ((contDiff_const.mul (hρ.comp (contDiff_rot.comp (contDiff_snd.prodMk contDiff_fst)))).div
+      ((contDiff_circleMassC hρ).comp contDiff_fst)
+      fun q => (circleMassC_pos hρ.continuous hpos q.1).ne').sub contDiff_const
+  have hin : ContDiff ℝ n fun q : (ℝ × ℝ) × ℝ => -(q.2 * ∫ t in (0 : ℝ)..1, h (q.1, q.2 * t)) :=
+    (contDiff_snd.mul (hh.comp (f := fun p : ((ℝ × ℝ) × ℝ) × ℝ => (p.1.1, p.1.2 * p.2))
+      (by fun_prop)).parametric_intervalIntegral).neg
+  have : angleDisp ρ = fun y =>
+      (2 * π)⁻¹ * ∫ s in (-π)..π, -(s * ∫ t in (0 : ℝ)..1, h (y, s * t)) := by
+    funext y
+    rw [angleDisp]
+    congr 1
+    refine intervalIntegral.integral_congr fun s _ => ?_
+    rw [intervalIntegral.integral_symm, integral_zero_eq_mul]
+  rw [this]
+  exact contDiff_const.mul hin.parametric_intervalIntegral
 
 namespace IsPosDensity
 
 variable (hρ : IsPosDensity ρ) {v : ℝ≥0}
 include hρ
 
-/-- `Θ r θ - θ → 0` as `r → 0`, uniformly for `|θ| ≤ 2π`. -/
-lemma exists_abs_angle_sub_le {ε : ℝ} (hε : 0 < ε) :
-    ∃ δ > 0, ∀ r θ : ℝ, 0 ≤ r → r < δ → |θ| ≤ 2 * π → |angle ρ r θ - θ| ≤ ε := by
-  have hm0 : 0 < circleMass ρ 0 := circleMass_pos hρ.1 hρ.2 0
-  set ε' := ε * circleMass ρ 0 / (16 * π ^ 2) with hε'_def
-  have hε' : 0 < ε' := by positivity
-  obtain ⟨δ₁, hδ₁, h₁⟩ := Metric.continuous_iff.1 hρ.1 0 ε' hε'
-  obtain ⟨δ₂, hδ₂, h₂⟩ :=
-    Metric.continuous_iff.1 (continuous_circleMass hρ.1) 0 (circleMass ρ 0 / 2) (by positivity)
-  refine ⟨min δ₁ δ₂, lt_min hδ₁ hδ₂, fun r θ hr hrδ hθ => ?_⟩
-  have hcirc : ∀ φ, |polar ρ (r, φ) - ρ 0| ≤ ε' := fun φ => by
-    have := h₁ (polarCoord.symm (r, φ)) (by
-      rw [dist_zero_right]
-      exact (norm_polarCoord_symm_le hr φ).trans_lt (hrδ.trans_le (min_le_left _ _)))
-    rw [Real.dist_eq] at this
-    exact this.le
-  have hm : circleMass ρ 0 / 2 ≤ circleMass ρ r := by
-    have := h₂ r (by
-      rw [Real.dist_eq, sub_zero, abs_of_nonneg hr]
-      exact hrδ.trans_le (min_le_right _ _))
-    rw [Real.dist_eq] at this
-    linarith [(abs_lt.1 this).1]
-  calc |angle ρ r θ - θ| ≤ 4 * π * |θ| * ε' / circleMass ρ r := abs_angle_sub_le hρ.1 hρ.2 hcirc
-    _ ≤ 4 * π * (2 * π) * ε' / (circleMass ρ 0 / 2) := by gcongr
-    _ = ε := by rw [hε'_def]; field_simp; ring
-
-lemma tendsto_angle_sub {α : Type*} {l : Filter α} {r θ : α → ℝ} (hr0 : ∀ᶠ x in l, 0 ≤ r x)
-    (hr : Tendsto r l (𝓝 0)) (hθ : ∀ᶠ x in l, |θ x| ≤ 2 * π) :
-    Tendsto (fun x => angle ρ (r x) (θ x) - θ x) l (𝓝 0) := by
-  rw [Metric.tendsto_nhds]
-  intro ε hε
-  obtain ⟨δ, hδ, h⟩ := hρ.exists_abs_angle_sub_le (half_pos hε)
-  filter_upwards [hr0, hθ, Metric.tendsto_nhds.1 hr δ hδ] with x h0 h1 h2
-  rw [Real.dist_eq, sub_zero] at h2 ⊢
-  rw [abs_of_nonneg h0] at h2
-  exact (h _ _ h0 h2 h1).trans_lt (half_lt_self hε)
-
-lemma tendsto_radius_zero (hv : v ≠ 0) : Tendsto (radius ρ v) (𝓝[>] 0) (𝓝 0) := by
-  have := ((tendsto_id.mono_left nhdsWithin_le_nhds : Tendsto id (𝓝[>] (0 : ℝ)) (𝓝 0)).mul
-    (hρ.tendsto_radius_div hv))
-  rw [zero_mul] at this
-  refine this.congr' ?_
-  filter_upwards [self_mem_nhdsWithin] with r (hr : 0 < r)
-  simp only [id]
+lemma radius_eq_mul_radiusQuot {r : ℝ} (hr : 0 ≤ r) (θ : ℝ) :
+    radius ρ v r = r * radiusQuot ρ v (polarCoord.symm (r, θ)) := by
+  rcases hr.eq_or_lt with rfl | hr
+  · simp [radius_zero]
+  have hM := discMass_pos hρ.1 hρ.2 hr
+  have hMK := discMass_eq_sq_mul (ρ := ρ) r
+  have hK := discMassQuot_pos hρ.1 hρ.2 r
+  rw [radiusQuot, sq_add_sq_polarCoord_symm, discMassQuotC_polarCoord_symm, ← hMK,
+    logQuot_of_ne hM.ne', radius, show ∀ X, r * √X = √(r ^ 2 * X) from fun X => by
+      rw [sqrt_mul (sq_nonneg r), sqrt_sq hr.le]]
+  congr 1
+  rw [hMK]
   field_simp
 
-lemma hasFDerivAt_transport_zero (hv : v ≠ 0) :
-    HasFDerivAt (transport ρ v) (slope ρ v • ContinuousLinearMap.id ℝ (ℝ × ℝ)) 0 := by
-  rw [hasFDerivAt_iff_isLittleO_nhds_zero, Asymptotics.isLittleO_iff]
-  intro ε hε
-  set c := slope ρ v
-  have hc : 0 ≤ c := sqrt_nonneg _
-  have hr := tendsto_polarCoord_fst
-  have e1 : ∀ᶠ y in 𝓝[≠] (0 : ℝ × ℝ),
-      |radius ρ v (polarCoord y).1 / (polarCoord y).1 - c| ≤ ε / 4 := by
-    refine (Metric.tendsto_nhds.1 ((hρ.tendsto_radius_div hv).comp hr) (ε / 4)
-      (by positivity)).mono fun y hy => ?_
-    rw [Real.dist_eq] at hy
-    exact hy.le
-  have e2 : ∀ᶠ y in 𝓝[≠] (0 : ℝ × ℝ),
-      c * |angle ρ (polarCoord y).1 (polarCoord y).2 - (polarCoord y).2| ≤ ε / 4 := by
-    have h := (hρ.tendsto_angle_sub (r := fun y => (polarCoord y).1)
-      (θ := fun y => (polarCoord y).2) (Eventually.of_forall fun y => polarCoord_fst_nonneg y)
-      (hr.mono_right nhdsWithin_le_nhds) (Eventually.of_forall fun y => by
-        have := polarCoord_snd_mem y
-        rw [abs_le]; constructor <;> linarith [pi_pos, this.1, this.2])).const_mul c
-    rw [mul_zero] at h
-    refine (Metric.tendsto_nhds.1 h (ε / 4) (by positivity)).mono fun y hy => ?_
-    rw [Real.dist_eq, sub_zero, abs_mul, abs_of_nonneg hc] at hy
-    exact hy.le
-  have := e1.and e2
-  rw [eventually_nhdsWithin_iff] at this
-  filter_upwards [this] with y hy
-  rcases eq_or_ne y 0 with rfl | hy0
-  · simp [transport_zero]
-  obtain ⟨h1, h2⟩ := hy hy0
-  have hr0 : 0 < (polarCoord y).1 := polarCoord_fst_pos hy0
-  have hcy : c • y = polarCoord.symm (c * (polarCoord y).1, (polarCoord y).2) := by
-    conv_lhs => rw [← polarCoord_symm_polarCoord y]
-    simp [mul_assoc]
-  rw [zero_add, transport_zero, sub_zero, smul_apply, ContinuousLinearMap.id_apply, hcy]
-  calc ‖transport ρ v y - polarCoord.symm (c * (polarCoord y).1, (polarCoord y).2)‖
-      ≤ |radius ρ v (polarCoord y).1 - c * (polarCoord y).1| +
-        |c * (polarCoord y).1| *
-          |angle ρ (polarCoord y).1 (polarCoord y).2 - (polarCoord y).2| :=
-        norm_polarCoord_symm_sub_le _ _ _ _
-    _ = (polarCoord y).1 * |radius ρ v (polarCoord y).1 / (polarCoord y).1 - c| +
-        (polarCoord y).1 *
-          (c * |angle ρ (polarCoord y).1 (polarCoord y).2 - (polarCoord y).2|) := by
-        rw [show radius ρ v (polarCoord y).1 - c * (polarCoord y).1 =
-          (polarCoord y).1 * (radius ρ v (polarCoord y).1 / (polarCoord y).1 - c) by
-          field_simp, abs_mul, abs_of_pos hr0, abs_mul, abs_of_nonneg hc, abs_of_pos hr0]
-        ring
-    _ ≤ (polarCoord y).1 * (ε / 4) + (polarCoord y).1 * (ε / 4) := by gcongr
-    _ = ε / 2 * (polarCoord y).1 := by ring
-    _ ≤ ε / 2 * (2 * ‖y‖) := by gcongr; exact polarCoord_fst_le y
-    _ = ε * ‖y‖ := by ring
+lemma sq_mul_discMassQuotC_lt_one (y : ℝ × ℝ) :
+    (y.1 ^ 2 + y.2 ^ 2) * discMassQuotC ρ y < 1 := by
+  obtain ⟨r, θ, hr, rfl⟩ := exists_polarCoord_symm_eq y
+  rw [sq_add_sq_polarCoord_symm, discMassQuotC_polarCoord_symm, ← discMass_eq_sq_mul]
+  exact discMass_lt_one hρ.1 hρ.2 hρ.3 hr
 
-variable (hρ1 : ContDiff ℝ 1 ρ)
-include hρ1
+lemma contDiff_radiusQuot {n : ℕ∞} (hv : v ≠ 0) (hρn : ContDiff ℝ n ρ) :
+    ContDiff ℝ n (radiusQuot ρ v) := by
+  have hv' : (0 : ℝ) < v := by positivity
+  have hK := contDiff_discMassQuotC hρn
+  have hu : ContDiff ℝ n fun y : ℝ × ℝ => (y.1 ^ 2 + y.2 ^ 2) * discMassQuotC ρ y :=
+    (by fun_prop : ContDiff ℝ n fun y : ℝ × ℝ => y.1 ^ 2 + y.2 ^ 2).mul hK
+  have hL : ContDiff ℝ n fun y : ℝ × ℝ => logQuot ((y.1 ^ 2 + y.2 ^ 2) * discMassQuotC ρ y) :=
+    contDiffOn_logQuot.comp_contDiff hu fun y => hρ.sq_mul_discMassQuotC_lt_one y
+  refine ((contDiff_const.mul hK).mul hL).sqrt fun y => ?_
+  have hK0 : 0 < discMassQuotC ρ y := by
+    obtain ⟨r, θ, -, rfl⟩ := exists_polarCoord_symm_eq y
+    rw [discMassQuotC_polarCoord_symm]
+    exact discMassQuot_pos hρ.1 hρ.2 r
+  exact (mul_pos (mul_pos (by positivity) hK0)
+    (logQuot_pos (hρ.sq_mul_discMassQuotC_lt_one y))).ne'
 
-lemma tendsto_errorTerm (hv : v ≠ 0) :
-    Tendsto (fun y => errorTerm ρ v (slope ρ v) (chart y y)) (𝓝[≠] 0) (𝓝 0) := by
-  set c := slope ρ v
-  have hr := tendsto_polarCoord_fst
-  have hr' : Tendsto (fun y : ℝ × ℝ => (chart y y).1) (𝓝[≠] 0) (𝓝[>] 0) := by
-    simpa only [chart_fst] using hr
-  have hm0 : 0 < circleMass ρ 0 := circleMass_pos hρ.1 hρ.2 0
-  have hθ : ∀ y : ℝ × ℝ, |(chart y y).2| ≤ 2 * π := fun y => by
-    have := chart_snd_mem y y
-    rw [abs_le]; constructor <;> linarith [pi_pos, this.1, this.2]
-  -- the first term
-  have T1 : Tendsto (fun y : ℝ × ℝ => |radiusDeriv ρ v (chart y y).1 - c|) (𝓝[≠] 0) (𝓝 0) := by
-    have := (((hρ.tendsto_radiusDeriv hv).comp hr').sub_const c).abs
-    rwa [show √((v : ℝ) * circleMass ρ 0) - c = 0 from sub_self _, abs_zero] at this
-  -- the second term: `∂Θ/∂r` is bounded near the origin
-  obtain ⟨C, hC⟩ :=
-    (isCompact_Icc.prod (isCompact_Icc (a := -π) (b := 2 * π))).exists_bound_of_continuousOn
-    (((contDiff_angle hρ1 hρ.2).continuous_fderiv one_ne_zero).continuousOn
-      (s := Icc (0 : ℝ) 1 ×ˢ Icc (-π) (2 * π)))
-  have T2 : Tendsto (fun y : ℝ × ℝ => |radius ρ v (chart y y).1 *
-      fderiv ℝ (fun p : ℝ × ℝ => angle ρ p.1 p.2) (chart y y) (1, 0)|) (𝓝[≠] 0) (𝓝 0) := by
-    have hR := ((hρ.tendsto_radius_zero hv).comp hr').const_mul C
-    rw [mul_zero] at hR
-    refine squeeze_zero' (Eventually.of_forall fun _ => abs_nonneg _) ?_ hR
-    have h1 : ∀ᶠ y in 𝓝[≠] (0 : ℝ × ℝ), (chart y y).1 < 1 :=
-      (hr'.mono_right nhdsWithin_le_nhds).eventually (gt_mem_nhds one_pos)
-    filter_upwards [h1] with y hy
-    have hmem : chart y y ∈ Icc (0 : ℝ) 1 ×ˢ Icc (-π) (2 * π) :=
-      ⟨⟨by rw [chart_fst]; exact polarCoord_fst_nonneg y, hy.le⟩, chart_snd_mem y y⟩
-    simp only [Function.comp_apply]
-    rw [abs_mul, abs_of_nonneg (radius_nonneg _), mul_comm]
-    refine mul_le_mul_of_nonneg_right ?_ (radius_nonneg _)
-    set L := fderiv ℝ (fun p : ℝ × ℝ => angle ρ p.1 p.2) (chart y y)
-    have hn : ‖((1, 0) : ℝ × ℝ)‖ ≤ 1 := by rw [Prod.norm_def]; simp
-    calc |L (1, 0)| = ‖L (1, 0)‖ := (Real.norm_eq_abs _).symm
-      _ ≤ ‖L‖ * ‖((1, 0) : ℝ × ℝ)‖ := L.le_opNorm _
-      _ ≤ C * 1 := mul_le_mul (hC _ hmem) hn (norm_nonneg _) ((norm_nonneg _).trans (hC _ hmem))
-      _ = C := mul_one C
-  -- the third term: `R ∂Θ/∂θ / r = (R / r) 2π ρ / m → c`
-  have T3 : Tendsto (fun y : ℝ × ℝ => |radius ρ v (chart y y).1 *
-      fderiv ℝ (fun p : ℝ × ℝ => angle ρ p.1 p.2) (chart y y) (0, 1) / (chart y y).1 - c|)
-      (𝓝[≠] 0) (𝓝 0) := by
-    have hρy : Tendsto ρ (𝓝[≠] (0 : ℝ × ℝ)) (𝓝 (ρ 0)) :=
-      (hρ.1.tendsto 0).mono_left nhdsWithin_le_nhds
-    have hm : Tendsto (fun y : ℝ × ℝ => circleMass ρ (chart y y).1) (𝓝[≠] 0)
-        (𝓝 (circleMass ρ 0)) :=
-      ((continuous_circleMass hρ.1).tendsto 0).comp (hr'.mono_right nhdsWithin_le_nhds)
-    have hlim := ((hρ.tendsto_radius_div hv).comp hr').mul
-      ((tendsto_const_nhds (x := 2 * π)).div hm hm0.ne' |>.mul hρy)
-    have hval : √((v : ℝ) * (2 * π * ρ 0)) * (2 * π / (2 * π * ρ 0) * ρ 0) = c := by
-      rw [show c = √((v : ℝ) * (2 * π * ρ 0)) by simp only [c, slope, circleMass_zero]]
-      have := (hρ.2 0).ne'
-      field_simp
-    rw [circleMass_zero, hval] at hlim
-    have := (hlim.sub_const c).abs
-    rw [sub_self, abs_zero] at this
-    refine this.congr' ?_
-    filter_upwards [self_mem_nhdsWithin] with y (hy : y ≠ 0)
-    have hq := chart_self_fst_pos hy
-    have hpolar : polar ρ (chart y y) = ρ y := by
-      change ρ (polarCoord.symm (chart y y)) = ρ y
-      rw [polarCoord_symm_chart]
-    simp only [Function.comp_apply]
-    rw [hρ.fderiv_angle_snd hρ1, hpolar]
-    congr 2
-    simp only [Pi.div_apply]
+/-- The displacement `Θ r θ - θ` is `D` at `(r cos θ, r sin θ)`. -/
+lemma angle_sub_eq_angleDisp (r θ : ℝ) :
+    angle ρ r θ - θ = angleDisp ρ (polarCoord.symm (r, θ)) := by
+  have hm := (circleMass_pos hρ.1 hρ.2 r).ne'
+  set g : ℝ → ℝ := fun φ => 2 * π * polar ρ (r, φ) / circleMass ρ r - 1 with hg
+  have hpc : Continuous fun φ => polar ρ (r, φ) :=
+    (continuous_polar hρ.1).comp (Continuous.prodMk_right r)
+  have hgc : Continuous g := ((continuous_const.mul hpc).div_const _).sub continuous_const
+  have hgi : ∀ a b, IntervalIntegrable g volume a b := fun a b => hgc.intervalIntegrable a b
+  have hper : Function.Periodic g (2 * π) := fun φ => by simp only [hg, polar_add_two_pi]
+  have hint : ∀ a b : ℝ, ∫ φ in a..b, g φ =
+      2 * π / circleMass ρ r * (∫ φ in a..b, polar ρ (r, φ)) - (b - a) := by
+    intro a b
+    have hc : Continuous fun φ => 2 * π * polar ρ (r, φ) / circleMass ρ r :=
+      (continuous_const.mul hpc).div_const _
+    show ∫ φ in a..b, (2 * π * polar ρ (r, φ) / circleMass ρ r - 1) = _
+    rw [intervalIntegral.integral_sub (hc.intervalIntegrable a b) intervalIntegrable_const,
+      intervalIntegral.integral_div,
+      intervalIntegral.integral_const_mul, intervalIntegral.integral_const, smul_eq_mul, mul_one]
+    ring
+  set G : ℝ → ℝ := fun s => ∫ φ in (0 : ℝ)..s, g φ with hG_def
+  have hG : ∀ s, angle₀ ρ r s - s = G s := fun s => by
+    show angle₀ ρ r s - s = ∫ φ in (0 : ℝ)..s, g φ
+    rw [hint, angle₀, sub_zero]
+  have hGc : Continuous G := intervalIntegral.continuous_primitive hgi 0
+  have hmean : ∫ φ in (-π)..π, g φ = 0 := by
+    rw [hint, show (∫ φ in (-π)..π, polar ρ (r, φ)) = circleMass ρ r from rfl]
     field_simp
-  -- the fourth term
-  have T4 : Tendsto (fun y : ℝ × ℝ => c * |angle ρ (chart y y).1 (chart y y).2 - (chart y y).2|)
-      (𝓝[≠] 0) (𝓝 0) := by
-    have := (hρ.tendsto_angle_sub
-      (Eventually.of_forall fun y => by rw [chart_fst]; exact polarCoord_fst_nonneg y)
-      (hr'.mono_right nhdsWithin_le_nhds) (Eventually.of_forall hθ)).abs.const_mul c
-    simpa using this
-  simpa [errorTerm] using ((T1.add T2).add T3).add T4
+    ring
+  have hGper : Function.Periodic G (2 * π) := fun s => by
+    simp only [hG_def]
+    rw [← intervalIntegral.integral_add_adjacent_intervals (hgi 0 s) (hgi s (s + 2 * π)),
+      hper.intervalIntegral_add_eq s (-π), show -π + 2 * π = π by ring, hmean, add_zero]
+  -- the right side
+  have hin : ∀ s, ∫ u in s..0, (2 * π * ρ (rot u (polarCoord.symm (r, θ))) /
+      circleMassC ρ (polarCoord.symm (r, θ)) - 1) = G θ - G (θ + s) := by
+    intro s
+    have : ∀ u, 2 * π * ρ (rot u (polarCoord.symm (r, θ))) /
+        circleMassC ρ (polarCoord.symm (r, θ)) - 1 = g (θ + u) := fun u => by
+      rw [rot_polarCoord_symm, circleMassC_polarCoord_symm]; rfl
+    simp only [this]
+    rw [intervalIntegral.integral_comp_add_left g θ, add_zero, hG_def,
+      intervalIntegral.integral_interval_sub_left (hgi 0 θ) (hgi 0 (θ + s))]
+  have hshift : ∫ s in (-π)..π, G (θ + s) = ∫ s in (-π)..π, G s := by
+    rw [intervalIntegral.integral_comp_add_left G θ, show θ + π = θ + -π + 2 * π by ring,
+      hGper.intervalIntegral_add_eq (θ + -π) (-π), show -π + 2 * π = π by ring]
+  rw [angleDisp]
+  simp only [hin]
+  have hGi : IntervalIntegrable (fun s => G (θ + s)) volume (-π) π :=
+    (hGc.comp (continuous_const.add continuous_id)).intervalIntegrable _ _
+  rw [intervalIntegral.integral_sub intervalIntegrable_const hGi, hshift,
+    intervalIntegral.integral_const, smul_eq_mul, angle, angleShift, add_sub_right_comm, hG θ]
+  simp only [hG]
+  field_simp
+  ring
 
-lemma tendsto_fderivTransport (hv : v ≠ 0) :
-    Tendsto (fun y => fderivTransport ρ v (chart y y)) (𝓝[≠] 0)
-      (𝓝 (slope ρ v • ContinuousLinearMap.id ℝ (ℝ × ℝ))) := by
-  rw [tendsto_iff_norm_sub_tendsto_zero]
-  refine squeeze_zero (fun _ => norm_nonneg _)
-    (fun y => norm_fderivTransport_sub_le (sqrt_nonneg _) _) ?_
-  have := (hρ.tendsto_errorTerm hρ1 hv).const_mul 2
-  rwa [mul_zero] at this
+/-- **The transport map in Cartesian form**: `T y = a y • rot (D y) y`. -/
+lemma transport_eq_smul_rot (x : ℝ × ℝ) :
+    transport ρ v x = radiusQuot ρ v x • rot (angleDisp ρ x) x := by
+  obtain ⟨r, θ, hr, rfl⟩ := exists_polarCoord_symm_eq x
+  rw [hρ.transport_polarCoord_symm hr, rot_polarCoord_symm, smul_polarCoord_symm,
+    ← hρ.angle_sub_eq_angleDisp, add_sub_cancel, mul_comm, ← hρ.radius_eq_mul_radiusQuot hr]
+
+/-- The transport map is as smooth as `ρ`. -/
+theorem contDiff_transport {n : ℕ∞} (hv : v ≠ 0) (hρn : ContDiff ℝ n ρ) :
+    ContDiff ℝ n (transport ρ v) := by
+  rw [show transport ρ v = fun x => radiusQuot ρ v x • rot (angleDisp ρ x) x from
+    funext hρ.transport_eq_smul_rot]
+  exact (hρ.contDiff_radiusQuot hv hρn).smul
+    (contDiff_rot.comp ((contDiff_angleDisp hρn hρ.2).prodMk contDiff_id))
+
+end IsPosDensity
 
 /-! ### Main results -/
+
+lemma continuous_gauss (v : ℝ≥0) : Continuous (gauss v) := by
+  unfold gauss gaussianPDFReal
+  fun_prop
+
+namespace IsPosDensity
+
+variable (hρ : IsPosDensity ρ) (hρ1 : ContDiff ℝ 1 ρ) {v : ℝ≥0}
+include hρ hρ1
 
 lemma fderiv_transport_of_ne (hv : v ≠ 0) {y : ℝ × ℝ} (hy : y ≠ 0) :
     fderiv ℝ (transport ρ v) y = fderivTransport ρ v (chart y y) :=
   (hρ.hasFDerivAt_transport hρ1 hv hy).fderiv
 
-/-- The transport map is `C¹`. -/
-theorem contDiff_transport (hv : v ≠ 0) : ContDiff ℝ 1 (transport ρ v) := by
-  rw [contDiff_one_iff_fderiv]
-  refine ⟨fun y => ?_, continuous_iff_continuousAt.2 fun y => ?_⟩
-  · rcases eq_or_ne y 0 with rfl | hy
-    · exact (hρ.hasFDerivAt_transport_zero hv).differentiableAt
-    · exact (hρ.contDiffAt_transport hρ1 hv hy).differentiableAt one_ne_zero
-  · rcases eq_or_ne y 0 with rfl | hy
-    · refine continuousWithinAt_compl_self.1 ?_
-      rw [ContinuousWithinAt, (hρ.hasFDerivAt_transport_zero hv).fderiv]
-      refine (hρ.tendsto_fderivTransport hρ1 hv).congr' ?_
-      filter_upwards [self_mem_nhdsWithin] with z (hz : z ≠ 0)
-      exact (hρ.fderiv_transport_of_ne hρ1 hv hz).symm
-    · exact (hρ.contDiffAt_transport hρ1 hv hy).continuousAt_fderiv one_ne_zero
-
 /-- **The density identity**: `ρ x = G (T x) |det DT x|` for the isotropic Gaussian `G` of
-variance `v`. -/
+variance `v`. At the origin it follows from the identity elsewhere by continuity. -/
 theorem eq_gauss_mul_abs_det (hv : v ≠ 0) (x : ℝ × ℝ) :
     ρ x = gauss v (transport ρ v x) * |(fderiv ℝ (transport ρ v) x).det| := by
-  rcases eq_or_ne x 0 with rfl | hx
-  · have hv' : (0 : ℝ) < v := by positivity
-    have hg : gauss v (0 : ℝ × ℝ) = (2 * π * v)⁻¹ := by
-      have h := gauss_polarCoord_symm hv 0 0
-      simp only [polarCoord_symm_apply, zero_mul, ne_eq, OfNat.ofNat_ne_zero,
-        not_false_eq_true, zero_pow, neg_zero, zero_div, exp_zero, mul_one] at h
-      exact h
-    have hdet : (slope ρ v • ContinuousLinearMap.id ℝ (ℝ × ℝ)).det = slope ρ v ^ 2 := by
-      rw [ContinuousLinearMap.det, ContinuousLinearMap.toLinearMap_smul, LinearMap.det_smul,
-        ContinuousLinearMap.coe_id, LinearMap.det_id, Module.finrank_prod, Module.finrank_self,
-        mul_one]
-    rw [(hρ.hasFDerivAt_transport_zero hv).fderiv, transport_zero, hg, hdet, slope,
-      sq_sqrt (mul_pos hv' (circleMass_pos hρ.1 hρ.2 0)).le, circleMass_zero,
-      abs_of_pos (by have := hρ.2 0; positivity)]
-    field_simp
-  · rw [hρ.fderiv_transport_of_ne hρ1 hv hx]
-    exact hρ.eq_gauss_mul_abs_det_of_ne hρ1 hv hx
+  have hT := hρ.contDiff_transport hv hρ1
+  have hc : Continuous fun x => gauss v (transport ρ v x) * |(fderiv ℝ (transport ρ v) x).det| :=
+    ((continuous_gauss v).comp hT.continuous).mul
+      (ContinuousLinearMap.continuous_det.comp (hT.continuous_fderiv one_ne_zero)).abs
+  refine congrFun (Continuous.ext_on (dense_compl_singleton 0) hρ.1 hc fun y hy => ?_) x
+  rw [hρ.fderiv_transport_of_ne hρ1 hv hy]
+  exact hρ.eq_gauss_mul_abs_det_of_ne hρ1 hv hy
 
 end IsPosDensity
 
-/-- **Transport of a positive `C¹` density on the plane to a Gaussian.** For a positive `C¹`
-probability density `ρ` on `ℝ × ℝ` and `v > 0` there is a `C¹` bijection `T` of the plane with
-`ρ x = G (T x) |det DT x|`, where `G` is the product of two centred Gaussian densities of
-variance `v`. -/
-theorem exists_transport_gaussian {ρ : ℝ × ℝ → ℝ} (hρ1 : ContDiff ℝ 1 ρ) (hpos : ∀ x, 0 < ρ x)
-    (hint : ∫ x, ρ x = 1) {v : ℝ≥0} (hv : v ≠ 0) :
-    ∃ T : ℝ × ℝ → ℝ × ℝ, ContDiff ℝ 1 T ∧ Function.Bijective T ∧
+/-- **Transport of a positive density on the plane to a Gaussian.** For a positive `Cⁿ`
+probability density `ρ` on `ℝ × ℝ`, `n ≥ 1`, and `v > 0` there is a `Cⁿ` bijection `T` of the
+plane with `ρ x = G (T x) |det DT x|`, where `G` is the product of two centred Gaussian densities
+of variance `v`. -/
+theorem exists_transport_gaussian {ρ : ℝ × ℝ → ℝ} {n : ℕ∞} (hρn : ContDiff ℝ n ρ) (hn : 1 ≤ n)
+    (hpos : ∀ x, 0 < ρ x) (hint : ∫ x, ρ x = 1) {v : ℝ≥0} (hv : v ≠ 0) :
+    ∃ T : ℝ × ℝ → ℝ × ℝ, ContDiff ℝ n T ∧ Function.Bijective T ∧
       ∀ x, ρ x = gaussianPDFReal 0 v (T x).1 * gaussianPDFReal 0 v (T x).2 *
         |(fderiv ℝ T x).det| := by
+  have hρ1 : ContDiff ℝ 1 ρ := hρn.of_le (by exact_mod_cast hn)
   have hρ : IsPosDensity ρ := ⟨hρ1.continuous, hpos, hint⟩
-  exact ⟨transport ρ v, hρ.contDiff_transport hρ1 hv, hρ.bijective_transport hv,
+  exact ⟨transport ρ v, hρ.contDiff_transport hv hρn, hρ.bijective_transport hv,
     hρ.eq_gauss_mul_abs_det hρ1 hv⟩
 
 end PolarTransport

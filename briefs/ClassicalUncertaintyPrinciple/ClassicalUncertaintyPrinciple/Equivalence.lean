@@ -33,10 +33,11 @@ in which `D` is arbitrarily small (**Proposition 6**) turn GCUR into `S_h[ρ] �
 For a positive `C¹` density the coordinates exist (**Proposition 5**): `ρ_{fg}` is exactly a
 product of Gaussians in the coordinates of a polar Knothe–Rosenblatt map
 (`PolarTransport.exists_transport_gaussian`), which replaces the brief's appeal to the
-volume-transport theorem of Greene and Shiohama. For a general density of finite entropy
-(**Proposition 6**, a proof sketch in the brief), `ρ` is approximated in relative entropy by a
-positive `C¹` density `η` (`MeasureTheory.exists_contDiff_integral_mul_log_div_lt`), which is
-transported to a product `γ` of Gaussians; the change of variables, Young's inequality for the
+volume-transport theorem of Greene and Shiohama; the coordinates are as smooth as `ρ`. For a
+general density of finite entropy (**Proposition 6**, a proof sketch in the brief), `ρ` is
+approximated in relative entropy by a positive `C¹` density `η`
+(`MeasureTheory.exists_contDiff_integral_mul_log_div_lt`), which is transported to a product `γ`
+of Gaussians; the change of variables, Young's inequality for the
 variances and the Gaussian moment identity `D(ρ_{fg} ‖ G_{fg}) ≤ D(ρ_{fg} ‖ γ)` give
 `HasGaussianFrames`, from which Theorem 12 follows.
 
@@ -491,14 +492,15 @@ lemma poissonBracket_eq_det {T : ℝ × ℝ → ℝ × ℝ} (hT : Differentiable
     ext <;> simp
   rw [poissonBracket, ← det_prod, hf, hg, hD]
 
-/-- **Proposition 5.** A positive `C¹` density of finite entropy has admissible coordinates
-`(f, g)` in which `ρ_{fg}` is a product of Gaussians of zero entropy; in them
-`σ_f σ_g = h / 2π e` and `S_h[ρ] = -E[log |{f, g}|]`. The coordinates are the polar
-Knothe–Rosenblatt map `PolarTransport.transport`, in place of the brief's appeal to the
-volume-transport theorem of Greene and Shiohama; they are `C¹`, where the brief has smooth. -/
-theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsemble ρ)
-    (hρ1 : ContDiff ℝ 1 ρ) (hpos : ∀ x, 0 < ρ x) :
-    ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧
+/-- **Proposition 5.** A positive `Cⁿ` density of finite entropy, `n ≥ 1`, has admissible `Cⁿ`
+coordinates `(f, g)` in which `ρ_{fg}` is a product of Gaussians of zero entropy; in them
+`σ_f σ_g = h / 2π e` and `S_h[ρ] = -E[log |{f, g}|]`. For `n = ∞` this is the brief's smooth
+coordinate change. The coordinates are the polar Knothe–Rosenblatt map
+`PolarTransport.transport`, in place of the brief's appeal to the volume-transport theorem of
+Greene and Shiohama. -/
+theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsemble ρ) {n : ℕ∞}
+    (hρn : ContDiff ℝ n ρ) (hn : 1 ≤ n) (hpos : ∀ x, 0 < ρ x) :
+    ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ ContDiff ℝ n f ∧ ContDiff ℝ n g ∧
       (∀ u, densityFG f g ρ u =
         gaussProd 0 (h / (2 * π * exp 1)).toNNReal 0 (h / (2 * π * exp 1)).toNNReal u) ∧
       entropy h (densityFG f g ρ) = 0 ∧
@@ -507,8 +509,9 @@ theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsembl
   set v := (h / (2 * π * exp 1)).toNNReal with hv_def
   have hv0 : (0 : ℝ) < h / (2 * π * exp 1) := by positivity
   have hv : v ≠ 0 := by rw [hv_def, Ne, Real.toNNReal_eq_zero, not_le]; exact hv0
-  obtain ⟨T, hT1, hTb, hTρ⟩ :=
-    PolarTransport.exists_transport_gaussian hρ1 hpos hρ.integral_eq_one hv
+  obtain ⟨T, hTn, hTb, hTρ⟩ :=
+    PolarTransport.exists_transport_gaussian hρn hn hpos hρ.integral_eq_one hv
+  have hT1 : ContDiff ℝ 1 T := hTn.of_le (by exact_mod_cast hn)
   have hTd : Differentiable ℝ T := hT1.differentiable one_ne_zero
   have hG : ∀ x, ρ x = gaussProd 0 v 0 v (T x) * |(fderiv ℝ T x).det| := hTρ
   have hdet : ∀ x, (fderiv ℝ T x).det ≠ 0 := fun x h0 => by
@@ -533,8 +536,8 @@ theorem exists_isAdmissible_densityFG_eq_gaussProd (hh : 0 < h) (hρ : IsEnsembl
   obtain ⟨hlog, hsd, hS⟩ := hNV.sd_mul_sd_eq_of_entropy_densityFG_eq_zero hh hρ hv hv
     (Filter.Eventually.of_forall hD) h0
   exact ⟨fun x => (T x).1, fun x => (T x).2, ⟨contDiff_fst.comp hT1, contDiff_snd.comp hT1,
-    hNV.injective,
-    hNV.poissonBracket_ne_zero, hlog⟩, hD, h0, hsd, hS⟩
+    hNV.injective, hNV.poissonBracket_ne_zero, hlog⟩, contDiff_fst.comp hTn,
+    contDiff_snd.comp hTn, hD, h0, hsd, hS⟩
 
 end Proposition5
 
@@ -924,7 +927,8 @@ theorem lowerEntropicBound_iff_generalizedUncertaintyRelation_of_hasGaussianFram
 /-- A positive `C¹` density of finite entropy has Gaussian frames (Proposition 5). -/
 theorem hasGaussianFrames_of_contDiff (hh : 0 < h) (hρ : IsEnsemble ρ) (hρ1 : ContDiff ℝ 1 ρ)
     (hpos : ∀ x, 0 < ρ x) : HasGaussianFrames ρ := by
-  obtain ⟨f, g, T, hD, -⟩ := exists_isAdmissible_densityFG_eq_gaussProd hh hρ hρ1 hpos
+  obtain ⟨f, g, T, -, -, hD, -⟩ :=
+    exists_isAdmissible_densityFG_eq_gaussProd hh hρ (n := 1) hρ1 le_rfl hpos
   have hv : (h / (2 * π * exp 1)).toNNReal ≠ 0 := by
     rw [Ne, Real.toNNReal_eq_zero, not_le]; positivity
   exact hasGaussianFrames_of_densityFG_eq T hv hv (Filter.Eventually.of_forall hD)
@@ -1059,7 +1063,7 @@ theorem hasGaussianFrames (hρ : IsEnsemble ρ) : HasGaussianFrames ρ := by
     (contDiff_gaussProd 0 0 1 1) (gaussProd_pos hv hv) (integrable_gaussProd 0 0 1 1)
     (integral_gaussProd hv hv) hε
   -- its transport to `γ`
-  obtain ⟨T, hT1, hTb, hTη⟩ := PolarTransport.exists_transport_gaussian hηc hηpos hη1 hv
+  obtain ⟨T, hT1, hTb, hTη⟩ := PolarTransport.exists_transport_gaussian hηc le_rfl hηpos hη1 hv
   have hTd : Differentiable ℝ T := hT1.differentiable one_ne_zero
   have hTm : Measurable T := hT1.continuous.measurable
   have hG : ∀ x, η x = γ (T x) * |(fderiv ℝ T x).det| := hTη
