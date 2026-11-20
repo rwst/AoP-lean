@@ -41,10 +41,17 @@ precise first.
   $E[|\ln\eta_j| \mid \rho_{qp}] < \infty$; that ``the entropy variational inequality ensures
   finite coordinate variances'' after transport; and, for $S[\rho_{qp}] = -\infty$, densities
   $\eta_j$ with finite logarithmic expectations tending to $+\infty$ whose transports to a
-  uniform density on a bounded rectangle keep the variances bounded. Each step is standard, but
-  a complete argument, with the integrability of $\ln J_{T_j}$ that admissibility needs, is
-  wanted before the proposition can be checked in full. Theorem~12 uses it for densities that
-  are not positive and smooth. (Brief, Sec.~2, Proposition~6; Sec.~4, Theorem~12.)
+  uniform density on a bounded rectangle keep the variances bounded. The approximation is the
+  step that needs care: a finite entropy does not give a finite second or even logarithmic
+  moment (spread mass $p_n$ at density $1$ over patches far apart), so no fixed reference
+  density, such as a mixture $(1-\varepsilon)\,\rho*\varphi_\delta + \varepsilon\gamma$ with a
+  Gaussian $\gamma$ and a single smoothing scale $\delta$, controls $D(\rho_{qp}\,\|\,\eta_j)$ in
+  general; the smoothing scale has to depend on position. The condition
+  $E[|\ln\eta_j| \mid \rho_{qp}] < \infty$ follows from $D(\rho_{qp}\,\|\,\eta_j) < \infty$ and
+  a finite entropy, and the finite variances from Young's inequality
+  $ab \le a\ln a - a + e^b$; a route for the finite-entropy case is in the next section.
+  Theorem~12 uses the proposition for densities that are not positive and smooth. (Brief,
+  Sec.~2, Proposition~6; Sec.~4, Theorem~12.)
 \item \textbf{The quantum case in the conclusion.} The conclusion places the lower entropic bound
   in quantum mechanics: pure states have zero entropy and mixed states non-negative entropy. The
   von Neumann entropy vanishes on every pure state whatever its $\sigma_q\sigma_p$, so this bound
@@ -67,13 +74,34 @@ precise first.
   and Theorem~12 is proved unconditionally
   (\lean{lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff}); the coordinates
   come from a Knothe--Rosenblatt map in polar coordinates
-  (\lean{PolarTransport.exists_transport_gaussian}). Missing for a general measurable density,
-  Proposition~6: approximation in relative entropy by positive smooth densities with integrable
-  logarithm, transport (the polar map serves for each positive $C^1$ approximant), invariance of
-  relative entropy under admissible coordinate changes, and the Gaussian moment identity
-  $D(\rho_{fg}\,\|\,\gamma) = D(\rho_{fg}\,\|\,G_{fg}) + D(G_{fg}\,\|\,\gamma)$, which gives
-  $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$ for every product of Gaussians
-  $\gamma$. None of this is in Mathlib. (Log, ``Differences from the brief''.)
+  (\lean{PolarTransport.exists_transport_gaussian}). Missing for a general density of finite
+  entropy is \lean{HasGaussianFrames} itself, which would make Theorem~12 and eq.~(7)
+  unconditional. A route, with $\gamma$ the product Gaussian of zero entropy:
+  \begin{enumerate}
+  \item[(a)] \emph{Approximation.} For $\varepsilon > 0$, a positive $C^1$ density $\eta$ with
+    $D(\rho\,\|\,\eta) < \varepsilon$, by smoothing locally: with a smooth partition of unity
+    $\chi_k$ on the annuli $k \le |x|^2 \le k + 1$ (telescoped from
+    \lean{Real.smoothTransition}), $\eta = (1-\varepsilon)\sum_k (\chi_k\rho) * \varphi_{\delta_k}
+    + \varepsilon\gamma$ is $C^1$ (a locally finite sum, \lean{contDiff_finsum}), positive, and of
+    mass $1$ (\lean{integral_convolution}). By Lebesgue differentiation
+    (\lean{ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable}), $\delta_k$ can be
+    chosen so that $\eta \ge (1-\varepsilon)^2\rho$ outside a set on which annulus $k$ contributes
+    at most $\varepsilon 2^{-k}$ to $\int \rho \ln(\rho/\varepsilon\gamma)$, which is finite there
+    since $|x|^2 \le k + 2$. Then $D(\rho\,\|\,\eta) \le 2\ln\frac{1}{1-\varepsilon} +
+    \varepsilon$, and $\rho\ln\eta$ is integrable.
+  \item[(b)] \emph{Transport} of $\eta$ to $\gamma$ by the polar map; proved.
+  \item[(c)] \emph{Invariance and finite variances.} $D(\rho_{fg}\,\|\,\gamma) =
+    D(\rho\,\|\,\eta)$ by change of variables (\lean{integrable_mul_densityFG_iff}). Young's
+    inequality with $a = \rho/\eta$, $b = \lambda|T|^2$, integrated against $\eta$, gives
+    $E[|T|^2 \mid \rho] < \infty$, hence finite variances and, from
+    $\ln J_T = \ln\eta - \ln\gamma(T)$, the integrability of $\ln J_T$ in \lean{IsAdmissible}.
+  \item[(d)] \emph{Gaussian moment identity.} $D(\rho_{fg}\,\|\,\gamma) -
+    D(\rho_{fg}\,\|\,G_{fg})$ is, by \lean{gaussianDivergence_eq}, a sum over the two coordinates
+    of $\frac12(x - 1 - \ln x) + m^2/2s^2 \ge 0$, with $x$ the ratio of the variances and $m$ the
+    mean; so $D(\rho_{fg}\,\|\,G_{fg}) < \varepsilon$.
+  \end{enumerate}
+  Steps (a) and (c) belong in Mathlib, which has neither. The coordinates are $C^1$, as in the
+  next item. (Log, ``Differences from the brief''.)
 \item \textbf{Smooth coordinates in Proposition~5.} The brief's coordinates are smooth; the
   polar map is smooth away from the origin and $C^1$ at it, which is what \lean{IsAdmissible}
   asks for. Smoothness at the origin is not expected for a non-radial $\rho$, so smooth
