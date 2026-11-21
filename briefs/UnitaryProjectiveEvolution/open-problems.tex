@@ -33,6 +33,8 @@ Items marked \textsc{[blocks verification]} stand in the way of checking a main
 claim of the brief as the brief states it: a \emph{formalization gap} can be closed
 in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
 precise first.
+Each item is marked \emph{Formalization gap}, when the mathematics is known and only its
+formalization is missing, or \emph{Research}, when the question itself is open.
 
 \section*{From the formalization}
 \noindent Beyond finite dimension the formalization has a part in any dimension, which covers
@@ -42,7 +44,8 @@ unbounded $H$ in DR-UNIT $\Rightarrow$ DR-PROJ and derives the evolution structu
 eq.~(22).
 \begin{enumerate}
 \item \blocker{brief issue}
-  \textbf{Durations with irrational ratio.}
+  \textbf{Durations with irrational ratio.} \emph{Research} in
+  infinite dimension; in finite dimension the fix below is formalized.
   DR-PROJ defines $\Phi_t$ only as
   $\lim_n(\Psi_{t/n})^n$. For $t/s$ irrational a common step $\tau$ gives blocks $\Psi_\tau^k$ that
   are not of this form, so ``common refinements'' and continuity at zero do not prove
@@ -64,7 +67,7 @@ eq.~(22).
   the derivative $[H_0,\rho]/(i\hbar)$ on the density operators built from vectors of
   $\mathcal{D}(H_0)$, which are dense, then DR-PROJ holds while DR-UNIT would force
   $H_1 = H_2 + c$. (Brief, Sec.~4, after eq.~(29); Log, ``Problems found''.)
-\item \blocker{brief issue}\textbf{What perfect reconstruction means.}
+\item \blocker{brief issue}\textbf{What perfect reconstruction means.} \emph{Research.}
   DR-PROJ only asks that the probabilities of
   the reconstructed sequences tend to one. The formalization instead assumes a second projective
   limit $\Phi'_t$ with $\Phi'_t(\Phi_t P) = P$ and $\Phi_t(\Phi'_t P) = P$ on pure states. It is

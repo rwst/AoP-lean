@@ -32,7 +32,10 @@ Open problems raised by the technical brief in this directory, and by its Lean f
 Items marked \textsc{[blocks verification]} stand in the way of checking a main
 claim of the brief as the brief states it: a \emph{formalization gap} can be closed
 in Lean alone, while a \emph{brief issue} needs the brief to be corrected or made
-precise first. Items marked \textsc{[optional]} would strengthen a result that is already
+precise first.
+Each item is marked \emph{Formalization gap}, when the mathematics is known and only its
+formalization is missing, or \emph{Research}, when the question itself is open. An item marked \emph{Brief issue} waits only on a correction of the
+brief, and is neither. Items marked \textsc{[optional]} would strengthen a result that is already
 checked; no claim of the brief waits on them.
 
 Theorem~5 is verified, and Theorem~3 for $\dim\mathcal H \ge 2$. Example~2 is verified at the
@@ -43,7 +46,7 @@ marked below.
 
 \section*{From the brief}
 \begin{enumerate}
-\item \blocker{brief issue}\textbf{The range of Theorem~1.} The theorem claims consistency for
+\item \blocker{brief issue}\textbf{The range of Theorem~1.} \emph{Brief issue.} The theorem claims consistency for
   $1 \le \dim V < \infty$, while its proof uses $2 \le \dim X$. Making it precise needs four
   choices.
   \begin{itemize}
@@ -70,7 +73,7 @@ marked below.
   $2 \le \dim V < \infty$ for a Hausdorff $V$ with $X = P(V)$ as topological spaces. Theorem~3 and its Lean proof then stand
   as they are. The alternative keeps $1 \le \dim V$, also excludes the empty space and restricts
   Theorem~3 to $\dim\mathcal H \ge 2$. (Log, ``Problems found'', first three items.)
-\item \textbf{Ensembles supported on a subspace.} This is a brief issue: the proof of Theorem~3
+\item \textbf{Ensembles supported on a subspace.} \emph{Brief issue.} The proof of Theorem~3
   needs to be corrected, while its Lean version is not affected. The proof compares the ensembles
   with support in a two-dimensional subspace $A$. On the side of QE-DENS these are the density
   operators with range in $A$, a copy of the Bloch ball. On the side of CST, for
@@ -88,7 +91,7 @@ marked below.
   $\mathcal H$ with $\dim\mathcal H \ge 2$, also infinite-dimensional ones, without the ``only
   if'' of Theorem~1. The alternative is to compare the whole spaces as in Lean and keep
   $\dim\mathcal H < \infty$ from Theorem~1.
-\item \textbf{Hamiltonian evolution on the classical qubit.} Example~2 identifies Hamiltonian
+\item \textbf{Hamiltonian evolution on the classical qubit.} \emph{Formalization gap.} Example~2 identifies Hamiltonian
   evolution with the diffeomorphisms that conserve the volume. Area-preserving reflections of the
   sphere are not Hamiltonian, so the area form should be meant. Lean checks this for complex
   conjugation of the Riemann sphere, the Bloch reflection $a_1 \mapsto -a_1$
@@ -129,7 +132,7 @@ marked below.
     subspace'' it no longer does.
   \end{itemize}
   (Log, ``Results''.)
-\item \textbf{Example~2.} $P(\mathbb C^2)$ is homeomorphic to the sphere
+\item \textbf{Example~2.} \emph{Formalization gap.} $P(\mathbb C^2)$ is homeomorphic to the sphere
   (\lean{nonempty_homeomorph_sphere}), its area is $dz\,d\theta$ (\lean{toSphere_eq_dz_dtheta}),
   the quantum evolutions are the rotations (\lean{exists_unitaryAction_eq_iff}) and every
   Hamiltonian makes the Bloch vector precess (\lean{exists_blochVector_precession}). Still
@@ -140,7 +143,7 @@ marked below.
   item for $n = 1$ (\lean{Projectivization.fubiniStudyForm}), which should give area $\pi$; the integrated rotation of the precession; the classical side of linear Hamiltonians,
   $X_{n\cdot x} = n \times x$, which needs moment maps. Refinements of Hamiltonian evolution are
   in the next item. (Log, ``Differences''.)
-\item \textsc{[optional]}~\textbf{Refinements of Hamiltonian evolution.} The evolutions of
+\item \textsc{[optional]}~\textbf{Refinements of Hamiltonian evolution.} \emph{Formalization gap.} The evolutions of
   Example~2 are checked with each velocity field $X_t$ Hamiltonian for its own $H_t$
   (\lean{preserves_areaForm_iff_hamiltonian}, \lean{isotopy_preserves_areaForm_iff_hamiltonian}).
   Three refinements remain.

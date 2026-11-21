@@ -27,10 +27,13 @@
 \noindent
 Open problems raised by the technical brief in this directory, and by its Lean formalization
 (see \lean{formalization-log.tex}).
+Each item is marked \emph{Formalization gap}, when the mathematics is known and only its
+formalization is missing, or \emph{Research}, when the question itself is open.
 
 \section*{From the brief}
 \begin{enumerate}
-\item \textbf{Propagator for unbounded time-dependent $H(t)$.} ``The Schr\"odinger equation
+\item \textbf{Propagator for unbounded time-dependent $H(t)$.} \emph{Formalization
+  gap} under Kato's hypotheses (next section, item~(vi)); research beyond them. ``The Schr\"odinger equation
   gives rise to a differentiable unitary propagator $U_{t_0\to t_1}$'' is assumed. For a
   continuous family of bounded self-adjoint $H(t)$ this is now proved, in any dimension, from
   the global existence and uniqueness theorem for linear ODEs: the propagator exists, is unique
@@ -66,7 +69,8 @@ all hypotheses, with EVDIFF in operator norm, but no unitary family inducing it 
 norm-differentiable at $0$ (\lean{movingPhase_counterexample}; log, ``No norm-differentiable
 propagator'').
 \begin{enumerate}
-\item \textbf{Unbounded time-dependent Hamiltonians.} EVDIFF on every density operator forces a
+\item \textbf{Unbounded time-dependent Hamiltonians.} \emph{Research}, with the
+  formalization gaps (iv)--(vi) at the end of this item. EVDIFF on every density operator forces a
   bounded $H$ (Banach--Steinhaus). With EVDIFF on a dense set of states, Theorem~2 is formalized
   for a time-independent evolution, with unbounded self-adjoint $H$
   (\lean{drSceq_iff_drInfo_and_evDiff}, by Stone's theorem). Without EVTI, Step~3 gives only a
@@ -140,8 +144,8 @@ propagator'').
   (\lean{UnitaryPropagator.howlandGenerator_smul_of_group}). Open: how $K$ determines
   $H(t_0)$ at a single time, and whether that $H(t_0)$ is self-adjoint.
 
-  Remaining for this item. Those marked \emph{research} are open questions; the others are known
-  results, not yet formalized.
+  Remaining for this item. Those marked \emph{Research} are open questions; the others are known
+  results, formalization gaps.
   \begin{enumerate}
   \item[(i)] \emph{Research.} A relative bound in the invariant-core condition:
     $\|\partial_t F(t)\psi - BF(t)\psi\| \le C(\|B\psi\| + \|\psi\|)$ in place of
@@ -157,16 +161,16 @@ propagator'').
     counterexample, not checked: $U(t,s) = G(t)e^{-i(t-s)p^2}G(s)^{-1}$ with
     $G(t) = e^{it^2x^4}$ and $D$ the Schwartz space; the generator at $t_0$ is like
     $p^2 - 2t_0x^4$, limit circle at infinity.
-  \item[(iv)] Known. $K = H(t) - i\hbar\,\partial_t$ on a core for a time-dependent family
+  \item[(iv)] \emph{Formalization gap.} Known. $K = H(t) - i\hbar\,\partial_t$ on a core for a time-dependent family
     $H(t)$ under Kato-type hypotheses (Howland 1974).
-  \item[(v)] Known. Nickel's characterization: $U$ solves the Cauchy problem iff $K$ has an
+  \item[(v)] \emph{Formalization gap.} Known. Nickel's characterization: $U$ solves the Cauchy problem iff $K$ has an
     invariant core of the form $G_0 + A$ (Nickel 1997, Thm.~2.9, cited in Engel--Nagel,
     Rem.~VI.9.12). The paper could not be obtained.
-  \item[(vi)] Known. Kato's theorem: constant domain and $t \mapsto H(t)\psi$ of class $C^1$
+  \item[(vi)] \emph{Formalization gap.} Known. Kato's theorem: constant domain and $t \mapsto H(t)\psi$ of class $C^1$
     give a unitary propagator. Needs Yosida-approximation or product-integral machinery that
     neither Mathlib nor Physlib has.
   \end{enumerate}
-\item \textbf{Equation at every time in infinite dimension.} In finite dimension, one
+\item \textbf{Equation at every time in infinite dimension.} \emph{Formalization gap.} In finite dimension, one
   differentiable unitary $U(t)$ for all times solves the Schr\"odinger equation at every time,
   and $\Phi_{t_0\to t_1}$ is conjugation by $U(t_1)U(t_0)^\dagger$
   (\lean{TwoParameter.drSceq_iff_drInfo_and_evDiff}). The proof fixes the determinant of the local
@@ -174,7 +178,7 @@ propagator'').
   determinant is not defined, and the local unitaries are only strongly differentiable, and in
   general cannot be chosen norm-differentiable (\lean{movingPhase_counterexample}), so the global
   propagator is not built there. (Log, ``The equation at every time''.)
-\item \textbf{Cooper's model of the pure part.} The right shifts $V_t$ on $L^2(0,\infty)$ give an
+\item \textbf{Cooper's model of the pure part.} \emph{Formalization gap.} The right shifts $V_t$ on $L^2(0,\infty)$ give an
   evolution that satisfies [B]EVMIX, maps pure states to pure states, preserves transition
   probabilities and the entropy, but is induced by no unitary
   (\lean{shift_semigroup_counterexample}, in the brief ``Multiple equivalent characterizations of
