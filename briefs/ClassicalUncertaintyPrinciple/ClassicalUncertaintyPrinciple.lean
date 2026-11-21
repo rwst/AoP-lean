@@ -19,7 +19,9 @@ Formalization of the technical brief *Classical uncertainty relation* (G. Carcas
 Assumptions of Physics; its first version was titled *Classical uncertainty principle*). This
 file holds the Gaussian bound, Theorem 9 and the material of the first version;
 `ClassicalUncertaintyPrinciple.Equivalence` holds the exact identity of Proposition 3, the
-conditions CUR and GCUR, and Theorems 8, 9, 11 and 12.
+conditions CUR and GCUR, and Theorems 8, 9, 11 and 12;
+`ClassicalUncertaintyPrinciple.ExtendedVariance` states CUR and GCUR with the brief's extended
+variance, which allows infinite variances.
 
 A statistical ensemble on a measure space `(X, μ)` is a probability density `ρ` with finite
 entropy, and its entropy relative to a cell of size `c` is the Gibbs/Shannon entropy

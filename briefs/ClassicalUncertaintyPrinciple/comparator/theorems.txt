@@ -10,6 +10,9 @@ ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty  # Proposition 6, eq. 
 ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions  # Theorem 8
 ClassicalUncertaintyPrinciple.generalizedUncertaintyRelation_of_lowerEntropicBound  # Theorem 9, GCUR
 ClassicalUncertaintyPrinciple.uncertaintyRelation_of_lowerEntropicBound  # Theorem 9, CUR
+ClassicalUncertaintyPrinciple.extendedGeneralizedUncertaintyRelation_of_lowerEntropicBound  # Theorem 9, GCUR with extended variances
+ClassicalUncertaintyPrinciple.extendedUncertaintyRelation_of_lowerEntropicBound  # Theorem 9, CUR with extended variances
 ClassicalUncertaintyPrinciple.sd_mul_sd_eq_hbar_div_exp_mul_exp_mul_exp  # Theorem 9, eq. (10)
 ClassicalUncertaintyPrinciple.exists_uncertaintyRelation_not_lowerEntropicBound  # Theorem 11
 ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation  # Theorem 12
+ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_extendedGeneralizedUncertaintyRelation  # Theorem 12 with extended variances

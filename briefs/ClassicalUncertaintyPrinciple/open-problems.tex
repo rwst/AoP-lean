@@ -59,15 +59,26 @@ precise first.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \textbf{Extended variance and infinite entropy.} Variances are Bochner integrals and
-  entropies real numbers, so the brief's extended variance
-  $\inf_a E[(X - a)^2] \in [0, \infty]$ and well-defined infinite entropies are not modelled.
-  GCUR and CUR are stated for coordinates with finite variances, where the brief also counts
-  the automatic case of an infinite variance. Open: the infinite-entropy part of
-  Proposition~6 ($\inf_T U_\rho(T) = \mp\infty$), and the remarks ``Infinite and undefined
-  entropy'' (the generalized inequalities cannot guarantee that the entropy exists; admitting
-  every density with extended entropy breaks convexity) and ``Entropy and variance'' (finite
-  entropy without finite canonical variances).
+\item \textbf{Infinite entropy.} Entropies are real numbers, so well-defined infinite entropies,
+  $S[\rho_{qp}] = \pm\infty$, and undefined ones are not modelled. Open, with an extended entropy
+  and an extended $U_\rho(T)$:
+  \begin{itemize}
+  \item for $S[\rho_{qp}] = +\infty$, that every admissible frame has an infinite extended
+    variance (\lean{extendedVar}), so
+    that $\inf_T U_\rho(T) = +\infty$: finite variances bound $S[\rho_{fg}] = S[\rho_{qp}] +
+    E[\ln J_T]$ by the Gaussian entropy;
+  \item the remark ``Infinite and undefined entropy'': for undefined $S[\rho_{qp}]$ the same bound
+    forces an infinite variance in every frame, so GCUR holds and cannot guarantee that the
+    entropy exists; this needs a density with undefined entropy;
+  \item the remark on convexity, that a mixture of densities with disjoint supports and entropies
+    $+\infty$ and $-\infty$ has undefined entropy;
+  \item for $S[\rho_{qp}] = -\infty$, that $\inf_T U_\rho(T) = -\infty$ (see the first item of the
+    previous section). Transport to a Gaussian, as for finite entropy, does not apply:
+    $D(\rho_{qp}\,\|\,\eta) = \infty$ for every $\eta$ with $E[|\ln\eta|] < \infty$, so Young's
+    inequality no longer bounds the variances. The brief's bounded target does: smooth positive
+    densities $\eta_j$ with $E[\ln\eta_j]$ finite and tending to $+\infty$, transported onto a
+    disc, give bounded variances and $U_\rho(T_j) \le \text{const} - E[\ln\eta_j] \to -\infty$.
+  \end{itemize}
 \item \textbf{Definition~2 in full.} \lean{IsAdmissible} asks for $C^1$ coordinates, injectivity
   and a nowhere vanishing Jacobian. That the range is open and the inverse $C^1$ follows from the
   inverse function theorem, but is not formalized, since nothing uses it. The remark ``Bounded

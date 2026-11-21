@@ -6,6 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import ClassicalUncertaintyPrinciple.Equivalence
+public import ClassicalUncertaintyPrinciple.ExtendedVariance
 
 /-!
 # Classical uncertainty relation, re-exported for `lake comparator`

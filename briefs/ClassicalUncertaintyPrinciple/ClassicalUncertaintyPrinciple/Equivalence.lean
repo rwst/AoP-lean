@@ -47,7 +47,9 @@ variances and the Gaussian moment identity `D(ρ_{fg} ‖ G_{fg}) ≤ D(ρ_{fg} 
   `G_ρ` and `D(ρ ‖ G_ρ)`.
 * `ClassicalUncertaintyPrinciple.IsAdmissible`: Definition 2, admissible coordinate pairs.
 * `ClassicalUncertaintyPrinciple.UncertaintyRelation`,
-  `ClassicalUncertaintyPrinciple.GeneralizedUncertaintyRelation`: the conditions CUR and GCUR.
+  `ClassicalUncertaintyPrinciple.GeneralizedUncertaintyRelation`: the conditions CUR and GCUR,
+  for finite variances; with the brief's extended variance, which allows infinite ones, they are
+  in `ClassicalUncertaintyPrinciple.ExtendedVariance`.
 * `ClassicalUncertaintyPrinciple.coordinateUncertainty`: `U_ρ(T)` of Proposition 6.
 * `ClassicalUncertaintyPrinciple.HasGaussianFrames`: the conclusion of Proposition 6.
 * `ClassicalUncertaintyPrinciple.correlatedGaussian`: the ensemble of Theorem 11.

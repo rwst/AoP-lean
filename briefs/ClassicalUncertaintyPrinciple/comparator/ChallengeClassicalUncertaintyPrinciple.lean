@@ -18,6 +18,7 @@ import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Analysis.Calculus.BumpFunction.Basic
 import Mathlib.Analysis.Calculus.BumpFunction.Convolution
 import Mathlib.MeasureTheory.Function.Floor
+public import Mathlib.Probability.Distributions.Cauchy
 
 /-!
 # ClassicalUncertaintyPrinciple: the statements of record
@@ -209,6 +210,50 @@ theorem lowerEntropicBound_iff_generalizedUncertaintyRelation (hh : 0 < h) (hρ 
     LowerEntropicBound h ρ ↔ GeneralizedUncertaintyRelation h ρ := by
   sorry
 end Proposition6
+end ClassicalUncertaintyPrinciple
+end
+end
+-- ClassicalUncertaintyPrinciple.ExtendedVariance
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Real MeasureTheory ProbabilityTheory Set
+open scoped NNReal ENNReal
+@[expose] public noncomputable section
+namespace ClassicalUncertaintyPrinciple
+section ExtendedVariance
+variable {X : Type*} [MeasurableSpace X]
+def extendedVar (ρ f : X → ℝ) (μ : Measure X := by volume_tac) : ℝ≥0∞ :=
+  ⨅ a : ℝ, ∫⁻ x, ENNReal.ofReal ((f x - a) ^ 2 * ρ x) ∂μ
+def extendedSd (ρ f : X → ℝ) (μ : Measure X := by volume_tac) : ℝ≥0∞ :=
+  extendedVar ρ f μ ^ (1 / 2 : ℝ)
+end ExtendedVariance
+section Conditions
+variable {ρ : ℝ × ℝ → ℝ} {h : ℝ}
+def ExtendedUncertaintyRelation (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop :=
+  ENNReal.ofReal (hbar h / exp 1) ≤ extendedSd ρ Prod.fst * extendedSd ρ Prod.snd ∧
+    (extendedSd ρ Prod.fst * extendedSd ρ Prod.snd = ENNReal.ofReal (hbar h / exp 1) ↔
+      entropy h ρ = 0 ∧
+        ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧ ρ =ᵐ[volume] gaussProd a v b w)
+def ExtendedGeneralizedUncertaintyRelation (h : ℝ) (ρ : ℝ × ℝ → ℝ) : Prop :=
+  ∀ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g →
+    ENNReal.ofReal (hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|)) ≤
+        extendedSd ρ f * extendedSd ρ g ∧
+      (extendedSd ρ f * extendedSd ρ g =
+          ENNReal.ofReal (hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|)) ↔
+        entropy h ρ = 0 ∧ ∃ (a b : ℝ) (v w : ℝ≥0), v ≠ 0 ∧ w ≠ 0 ∧
+          densityFG f g ρ =ᵐ[volume] gaussProd a v b w)
+theorem extendedGeneralizedUncertaintyRelation_of_lowerEntropicBound (hh : 0 < h)
+    (hρ : IsEnsemble ρ) (hZ : LowerEntropicBound h ρ) :
+    ExtendedGeneralizedUncertaintyRelation h ρ := by
+  sorry
+theorem extendedUncertaintyRelation_of_lowerEntropicBound (hh : 0 < h) (hρ : IsEnsemble ρ)
+    (hZ : LowerEntropicBound h ρ) : ExtendedUncertaintyRelation h ρ := by
+  sorry
+theorem lowerEntropicBound_iff_extendedGeneralizedUncertaintyRelation (hh : 0 < h)
+    (hρ : IsEnsemble ρ) :
+    LowerEntropicBound h ρ ↔ ExtendedGeneralizedUncertaintyRelation h ρ := by
+  sorry
+end Conditions
 end ClassicalUncertaintyPrinciple
 end
 end

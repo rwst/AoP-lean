@@ -61,7 +61,9 @@ relation. This log follows the revised numbering; the formalization of the first
 \item Files: \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple.lean} (the
   Gaussian bound, Theorem~9, and the first version) and
   \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/Equivalence.lean}
-  (Propositions~3, 5, 6, Theorems~8, 9, 11, 12, and the remark on convexity)
+  (Propositions~3, 5, 6, Theorems~8, 9, 11, 12, and the remark on convexity) and
+  \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/ExtendedVariance.lean}
+  (the extended variance, CUR and GCUR with it, and the remark ``Entropy and variance'')
 \item Library: \lean{ClassicalUncertaintyPrinciple}
 \item Imports: nine new \lean{ForMathlib} files, the first two through
   \lean{Subadditivity.lean}:
@@ -188,6 +190,10 @@ Brief & Lean \\
 \endhead
 \bottomrule
 \endlastfoot
+Setup: the extended variance $\sigma_X^2 = \inf_a E[(X - a)^2] \in [0, +\infty]$ &
+  \lean{extendedVar}, \lean{extendedSd}; \lean{extendedVar_eq_ofReal_var}: it is the variance
+  when the second moment is finite, attained at the mean; \lean{extendedVar_ne_top_iff}: it is
+  finite exactly then \\
 Definition~2, admissible coordinate change & \lean{IsAdmissible};
   \lean{IsAdmissible.isNewVariables}; \lean{isAdmissible_fst_snd}: the canonical coordinates \\
 Proposition~3, proof: $S[\rho_{fg}] - S[\rho_{qp}] = E[\ln J_T]$ &
@@ -230,16 +236,27 @@ CST, the uniform ensemble: $S[\rho_U] = \ln(\mu(U)/h^n)$, zero iff $\mu(U) = h^n
 {}[B]ZENT for several DOFs, ``the marginal of each independent DOF'' & \lean{isEnsemble_marginal}:
   the marginal is an ensemble; \lean{mean_marginal}, \lean{var_marginal}: with the means and
   variances of $q_i, p_i$ under $\rho$ \\
+Conditions GCUR and CUR & \lean{ExtendedGeneralizedUncertaintyRelation},
+  \lean{ExtendedUncertaintyRelation}, with extended variances, as in the brief;
+  \lean{GeneralizedUncertaintyRelation}, \lean{UncertaintyRelation}, with variances, for finite
+  ones. \lean{extendedGeneralizedUncertaintyRelation_iff}: the two GCURs are equivalent;
+  \lean{extendedUncertaintyRelation_iff}: so are the two CURs for finite canonical variances,
+  and \lean{extendedUncertaintyRelation_of_not_integrable}: otherwise the extended CUR holds \\
 GCUR reduces to CUR since $\{q, p\} = 1$ &
-  \lean{GeneralizedUncertaintyRelation.uncertaintyRelation}; \lean{poissonBracket_fst_snd};
-  \lean{densityFG_fst_snd}: $\rho_{qp} = \rho$ \\
+  \lean{GeneralizedUncertaintyRelation.uncertaintyRelation},
+  \lean{ExtendedGeneralizedUncertaintyRelation.extendedUncertaintyRelation};
+  \lean{poissonBracket_fst_snd}; \lean{densityFG_fst_snd}: $\rho_{qp} = \rho$ \\
 Theorem~8 & \lean{exists_ensemble_not_conditions}, with $\sigma_q = \sigma_p = \sqrt{h/4\pi e}$ \\
-Theorem~9, GCUR with its equality case & \lean{generalizedUncertaintyRelation_of_lowerEntropicBound};
+Theorem~9, GCUR with its equality case &
+  \lean{extendedGeneralizedUncertaintyRelation_of_lowerEntropicBound},
+  \lean{generalizedUncertaintyRelation_of_lowerEntropicBound};
   the inequality also as \lean{hbar_div_exp_mul_exp_le_sd_mul_sd} and
   \lean{IsNewVariables.hbar_div_exp_mul_exp_le_sd_mul_sd}; the equality case as
   \lean{IsNewVariables.sd_mul_sd_eq_hbar_div_exp_mul_exp_iff}, and then $(f, g)$ is onto up to a
   null set (\lean{volume_compl_range_eq_zero}) \\
-Theorem~9, CUR with its equality case & \lean{uncertaintyRelation_of_lowerEntropicBound}; the
+Theorem~9, CUR with its equality case &
+  \lean{extendedUncertaintyRelation_of_lowerEntropicBound}, with no moment hypothesis;
+  \lean{uncertaintyRelation_of_lowerEntropicBound}, for finite variances; the
   inequality also as \lean{uncertaintyPrinciple_of_lowerEntropicBound}, and for several DOFs
   \lean{uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace}; the equality case also
   as \lean{sd_mul_sd_eq_hbar_div_exp_iff} and \lean{sd_mul_sd_eq_hbar_div_exp_iff_marginal} \\
@@ -248,7 +265,8 @@ Theorem~11 & \lean{exists_uncertaintyRelation_not_lowerEntropicBound}, for every
   the density as stated (\lean{correlatedGaussian}), $\sigma_q = s$, $\sigma_p = 3c$, CUR with
   its equality criterion, $S = -\ln 2$, and GCUR violated by $(q, p - 2\sqrt2(c/s)q)$; a second
   example, two small squares far apart: \lean{exists_not_lowerEntropicBound} \\
-Theorem~12 & \lean{lowerEntropicBound_of_generalizedUncertaintyRelation},
+Theorem~12 & \lean{lowerEntropicBound_iff_extendedGeneralizedUncertaintyRelation},
+  \lean{lowerEntropicBound_of_generalizedUncertaintyRelation},
   \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation}; from \lean{HasGaussianFrames}
   alone, the same names with \lean{_of_hasGaussianFrames} \\
 Theorem~12, positive smooth $\rho_{qp}$ (via Proposition~5) &
@@ -258,8 +276,10 @@ Remark ``Convexity of the ensemble space'' & \lean{isEnsemble_mix}: a mixture of
   finite entropy is one; \lean{entropy_mix_bounds}:
   $0 \le S[\rho_\lambda] - \lambda S[\rho] - (1 - \lambda)S[\sigma] \le -\lambda\ln\lambda -
   (1 - \lambda)\ln(1 - \lambda)$, without the KL form of the middle term \\
-Remarks ``Infinite and undefined entropy'', ``Entropy and variance'', ``Bounded coordinate
-  ranges'' & not formalized \\
+Remark ``Entropy and variance'' & \lean{exists_isEnsemble_extendedVar_eq_top}: the product of
+  two standard Cauchy densities is an ensemble with $\sigma_q = \sigma_p = \infty$
+  (\lean{isEnsemble_cauchy}, \lean{not_integrable_sq_mul_cauchy}) \\
+Remarks ``Infinite and undefined entropy'', ``Bounded coordinate ranges'' & not formalized \\
 Conclusion: the uncertainty relation and the lower entropic bound in quantum mechanics &
   Not with the von Neumann entropy (see ``Problems found''). From the bound of
   Bia\l{}ynicki-Birula and Mycielski: \lean{heisenberg_of_entropicUncertainty}, and
@@ -318,10 +338,15 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
   used as the inequality $D(\rho_{fg}\,\|\,G_{fg}) \le D(\rho_{fg}\,\|\,\gamma)$. The coordinates
   are taken $C^1$, which is what \lean{IsAdmissible} asks for; since $\eta$ can be taken smooth,
   so can they.
-\item Variances are Bochner integrals, so the brief's extended variance
-  $\inf_a E[(X - a)^2] \in [0, \infty]$ and infinite or undefined entropies are not modelled.
-  GCUR and CUR are stated for coordinates with finite variances; for an infinite variance the
-  brief's inequality is automatic. The finite-variance hypotheses of Theorem~9 are explicit.
+\item The brief's extended variance $\inf_a E[(X - a)^2] \in [0, \infty]$ is a lower
+  integral, and CUR and GCUR with it compare values in $[0, \infty]$. Beside them, the
+  formalization keeps CUR and GCUR with Bochner variances, for finite variances, on which
+  Propositions~3--6 work; the two forms are equivalent. The extended variance is never zero for
+  a coordinate of an admissible pair, since $\rho_{fg}$ is a density on the plane and a line has
+  no area (\lean{IsAdmissible.extendedVar_fst_ne_zero}); so an infinite variance makes
+  $\sigma_f\sigma_g = \infty$, the inequality holds, and both sides of the equality condition
+  fail, since a product of Gaussians has finite variances. Theorem~9 for CUR then needs no
+  moment hypothesis. Infinite or undefined entropies are not modelled.
 \item Definition~2 asks for a $C^1$ diffeomorphism onto an open region with $C^1$ inverse.
   \lean{IsAdmissible} asks for $C^1$ coordinates, injectivity and a nowhere vanishing Jacobian;
   by the inverse function theorem these give such a diffeomorphism onto the (open) range, but
