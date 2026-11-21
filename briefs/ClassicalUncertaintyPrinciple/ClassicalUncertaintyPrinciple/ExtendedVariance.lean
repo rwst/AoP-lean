@@ -88,7 +88,38 @@ def extendedSd (ρ f : X → ℝ) (μ : Measure X := by volume_tac) : ℝ≥0∞
 
 variable {μ : Measure X} {ρ f : X → ℝ}
 
-lemma integrable_sub_sq_mul (hρ : IsEnsemble ρ μ) (hf : Measurable f)
+/-- A probability density, of finite or infinite entropy. -/
+structure IsDensity (ρ : X → ℝ) (μ : Measure X := by volume_tac) : Prop where
+  nonneg : ∀ x, 0 ≤ ρ x
+  integral_eq_one : ∫ x, ρ x ∂μ = 1
+
+lemma IsEnsemble.isDensity (hρ : IsEnsemble ρ μ) : IsDensity ρ μ :=
+  ⟨hρ.nonneg, hρ.integral_eq_one⟩
+
+namespace IsDensity
+
+variable (hρ : IsDensity ρ μ)
+include hρ
+
+lemma integrable : Integrable ρ μ :=
+  Integrable.of_integral_ne_zero (by rw [hρ.integral_eq_one]; norm_num)
+
+lemma integrable_mul (hf : Measurable f) (hf2 : Integrable (fun x => f x ^ 2 * ρ x) μ) :
+    Integrable (fun x => f x * ρ x) μ := by
+  refine (hf2.add hρ.integrable).mono' (hf.aestronglyMeasurable.mul hρ.integrable.1)
+    (ae_of_all _ fun x => ?_)
+  have hx : ‖f x‖ ≤ f x ^ 2 + 1 := by
+    rw [Real.norm_eq_abs]
+    nlinarith [sq_abs (f x), abs_nonneg (f x)]
+  rw [norm_mul, Real.norm_of_nonneg (hρ.nonneg x), Pi.add_apply, ← add_one_mul]
+  exact mul_le_mul_of_nonneg_right hx (hρ.nonneg x)
+
+lemma var_nonneg : 0 ≤ var ρ f μ :=
+  integral_nonneg fun x => mul_nonneg (sq_nonneg _) (hρ.nonneg x)
+
+end IsDensity
+
+lemma integrable_sub_sq_mul (hρ : IsDensity ρ μ) (hf : Measurable f)
     (hf2 : Integrable (fun x => f x ^ 2 * ρ x) μ) (a : ℝ) :
     Integrable (fun x => (f x - a) ^ 2 * ρ x) μ :=
   ((hf2.sub ((hρ.integrable_mul hf hf2).const_mul (2 * a))).add
@@ -97,7 +128,7 @@ lemma integrable_sub_sq_mul (hρ : IsEnsemble ρ μ) (hf : Measurable f)
       ring)
 
 /-- `E[(f - a)²] = σ_f² + (E[f] - a)²`. -/
-lemma integral_sub_sq_mul (hρ : IsEnsemble ρ μ) (hf : Measurable f)
+lemma integral_sub_sq_mul (hρ : IsDensity ρ μ) (hf : Measurable f)
     (hf2 : Integrable (fun x => f x ^ 2 * ρ x) μ) (a : ℝ) :
     ∫ x, (f x - a) ^ 2 * ρ x ∂μ = var ρ f μ + (mean ρ f μ - a) ^ 2 := by
   have h1 := hρ.integrable_mul hf hf2
@@ -115,7 +146,7 @@ lemma integral_sub_sq_mul (hρ : IsEnsemble ρ μ) (hf : Measurable f)
   rw [var, key, key]
   ring
 
-lemma lintegral_sub_sq_mul (hρ : IsEnsemble ρ μ) (hf : Measurable f)
+lemma lintegral_sub_sq_mul (hρ : IsDensity ρ μ) (hf : Measurable f)
     (hf2 : Integrable (fun x => f x ^ 2 * ρ x) μ) (a : ℝ) :
     ∫⁻ x, ENNReal.ofReal ((f x - a) ^ 2 * ρ x) ∂μ =
       ENNReal.ofReal (var ρ f μ + (mean ρ f μ - a) ^ 2) := by
@@ -124,7 +155,7 @@ lemma lintegral_sub_sq_mul (hρ : IsEnsemble ρ μ) (hf : Measurable f)
       (hρ.nonneg x))]
 
 /-- For a finite second moment the extended variance is the variance, attained at the mean. -/
-theorem extendedVar_eq_ofReal_var (hρ : IsEnsemble ρ μ) (hf : Measurable f)
+theorem extendedVar_eq_ofReal_var (hρ : IsDensity ρ μ) (hf : Measurable f)
     (hf2 : Integrable (fun x => f x ^ 2 * ρ x) μ) :
     extendedVar ρ f μ = ENNReal.ofReal (var ρ f μ) := by
   refine le_antisymm ((iInf_le _ (mean ρ f μ)).trans_eq ?_) (le_iInf fun a => ?_)
@@ -134,7 +165,7 @@ theorem extendedVar_eq_ofReal_var (hρ : IsEnsemble ρ μ) (hf : Measurable f)
     exact ENNReal.ofReal_le_ofReal (le_add_of_nonneg_right (sq_nonneg _))
 
 /-- The extended variance is finite exactly for a finite second moment. -/
-theorem extendedVar_ne_top_iff (hρ : IsEnsemble ρ μ) (hf : Measurable f) :
+theorem extendedVar_ne_top_iff (hρ : IsDensity ρ μ) (hf : Measurable f) :
     extendedVar ρ f μ ≠ ⊤ ↔ Integrable (fun x => f x ^ 2 * ρ x) μ := by
   refine ⟨fun h => ?_, fun hf2 => by
     rw [extendedVar_eq_ofReal_var hρ hf hf2]; exact ENNReal.ofReal_ne_top⟩
@@ -151,17 +182,17 @@ theorem extendedVar_ne_top_iff (hρ : IsEnsemble ρ μ) (hf : Measurable f) :
   simp only [Pi.add_apply]
   linarith
 
-theorem extendedVar_eq_top_iff (hρ : IsEnsemble ρ μ) (hf : Measurable f) :
+theorem extendedVar_eq_top_iff (hρ : IsDensity ρ μ) (hf : Measurable f) :
     extendedVar ρ f μ = ⊤ ↔ ¬Integrable (fun x => f x ^ 2 * ρ x) μ := by
   rw [← extendedVar_ne_top_iff hρ hf, not_not]
 
 lemma sd_nonneg : 0 ≤ sd ρ f μ := sqrt_nonneg _
 
-lemma extendedSd_eq_ofReal_sd (hρ : IsEnsemble ρ μ) (hf : Measurable f)
+lemma extendedSd_eq_ofReal_sd (hρ : IsDensity ρ μ) (hf : Measurable f)
     (hf2 : Integrable (fun x => f x ^ 2 * ρ x) μ) :
     extendedSd ρ f μ = ENNReal.ofReal (sd ρ f μ) := by
   rw [extendedSd, extendedVar_eq_ofReal_var hρ hf hf2, sd, Real.sqrt_eq_rpow,
-    ENNReal.ofReal_rpow_of_nonneg (var_nonneg hρ) (by norm_num)]
+    ENNReal.ofReal_rpow_of_nonneg (hρ.var_nonneg) (by norm_num)]
 
 lemma extendedSd_eq_top_iff : extendedSd ρ f μ = ⊤ ↔ extendedVar ρ f μ = ⊤ := by
   simp [extendedSd, ENNReal.rpow_eq_top_iff]
@@ -170,10 +201,10 @@ lemma extendedSd_eq_zero_iff : extendedSd ρ f μ = 0 ↔ extendedVar ρ f μ = 
   simp [extendedSd, ENNReal.rpow_eq_zero_iff]
 
 /-- A variable that takes each value on a null set has a positive variance. -/
-lemma var_pos (hρ : IsEnsemble ρ μ) (hf : Measurable f)
+lemma var_pos (hρ : IsDensity ρ μ) (hf : Measurable f)
     (hf2 : Integrable (fun x => f x ^ 2 * ρ x) μ) (hnull : ∀ c, μ (f ⁻¹' {c}) = 0) :
     0 < var ρ f μ := by
-  refine (var_nonneg hρ).lt_of_ne fun h0 => ?_
+  refine (hρ.var_nonneg).lt_of_ne fun h0 => ?_
   set m := mean ρ f μ
   have hz := (integral_eq_zero_iff_of_nonneg (fun x => mul_nonneg (sq_nonneg _) (hρ.nonneg x))
     (integrable_sub_sq_mul hρ hf hf2 m)).1 h0.symm
@@ -210,6 +241,17 @@ namespace IsNewVariables
 variable (H : IsNewVariables f g)
 include H
 
+/-- `ρ_{fg}` is a density. -/
+lemma isDensity_densityFG (hρ : IsDensity ρ) : IsDensity (densityFG f g ρ) where
+  nonneg u := by
+    by_cases hu : u ∈ range fun x => (f x, g x)
+    · obtain ⟨x, rfl⟩ := hu
+      rw [densityFG, pushDensity_apply H.injective]
+      exact div_nonneg (hρ.nonneg x) (abs_nonneg _)
+    · rw [densityFG, pushDensity_of_notMem_range hu]
+  integral_eq_one := by
+    simpa [hρ.integral_eq_one] using H.integral_mul_densityFG (ρ := ρ) (φ := fun _ => 1)
+
 lemma var_densityFG_fst : var (densityFG f g ρ) Prod.fst = var ρ f := by
   rw [var, var, H.mean_densityFG_fst]
   exact H.integral_mul_densityFG (φ := fun u => (u.1 - mean ρ f) ^ 2)
@@ -230,27 +272,27 @@ lemma measurable_left : Measurable f := T.contDiff_fst.continuous.measurable
 lemma measurable_right : Measurable g := T.contDiff_snd.continuous.measurable
 
 /-- The first coordinate of an admissible pair has a nonzero extended variance. -/
-theorem extendedVar_fst_ne_zero (hρ : IsEnsemble ρ) : extendedVar ρ f ≠ 0 := by
+theorem extendedVar_fst_ne_zero (hρ : IsDensity ρ) : extendedVar ρ f ≠ 0 := by
   by_cases hf2 : Integrable fun x => f x ^ 2 * ρ x
   · rw [extendedVar_eq_ofReal_var hρ T.measurable_left hf2, Ne, ENNReal.ofReal_eq_zero, not_le,
       ← T.isNewVariables.var_densityFG_fst]
-    exact var_pos (T.isNewVariables.isEnsemble_densityFG hρ T.integrable_log) measurable_fst
+    exact var_pos (T.isNewVariables.isDensity_densityFG hρ) measurable_fst
       (T.isNewVariables.integrable_fst_sq_densityFG hf2) volume_fst_preimage
   · rw [(extendedVar_eq_top_iff hρ T.measurable_left).2 hf2]
     exact ENNReal.top_ne_zero
 
 /-- The second coordinate of an admissible pair has a nonzero extended variance. -/
-theorem extendedVar_snd_ne_zero (hρ : IsEnsemble ρ) : extendedVar ρ g ≠ 0 := by
+theorem extendedVar_snd_ne_zero (hρ : IsDensity ρ) : extendedVar ρ g ≠ 0 := by
   by_cases hg2 : Integrable fun x => g x ^ 2 * ρ x
   · rw [extendedVar_eq_ofReal_var hρ T.measurable_right hg2, Ne, ENNReal.ofReal_eq_zero, not_le,
       ← T.isNewVariables.var_densityFG_snd]
-    exact var_pos (T.isNewVariables.isEnsemble_densityFG hρ T.integrable_log) measurable_snd
+    exact var_pos (T.isNewVariables.isDensity_densityFG hρ) measurable_snd
       (T.isNewVariables.integrable_snd_sq_densityFG hg2) volume_snd_preimage
   · rw [(extendedVar_eq_top_iff hρ T.measurable_right).2 hg2]
     exact ENNReal.top_ne_zero
 
 /-- An infinite variance in an admissible pair makes `σ_f σ_g = ∞`. -/
-theorem extendedSd_mul_eq_top (hρ : IsEnsemble ρ)
+theorem extendedSd_mul_eq_top (hρ : IsDensity ρ)
     (h2 : ¬((Integrable fun x => f x ^ 2 * ρ x) ∧ Integrable fun x => g x ^ 2 * ρ x)) :
     extendedSd ρ f * extendedSd ρ g = ⊤ := by
   rw [ENNReal.mul_eq_top]
@@ -321,18 +363,18 @@ theorem extendedGeneralizedUncertaintyRelation_iff (hh : 0 < h) (hρ : IsEnsembl
   constructor
   · intro hE f g T hf2 hg2
     have := hE f g T
-    rwa [extendedSd_eq_ofReal_sd hρ T.measurable_left hf2,
-      extendedSd_eq_ofReal_sd hρ T.measurable_right hg2,
+    rwa [extendedSd_eq_ofReal_sd hρ.isDensity T.measurable_left hf2,
+      extendedSd_eq_ofReal_sd hρ.isDensity T.measurable_right hg2,
       ofReal_le_mul_and_iff (hbar_div_exp_mul_exp_nonneg hh _) sd_nonneg
         sd_nonneg] at this
   · intro hG f g T
     by_cases h2 : (Integrable fun x => f x ^ 2 * ρ x) ∧ Integrable fun x => g x ^ 2 * ρ x
-    · rw [extendedSd_eq_ofReal_sd hρ T.measurable_left h2.1,
-        extendedSd_eq_ofReal_sd hρ T.measurable_right h2.2,
+    · rw [extendedSd_eq_ofReal_sd hρ.isDensity T.measurable_left h2.1,
+        extendedSd_eq_ofReal_sd hρ.isDensity T.measurable_right h2.2,
         ofReal_le_mul_and_iff (hbar_div_exp_mul_exp_nonneg hh _) sd_nonneg
           sd_nonneg]
       exact hG f g T h2.1 h2.2
-    · exact ofReal_le_and_iff_of_eq_top (T.extendedSd_mul_eq_top hρ h2) fun hP =>
+    · exact ofReal_le_and_iff_of_eq_top (T.extendedSd_mul_eq_top hρ.isDensity h2) fun hP =>
         h2 (T.integrable_sq_of_densityFG_ae_eq hP.2)
 
 /-- Since `{q, p} = 1`, the extended GCUR reduces to the extended CUR in the canonical
@@ -349,12 +391,13 @@ theorem extendedUncertaintyRelation_iff (hh : 0 < h) (hρ : IsEnsemble ρ)
     (hq : Integrable fun x => x.1 ^ 2 * ρ x) (hp : Integrable fun x => x.2 ^ 2 * ρ x) :
     ExtendedUncertaintyRelation h ρ ↔ UncertaintyRelation h ρ := by
   rw [ExtendedUncertaintyRelation, UncertaintyRelation,
-    extendedSd_eq_ofReal_sd hρ measurable_fst hq, extendedSd_eq_ofReal_sd hρ measurable_snd hp,
+    extendedSd_eq_ofReal_sd hρ.isDensity measurable_fst hq,
+    extendedSd_eq_ofReal_sd hρ.isDensity measurable_snd hp,
     ofReal_le_mul_and_iff (by simpa using hbar_div_exp_mul_exp_nonneg hh 0) sd_nonneg
       sd_nonneg]
 
 /-- An infinite canonical variance makes the extended CUR automatic. -/
-theorem extendedUncertaintyRelation_of_not_integrable (hρ : IsEnsemble ρ)
+theorem extendedUncertaintyRelation_of_not_integrable (hρ : IsDensity ρ)
     (h2 : ¬((Integrable fun x => x.1 ^ 2 * ρ x) ∧ Integrable fun x => x.2 ^ 2 * ρ x)) :
     ExtendedUncertaintyRelation h ρ := by
   have T : IsAdmissible ρ Prod.fst Prod.snd := isAdmissible_fst_snd
@@ -439,8 +482,8 @@ theorem exists_isEnsemble_extendedVar_eq_top :
   have hc := isEnsemble_cauchy
   have hρ := isEnsemble_pairDensity hc hc
   refine ⟨pairDensity (cauchyPDFReal 0 1) (cauchyPDFReal 0 1), hρ,
-    (extendedVar_eq_top_iff hρ measurable_fst).2 fun hi => ?_,
-    (extendedVar_eq_top_iff hρ measurable_snd).2 fun hi => ?_⟩
+    (extendedVar_eq_top_iff hρ.isDensity measurable_fst).2 fun hi => ?_,
+    (extendedVar_eq_top_iff hρ.isDensity measurable_snd).2 fun hi => ?_⟩
   · rw [Measure.volume_eq_prod] at hi
     refine not_integrable_sq_mul_cauchy (hi.integral_prod_left.congr (ae_of_all _ fun t => ?_))
     simp only [pairDensity, ← mul_assoc, integral_const_mul, hc.integral_eq_one, mul_one]

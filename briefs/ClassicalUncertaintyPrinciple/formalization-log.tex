@@ -63,7 +63,11 @@ relation. This log follows the revised numbering; the formalization of the first
   \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/Equivalence.lean}
   (Propositions~3, 5, 6, Theorems~8, 9, 11, 12, and the remark on convexity) and
   \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/ExtendedVariance.lean}
-  (the extended variance, CUR and GCUR with it, and the remark ``Entropy and variance'')
+  (the extended variance, CUR and GCUR with it, and the remark ``Entropy and variance'') and
+  \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/InfiniteEntropy.lean}
+  (Proposition~6 and the remark ``Infinite and undefined entropy'' for $S[\rho_{qp}] = +\infty$
+  and undefined $S[\rho_{qp}]$, densities of infinite and undefined entropy, and the remark on
+  convexity for them)
 \item Library: \lean{ClassicalUncertaintyPrinciple}
 \item Imports: nine new \lean{ForMathlib} files, the first two through
   \lean{Subadditivity.lean}:
@@ -229,7 +233,11 @@ Proposition~6, finite entropy: $D(\rho_{f_jg_j}\,\|\,G_j) \to 0$ in admissible c
   $D(\rho\,\|\,G_\rho) \le D(\rho\,\|\,\gamma)$ \\
 Proposition~6, eq.~(7), finite entropy & \lean{isGLB_coordinateUncertainty}; from
   \lean{HasGaussianFrames} alone, \lean{isGLB_coordinateUncertainty_of_hasGaussianFrames} \\
-Proposition~6, infinite entropy & not formalized \\
+Proposition~6, $S[\rho_{qp}] = +\infty$: an infinite variance in every admissible frame &
+  \lean{IsAdmissible.extendedSd_mul_eq_top_of_entropyPos_eq_top}, for
+  $\int(-\rho\ln\rho)^+ = \infty$ (\lean{entropyPos}), which covers undefined entropy too;
+  \lean{IsAdmissible.entropyPos_lt_top}: finite variances make it finite \\
+Proposition~6, $S[\rho_{qp}] = -\infty$ & not formalized \\
 CST, the uniform ensemble: $S[\rho_U] = \ln(\mu(U)/h^n)$, zero iff $\mu(U) = h^n$ &
   \lean{entropy_uniform}, \lean{entropy_uniform_eq_zero_iff} (any measure space, any cell
   $c > 0$); \lean{entropy_uniform_phaseSpace} (phase space $(\mathbb R^2)^n$, $c = h^n$) \\
@@ -276,10 +284,24 @@ Remark ``Convexity of the ensemble space'' & \lean{isEnsemble_mix}: a mixture of
   finite entropy is one; \lean{entropy_mix_bounds}:
   $0 \le S[\rho_\lambda] - \lambda S[\rho] - (1 - \lambda)S[\sigma] \le -\lambda\ln\lambda -
   (1 - \lambda)\ln(1 - \lambda)$, without the KL form of the middle term \\
+Remark ``Convexity of the ensemble space'': a mixture of disjoint support of entropies $+\infty$
+  and $-\infty$ has undefined entropy & \lean{entropy_mix_undefined}: both halves of its entropy
+  integral are infinite; \lean{IsDensity.mix} \\
 Remark ``Entropy and variance'' & \lean{exists_isEnsemble_extendedVar_eq_top}: the product of
   two standard Cauchy densities is an ensemble with $\sigma_q = \sigma_p = \infty$
   (\lean{isEnsemble_cauchy}, \lean{not_integrable_sq_mul_cauchy}) \\
-Remarks ``Infinite and undefined entropy'', ``Bounded coordinate ranges'' & not formalized \\
+Remark ``Infinite and undefined entropy'', $S[\rho_{qp}] = +\infty$ or undefined: the
+  relation is automatic &
+  \lean{extendedGeneralizedUncertaintyRelation_of_entropyPos_eq_top},
+  \lean{extendedUncertaintyRelation_of_entropyPos_eq_top}; such a density is not an ensemble
+  (\lean{not_isEnsemble_of_entropyPos_eq_top}); an instance of undefined entropy,
+  \lean{exists_entropy_undefined_extendedGeneralizedUncertaintyRelation} \\
+(not in the brief) densities of entropy $+\infty$, $-\infty$ and undefined &
+  \lean{exists_isDensity_entropy}: \lean{boxExample}, uniform on boxes
+  $[n, n + 1) \times [0, a_n)$ of masses $2^{-(n+1)}$ and heights $e^{\mp 2^{n+1}}$, each
+  contributing $\pm1$; \lean{undefinedEntropyExample}, an equal mixture of the two \\
+Remark ``Infinite and undefined entropy'', $S[\rho_{qp}] = -\infty$; remark ``Bounded
+  coordinate ranges'' & not formalized \\
 Conclusion: the uncertainty relation and the lower entropic bound in quantum mechanics &
   Not with the von Neumann entropy (see ``Problems found''). From the bound of
   Bia\l{}ynicki-Birula and Mycielski: \lean{heisenberg_of_entropicUncertainty}, and
@@ -346,7 +368,18 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
   no area (\lean{IsAdmissible.extendedVar_fst_ne_zero}); so an infinite variance makes
   $\sigma_f\sigma_g = \infty$, the inequality holds, and both sides of the equality condition
   fail, since a product of Gaussians has finite variances. Theorem~9 for CUR then needs no
-  moment hypothesis. Infinite or undefined entropies are not modelled.
+  moment hypothesis.
+\item Entropies are real numbers, so infinite and undefined entropies are not values of
+  \lean{entropy}; they are described by the halves $\int(-\rho\ln\rho)^+$ and
+  $\int(\rho\ln\rho)^+$ in $[0, \infty]$ of the entropy integral (\lean{entropyPos},
+  \lean{entropyNeg}), for a probability density (\lean{IsDensity}). When the first is infinite,
+  $S[\rho_{qp}]$ is $+\infty$ or undefined; both cases of the remark ``Infinite and
+  undefined entropy'' are this one. The brief's argument goes through the entropy
+  $S[\rho_{fg}]$ in the new coordinates; the formalization applies Gibbs' inequality
+  $-p\ln p \le -p\ln q + q - p$ directly to $q = J_T\,G(f, g)$, with $G$ the standard Gaussian,
+  and uses the change of variables only for $\int J_T\,G(f, g) \le 1$. In the equality clause
+  of GCUR the junk value \lean{entropy}~$= 0$ of such a density makes ``$S_h[\rho] = 0$''
+  true, but the clause still holds, since its Gaussian half fails.
 \item Definition~2 asks for a $C^1$ diffeomorphism onto an open region with $C^1$ inverse.
   \lean{IsAdmissible} asks for $C^1$ coordinates, injectivity and a nowhere vanishing Jacobian;
   by the inverse function theorem these give such a diffeomorphism onto the (open) range, but
