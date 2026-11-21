@@ -420,7 +420,8 @@ variable {ρ f g : ℝ × ℝ → ℝ} {h : ℝ}
 
 /-- **Definition 2.** An admissible coordinate pair `(f, g)` for `ρ`: `C¹`, with
 `(q, p) ↦ (f, g)` injective and Jacobian `{f, g} ≠ 0` everywhere, so a `C¹` diffeomorphism onto
-its (open) range, and with `E[|log |{f, g}||] < ∞`. -/
+its open range, and with `E[|log |{f, g}||] < ∞`. That this is the brief's definition is
+`ClassicalUncertaintyPrinciple.isAdmissible_iff`. -/
 structure IsAdmissible (ρ f g : ℝ × ℝ → ℝ) : Prop where
   contDiff_fst : ContDiff ℝ 1 f
   contDiff_snd : ContDiff ℝ 1 g

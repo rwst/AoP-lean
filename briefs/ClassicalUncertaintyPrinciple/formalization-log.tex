@@ -66,9 +66,11 @@ relation. This log follows the revised numbering; the formalization of the first
   (the extended variance, CUR and GCUR with it, and the remark ``Entropy and variance'') and
   \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/InfiniteEntropy.lean}
   (Proposition~6 for infinite entropy, the remark ``Infinite and undefined entropy'', densities
-  of infinite and undefined entropy, and the remark on convexity for them)
+  of infinite and undefined entropy, and the remark on convexity for them) and
+  \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/AdmissibleCoordinates.lean}
+  (Definition~2 in the brief's form, and the remark ``Bounded coordinate ranges'')
 \item Library: \lean{ClassicalUncertaintyPrinciple}
-\item Imports: nine new \lean{ForMathlib} files, the first two through
+\item Imports: ten new \lean{ForMathlib} files, the first two through
   \lean{Subadditivity.lean}:
   \begin{itemize}
   \item \lean{ForMathlib/InformationTheory/GibbsInequality.lean}:\newline Gibbs' inequality
@@ -117,6 +119,13 @@ relation. This log follows the revised numbering; the formalization of the first
   $ab \le a\log a - a + e^b$ (\lean{Real.mul_le_mul_log_sub_add_exp}), and so
   $\int\rho\psi \le D(\rho\,\|\,\eta) - \int\rho + \int\eta e^\psi$
   (\lean{MeasureTheory.integrable_mul_of_integrable_mul_log_div})
+  \item \lean{ForMathlib/Analysis/Calculus/InverseFunctionTheorem/Global.lean}:\newline the
+  global inverse function theorem: an injective $C^n$ map, $n \ge 1$, with an invertible
+  derivative at every point is an open embedding with a $C^n$ inverse on its range
+  (\lean{ContDiff.isOpenEmbedding_of_injective}, \lean{ContDiff.contDiffOn_symm_of_injective},
+  \lean{ContDiff.exists_contDiffOn_leftInverse_of_det_ne_zero}); conversely, a left inverse
+  differentiable on the range forces a nonzero Jacobian
+  (\lean{det_fderiv_ne_zero_of_leftInverse})
   \end{itemize}
 \end{itemize}
 
@@ -201,7 +210,11 @@ Setup: the extended variance $\sigma_X^2 = \inf_a E[(X - a)^2] \in [0, +\infty]$
   when the second moment is finite, attained at the mean; \lean{extendedVar_ne_top_iff}: it is
   finite exactly then \\
 Definition~2, admissible coordinate change & \lean{IsAdmissible};
-  \lean{IsAdmissible.isNewVariables}; \lean{isAdmissible_fst_snd}: the canonical coordinates \\
+  \lean{IsAdmissible.isNewVariables}; \lean{isAdmissible_fst_snd}: the canonical coordinates;
+  \lean{isAdmissible_iff}: \lean{IsAdmissible} is Definition~2 as the brief states it, a $C^1$
+  diffeomorphism onto an open region with $C^1$ inverse and $E[|\ln J_T|] < \infty$;
+  \lean{exists_contDiffOn_leftInverse_of_poissonBracket_ne_zero}: the inverse is $C^n$ for $C^n$
+  coordinates \\
 Proposition~3, proof: $S[\rho_{fg}] - S[\rho_{qp}] = E[\ln J_T]$ &
   \lean{IsNewVariables.entropy_densityFG}; $\rho_{qp} = \rho_{fg}J_T$:
   \lean{IsNewVariables.densityFG_mul_abs_poissonBracket}; $J_T = |\{f, g\}|$: \lean{det_prod};
@@ -312,7 +325,12 @@ Remark ``Infinite and undefined entropy'', $S[\rho_{qp}] = -\infty$: the general
   \lean{not_extendedGeneralizedUncertaintyRelation_of_entropyNeg_eq_top},
   \lean{not_generalizedUncertaintyRelation_of_entropyNeg_eq_top}; an instance,
   \lean{exists_not_extendedGeneralizedUncertaintyRelation} \\
-Remark ``Bounded coordinate ranges'' & not formalized \\
+Remark ``Bounded coordinate ranges'' & \lean{exists_coordinates_isBounded_range}: the
+  coordinates $(\Phi(q), \Phi(p))$, $\Phi(u) = \int_0^u\varphi$, have a bounded range and are a
+  $C^1$ diffeomorphism onto it; every probability density has finite variances in them, as in
+  any bounded coordinates (\lean{integrable_sq_mul_of_isBounded_range}); they are admissible for
+  $\rho$ iff $E[q^2 + p^2] < \infty$ (\lean{isAdmissible_gaussPrim_iff}), so for the standard
+  Gaussian but not for the product of two Cauchy densities \\
 Conclusion: the uncertainty relation and the lower entropic bound in quantum mechanics &
   Not with the von Neumann entropy (see ``Problems found''). From the bound of
   Bia\l{}ynicki-Birula and Mycielski: \lean{heisenberg_of_entropicUncertainty}, and
@@ -407,9 +425,11 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
   |\ln(2\pi e/h)| - E[\ln\eta]$, and a negative $U_\rho(T)$ is a violation of GCUR.
 \item Definition~2 asks for a $C^1$ diffeomorphism onto an open region with $C^1$ inverse.
   \lean{IsAdmissible} asks for $C^1$ coordinates, injectivity and a nowhere vanishing Jacobian;
-  by the inverse function theorem these give such a diffeomorphism onto the (open) range, but
-  the formalization never needs the inverse and does not construct it. Proposition~3 and the
-  results through $\rho_{fg}$ hold for differentiable new variables (\lean{IsNewVariables}).
+  by the global inverse function theorem these give such a diffeomorphism onto the range, which
+  is open and connected, and the two definitions agree (\lean{isAdmissible_iff}). The other
+  results never use the inverse. The Jacobian is the Poisson bracket $\{f, g\} = \det DT$
+  (\lean{poissonBracket_eq_det}), and Proposition~3 and the results through $\rho_{fg}$ hold for
+  differentiable new variables (\lean{IsNewVariables}).
 \item In Theorem~8 the counterexample has $\sigma_q = \sigma_p$; the brief allows any
   $\sigma_q > 0$. In Theorem~11 the ensemble is formalized for every $s > 0$, as in the brief.
   The correlation $E[qp] = 2\sqrt2\,sc$ is not stated separately.

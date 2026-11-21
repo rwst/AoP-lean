@@ -24,7 +24,9 @@ conditions CUR and GCUR, and Theorems 8, 9, 11 and 12;
 variance, which allows infinite variances; `ClassicalUncertaintyPrinciple.InfiniteEntropy` proves
 Proposition 6 for infinite entropy, shows that CUR and GCUR hold for densities of entropy `+∞` or
 undefined and that GCUR fails for entropy `-∞`, and constructs densities of entropy `+∞`, `-∞`
-and undefined.
+and undefined; `ClassicalUncertaintyPrinciple.AdmissibleCoordinates` proves that admissible
+coordinates are Definition 2 as the brief states it, and formalizes the remark on bounded
+coordinate ranges.
 
 A statistical ensemble on a measure space `(X, μ)` is a probability density `ρ` with finite
 entropy, and its entropy relative to a cell of size `c` is the Gibbs/Shannon entropy
