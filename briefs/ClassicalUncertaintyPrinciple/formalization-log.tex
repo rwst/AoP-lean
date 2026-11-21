@@ -68,9 +68,12 @@ relation. This log follows the revised numbering; the formalization of the first
   (Proposition~6 for infinite entropy, the remark ``Infinite and undefined entropy'', densities
   of infinite and undefined entropy, and the remark on convexity for them) and
   \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/AdmissibleCoordinates.lean}
-  (Definition~2 in the brief's form, and the remark ``Bounded coordinate ranges'')
+  (Definition~2 in the brief's form, and the remark ``Bounded coordinate ranges'') and
+  \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/DegreesOfFreedom.lean}
+  (GCUR for several DOFs, canonical transformations, and the conditions in every canonical
+  coordinate system)
 \item Library: \lean{ClassicalUncertaintyPrinciple}
-\item Imports: ten new \lean{ForMathlib} files, the first two through
+\item Imports: twelve new \lean{ForMathlib} files, the first two through
   \lean{Subadditivity.lean}:
   \begin{itemize}
   \item \lean{ForMathlib/InformationTheory/GibbsInequality.lean}:\newline Gibbs' inequality
@@ -126,6 +129,12 @@ relation. This log follows the revised numbering; the formalization of the first
   \lean{ContDiff.exists_contDiffOn_leftInverse_of_det_ne_zero}); conversely, a left inverse
   differentiable on the range forces a nonzero Jacobian
   (\lean{det_fderiv_ne_zero_of_leftInverse})
+  \item \lean{ForMathlib/LinearAlgebra/Matrix/BilinearForm.lean}:\newline a linear map
+  preserving a nondegenerate bilinear form has $\det^2 = 1$
+  (\lean{LinearMap.BilinForm.det_sq_eq_one_of_comp_eq})
+  \item \lean{ForMathlib/MeasureTheory/Function/Jacobian.lean}:\newline a differentiable
+  bijection with $|\det f'| = 1$ everywhere preserves every additive Haar measure
+  (\lean{MeasureTheory.measurePreserving_of_abs_det_fderiv_eq_one})
   \end{itemize}
 \end{itemize}
 
@@ -264,6 +273,20 @@ CST, the uniform ensemble: $S[\rho_U] = \ln(\mu(U)/h^n)$, zero iff $\mu(U) = h^n
 {}[B]ZENT for several DOFs, ``the marginal of each independent DOF'' & \lean{isEnsemble_marginal}:
   the marginal is an ensemble; \lean{mean_marginal}, \lean{var_marginal}: with the means and
   variances of $q_i, p_i$ under $\rho$ \\
+{}[B]ZENT and GCUR for several DOFs, ``independently of its representation'' &
+  \lean{IsCanonicalTransformation}: a differentiable bijection whose derivative preserves
+  $\omega = \sum_i dq_i \wedge dp_i$ (\lean{symplecticForm}); Liouville's theorem
+  \lean{IsCanonicalTransformation.measurePreserving}; the density in new canonical coordinates
+  \lean{canonicalDensity} is an ensemble of the same entropy
+  (\lean{IsCanonicalTransformation.isEnsemble_canonicalDensity},
+  \lean{IsCanonicalTransformation.entropy_canonicalDensity}); \lean{LowerEntropicBoundCanonical},
+  \lean{GeneralizedUncertaintyRelationCanonical}: the conditions for every DOF of every
+  canonical coordinate system; \lean{isCanonicalTransformation_momentumShear}: the shear
+  $p_i \mapsto p_i + \sum_j S_{ij}q_j$, $S$ symmetric, is canonical and mixes the DOFs \\
+Conditions GCUR and CUR for several DOFs &
+  \lean{GeneralizedUncertaintyRelationPhaseSpace},
+  \lean{ExtendedGeneralizedUncertaintyRelation}\allowbreak\lean{PhaseSpace},
+  \lean{ExtendedUncertaintyRelationPhaseSpace}: for the marginal of every DOF \\
 Conditions GCUR and CUR & \lean{ExtendedGeneralizedUncertaintyRelation},
   \lean{ExtendedUncertaintyRelation}, with extended variances, as in the brief;
   \lean{GeneralizedUncertaintyRelation}, \lean{UncertaintyRelation}, with variances, for finite
@@ -281,12 +304,14 @@ Theorem~9, GCUR with its equality case &
   the inequality also as \lean{hbar_div_exp_mul_exp_le_sd_mul_sd} and
   \lean{IsNewVariables.hbar_div_exp_mul_exp_le_sd_mul_sd}; the equality case as
   \lean{IsNewVariables.sd_mul_sd_eq_hbar_div_exp_mul_exp_iff}, and then $(f, g)$ is onto up to a
-  null set (\lean{volume_compl_range_eq_zero}) \\
+  null set (\lean{volume_compl_range_eq_zero}); for several DOFs
+  \lean{generalizedUncertaintyRelationPhaseSpace_of_lowerEntropicBoundPhaseSpace} \\
 Theorem~9, CUR with its equality case &
   \lean{extendedUncertaintyRelation_of_lowerEntropicBound}, with no moment hypothesis;
   \lean{uncertaintyRelation_of_lowerEntropicBound}, for finite variances; the
   inequality also as \lean{uncertaintyPrinciple_of_lowerEntropicBound}, and for several DOFs
-  \lean{uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace}; the equality case also
+  \lean{uncertaintyPrinciplePhaseSpace_of_lowerEntropicBoundPhaseSpace}, with its equality case
+  \lean{extendedUncertaintyRelationPhaseSpace_of_lowerEntropicBoundPhaseSpace}; the equality case also
   as \lean{sd_mul_sd_eq_hbar_div_exp_iff} and \lean{sd_mul_sd_eq_hbar_div_exp_iff_marginal} \\
 Theorem~9, eq.~(10) & \lean{sd_mul_sd_eq_hbar_div_exp_mul_exp_mul_exp} \\
 Theorem~11 & \lean{exists_uncertaintyRelation_not_lowerEntropicBound}, for every $s > 0$:
@@ -296,7 +321,13 @@ Theorem~11 & \lean{exists_uncertaintyRelation_not_lowerEntropicBound}, for every
 Theorem~12 & \lean{lowerEntropicBound_iff_extendedGeneralizedUncertaintyRelation},
   \lean{lowerEntropicBound_of_generalizedUncertaintyRelation},
   \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation}; from \lean{HasGaussianFrames}
-  alone, the same names with \lean{_of_hasGaussianFrames} \\
+  alone, the same names with \lean{_of_hasGaussianFrames}; for several DOFs, if the marginals are
+  ensembles,
+  \lean{lowerEntropicBoundPhaseSpace_iff_generalizedUncertaintyRelation}\allowbreak\lean{PhaseSpace},
+  \lean{lowerEntropicBoundPhaseSpace_iff_extendedGeneralizedUncertaintyRelation}\allowbreak\lean{PhaseSpace}, and in
+  every canonical coordinate system
+  \lean{lowerEntropicBoundCanonical_iff_generalizedUncertaintyRelation}\allowbreak\lean{Canonical},
+  \lean{lowerEntropicBoundCanonical_iff_extendedGeneralizedUncertaintyRelation}\allowbreak\lean{Canonical} \\
 Theorem~12, positive smooth $\rho_{qp}$ (via Proposition~5) &
   \lean{lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff}, for a positive $C^1$
   density (\lean{hasGaussianFrames_of_contDiff}) \\
@@ -442,12 +473,19 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
 \item Positive variances are proved, not assumed: an ensemble of finite entropy cannot have zero
   variance in any variable, since Gibbs' inequality against ever narrower Gaussians would bound
   its entropy by $-\infty$.
-\item For several DOFs, ZENT and the inequality of CUR are stated on $(\mathbb R^2)^{n+1}$, so
-  there is at least one DOF. An ``independent DOF'' is read as a pair $(q_i, p_i)$ of
-  coordinates; DOFs in other canonical coordinates, after a change of variables that mixes the
-  pairs, are not considered. The marginal of each DOF is an ensemble with finite second moments,
-  so Theorem~9 for one DOF applies to each marginal. CST's Liouville measure
-  $\int\omega^n/n!$ is Lebesgue measure on $(\mathbb R^2)^n$; symplectic forms are not modelled.
+\item For several DOFs, the conditions are stated on $(\mathbb R^2)^{n+1}$, so there is at least
+  one DOF. An ``independent DOF'' of a canonical coordinate system is a pair $(Q_i, P_i)$ of its
+  coordinates. A canonical coordinate system is the image of the given one under a canonical
+  transformation, modelled as a differentiable bijection whose derivative preserves the constant
+  symplectic form $\omega$ at every point; the brief's representation-independent ZENT quantifies
+  over all of them. The brief's [B]FINENT for marginals is a hypothesis, that the marginals are
+  ensembles; it holds when the coordinates have finite second moments
+  (\lean{isEnsemble_marginal}, \lean{IsCanonicalTransformation.isEnsemble_marginal}). Then
+  Theorems~9 and~12 for one DOF apply to each marginal. CST's Liouville measure
+  $\int\omega^n/n!$ is Lebesgue measure on $(\mathbb R^2)^n$, and canonical transformations
+  preserve it: their Jacobian determinant has square~$1$, since they preserve the nondegenerate
+  form~$\omega$. That representation-independent ZENT is strictly stronger than ZENT in the
+  given coordinates is not shown.
   Physical units are not modelled, so the brief's requirement that $f, g$ carry the units of
   $q, p$ is not needed.
 \item The minimality of the Gaussian is proved by Gibbs' inequality against the product $G$ of

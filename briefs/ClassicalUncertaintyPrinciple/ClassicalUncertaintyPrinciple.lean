@@ -26,7 +26,8 @@ Proposition 6 for infinite entropy, shows that CUR and GCUR hold for densities o
 undefined and that GCUR fails for entropy `-∞`, and constructs densities of entropy `+∞`, `-∞`
 and undefined; `ClassicalUncertaintyPrinciple.AdmissibleCoordinates` proves that admissible
 coordinates are Definition 2 as the brief states it, and formalizes the remark on bounded
-coordinate ranges.
+coordinate ranges; `ClassicalUncertaintyPrinciple.DegreesOfFreedom` states GCUR for several DOFs
+and in every canonical coordinate system, and proves Theorems 9 and 12 there.
 
 A statistical ensemble on a measure space `(X, μ)` is a probability density `ρ` with finite
 entropy, and its entropy relative to a cell of size `c` is the Gibbs/Shannon entropy
