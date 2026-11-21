@@ -7,6 +7,7 @@ module
 
 public import ClassicalUncertaintyPrinciple.ExtendedVariance
 
+import ForMathlib.InformationTheory.SmoothApproximation
 import Mathlib.MeasureTheory.Function.Floor
 
 /-!
@@ -15,7 +16,8 @@ import Mathlib.MeasureTheory.Function.Floor
 The brief *Classical uncertainty relation* extends Proposition 6 to densities of well-defined
 infinite entropy, and remarks (*Infinite and undefined entropy*) that for `S[ρ] = +∞`, and for
 undefined `S[ρ]`, every admissible frame has an infinite variance, so that GCUR holds and cannot
-guarantee that the entropy exists.
+guarantee that the entropy exists, while for `S[ρ] = -∞` GCUR fails in some bounded admissible
+coordinates.
 
 Entropies are real numbers in this formalization, so an infinite entropy is described by the two
 halves of the entropy integral. Both cases of the remark are the case
@@ -37,10 +39,21 @@ as the remark on convexity says of every mixture of disjoint support: mixing in 
 density changes each half of the entropy integral only by an integrable term. By the result
 above, the mixture satisfies GCUR.
 
+For `S[ρ] = -∞`, that is `∫ (ρ log ρ)⁺ = ∞` with `∫ (-ρ log ρ)⁺` finite, the brief's proof
+sketch transports smooth densities `η` with `E[ln η]` finite and large to a uniform density on a
+bounded rectangle. Here `η` smooths `min ρ j` shell by shell, as for finite entropy but with the
+exceptional sets weighed by `ρ` (`MeasureTheory.exists_contDiff_integral_mul_log_min_sub_lt`),
+so `E[ln η] > E[ln (min ρ j)] - 1`, which tends to `∞` with `j` by monotone convergence. The polar
+transport of `η` to the standard Gaussian, followed by the distribution function `Φ` in each
+coordinate, gives coordinates with values in `[-1, 1]` and Jacobian `η`, so
+`U_ρ(T) ≤ |ln (2π e / h)| - E[ln η]`. A negative `U_ρ(T)` violates GCUR.
+
 ## Main definitions
 
 * `ClassicalUncertaintyPrinciple.entropyPos`, `ClassicalUncertaintyPrinciple.entropyNeg`: the
   halves `∫ (-ρ log ρ)⁺` and `∫ (ρ log ρ)⁺` of the entropy integral.
+* `ClassicalUncertaintyPrinciple.gaussPrim`: the standard Gaussian distribution function, less
+  `1 / 2`.
 * `ClassicalUncertaintyPrinciple.boxExample`: densities of entropy `+∞` and `-∞`;
   `ClassicalUncertaintyPrinciple.undefinedEntropyExample`: one of undefined entropy.
 
@@ -60,6 +73,15 @@ above, the mixture satisfies GCUR.
   undefined;
   `ClassicalUncertaintyPrinciple.exists_entropy_undefined_extendedGeneralizedUncertaintyRelation`:
   one of undefined entropy satisfies GCUR.
+* `ClassicalUncertaintyPrinciple.exists_isAdmissible_coordinateUncertainty_lt`,
+  `ClassicalUncertaintyPrinciple.not_bddBelow_coordinateUncertainty`: Proposition 6 for
+  `S[ρ] = -∞`, `inf_T U_ρ(T) = -∞`, over bounded admissible coordinates;
+  `ClassicalUncertaintyPrinciple.exists_bounded_coordinates`: the coordinates, with a given
+  Jacobian.
+* `ClassicalUncertaintyPrinciple.not_extendedGeneralizedUncertaintyRelation_of_entropyNeg_eq_top`,
+  `ClassicalUncertaintyPrinciple.not_generalizedUncertaintyRelation_of_entropyNeg_eq_top`: the
+  remark *Infinite and undefined entropy*: for `S[ρ] = -∞`, GCUR fails;
+  `ClassicalUncertaintyPrinciple.exists_not_extendedGeneralizedUncertaintyRelation`: an instance.
 -/
 
 open Real MeasureTheory Set
@@ -473,5 +495,305 @@ theorem exists_entropy_undefined_extendedGeneralizedUncertaintyRelation :
   exact ⟨ρ, hρ, hP, hN, fun _ => extendedGeneralizedUncertaintyRelation_of_entropyPos_eq_top hρ hP⟩
 
 end Boxes
+
+
+/-! ### Entropy `-∞`: GCUR fails -/
+
+section NegInfinite
+
+open ProbabilityTheory
+
+open scoped Interval
+
+/-- For `j ≥ 1` and `∫ (-ρ log ρ)⁺ < ∞`, the truncation `ρ log (min ρ j)` is integrable: it lies
+between `-(-ρ log ρ)⁺` and `ρ log j`. -/
+lemma integrable_mul_log_min (hρ : IsDensity ρ) (hP : entropyPos ρ ≠ ⊤) {j : ℝ} (hj : 1 ≤ j) :
+    Integrable fun x => ρ x * log (min (ρ x) j) := by
+  have hρa := hρ.integrable.aemeasurable
+  have hPi : Integrable fun x => (ENNReal.ofReal (negMulLog (ρ x))).toReal :=
+    integrable_toReal_of_lintegral_ne_top
+      ((Real.continuous_negMulLog.measurable.comp_aemeasurable hρa).ennreal_ofReal) hP
+  refine (hPi.add (hρ.integrable.mul_const (log j))).mono'
+    ((measurable_id.mul (measurable_id.min measurable_const).log).comp_aemeasurable
+      hρa).aestronglyMeasurable (ae_of_all _ fun x => ?_)
+  have h0 := hρ.nonneg x
+  have hlj : 0 ≤ ρ x * log j := mul_nonneg h0 (log_nonneg hj)
+  have hm : negMulLog (ρ x) ≤ max (negMulLog (ρ x)) 0 := le_max_left _ _
+  have hm0 : 0 ≤ max (negMulLog (ρ x)) 0 := le_max_right _ _
+  simp only [Pi.add_apply]
+  rw [ENNReal.toReal_ofReal', Real.norm_eq_abs, abs_le]
+  rcases le_total (ρ x) j with hx | hx
+  · rw [min_eq_left hx]
+    have h1 : ρ x * log (ρ x) ≤ ρ x * log j := by
+      rcases h0.eq_or_lt with h0' | h0'
+      · rw [← h0', zero_mul, zero_mul]
+      · exact mul_le_mul_of_nonneg_left (log_le_log h0' hx) h0
+    have hneg : negMulLog (ρ x) = -(ρ x * log (ρ x)) := by rw [negMulLog]; ring
+    constructor <;> linarith
+  · rw [min_eq_right hx]
+    constructor <;> linarith
+
+/-- **Entropy `-∞` makes the truncated expectations of `log ρ` unbounded.** For
+`∫ (-ρ log ρ)⁺ < ∞` and `∫ (ρ log ρ)⁺ = ∞`, `∫ ρ log (min ρ j) → ∞` as `j → ∞`, by monotone
+convergence. -/
+lemma exists_lt_integral_mul_log_min (hρ : IsDensity ρ) (hP : entropyPos ρ ≠ ⊤)
+    (hN : entropyNeg ρ = ⊤) (A : ℝ) :
+    ∃ j : ℕ, A < ∫ x, ρ x * log (min (ρ x) (j + 1)) := by
+  set v : ℕ → ℝ × ℝ → ℝ := fun j x => ρ x * log (min (ρ x) (j + 1)) with hv
+  have hj1 : ∀ j : ℕ, (1 : ℝ) ≤ j + 1 := fun j => by linarith [j.cast_nonneg (α := ℝ)]
+  have hvi : ∀ j, Integrable (v j) := fun j => integrable_mul_log_min hρ hP (hj1 j)
+  have hle : ∀ j x, v j x ≤ ρ x * log (ρ x) := fun j x => by
+    rcases (hρ.nonneg x).eq_or_lt with h0 | h0
+    · simp [hv, ← h0]
+    · exact mul_le_mul_of_nonneg_left
+        (log_le_log (lt_min h0 (by linarith [hj1 j])) (min_le_left _ _)) h0.le
+  have hmono : ∀ x, Monotone fun j => ENNReal.ofReal (v j x) := fun x i j hij => by
+    refine ENNReal.ofReal_le_ofReal ?_
+    rcases (hρ.nonneg x).eq_or_lt with h0 | h0
+    · simp [hv, ← h0]
+    · have hij' : (i : ℝ) + 1 ≤ j + 1 := by
+        have : (i : ℝ) ≤ j := by exact_mod_cast hij
+        linarith
+      exact mul_le_mul_of_nonneg_left (log_le_log (lt_min h0 (by linarith [hj1 i]))
+        (min_le_min_left _ hij')) h0.le
+  have hsup : ∀ x, ⨆ j, ENNReal.ofReal (v j x) = ENNReal.ofReal (ρ x * log (ρ x)) := fun x => by
+    refine le_antisymm (iSup_le fun j => ENNReal.ofReal_le_ofReal (hle j x)) ?_
+    obtain ⟨j, hj⟩ := exists_nat_ge (ρ x)
+    refine le_iSup_of_le j (le_of_eq ?_)
+    simp only [hv]
+    rw [min_eq_left (by linarith)]
+  have hlim : ⨆ j, ∫⁻ x, ENNReal.ofReal (v j x) = ⊤ := by
+    rw [← lintegral_iSup' (fun j => (hvi j).aemeasurable.ennreal_ofReal) (ae_of_all _ hmono)]
+    simp_rw [hsup]
+    exact hN
+  set E := (entropyPos ρ).toReal with hE
+  have hE0 : 0 ≤ E := ENNReal.toReal_nonneg
+  obtain ⟨j, hj⟩ := lt_iSup_iff.1 (hlim ▸ ENNReal.ofReal_lt_top :
+    ENNReal.ofReal (max A 0 + E) < ⨆ j, ∫⁻ x, ENNReal.ofReal (v j x))
+  refine ⟨j, ?_⟩
+  have h1 : max A 0 + E < (∫⁻ x, ENNReal.ofReal (v j x)).toReal :=
+    (ENNReal.ofReal_lt_iff_lt_toReal (by positivity) (hvi j).lintegral_lt_top.ne).1 hj
+  have h2 : (∫⁻ x, ENNReal.ofReal (-v j x)).toReal ≤ E := by
+    refine ENNReal.toReal_mono hP (lintegral_mono fun x => ?_)
+    rw [ENNReal.ofReal_le_ofReal_iff']
+    rcases le_total (ρ x) (j + 1) with hx | hx
+    · left
+      simp only [hv, min_eq_left hx, negMulLog]
+      exact le_of_eq (by ring)
+    · right
+      simp only [hv, min_eq_right hx]
+      have := mul_nonneg (hρ.nonneg x) (log_nonneg (hj1 j))
+      linarith
+  have h4 : A ≤ max A 0 := le_max_left _ _
+  change A < ∫ x, v j x
+  rw [integral_eq_lintegral_pos_part_sub_lintegral_neg_part (hvi j)]
+  linarith
+
+lemma gaussProd_zero_one_le_one (y : ℝ × ℝ) : gaussProd 0 1 0 1 y ≤ 1 := by
+  by_contra hy
+  have h1 := Real.log_pos (not_le.1 hy)
+  rw [log_gaussProd_zero_one] at h1
+  have := log_nonneg (by linarith [Real.two_le_pi] : (1 : ℝ) ≤ 2 * π)
+  nlinarith [sq_nonneg y.1, sq_nonneg y.2]
+
+/-- The standard Gaussian distribution function, less `1 / 2`: `Φ u = ∫₀ᵘ φ`. -/
+def gaussPrim (u : ℝ) : ℝ := ∫ t in (0 : ℝ)..u, gaussianPDFReal 0 1 t
+
+lemma continuous_gaussianPDFReal_zero_one : Continuous (gaussianPDFReal 0 1) := by
+  unfold gaussianPDFReal
+  fun_prop
+
+lemma hasDerivAt_gaussPrim (u : ℝ) : HasDerivAt gaussPrim (gaussianPDFReal 0 1 u) u :=
+  (continuous_gaussianPDFReal_zero_one.integral_hasStrictDerivAt 0 u).hasDerivAt
+
+lemma deriv_gaussPrim : deriv gaussPrim = gaussianPDFReal 0 1 :=
+  funext fun u => (hasDerivAt_gaussPrim u).deriv
+
+lemma contDiff_gaussPrim : ContDiff ℝ 1 gaussPrim := by
+  rw [contDiff_one_iff_deriv, deriv_gaussPrim]
+  exact ⟨fun u => (hasDerivAt_gaussPrim u).differentiableAt, continuous_gaussianPDFReal_zero_one⟩
+
+lemma strictMono_gaussPrim : StrictMono gaussPrim :=
+  strictMono_of_deriv_pos fun u => by
+    rw [deriv_gaussPrim]
+    exact gaussianPDFReal_pos _ _ _ one_ne_zero
+
+lemma abs_gaussPrim_le (u : ℝ) : |gaussPrim u| ≤ 1 := by
+  rw [gaussPrim, ← Real.norm_eq_abs, intervalIntegral.norm_integral_eq_norm_integral_uIoc,
+    Real.norm_of_nonneg (setIntegral_nonneg measurableSet_uIoc fun t _ =>
+      gaussianPDFReal_nonneg _ _ _)]
+  calc ∫ t in Ι 0 u, gaussianPDFReal 0 1 t ≤ ∫ t, gaussianPDFReal 0 1 t :=
+        setIntegral_le_integral (integrable_gaussianPDFReal 0 1)
+          (ae_of_all _ fun t => gaussianPDFReal_nonneg _ _ _)
+    _ = 1 := integral_gaussianPDFReal_eq_one 0 one_ne_zero
+
+/-- **Bounded coordinates with a given Jacobian.** A positive `C¹` probability density `η` on
+the plane is the Jacobian `|{f, g}|` of `C¹` coordinates `f = Φ ∘ T₁`, `g = Φ ∘ T₂` with values
+in `[-1, 1]`: `T` transports `η` to the standard Gaussian
+(`PolarTransport.exists_transport_gaussian`), and the distribution function `Φ` in each
+coordinate takes the Gaussian to the uniform density on a square. -/
+lemma exists_bounded_coordinates {η : ℝ × ℝ → ℝ} (hηc : ContDiff ℝ 1 η) (hηpos : ∀ x, 0 < η x)
+    (hη1 : ∫ x, η x = 1) :
+    ∃ f g : ℝ × ℝ → ℝ, ContDiff ℝ 1 f ∧ ContDiff ℝ 1 g ∧
+      Function.Injective (fun x => (f x, g x)) ∧ (∀ x, |poissonBracket f g x| = η x) ∧
+      (∀ x, |f x| ≤ 1) ∧ ∀ x, |g x| ≤ 1 := by
+  obtain ⟨T, hT1, hTb, hTη⟩ :=
+    PolarTransport.exists_transport_gaussian hηc le_rfl hηpos hη1 (v := 1) one_ne_zero
+  have hTd : Differentiable ℝ T := hT1.differentiable one_ne_zero
+  have h1 : ∀ x, HasFDerivAt (fun x => (T x).1)
+      ((ContinuousLinearMap.fst ℝ ℝ ℝ).comp (fderiv ℝ T x)) x := fun x =>
+    hasFDerivAt_fst.comp x (hTd x).hasFDerivAt
+  have h2 : ∀ x, HasFDerivAt (fun x => (T x).2)
+      ((ContinuousLinearMap.snd ℝ ℝ ℝ).comp (fderiv ℝ T x)) x := fun x =>
+    hasFDerivAt_snd.comp x (hTd x).hasFDerivAt
+  have hd1 : ∀ x, HasFDerivAt (fun x => gaussPrim (T x).1)
+      (gaussianPDFReal 0 1 (T x).1 • (ContinuousLinearMap.fst ℝ ℝ ℝ).comp (fderiv ℝ T x)) x :=
+    fun x => (hasDerivAt_gaussPrim _).comp_hasFDerivAt x (h1 x)
+  have hd2 : ∀ x, HasFDerivAt (fun x => gaussPrim (T x).2)
+      (gaussianPDFReal 0 1 (T x).2 • (ContinuousLinearMap.snd ℝ ℝ ℝ).comp (fderiv ℝ T x)) x :=
+    fun x => (hasDerivAt_gaussPrim _).comp_hasFDerivAt x (h2 x)
+  have hpb : ∀ x, poissonBracket (fun x => gaussPrim (T x).1) (fun x => gaussPrim (T x).2) x =
+      gaussianPDFReal 0 1 (T x).1 * gaussianPDFReal 0 1 (T x).2 * (fderiv ℝ T x).det :=
+    fun x => by
+      rw [← poissonBracket_eq_det hTd, poissonBracket, poissonBracket, (hd1 x).fderiv,
+        (hd2 x).fderiv, (h1 x).fderiv, (h2 x).fderiv]
+      simp only [FunLike.coe_smul, Pi.smul_apply, ContinuousLinearMap.comp_apply,
+        smul_eq_mul]
+      ring
+  refine ⟨fun x => gaussPrim (T x).1, fun x => gaussPrim (T x).2,
+    contDiff_gaussPrim.comp (contDiff_fst.comp hT1),
+    contDiff_gaussPrim.comp (contDiff_snd.comp hT1), fun x y hxy => hTb.1 ?_, fun x => ?_,
+    fun x => abs_gaussPrim_le _, fun x => abs_gaussPrim_le _⟩
+  · simp only [Prod.mk.injEq] at hxy
+    exact Prod.ext (strictMono_gaussPrim.injective hxy.1) (strictMono_gaussPrim.injective hxy.2)
+  · rw [hpb, abs_mul, abs_of_pos (mul_pos (gaussianPDFReal_pos _ _ _ one_ne_zero)
+      (gaussianPDFReal_pos _ _ _ one_ne_zero))]
+    exact (hTη x).symm
+
+lemma integrable_sq_mul_of_abs_le_one (hρ : IsDensity ρ) (hf : Measurable f)
+    (hf1 : ∀ x, |f x| ≤ 1) : Integrable fun x => f x ^ 2 * ρ x :=
+  hρ.integrable.mono' ((hf.pow_const 2).aestronglyMeasurable.mul hρ.integrable.1)
+    (ae_of_all _ fun x => by
+      rw [Real.norm_of_nonneg (mul_nonneg (sq_nonneg _) (hρ.nonneg x))]
+      exact mul_le_of_le_one_left (hρ.nonneg x) ((sq_le_one_iff_abs_le_one _).2 (hf1 x)))
+
+lemma sd_le_one_of_abs_le_one (hρ : IsDensity ρ) (hf : Measurable f) (hf1 : ∀ x, |f x| ≤ 1) :
+    sd ρ f ≤ 1 := by
+  have hf2 := integrable_sq_mul_of_abs_le_one hρ hf hf1
+  have h := integral_sub_sq_mul hρ hf hf2 0
+  simp only [sub_zero] at h
+  have h2 : ∫ x, f x ^ 2 * ρ x ≤ ∫ x, ρ x := integral_mono hf2 hρ.integrable fun x =>
+    mul_le_of_le_one_left (hρ.nonneg x) ((sq_le_one_iff_abs_le_one _).2 (hf1 x))
+  rw [hρ.integral_eq_one] at h2
+  have hv : var ρ f ≤ 1 := by nlinarith [sq_nonneg (mean ρ f)]
+  exact (Real.sqrt_le_sqrt hv).trans_eq Real.sqrt_one
+
+lemma log_le_abs_log {x y : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) : log x ≤ |log y| := by
+  rcases hx.eq_or_lt with rfl | hx
+  · rw [log_zero]
+    exact abs_nonneg _
+  · exact (log_le_log hx hxy).trans (le_abs_self _)
+
+/-- **Proposition 6 for entropy `-∞`.** For `∫ (ρ log ρ)⁺ = ∞` and `∫ (-ρ log ρ)⁺ < ∞`, that is
+for `S[ρ] = -∞`, `U_ρ(T)` takes arbitrarily negative values on admissible coordinates with
+values in `[-1, 1]`. Following the brief: smooth positive densities `η` with `E[ln η] → ∞`
+(`MeasureTheory.exists_contDiff_integral_mul_log_min_sub_lt`) are the Jacobians of bounded
+coordinates (`exists_bounded_coordinates`), so that
+`U_ρ(T) ≤ |ln (2π e / h)| - E[ln η]`. -/
+theorem exists_isAdmissible_coordinateUncertainty_lt (hh : 0 < h) (hρ : IsDensity ρ)
+    (hP : entropyPos ρ ≠ ⊤) (hN : entropyNeg ρ = ⊤) (M : ℝ) :
+    ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧ (∀ x, |f x| ≤ 1) ∧ (∀ x, |g x| ≤ 1) ∧
+      coordinateUncertainty h ρ f g < M := by
+  set c := |log (2 * π * exp 1 / h)| with hc
+  obtain ⟨j, hj⟩ := exists_lt_integral_mul_log_min hρ hP hN (c - M + 1)
+  have hj1 : (1 : ℝ) ≤ j + 1 := by linarith [j.cast_nonneg (α := ℝ)]
+  have hv : (1 : ℝ≥0) ≠ 0 := one_ne_zero
+  obtain ⟨η, hηc, hηpos, -, hη1, hηl, hηlt⟩ := exists_contDiff_integral_mul_log_min_sub_lt
+    (μ := volume) (n := 1) (C := 1) hρ.nonneg hρ.integrable hρ.integral_eq_one
+    (by linarith : (0 : ℝ) < j + 1) (integrable_mul_log_min hρ hP hj1)
+    (contDiff_gaussProd 0 0 1 1) (gaussProd_pos hv hv) gaussProd_zero_one_le_one
+    (integrable_gaussProd 0 0 1 1) (integral_gaussProd hv hv) one_pos
+  obtain ⟨f, g, hf, hg, hinj, hJ, hf1, hg1⟩ := exists_bounded_coordinates hηc hηpos hη1
+  have T : IsAdmissible ρ f g :=
+    ⟨hf, hg, hinj, fun x h0 => (hηpos x).ne' (by rw [← hJ x, h0, abs_zero]),
+      hηl.congr (ae_of_all _ fun x => by simp only [hJ])⟩
+  refine ⟨f, g, T, hf1, hg1, ?_⟩
+  have hsf := sd_le_one_of_abs_le_one hρ T.measurable_left hf1
+  have hsg := sd_le_one_of_abs_le_one hρ T.measurable_right hg1
+  have hss : sd ρ f * sd ρ g ≤ 1 :=
+    (mul_le_mul hsf hsg sd_nonneg zero_le_one).trans_eq (one_mul 1)
+  have hss0 : 0 ≤ sd ρ f * sd ρ g := mul_nonneg sd_nonneg sd_nonneg
+  have hlog : log (2 * π * exp 1 * (sd ρ f * sd ρ g) / h) ≤ c := by
+    refine log_le_abs_log (by positivity) ?_
+    exact div_le_div_of_nonneg_right (mul_le_of_le_one_right (by positivity) hss) hh.le
+  have hI : ∫ x, ρ x * log |poissonBracket f g x| = ∫ x, ρ x * log (η x) := by
+    simp only [hJ]
+  rw [coordinateUncertainty, hI]
+  linarith
+
+/-- **Proposition 6, eq. (7), for entropy `-∞`**: `inf_T U_ρ(T) = -∞ = S_h[ρ]` over admissible
+coordinates with finite variances. -/
+theorem not_bddBelow_coordinateUncertainty (hh : 0 < h) (hρ : IsDensity ρ)
+    (hP : entropyPos ρ ≠ ⊤) (hN : entropyNeg ρ = ⊤) :
+    ¬BddBelow {u | ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧
+      (Integrable fun x => f x ^ 2 * ρ x) ∧ (Integrable fun x => g x ^ 2 * ρ x) ∧
+      u = coordinateUncertainty h ρ f g} := by
+  rintro ⟨b, hb⟩
+  obtain ⟨f, g, T, hf1, hg1, hU⟩ := exists_isAdmissible_coordinateUncertainty_lt hh hρ hP hN b
+  exact hU.not_ge (hb ⟨f, g, T, integrable_sq_mul_of_abs_le_one hρ T.measurable_left hf1,
+    integrable_sq_mul_of_abs_le_one hρ T.measurable_right hg1, rfl⟩)
+
+/-- A negative `U_ρ(T)` violates the inequality of GCUR: `σ_f σ_g < (ħ / e) e^{E[log |{f, g}|]}`. -/
+lemma sd_mul_sd_lt_of_coordinateUncertainty_neg (hh : 0 < h)
+    (hU : coordinateUncertainty h ρ f g < 0) :
+    sd ρ f * sd ρ g < hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|) := by
+  have hB : 0 < hbar h / exp 1 * exp (∫ x, ρ x * log |poissonBracket f g x|) := by
+    have := hbar_pos hh
+    positivity
+  rcases (mul_nonneg (sd_nonneg (ρ := ρ) (f := f)) (sd_nonneg (ρ := ρ) (f := g))).eq_or_lt
+    with h0 | h0
+  · rw [← h0]
+    exact hB
+  · rw [coordinateUncertainty, sub_neg, log_lt_iff_lt_exp (by positivity), div_lt_iff₀ hh]
+      at hU
+    rw [hbar_div_exp_eq, div_mul_eq_mul_div, lt_div_iff₀ (by positivity)]
+    linarith
+
+/-- **GCUR fails for entropy `-∞`.** For `∫ (ρ log ρ)⁺ = ∞` and `∫ (-ρ log ρ)⁺ < ∞`, bounded
+admissible coordinates violate the inequality of the extended GCUR. -/
+theorem not_extendedGeneralizedUncertaintyRelation_of_entropyNeg_eq_top (hh : 0 < h)
+    (hρ : IsDensity ρ) (hP : entropyPos ρ ≠ ⊤) (hN : entropyNeg ρ = ⊤) :
+    ¬ExtendedGeneralizedUncertaintyRelation h ρ := by
+  intro hE
+  obtain ⟨f, g, T, hf1, hg1, hU⟩ := exists_isAdmissible_coordinateUncertainty_lt hh hρ hP hN 0
+  have h1 := (hE f g T).1
+  rw [extendedSd_eq_ofReal_sd hρ T.measurable_left
+      (integrable_sq_mul_of_abs_le_one hρ T.measurable_left hf1),
+    extendedSd_eq_ofReal_sd hρ T.measurable_right
+      (integrable_sq_mul_of_abs_le_one hρ T.measurable_right hg1),
+    ← ENNReal.ofReal_mul sd_nonneg,
+    ENNReal.ofReal_le_ofReal_iff (mul_nonneg sd_nonneg sd_nonneg)] at h1
+  exact h1.not_gt (sd_mul_sd_lt_of_coordinateUncertainty_neg hh hU)
+
+/-- **GCUR fails for entropy `-∞`**, with finite variances. -/
+theorem not_generalizedUncertaintyRelation_of_entropyNeg_eq_top (hh : 0 < h)
+    (hρ : IsDensity ρ) (hP : entropyPos ρ ≠ ⊤) (hN : entropyNeg ρ = ⊤) :
+    ¬GeneralizedUncertaintyRelation h ρ := by
+  intro hG
+  obtain ⟨f, g, T, hf1, hg1, hU⟩ := exists_isAdmissible_coordinateUncertainty_lt hh hρ hP hN 0
+  exact ((hG f g T (integrable_sq_mul_of_abs_le_one hρ T.measurable_left hf1)
+    (integrable_sq_mul_of_abs_le_one hρ T.measurable_right hg1)).1).not_gt
+    (sd_mul_sd_lt_of_coordinateUncertainty_neg hh hU)
+
+/-- **Entropy `-∞`, an instance.** A density of entropy `-∞` violates the extended GCUR for
+every `h > 0`. -/
+theorem exists_not_extendedGeneralizedUncertaintyRelation :
+    ∃ ρ : ℝ × ℝ → ℝ, IsDensity ρ ∧ entropyPos ρ = 0 ∧ entropyNeg ρ = ⊤ ∧
+      ∀ h, 0 < h → ¬ExtendedGeneralizedUncertaintyRelation h ρ := by
+  obtain ⟨ρ, hρ, hP, hN⟩ := exists_isDensity_entropy.2.1
+  exact ⟨ρ, hρ, hP, hN, fun _ hh => not_extendedGeneralizedUncertaintyRelation_of_entropyNeg_eq_top
+    hh hρ (by rw [hP]; exact ENNReal.zero_ne_top) hN⟩
+
+end NegInfinite
 
 end ClassicalUncertaintyPrinciple

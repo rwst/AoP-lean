@@ -38,18 +38,6 @@ formalization is missing, or \emph{Research}, when the question itself is open.
 
 \section*{From the brief}
 \begin{enumerate}
-\item \textbf{Proposition~6 for infinite entropy is a proof sketch.} \emph{Formalization gap.} For
-  $S[\rho_{qp}] = -\infty$ the brief takes densities $\eta_j$ with finite logarithmic
-  expectations tending to $+\infty$ and transports them to a uniform density on a bounded
-  rectangle, claiming the variances stay bounded while $E[\ln J_{T_j} \mid \rho_{qp}] \to
-  +\infty$. This step is not argued. The case $S[\rho_{qp}] = +\infty$, that every admissible
-  frame has an infinite variance, is proved, for undefined entropy too
-  (\lean{IsAdmissible.extendedSd_mul_eq_top_of_entropyPos_eq_top}). The finite-entropy case, on which
-  Theorem~12 rests, is proved, with the steps the sketch leaves open filled in: the
-  approximation needs a smoothing scale that depends on position, since a finite entropy gives
-  no moment of $\rho_{qp}$, and the finite variances follow from Young's inequality
-  $ab \le a\ln a - a + e^b$ (Log, ``Differences from the brief''). (Brief, Sec.~2,
-  Proposition~6.)
 \item \textbf{The quantum case in the conclusion.} \emph{Research.} The conclusion places the lower entropic bound
   in quantum mechanics: pure states have zero entropy and mixed states non-negative entropy. The
   von Neumann entropy vanishes on every pure state whatever its $\sigma_q\sigma_p$, so this bound
@@ -62,19 +50,6 @@ formalization is missing, or \emph{Research}, when the question itself is open.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \textbf{Entropy $-\infty$: GCUR fails.} \emph{Formalization gap.} Open: for
-  $S[\rho_{qp}] = -\infty$, that is $\int(\rho\ln\rho)^+ = \infty$ (\lean{entropyNeg}) with
-  $\int(-\rho\ln\rho)^+$ finite, that $\inf_T U_\rho(T) = -\infty$ over bounded admissible
-  coordinates, so that GCUR fails (see the first item of the previous section; an instance is
-  \lean{boxExample}~$1$~$0$). Transport to a Gaussian, as
-  for finite entropy, does not apply: $D(\rho_{qp}\,\|\,\eta) = \infty$ for every $\eta$ with
-  $E[|\ln\eta|] < \infty$, so Young's inequality no longer bounds the variances. The brief's
-  bounded target does: transport smooth positive bounded densities $\eta_j$ with
-  $E[|\ln\eta_j|] < \infty$ and $E[\ln\eta_j] \to +\infty$ to the Gaussian, and then onto a
-  square by the Gaussian distribution function in each coordinate. The Jacobian is $\eta_j$, the
-  variances are at most $1/4$, and $U_\rho(T_j) \le \ln(2\pi e/16h) - E[\ln\eta_j] \to -\infty$.
-  The $\eta_j$ come from the shell-by-shell smoothing of $\min(\rho_{qp}, j)$ used for finite
-  entropy, with the exceptional sets controlled by $\rho_{qp}$ alone.
 \item \textbf{Definition~2 in full.} \emph{Formalization gap.} \lean{IsAdmissible} asks for $C^1$ coordinates, injectivity
   and a nowhere vanishing Jacobian. That the range is open and the inverse $C^1$ follows from the
   inverse function theorem, but is not formalized, since nothing uses it. The remark ``Bounded

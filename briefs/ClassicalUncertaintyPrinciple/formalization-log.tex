@@ -65,9 +65,8 @@ relation. This log follows the revised numbering; the formalization of the first
   \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/ExtendedVariance.lean}
   (the extended variance, CUR and GCUR with it, and the remark ``Entropy and variance'') and
   \lean{briefs/ClassicalUncertaintyPrinciple/ClassicalUncertaintyPrinciple/InfiniteEntropy.lean}
-  (Proposition~6 and the remark ``Infinite and undefined entropy'' for $S[\rho_{qp}] = +\infty$
-  and undefined $S[\rho_{qp}]$, densities of infinite and undefined entropy, and the remark on
-  convexity for them)
+  (Proposition~6 for infinite entropy, the remark ``Infinite and undefined entropy'', densities
+  of infinite and undefined entropy, and the remark on convexity for them)
 \item Library: \lean{ClassicalUncertaintyPrinciple}
 \item Imports: nine new \lean{ForMathlib} files, the first two through
   \lean{Subadditivity.lean}:
@@ -110,7 +109,10 @@ relation. This log follows the revised numbering; the formalization of the first
   density with finite entropy on a finite-dimensional space is approximated in relative entropy
   by positive $C^n$ probability densities
   (\lean{MeasureTheory.exists_contDiff_integral_mul_log_div_lt}), each shell
-  $k \le |x| < k + 1$ smoothed at a scale of its own
+  $k \le |x| < k + 1$ smoothed at a scale of its own; the same construction applied to
+  $\min(\rho, j)$ gives positive $C^n$ probability densities $\eta$ with $\rho\log\eta$
+  integrable and $\int\rho\log\eta > \int\rho\log\min(\rho, j) - \varepsilon$
+  (\lean{MeasureTheory.exists_contDiff_integral_mul_log_min_sub_lt})
   \item \lean{ForMathlib/InformationTheory/YoungInequality.lean}:\newline
   $ab \le a\log a - a + e^b$ (\lean{Real.mul_le_mul_log_sub_add_exp}), and so
   $\int\rho\psi \le D(\rho\,\|\,\eta) - \int\rho + \int\eta e^\psi$
@@ -237,7 +239,12 @@ Proposition~6, $S[\rho_{qp}] = +\infty$: an infinite variance in every admissibl
   \lean{IsAdmissible.extendedSd_mul_eq_top_of_entropyPos_eq_top}, for
   $\int(-\rho\ln\rho)^+ = \infty$ (\lean{entropyPos}), which covers undefined entropy too;
   \lean{IsAdmissible.entropyPos_lt_top}: finite variances make it finite \\
-Proposition~6, $S[\rho_{qp}] = -\infty$ & not formalized \\
+Proposition~6, $S[\rho_{qp}] = -\infty$, eq.~(7): $U_\rho(T_j) \to -\infty$ in bounded
+  admissible coordinates & \lean{exists_isAdmissible_coordinateUncertainty_lt}, for
+  $\int(\rho\ln\rho)^+ = \infty$ (\lean{entropyNeg}) and $\int(-\rho\ln\rho)^+ < \infty$,
+  with values in $[-1, 1]$; \lean{not_bddBelow_coordinateUncertainty}: over admissible
+  coordinates with finite variances; \lean{exists_bounded_coordinates}: bounded coordinates with
+  a given Jacobian \\
 CST, the uniform ensemble: $S[\rho_U] = \ln(\mu(U)/h^n)$, zero iff $\mu(U) = h^n$ &
   \lean{entropy_uniform}, \lean{entropy_uniform_eq_zero_iff} (any measure space, any cell
   $c > 0$); \lean{entropy_uniform_phaseSpace} (phase space $(\mathbb R^2)^n$, $c = h^n$) \\
@@ -300,8 +307,12 @@ Remark ``Infinite and undefined entropy'', $S[\rho_{qp}] = +\infty$ or undefined
   \lean{exists_isDensity_entropy}: \lean{boxExample}, uniform on boxes
   $[n, n + 1) \times [0, a_n)$ of masses $2^{-(n+1)}$ and heights $e^{\mp 2^{n+1}}$, each
   contributing $\pm1$; \lean{undefinedEntropyExample}, an equal mixture of the two \\
-Remark ``Infinite and undefined entropy'', $S[\rho_{qp}] = -\infty$; remark ``Bounded
-  coordinate ranges'' & not formalized \\
+Remark ``Infinite and undefined entropy'', $S[\rho_{qp}] = -\infty$: the generalized relation
+  fails in some bounded admissible coordinates &
+  \lean{not_extendedGeneralizedUncertaintyRelation_of_entropyNeg_eq_top},
+  \lean{not_generalizedUncertaintyRelation_of_entropyNeg_eq_top}; an instance,
+  \lean{exists_not_extendedGeneralizedUncertaintyRelation} \\
+Remark ``Bounded coordinate ranges'' & not formalized \\
 Conclusion: the uncertainty relation and the lower entropic bound in quantum mechanics &
   Not with the von Neumann entropy (see ``Problems found''). From the bound of
   Bia\l{}ynicki-Birula and Mycielski: \lean{heisenberg_of_entropicUncertainty}, and
@@ -380,6 +391,20 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
   and uses the change of variables only for $\int J_T\,G(f, g) \le 1$. In the equality clause
   of GCUR the junk value \lean{entropy}~$= 0$ of such a density makes ``$S_h[\rho] = 0$''
   true, but the clause still holds, since its Gaussian half fails.
+\item For $S[\rho_{qp}] = -\infty$ the brief's ``same approximation'' does not apply as it stands:
+  $D(\rho_{qp}\,\|\,\eta) = \infty$ for every $\eta$ with $E[|\ln\eta|] < \infty$. The density
+  $\eta$ smooths $\min(\rho, j)$ shell by shell as for finite entropy, but the exceptional sets,
+  where the smoothing falls short of $(1 - t)\min(\rho, j)$, are made small in the weight
+  $\rho(|\ln\min(\rho, j)| + |\ln(t c_k)|)$, $c_k$ the minimum of the reference Gaussian on the
+  shell $k$. Off them $\eta \ge (1 - t)^2\min(\rho, j)$, on them $\eta \ge t c_k$, and everywhere
+  $\eta \le 3j + 1$, since at most three smoothed shells meet at a point; so $\rho\ln\eta$ is
+  integrable and $E[\ln\eta] > E[\ln\min(\rho, j)] - 1$, which tends to $\infty$ with $j$ by
+  monotone convergence. The bounded target is reached through the standard Gaussian: the polar
+  transport $T$ of $\eta$ to it, followed by $\Phi(u) = \int_0^u\varphi$ in each coordinate,
+  $\varphi$ the standard Gaussian density. The coordinates take values in $[-1, 1]$ rather than
+  a rectangle of side~$1$, so the bound on the variances is~$1$ rather than~$1/4$; the
+  Jacobian is $\varphi(T_1)\varphi(T_2)|\det DT| = \eta$. Then $U_\rho(T) \le
+  |\ln(2\pi e/h)| - E[\ln\eta]$, and a negative $U_\rho(T)$ is a violation of GCUR.
 \item Definition~2 asks for a $C^1$ diffeomorphism onto an open region with $C^1$ inverse.
   \lean{IsAdmissible} asks for $C^1$ coordinates, injectivity and a nowhere vanishing Jacobian;
   by the inverse function theorem these give such a diffeomorphism onto the (open) range, but

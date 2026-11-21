@@ -226,6 +226,10 @@ def extendedVar (ρ f : X → ℝ) (μ : Measure X := by volume_tac) : ℝ≥0�
   ⨅ a : ℝ, ∫⁻ x, ENNReal.ofReal ((f x - a) ^ 2 * ρ x) ∂μ
 def extendedSd (ρ f : X → ℝ) (μ : Measure X := by volume_tac) : ℝ≥0∞ :=
   extendedVar ρ f μ ^ (1 / 2 : ℝ)
+variable {μ : Measure X} {ρ f : X → ℝ}
+structure IsDensity (ρ : X → ℝ) (μ : Measure X := by volume_tac) : Prop where
+  nonneg : ∀ x, 0 ≤ ρ x
+  integral_eq_one : ∫ x, ρ x ∂μ = 1
 end ExtendedVariance
 section Conditions
 variable {ρ : ℝ × ℝ → ℝ} {h : ℝ}
@@ -254,6 +258,41 @@ theorem lowerEntropicBound_iff_extendedGeneralizedUncertaintyRelation (hh : 0 < 
     LowerEntropicBound h ρ ↔ ExtendedGeneralizedUncertaintyRelation h ρ := by
   sorry
 end Conditions
+end ClassicalUncertaintyPrinciple
+end
+end
+-- ClassicalUncertaintyPrinciple.InfiniteEntropy
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Real MeasureTheory Set
+open scoped ENNReal NNReal
+@[expose] public noncomputable section
+namespace ClassicalUncertaintyPrinciple
+def entropyPos {X : Type*} [MeasurableSpace X] (ρ : X → ℝ) (μ : Measure X := by volume_tac) :
+    ℝ≥0∞ :=
+  ∫⁻ x, ENNReal.ofReal (negMulLog (ρ x)) ∂μ
+def entropyNeg {X : Type*} [MeasurableSpace X] (ρ : X → ℝ) (μ : Measure X := by volume_tac) :
+    ℝ≥0∞ :=
+  ∫⁻ x, ENNReal.ofReal (ρ x * log (ρ x)) ∂μ
+variable {ρ f g : ℝ × ℝ → ℝ} {h : ℝ}
+namespace IsAdmissible
+variable (T : IsAdmissible ρ f g)
+include T
+theorem extendedSd_mul_eq_top_of_entropyPos_eq_top (hρ : IsDensity ρ)
+    (hS : entropyPos ρ = ⊤) :
+    extendedSd ρ f * extendedSd ρ g = ⊤ := by
+  sorry
+end IsAdmissible
+section NegInfinite
+open ProbabilityTheory
+open scoped Interval
+theorem not_bddBelow_coordinateUncertainty (hh : 0 < h) (hρ : IsDensity ρ)
+    (hP : entropyPos ρ ≠ ⊤) (hN : entropyNeg ρ = ⊤) :
+    ¬BddBelow {u | ∃ f g : ℝ × ℝ → ℝ, IsAdmissible ρ f g ∧
+      (Integrable fun x => f x ^ 2 * ρ x) ∧ (Integrable fun x => g x ^ 2 * ρ x) ∧
+      u = coordinateUncertainty h ρ f g} := by
+  sorry
+end NegInfinite
 end ClassicalUncertaintyPrinciple
 end
 end

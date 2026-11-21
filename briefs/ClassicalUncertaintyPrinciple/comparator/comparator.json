@@ -6,6 +6,8 @@
     "ClassicalUncertaintyPrinciple.exists_isAdmissible_densityFG_eq_gaussProd",
     "ClassicalUncertaintyPrinciple.entropy_le_coordinateUncertainty",
     "ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty",
+    "ClassicalUncertaintyPrinciple.not_bddBelow_coordinateUncertainty",
+    "ClassicalUncertaintyPrinciple.IsAdmissible.extendedSd_mul_eq_top_of_entropyPos_eq_top",
     "ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions",
     "ClassicalUncertaintyPrinciple.generalizedUncertaintyRelation_of_lowerEntropicBound",
     "ClassicalUncertaintyPrinciple.uncertaintyRelation_of_lowerEntropicBound",

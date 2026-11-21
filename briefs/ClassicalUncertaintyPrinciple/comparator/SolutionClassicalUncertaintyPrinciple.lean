@@ -7,6 +7,7 @@ module
 
 public import ClassicalUncertaintyPrinciple.Equivalence
 public import ClassicalUncertaintyPrinciple.ExtendedVariance
+public import ClassicalUncertaintyPrinciple.InfiniteEntropy
 
 /-!
 # Classical uncertainty relation, re-exported for `lake comparator`

@@ -7,6 +7,8 @@ ClassicalUncertaintyPrinciple.IsNewVariables.sd_mul_sd_eq  # Proposition 3, eq. 
 ClassicalUncertaintyPrinciple.exists_isAdmissible_densityFG_eq_gaussProd  # Proposition 5, Cⁿ coordinates for a positive Cⁿ density
 ClassicalUncertaintyPrinciple.entropy_le_coordinateUncertainty  # Proposition 6, U = S + D >= S
 ClassicalUncertaintyPrinciple.isGLB_coordinateUncertainty  # Proposition 6, eq. (7), finite entropy
+ClassicalUncertaintyPrinciple.not_bddBelow_coordinateUncertainty  # Proposition 6, eq. (7), entropy -∞
+ClassicalUncertaintyPrinciple.IsAdmissible.extendedSd_mul_eq_top_of_entropyPos_eq_top  # Proposition 6, entropy +∞: an infinite variance in every frame
 ClassicalUncertaintyPrinciple.exists_ensemble_not_conditions  # Theorem 8
 ClassicalUncertaintyPrinciple.generalizedUncertaintyRelation_of_lowerEntropicBound  # Theorem 9, GCUR
 ClassicalUncertaintyPrinciple.uncertaintyRelation_of_lowerEntropicBound  # Theorem 9, CUR
