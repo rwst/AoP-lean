@@ -303,7 +303,13 @@ Theorem~12, positive smooth $\rho_{qp}$ (via Proposition~5) &
 Remark ``Convexity of the ensemble space'' & \lean{isEnsemble_mix}: a mixture of ensembles of
   finite entropy is one; \lean{entropy_mix_bounds}:
   $0 \le S[\rho_\lambda] - \lambda S[\rho] - (1 - \lambda)S[\sigma] \le -\lambda\ln\lambda -
-  (1 - \lambda)\ln(1 - \lambda)$, without the KL form of the middle term \\
+  (1 - \lambda)\ln(1 - \lambda)$, for $0 \le \lambda \le 1$; \lean{entropy_mix_sub_eq}: the
+  middle term is $\lambda D(\rho\,\|\,\rho_\lambda) + (1 - \lambda)D(\sigma\,\|\,\rho_\lambda)$;
+  \lean{entropy_mix_sub_eq_bounds}: the brief's chain, through
+  $0 \le D(\rho\,\|\,\rho_\lambda) \le -\ln\lambda$ and
+  $0 \le D(\sigma\,\|\,\rho_\lambda) \le -\ln(1 - \lambda)$; the log-density ratios are
+  integrable, their positive parts bounded by $-\ln\lambda$ and their negative parts by
+  $\rho - \rho_\lambda$ (\lean{integrable_mul_log_div_of_le}) \\
 Remark ``Convexity of the ensemble space'': a mixture of disjoint support of entropies $+\infty$
   and $-\infty$ has undefined entropy & \lean{entropy_mix_undefined}: both halves of its entropy
   integral are infinite; \lean{IsDensity.mix} \\
@@ -452,11 +458,13 @@ Conclusion: the uncertainty relation and the lower entropic bound in quantum mec
   measurable, along which $\rho(1 + t\varphi)$ stays nonnegative and the entropy is
   differentiable; the cases $\lambda_2 = 0$ and $\lambda_2 > 0$ are excluded, and normalization
   and the variances fix the constant and $\lambda_2$.
-\item The remark on convexity is formalized as the two bounds, through the pointwise
-  inequalities $\lambda\eta(a) + (1-\lambda)\eta(b) \le \eta(m) \le \lambda\eta(a) +
-  (1-\lambda)\eta(b) + a\eta(\lambda) + b\eta(1-\lambda)$ for $\eta(x) = -x\ln x$ and
-  $m = \lambda a + (1-\lambda)b$, rather than through the KL divergences $D(\rho\,\|\,\rho_\lambda)$.
-  It is proved on any measure space and for $0 \le \lambda \le 1$.
+\item The remark on convexity is formalized twice: as the two bounds, for
+  $0 \le \lambda \le 1$, through the pointwise inequalities $\lambda\eta(a) + (1-\lambda)\eta(b)
+  \le \eta(m) \le \lambda\eta(a) + (1-\lambda)\eta(b) + a\eta(\lambda) + b\eta(1-\lambda)$ for
+  $\eta(x) = -x\ln x$ and $m = \lambda a + (1-\lambda)b$; and, as in the brief, through the KL
+  divergences $D(\rho\,\|\,\rho_\lambda)$, $D(\sigma\,\|\,\rho_\lambda)$, for
+  $0 < \lambda < 1$. The lower bound $D \ge 0$ comes from $a\ln(a/m) \ge a - m$, the upper
+  from $a/m \le 1/\lambda$. Both are proved on any measure space.
 \item For the quantum case, the brief points to the zero entropy of pure states. The
   formalization instead takes two entropic bounds of quantum mechanics as hypotheses: that of
   Bia\l{}ynicki-Birula and Mycielski (1975) on $S_1[|\psi|^2] + S_1[|\hat\psi|^2]$, and Lieb's

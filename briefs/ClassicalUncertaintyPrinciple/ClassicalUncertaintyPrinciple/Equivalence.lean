@@ -77,7 +77,10 @@ variances and the Gaussian moment identity `D(ρ_{fg} ‖ G_{fg}) ≤ D(ρ_{fg} 
   `ClassicalUncertaintyPrinciple.lowerEntropicBound_iff_generalizedUncertaintyRelation_of_contDiff`:
   its case of a positive `C¹` density, from Proposition 5 alone, as in the brief's proof.
 * `ClassicalUncertaintyPrinciple.isEnsemble_mix`,
-  `ClassicalUncertaintyPrinciple.entropy_mix_bounds`: the remark on convexity.
+  `ClassicalUncertaintyPrinciple.entropy_mix_bounds`: the remark on convexity;
+  `ClassicalUncertaintyPrinciple.entropy_mix_sub_eq`,
+  `ClassicalUncertaintyPrinciple.entropy_mix_sub_eq_bounds`: its KL form,
+  `S[ρ_t] - t S[ρ] - (1 - t) S[σ] = t D(ρ ‖ ρ_t) + (1 - t) D(σ ‖ ρ_t)`.
 -/
 
 open Real MeasureTheory ProbabilityTheory Set
@@ -1243,6 +1246,132 @@ theorem entropy_mix_bounds (hc : 0 < c) (hρ : IsEnsemble ρ μ) (hσ : IsEnsemb
     integral_mul_const, hρ.integral_eq_one, hσ.integral_eq_one] at hi
   rw [entropy_eq (isEnsemble_mix hρ hσ ht0 ht1) hc, entropy_eq hρ hc, entropy_eq hσ hc]
   constructor <;> nlinarith
+
+/-- Pointwise bounds on the log-density ratio to a density `m ≥ s a`:
+`a - m ≤ a log (a / m) ≤ -a log s`. -/
+lemma mul_log_div_bounds {a m s : ℝ} (ha : 0 ≤ a) (hs : 0 < s) (hm : s * a ≤ m) :
+    a - m ≤ a * log (a / m) ∧ a * log (a / m) ≤ a * -log s := by
+  rcases ha.eq_or_lt with rfl | ha
+  · simp only [mul_zero] at hm
+    simp [hm]
+  have hm0 : 0 < m := (mul_pos hs ha).trans_le hm
+  have hr : 0 < a / m := div_pos ha hm0
+  refine ⟨?_, mul_le_mul_of_nonneg_left ?_ ha.le⟩
+  · have h := Real.one_sub_inv_le_log_of_pos hr
+    rw [inv_div] at h
+    have e : a * (1 - m / a) = a - m := by field_simp
+    rw [← e]
+    exact mul_le_mul_of_nonneg_left h ha.le
+  · rw [← log_inv]
+    exact log_le_log hr (by rw [div_le_iff₀ hm0]; nlinarith [inv_mul_cancel₀ hs.ne'])
+
+/-- The log-density ratio to a density `m ≥ s ρ`, `s > 0`, has a finite absolute expectation:
+its positive part is at most `-log s`, and its negative part at least `ρ - m`. -/
+lemma integrable_mul_log_div_of_le {m : X → ℝ} {s : ℝ} (hρ : Integrable ρ μ)
+    (hρ0 : ∀ x, 0 ≤ ρ x) (hm : Integrable m μ) (hs : 0 < s) (hle : ∀ x, s * ρ x ≤ m x) :
+    Integrable (fun x => ρ x * log (ρ x / m x)) μ :=
+  integrable_of_le_of_le
+    ((hρ.aemeasurable.mul (hρ.aemeasurable.div hm.aemeasurable).log).aestronglyMeasurable)
+    (ae_of_all _ fun x => (mul_log_div_bounds (hρ0 x) hs (hle x)).1)
+    (ae_of_all _ fun x => (mul_log_div_bounds (hρ0 x) hs (hle x)).2)
+    (hρ.sub hm) (hρ.mul_const _)
+
+/-- `0 ≤ D(ρ ‖ m) ≤ -log s` for probability densities `ρ` and `m ≥ s ρ`, `s > 0`. -/
+lemma integral_mul_log_div_bounds {m : X → ℝ} {s : ℝ} (hρ : IsEnsemble ρ μ)
+    (hm : Integrable m μ) (hm1 : ∫ x, m x ∂μ = 1) (hs : 0 < s) (hle : ∀ x, s * ρ x ≤ m x) :
+    0 ≤ ∫ x, ρ x * log (ρ x / m x) ∂μ ∧ ∫ x, ρ x * log (ρ x / m x) ∂μ ≤ -log s := by
+  have hi := integrable_mul_log_div_of_le hρ.integrable hρ.nonneg hm hs hle
+  have lo := integral_mono (hρ.integrable.sub hm) hi fun x =>
+    (mul_log_div_bounds (hρ.nonneg x) hs (hle x)).1
+  have up := integral_mono hi (hρ.integrable.mul_const _) fun x =>
+    (mul_log_div_bounds (hρ.nonneg x) hs (hle x)).2
+  rw [integral_sub' hρ.integrable hm, hρ.integral_eq_one, hm1, sub_self] at lo
+  rw [integral_mul_const, hρ.integral_eq_one, one_mul] at up
+  exact ⟨lo, up⟩
+
+lemma mul_log_div_eq {a m : ℝ} (hm : a ≠ 0 → m ≠ 0) :
+    a * log (a / m) = a * log a - a * log m := by
+  by_cases ha : a = 0
+  · simp [ha]
+  · rw [log_div ha (hm ha)]
+    ring
+
+/-- **Convexity, in KL form.** With `ρ_t = t ρ + (1 - t) σ`, `0 < t < 1`,
+`S[ρ_t] - t S[ρ] - (1 - t) S[σ] = t D(ρ ‖ ρ_t) + (1 - t) D(σ ‖ ρ_t)`. -/
+theorem entropy_mix_sub_eq (hc : 0 < c) (hρ : IsEnsemble ρ μ) (hσ : IsEnsemble σ μ) (ht0 : 0 < t)
+    (ht1 : t < 1) :
+    entropy c (fun x => t * ρ x + (1 - t) * σ x) μ - (t * entropy c ρ μ +
+        (1 - t) * entropy c σ μ) =
+      t * ∫ x, ρ x * log (ρ x / (t * ρ x + (1 - t) * σ x)) ∂μ +
+        (1 - t) * ∫ x, σ x * log (σ x / (t * ρ x + (1 - t) * σ x)) ∂μ := by
+  have ht1' : 0 < 1 - t := by linarith
+  set m := fun x => t * ρ x + (1 - t) * σ x with hm_def
+  have hmi : Integrable m μ :=
+    (hρ.integrable.const_mul t).add (hσ.integrable.const_mul (1 - t))
+  have hD1 := integrable_mul_log_div_of_le hρ.integrable hρ.nonneg hmi ht0 fun x =>
+    le_add_of_nonneg_right (mul_nonneg ht1'.le (hσ.nonneg x))
+  have hD2 := integrable_mul_log_div_of_le hσ.integrable hσ.nonneg hmi ht1' fun x =>
+    le_add_of_nonneg_left (mul_nonneg ht0.le (hρ.nonneg x))
+  have hpt : ∀ x, negMulLog (m x) = (t * negMulLog (ρ x) + (1 - t) * negMulLog (σ x)) +
+      (t * (ρ x * log (ρ x / m x)) + (1 - t) * (σ x * log (σ x / m x))) := fun x => by
+    have hm0 : ∀ {a : ℝ}, 0 ≤ a → (a ≠ 0 → m x ≠ 0) → a * log (a / m x) = a * log a -
+        a * log (m x) := fun _ h => mul_log_div_eq h
+    rw [hm0 (hρ.nonneg x) fun h => ?_, hm0 (hσ.nonneg x) fun h => ?_]
+    · simp only [negMulLog, hm_def]
+      ring
+    · exact (add_pos_of_nonneg_of_pos (mul_nonneg ht0.le (hρ.nonneg x))
+        (mul_pos ht1' ((hσ.nonneg x).lt_of_ne' h))).ne'
+    · exact (add_pos_of_pos_of_nonneg (mul_pos ht0 ((hρ.nonneg x).lt_of_ne' h))
+        (mul_nonneg ht1'.le (hσ.nonneg x))).ne'
+  have i1 : Integrable (fun x => t * negMulLog (ρ x) + (1 - t) * negMulLog (σ x)) μ :=
+    (hρ.integrable_negMulLog.const_mul t).add (hσ.integrable_negMulLog.const_mul (1 - t))
+  have i2 : Integrable (fun x => t * (ρ x * log (ρ x / m x)) +
+      (1 - t) * (σ x * log (σ x / m x))) μ := (hD1.const_mul t).add (hD2.const_mul (1 - t))
+  have hS : ∫ x, negMulLog (m x) ∂μ = (t * ∫ x, negMulLog (ρ x) ∂μ +
+      (1 - t) * ∫ x, negMulLog (σ x) ∂μ) + (t * ∫ x, ρ x * log (ρ x / m x) ∂μ +
+      (1 - t) * ∫ x, σ x * log (σ x / m x) ∂μ) := by
+    simp_rw [hpt]
+    rw [integral_add i1 i2, integral_add (hρ.integrable_negMulLog.const_mul t)
+      (hσ.integrable_negMulLog.const_mul _), integral_add (hD1.const_mul t) (hD2.const_mul _),
+      integral_const_mul, integral_const_mul, integral_const_mul, integral_const_mul]
+  rw [entropy_eq (isEnsemble_mix hρ hσ ht0.le ht1.le) hc, entropy_eq hρ hc, entropy_eq hσ hc]
+  change ∫ x, negMulLog (m x) ∂μ - log c - _ = _
+  rw [hS]
+  ring
+
+/-- **Convexity of the ensemble space**, the brief's chain: with `ρ_t = t ρ + (1 - t) σ`,
+`0 < t < 1`, `0 ≤ S[ρ_t] - t S[ρ] - (1 - t) S[σ] = t D(ρ ‖ ρ_t) + (1 - t) D(σ ‖ ρ_t) ≤
+-t log t - (1 - t) log (1 - t)`, with `0 ≤ D(ρ ‖ ρ_t) ≤ -log t` and
+`0 ≤ D(σ ‖ ρ_t) ≤ -log (1 - t)`. -/
+theorem entropy_mix_sub_eq_bounds (hc : 0 < c) (hρ : IsEnsemble ρ μ) (hσ : IsEnsemble σ μ)
+    (ht0 : 0 < t) (ht1 : t < 1) :
+    (0 ≤ ∫ x, ρ x * log (ρ x / (t * ρ x + (1 - t) * σ x)) ∂μ ∧
+      ∫ x, ρ x * log (ρ x / (t * ρ x + (1 - t) * σ x)) ∂μ ≤ -log t) ∧
+    (0 ≤ ∫ x, σ x * log (σ x / (t * ρ x + (1 - t) * σ x)) ∂μ ∧
+      ∫ x, σ x * log (σ x / (t * ρ x + (1 - t) * σ x)) ∂μ ≤ -log (1 - t)) ∧
+    entropy c (fun x => t * ρ x + (1 - t) * σ x) μ - (t * entropy c ρ μ +
+        (1 - t) * entropy c σ μ) =
+      t * ∫ x, ρ x * log (ρ x / (t * ρ x + (1 - t) * σ x)) ∂μ +
+        (1 - t) * ∫ x, σ x * log (σ x / (t * ρ x + (1 - t) * σ x)) ∂μ ∧
+    0 ≤ t * ∫ x, ρ x * log (ρ x / (t * ρ x + (1 - t) * σ x)) ∂μ +
+        (1 - t) * ∫ x, σ x * log (σ x / (t * ρ x + (1 - t) * σ x)) ∂μ ∧
+    t * ∫ x, ρ x * log (ρ x / (t * ρ x + (1 - t) * σ x)) ∂μ +
+        (1 - t) * ∫ x, σ x * log (σ x / (t * ρ x + (1 - t) * σ x)) ∂μ ≤
+      negMulLog t + negMulLog (1 - t) := by
+  have ht1' : 0 < 1 - t := by linarith
+  have hm := isEnsemble_mix hρ hσ ht0.le ht1.le
+  have h1 := integral_mul_log_div_bounds hρ hm.integrable hm.integral_eq_one ht0 fun x =>
+    le_add_of_nonneg_right (mul_nonneg ht1'.le (hσ.nonneg x))
+  have h2 := integral_mul_log_div_bounds hσ hm.integrable hm.integral_eq_one ht1' fun x =>
+    le_add_of_nonneg_left (mul_nonneg ht0.le (hρ.nonneg x))
+  refine ⟨h1, h2, entropy_mix_sub_eq hc hρ hσ ht0 ht1, by
+    nlinarith [mul_nonneg ht0.le h1.1, mul_nonneg ht1'.le h2.1], ?_⟩
+  have e : negMulLog t + negMulLog (1 - t) = t * -log t + (1 - t) * -log (1 - t) := by
+    simp only [negMulLog]
+    ring
+  rw [e]
+  exact add_le_add (mul_le_mul_of_nonneg_left h1.2 ht0.le)
+    (mul_le_mul_of_nonneg_left h2.2 ht1'.le)
 
 end Convexity
 
