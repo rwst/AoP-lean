@@ -45,6 +45,7 @@ it is again a symplectic form pulling back to `σ`, and by uniqueness it is the 
   derivative of the Hopf map.
 * `Projectivization.isBasic_sphereForm`: `σ` is basic for the Hopf map.
 * `Projectivization.mpullback_fubiniStudyForm`: the Fubini–Study form pulls back to `σ`.
+* `Projectivization.eq_fubiniStudyForm_of_mpullback_eq`: it is the only form that does.
 * `Projectivization.isSymplectic_fubiniStudyForm`: the Fubini–Study form is symplectic.
 * `Projectivization.mpullback_unitaryMap_fubiniStudyForm`: unitary maps preserve it.
 
@@ -352,8 +353,9 @@ theorem isBasic_sphereForm :
 variable (n) in
 /-- **The Fubini–Study form** on `ℂPⁿ = ℙ ℂ (Fin (n + 1) → ℂ)`: the descent of the restricted
 standard form of `ℂⁿ⁺¹` along the Hopf map, the symplectic reduction of `ℂⁿ⁺¹` by the circle at
-the unit sphere. In this normalization a projective line has area `π` (not proved here), unlike
-`OnePoint.fubiniStudyForm`, which has total area `1`. -/
+the unit sphere. In this normalization a projective line has area `π`
+(`Projectivization.fubiniStudyMeasure_univ`), unlike `OnePoint.fubiniStudyForm`, which has total
+area `1`. -/
 def fubiniStudyForm : SmoothTwoForm 𝓘(ℝ, Fin n → ℂ) (ℙ ℂ (Fin (n + 1) → ℂ)) :=
   SmoothForm.descendedForm (isSubmersion_hopfMap (by simp)) hopfMap_surjective (sphereForm n)
     isBasic_sphereForm
@@ -362,6 +364,14 @@ def fubiniStudyForm : SmoothTwoForm 𝓘(ℝ, Fin n → ℂ) (ℙ ℂ (Fin (n + 
 theorem mpullback_fubiniStudyForm :
     SmoothForm.mpullback (hopfMap n) (contMDiff_hopfMap ∞) (fubiniStudyForm n) = sphereForm n :=
   SmoothForm.mpullback_descendedForm
+
+/-- The Fubini–Study form is the only two-form on `ℂPⁿ` that pulls back along the Hopf map to the
+restricted standard form. -/
+theorem eq_fubiniStudyForm_of_mpullback_eq
+    {τ : SmoothTwoForm 𝓘(ℝ, Fin n → ℂ) (ℙ ℂ (Fin (n + 1) → ℂ))}
+    (h : SmoothForm.mpullback (hopfMap n) (contMDiff_hopfMap ∞) τ = sphereForm n) :
+    τ = fubiniStudyForm n :=
+  SmoothForm.eq_descendedForm_iff.mpr h
 
 /-- **The Fubini–Study form on `ℂPⁿ` is symplectic.** -/
 theorem isSymplectic_fubiniStudyForm : (fubiniStudyForm n).IsSymplectic :=

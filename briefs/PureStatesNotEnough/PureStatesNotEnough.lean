@@ -5,19 +5,21 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import ForMathlib.Analysis.Convex.Combination
-public import ForMathlib.Analysis.InnerProductSpace.l2Space
-public import ForMathlib.Geometry.Symplectic.Manifold.FubiniStudy.Liouville
 public import ForMathlib.MeasureTheory.Constructions.HaarToSphere
-public import ForMathlib.Topology.Algebra.Projectivization.LocallyCompact
-public import ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.CanonicalExpansion
 public import ForPhyslib.QuantumMechanics.DensityOperator
+public import ForPhyslib.QuantumMechanics.Qubit.BlochArea
 public import ForPhyslib.QuantumMechanics.Qubit.HamiltonianIsotopy
-public import ForPhyslib.QuantumMechanics.Qubit.Precession
 public import Mathlib.Analysis.Convex.Extreme
-public import Mathlib.Analysis.Convex.Integral
-public import TauCeti.Geometry.Symplectic.Manifold.LiouvilleMeasure
+public import TauCeti.Geometry.Symplectic.Manifold.DuistermaatHeckman.Sphere
+public import TauCeti.LinearAlgebra.Matrix.CrossProduct
+import ForMathlib.Analysis.Convex.Combination
+import ForMathlib.Analysis.InnerProductSpace.l2Space
+import ForMathlib.Geometry.Symplectic.Manifold.Sphere
+import ForMathlib.Topology.Algebra.Projectivization.LocallyCompact
 import ForPhyslib.QuantumMechanics.Kadison
+import ForPhyslib.QuantumMechanics.Qubit.Precession
+import Mathlib.Analysis.Convex.Integral
+import TauCeti.Geometry.Symplectic.Coadjoint.Sphere
 import TauCeti.Geometry.Symplectic.Manifold.Descent
 
 /-!
@@ -56,10 +58,18 @@ barycenter but are told apart by the probability of the state `e₀`.
 `e₀` and `e₊` are distinct rays with Born probability `½`.
 
 **Example 2** (the classical qubit). The pure states `P(ℂ²)` form a two-sphere, through the Bloch
-vector. In the coordinates `z = x₂` and `θ = θ_xy` the area is `dz dθ`, so the height of a point
-is uniformly distributed (Archimedes' hat-box theorem). The quantum evolutions, the actions of
-unitaries on rays, are exactly the rotations of the Bloch sphere, and every Hamiltonian
-`c + ½ n · σ` makes the Bloch vector precess about `n`, `a' = n × a`. Complex conjugation of the
+vector, and as a symplectic manifold: the Bloch map is a diffeomorphism onto the unit sphere of
+`ℝ³`, through the Riemann sphere, and it pulls the area form `x ⬝ (v × w)` back to `4` times the
+Fubini–Study form of Theorem 1. The factor comes from the areas, `4π` for the unit sphere and `π`
+for `P(ℂ²)`; on the way the Fubini–Study form of `P(ℂ²)` is `π` times TauCeti's form on the
+Riemann sphere, which has total area one. In the longitude `θ = θ_xy` and the height `z = x₂` of
+the Bloch vector the area form is `dθ ∧ dz`, so `z` and `θ` are Darboux coordinates. The
+Liouville measure is a quarter of the surface measure of the sphere, the solid angle, and in these
+coordinates it is `dz dθ`, so the height of a point is uniformly distributed (Archimedes' hat-box
+theorem). The quantum evolutions, the actions of unitaries on rays, are exactly the rotations of
+the Bloch sphere. Every Hamiltonian `c + ½ n · σ` makes the Bloch vector precess about `n`,
+`a' = n × a`, so `a(t) = exp (t n̂) a(0)` is a rotation; and `n × x` is the Hamiltonian vector field
+of the linear Hamiltonian `x ⬝ n` for the area form. Complex conjugation of the
 Riemann sphere `OnePoint ℂ ≅ P(ℂ²)` preserves the area density of the Fubini–Study form but
 reverses the form, so it is area-preserving and not Hamiltonian: Hamiltonian evolution preserves
 the area form, not only the area. With the area form the claim holds for evolutions: a vector field
@@ -137,6 +147,12 @@ operators of `ℂ` are both a single point. And as sets `P(ℓ²)` and `P(ℂ²)
 - `PureStatesNotEnough.toDensity_surjective`, `PureStatesNotEnough.densityEquiv`: Theorem 5.
 - `PureStatesNotEnough.exists_barycenter_eq_and_ne`: distinct preparations of one ensemble.
 - `PureStatesNotEnough.nonempty_homeomorph_sphere`: `P(ℂ²)` is a two-sphere.
+- `PureStatesNotEnough.blochSphere_eq_sphereDiffeomorph_and_mpullback_sphereAreaForm`: the Bloch
+  map is a diffeomorphism that pulls the area form back to `4` times the Fubini–Study form.
+- `PureStatesNotEnough.mpullback_longitudeHeight_fubiniStudyForm`: `z` and `θ_xy` are Darboux
+  coordinates.
+- `PureStatesNotEnough.map_fubiniStudyMeasure_blochSphere_eq_toSphere`: the Liouville measure is a
+  quarter of the solid angle, and `P(ℂ²)` has area `π`.
 - `PureStatesNotEnough.toSphere_eq_dz_dtheta`: the area of the sphere is `dz dθ`.
 - `PureStatesNotEnough.conjSphere_preserves_area_reverses_form`,
   `QuantumMechanics.Qubit.globalFlow_ne_conjSphere`,
@@ -153,6 +169,8 @@ operators of `ℂ` are both a single point. And as sets `P(ℓ²)` and `P(ℂ²)
   the rotations of the Bloch sphere.
 - `PureStatesNotEnough.exists_blochVector_precession`: every Hamiltonian makes the Bloch vector
   precess.
+- `PureStatesNotEnough.exists_linear_hamiltonian`: quantum evolution is the Hamiltonian flow of a
+  linear Hamiltonian, a rotation `exp (t n̂)`.
 
 ## iii. Table of contents
 
@@ -1004,6 +1022,55 @@ theorem toSphere_eq_dz_dtheta :
         ENNReal.ofReal (2 * Real.pi) • volume.restrict (Set.Ioo (-1) 1) :=
   ⟨Measure.map_toSphere_volume_eq_map_cylinderToSphere, Measure.map_toSphere_volume_height⟩
 
+/-- **The pure states of a qubit form the symplectic two-sphere of Theorem 1.** The Bloch map is
+the diffeomorphism `Projectivization.sphereDiffeomorph` of `P(ℂ²)` onto the unit sphere of `ℝ³`,
+through the Riemann sphere, and it pulls the area form `x ⬝ (v × w)` of the sphere back to `4` times
+the Fubini–Study form of Theorem 1 for `n = 1`. -/
+theorem blochSphere_eq_sphereDiffeomorph_and_mpullback_sphereAreaForm :
+    ⇑blochSphere = ⇑Projectivization.sphereDiffeomorph ∧
+      TauCeti.SmoothForm.mpullback blochSphere contMDiff_blochSphere TauCeti.sphereAreaForm =
+        (4 : ℝ) • Projectivization.fubiniStudyForm 1 :=
+  ⟨coe_blochSphere_eq_sphereDiffeomorph, mpullback_blochSphere_sphereAreaForm⟩
+
+/-- **Darboux coordinates `z` and `θ_xy`.** Read in the longitude `θ` and the height `z` of the
+Bloch vector, on any strip `(a, a + 2π) × (-1, 1)`, four times the Fubini–Study form of `P(ℂ²)` is
+`dθ ∧ dz`. -/
+theorem mpullback_longitudeHeight_fubiniStudyForm (a : ℝ) :
+    TauCeti.SmoothForm.mpullback
+        (Projectivization.sphereDiffeomorph.symm ∘ TauCeti.sphereLongitudeHeight a)
+        (Projectivization.sphereDiffeomorph.symm.contMDiff.comp
+          (TauCeti.contMDiff_sphereLongitudeHeight a))
+        ((4 : ℝ) • Projectivization.fubiniStudyForm 1) =
+      TauCeti.SmoothForm.mpullback
+        (Subtype.val : TauCeti.longitudeHeightStrip a → EuclideanSpace ℝ (Fin 2))
+        contMDiff_subtypeVal
+        (TauCeti.SmoothForm.const (EuclideanSpace.basisFun (Fin 2) ℝ).toBasis.continuousDet) := by
+  have hcongr
+      (f g : TauCeti.longitudeHeightStrip a → Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)
+      (hf : ContMDiff 𝓘(ℝ, EuclideanSpace ℝ (Fin 2)) (𝓡 2) ∞ f)
+      (hg : ContMDiff 𝓘(ℝ, EuclideanSpace ℝ (Fin 2)) (𝓡 2) ∞ g) (hfg : f = g) :
+      TauCeti.SmoothForm.mpullback f hf TauCeti.sphereAreaForm =
+        TauCeti.SmoothForm.mpullback g hg TauCeti.sphereAreaForm := by
+    subst hfg
+    rfl
+  rw [← Projectivization.mpullback_sphereDiffeomorph_sphereAreaForm,
+    TauCeti.SmoothForm.mpullback_mpullback,
+    hcongr (Projectivization.sphereDiffeomorph ∘ Projectivization.sphereDiffeomorph.symm ∘
+        TauCeti.sphereLongitudeHeight a) _ _ (TauCeti.contMDiff_sphereLongitudeHeight a)
+      (funext fun y ↦ Projectivization.sphereDiffeomorph.apply_symm_apply _),
+    TauCeti.mpullback_sphereLongitudeHeight_sphereAreaForm]
+
+/-- **The Liouville measure is the area of the sphere, the solid angle.** The Bloch map carries
+the Liouville measure of `P(ℂ²)` to a quarter of Mathlib's surface measure of the unit sphere, and
+`P(ℂ²)` has area `π`. In the coordinates `(θ, z)` the area is `dθ dz`
+(`TauCeti.liouvilleMeasure_sphereAreaForm`, `PureStatesNotEnough.toSphere_eq_dz_dtheta`). -/
+theorem map_fubiniStudyMeasure_blochSphere_eq_toSphere :
+    (Projectivization.fubiniStudyMeasure 1).map blochSphere =
+        (ENNReal.ofReal 4)⁻¹ • (volume : Measure (EuclideanSpace ℝ (Fin 3))).toSphere ∧
+      Projectivization.fubiniStudyMeasure 1 Set.univ = ENNReal.ofReal Real.pi :=
+  ⟨by rw [map_fubiniStudyMeasure_blochSphere, TauCeti.liouvilleMeasure_sphereAreaForm_eq_toSphere],
+    Projectivization.fubiniStudyMeasure_univ⟩
+
 /-- Complex conjugation of the Riemann sphere `OnePoint ℂ ≅ P(ℂ²)` preserves the area density
 of the Fubini–Study form but reverses the form. So it preserves the area and is not the time-`t`
 map of a Hamiltonian flow (`QuantumMechanics.Qubit.globalFlow_ne_conjSphere`), nor of a
@@ -1073,6 +1140,31 @@ theorem exists_blochVector_precession {H : Matrix (Fin 2) (Fin 2) ℂ} (hH : H.I
       HasDerivAt ψ (-I • WithLp.toLp 2 (H *ᵥ (ψ t).ofLp)) t →
         HasDerivAt (fun s ↦ blochVector (ψ s)) (n ⨯₃ blochVector (ψ t)) t :=
   exists_hasDerivAt_blochVector hH
+
+/-- **Quantum evolution is the case of a linear Hamiltonian.** For a Hermitian `H` there is
+`n ∈ ℝ³` such that, on the sphere with its area form, the Hamiltonian vector field of the linear
+Hamiltonian `x ↦ x ⬝ n` is the rotation field `x ↦ n × x`; along every solution of `i ψ' = H ψ` the
+Bloch vector moves with this velocity, `a' = n × a`; and for a global solution it is rotated,
+`a(t) = exp (t n̂) a(0)` with `exp (t n̂) ∈ SO(3)`. -/
+theorem exists_linear_hamiltonian {H : Matrix (Fin 2) (Fin 2) ℂ} (hH : H.IsHermitian) :
+    ∃ n : Fin 3 → ℝ,
+      (∀ x : Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1,
+        mvfderiv (𝓡 2) ((↑) : Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1 → _) x
+            (TauCeti.sphereAreaForm.hamiltonianVectorField
+              (fun y ↦ WithLp.ofLp (y : EuclideanSpace ℝ (Fin 3)) ⬝ᵥ n) x) =
+          WithLp.toLp 2 (n ⨯₃ WithLp.ofLp (x : EuclideanSpace ℝ (Fin 3)))) ∧
+      (∀ (ψ : ℝ → EuclideanSpace ℂ (Fin 2)) (t : ℝ),
+        HasDerivAt ψ (-I • WithLp.toLp 2 (H *ᵥ (ψ t).ofLp)) t →
+          HasDerivAt (fun s ↦ blochVector (ψ s)) (n ⨯₃ blochVector (ψ t)) t) ∧
+      (∀ t : ℝ, NormedSpace.exp (t • TauCeti.crossProductMatrix ℝ n) ∈
+        specialOrthogonalGroup (Fin 3) ℝ) ∧
+      ∀ ψ : ℝ → EuclideanSpace ℂ (Fin 2),
+        (∀ t, HasDerivAt ψ (-I • WithLp.toLp 2 (H *ᵥ (ψ t).ofLp)) t) →
+          ∀ t, blochVector (ψ t) =
+            NormedSpace.exp (t • TauCeti.crossProductMatrix ℝ n) *ᵥ blochVector (ψ 0) := by
+  obtain ⟨n, h₁, h₂⟩ := exists_blochVector_eq_exp_mulVec hH
+  exact ⟨n, TauCeti.mvfderiv_hamiltonianVectorField_sphereAreaForm n, h₁,
+    exp_smul_crossProductMatrix_mem_specialOrthogonalGroup n, h₂⟩
 
 end Example2
 

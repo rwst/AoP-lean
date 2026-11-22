@@ -6,9 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import ForMathlib.Geometry.Symplectic.Manifold.FubiniStudy
-public import Mathlib.Dynamics.Ergodic.MeasurePreserving
-public import Mathlib.MeasureTheory.Measure.OpenPos
-import TauCeti.Geometry.Symplectic.Manifold.LiouvilleMeasure
+public import TauCeti.Geometry.Symplectic.Manifold.LiouvilleMeasure
 
 /-!
 # The Liouville measure of the Fubini–Study form
@@ -59,6 +57,9 @@ variable (n) in
 /-- **The Liouville measure of `ℂPⁿ`**: the measure `|ωⁿ / n!|` of the Fubini–Study form `ω`. -/
 def fubiniStudyMeasure : Measure (ℙ ℂ (Fin (n + 1) → ℂ)) :=
   (fubiniStudyForm n).liouvilleMeasure n
+
+theorem fubiniStudyMeasure_def : fubiniStudyMeasure n = (fubiniStudyForm n).liouvilleMeasure n :=
+  (rfl)
 
 /-- The Liouville measure of `ℂPⁿ` is finite, since `ℂPⁿ` is compact. -/
 instance isFiniteMeasure_fubiniStudyMeasure : IsFiniteMeasure (fubiniStudyMeasure n) := by

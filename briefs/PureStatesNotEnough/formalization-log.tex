@@ -55,7 +55,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/PureStatesNotEnough/PureStatesNotEnough.lean}
 \item Library: \lean{PureStatesNotEnough}
-\item Imports: eight new \lean{ForMathlib} files:\newline
+\item Imports: eleven new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/Convex/Combination.lean}: a map that preserves the convex combinations
   of two points of a convex set preserves all finite convex combinations
   (\lean{Convex.map_sum_of_map_add}), and a convex set contains them
@@ -113,7 +113,35 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   by TauCeti's Liouville measure, on the Borel $\sigma$-algebra of $\mathbb CP^n$: finite, positive
   on nonempty open sets, not zero, null on points for $n \ge 1$, and preserved by unitary maps
   (\lean{Projectivization.measurePreserving_unitaryMap}).\newline
-  Five new \lean{ForPhyslib} files on the qubit, in \lean{ForPhyslib/QuantumMechanics/Qubit/}:\newline
+  \lean{ForMathlib/Geometry/Manifold/DifferentialForm/Integration/Measure.lean}: TauCeti's change of
+  variables for the measure of a top form between manifolds modelled on different spaces of the
+  same dimension (\lean{MeasurableEmbedding.map_measure_mpullback_of_finrank_eq}), by its chartwise
+  change of variables with the linear equivalence that matches the preferred bases; so a
+  differentiable homeomorphism pulling one two-form back to another carries Liouville measure to
+  Liouville measure (\lean{Homeomorph.measurePreserving_liouvilleMeasure_of_finrank_eq}), as
+  between $\mathbb CP^1$, modelled on $\mathbb C^1$, and $S^2$, modelled on $\mathbb R^2$.\newline
+  \lean{ForMathlib/Geometry/Symplectic/Manifold/FubiniStudy/ProjectiveLine.lean}: the projective
+  line. Along $t \mapsto [t : 1]$ the Fubini--Study form of $\mathbb CP^1$ pulls back to $\pi$
+  times TauCeti's form of the Riemann sphere, which has total area $1$
+  (\lean{Projectivization.mpullback_equivProjectivization_fubiniStudyForm}). By uniqueness of the
+  descended form it suffices that $\pi\omega$ pulls back along $S^3 \to \mathbb CP^1 \to$
+  \lean{OnePoint}~$\mathbb C$, $z \mapsto z_0/z_1$, to $\operatorname{Im}\langle u, w\rangle$; this is
+  checked on the dense set $z_1 \ne 0$, where it is Lagrange's identity
+  $\overline{D_u} D_w = \langle u, w\rangle - \langle u, z\rangle\langle z, w\rangle$ for
+  $D_u = z_1 u_0 - z_0 u_1$, the last product being real for tangent vectors. With TauCeti's
+  inverse stereographic projection onto $S^2$ this gives a diffeomorphism
+  \lean{Projectivization.sphereDiffeomorph} $: \mathbb CP^1 \cong S^2$ that pulls the area form
+  $x \cdot (v \times w)$ back to $4$ times the Fubini--Study form
+  (\lean{Projectivization.mpullback_sphereDiffeomorph_sphereAreaForm}), carries the Liouville
+  measure to a quarter of the area (\lean{Projectivization.map_fubiniStudyMeasure_sphereDiffeomorph}),
+  and shows that $\mathbb CP^1$ has area $\pi$ (\lean{Projectivization.fubiniStudyMeasure_univ}).\newline
+  \lean{ForMathlib/Geometry/Symplectic/Manifold/Sphere.lean}: the Liouville measure of the area
+  form of $S^2$ is Mathlib's surface measure, the solid angle
+  (\lean{TauCeti.liouvilleMeasure_sphereAreaForm_eq_toSphere}). Both are images of Lebesgue
+  measure under $(z, \theta) \mapsto (\sqrt{1 - z^2}\cos\theta, \sqrt{1 - z^2}\sin\theta, z)$, on
+  $\theta \in (0, 2\pi)$ and on $\theta \in (-\pi, \pi]$; the map is $2\pi$-periodic in
+  $\theta$.\newline
+  Six new \lean{ForPhyslib} files on the qubit, in \lean{ForPhyslib/QuantumMechanics/Qubit/}:\newline
   \lean{BlochSphere.lean}: the Bloch point of a ray (\lean{blochPoint}), injective, onto the unit
   sphere, and a homeomorphism \lean{blochSphere} $: P(\mathbb C^2) \simeq S^2$;
   $|\psi\rangle\langle\psi| = \frac12(1 + a\cdot\sigma)$ (\lean{hermitianProjector_eq}).\newline
@@ -146,12 +174,22 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   of a Hamiltonian isotopy (\lean{isotopy_ne_conjSphere}).\newline
   \lean{Precession.lean}: every Hermitian $H$ is $c + \frac12 n\cdot\sigma$
   (\lean{exists_eq_smul_one_add_pauli}); along a solution of $i\psi' = H\psi$ the Bloch vector
-  satisfies $a' = n \times a$ (\lean{hasDerivAt_blochVector}).\newline
+  satisfies $a' = n \times a$ (\lean{hasDerivAt_blochVector}), so by uniqueness of solutions of
+  this linear equation $a(t) = \exp(t\hat n)\,a(0)$ (\lean{blochVector_eq_exp_mulVec}), a rotation
+  (\lean{exp_smul_crossProductMatrix_mem_specialOrthogonalGroup}).\newline
+  \lean{BlochArea.lean}: the Bloch map is \lean{Projectivization.sphereDiffeomorph}
+  (\lean{coe_blochSphere_eq_sphereDiffeomorph}), so it is smooth, pulls the area form back to $4$
+  times the Fubini--Study form (\lean{mpullback_blochSphere_sphereAreaForm}) and carries the
+  Liouville measure to a quarter of the area (\lean{map_fubiniStudyMeasure_blochSphere}).\newline
   These use TauCeti's Pauli map, double cover $SU(2) \to SO(3)$, Hermitian projectors, topology of
   projective space, its compactness and Hausdorffness, its real manifold structure and affine
   charts, the Liouville measure of a symplectic form, submersions and their
   criterion by surjective derivatives, symplectic descent along surjective submersions,
-  Fubini--Study form on \lean{OnePoint}~$\mathbb C$, global Hamiltonian flows,
+  Fubini--Study form on \lean{OnePoint}~$\mathbb C$, its biholomorphism with $\mathbb CP^1$ and its
+  diffeomorphism onto the round sphere with the pullback of the area form, the area form of $S^2$,
+  its Liouville measure in longitude--height coordinates and the Hamiltonian vector fields of its
+  heights, the chartwise change of variables for measures of top forms, the cross-product matrix
+  and exponentials of skew-symmetric matrices, global Hamiltonian flows,
   area formula and identification of \lean{Measure.toSphere} with Hausdorff measure, simple
   connectivity of spheres, vanishing of $H^1_{dR}$ on simply connected manifolds, symplectic
   vector fields and the class $[\iota_X\sigma]$, and time-dependent flows with the Lie derivative
@@ -271,7 +309,16 @@ Brief & Lean \\
 \midrule
 Example~2, $P(\mathbb C^2)$ is a two-sphere & \lean{nonempty_homeomorph_sphere}, from
   \lean{blochSphere}: a homeomorphism onto the unit sphere of $\mathbb R^3$ \\
-Example~2, Darboux coordinates $z$, $\theta_{xy}$, the Liouville measure is the area &
+Example~2, the two-sphere is a symplectic manifold &
+  \lean{blochSphere_eq_sphereDiffeomorph_and_mpullback_sphereAreaForm}: the Bloch map is a
+  diffeomorphism onto $S^2$ that pulls the area form back to $4$ times the Fubini--Study form of
+  Theorem~1 \\
+Example~2, Darboux coordinates $z$, $\theta_{xy}$ &
+  \lean{mpullback_longitudeHeight_fubiniStudyForm}: in longitude and height, $4\omega$ is
+  $d\theta \wedge dz$ \\
+Example~2, the Liouville measure is the area, the solid angle &
+  \lean{map_fubiniStudyMeasure_blochSphere_eq_toSphere}: the Bloch map carries the Liouville
+  measure to a quarter of Mathlib's surface measure, and $P(\mathbb C^2)$ has area $\pi$;
   \lean{toSphere_eq_dz_dtheta}: the surface measure is $dz\,d\theta$ on
   $(-1, 1) \times (-\pi, \pi]$; the height is distributed as $2\pi\,dz$ \\
 Example~2, Hamiltonian evolutions are the volume-preserving diffeomorphisms &
@@ -286,9 +333,11 @@ Example~2, Hamiltonian evolutions are the volume-preserving diffeomorphisms &
 Example~2, quantum evolutions are exactly the rotations & \lean{exists_unitaryAction_eq_iff}: a
   map of rays is the action of a unitary iff it is a rotation on Bloch vectors;
   \lean{unitaryAction_eq_iff}: unitaries act alike iff they differ by a phase \\
-Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
-  \lean{exists_blochVector_precession}: quantum side only; every Hamiltonian
-  $c + \frac12 n\cdot\sigma$ gives $a' = n \times a$ \\
+Example~2, quantum evolution is the case of a linear Hamiltonian $h = n\cdot x$ &
+  \lean{exists_blochVector_precession}: every Hamiltonian $c + \frac12 n\cdot\sigma$ gives
+  $a' = n \times a$; \lean{exists_linear_hamiltonian}: $n \times x$ is the Hamiltonian vector
+  field of $x \cdot n$ for the area form, and $a(t) = \exp(t\hat n)\,a(0)$ with
+  $\exp(t\hat n) \in SO(3)$ \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -336,22 +385,28 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   vector space; a Hermitian inner product is needed to single out the Fubini--Study form. The
   Fubini--Study form is defined by reduction, as the descent of the standard form of
   $\mathbb C^{n+1}$ restricted to the unit sphere, not by a K\"ahler potential; in this
-  normalization a projective line should have area $\pi$ (not checked), while TauCeti's form on the
-  Riemann sphere, used in Example~2, has total area $1$. The two are not compared in Lean. The
+  normalization a projective line has area $\pi$, and the Fubini--Study form of $\mathbb CP^1$ is
+  $\pi$ times TauCeti's form on the Riemann sphere, of total area $1$. The
   Liouville measure is TauCeti's $|\omega^n/n!|$; the brief's $\mu(U) = \int_U\omega^n$ differs by
   the constant $n!$, which changes neither the null sets nor the ensembles. It is finite because
   $\mathbb CP^n$ is compact and not zero because $\omega$ is nondegenerate, so CST has ensembles;
   unitary maps preserve it, so the measure carried over to $P(V)$ does not depend on the basis.
-\item Example~2 is checked at the level of topology and measure, and its symplectic part on the
-  Riemann sphere \lean{OnePoint}~$\mathbb C$ with TauCeti's Fubini--Study form. The sphere is the
-  unit sphere of $\mathbb R^3$ with Mathlib's surface measure, which TauCeti identifies with the
-  Hausdorff area; ``Darboux coordinates'' becomes the statement that this measure is
-  $dz\,d\theta$. The area-preserving map that is not Hamiltonian is complex conjugation of the
-  Riemann sphere, which corresponds to the Bloch reflection $a_1 \mapsto -a_1$; area preservation
-  is invariance of the Fubini--Study density, since there is no measure on
-  \lean{OnePoint}~$\mathbb C$ yet. Quantum evolution is the action of a unitary on rays, and for a
-  Hamiltonian the Schrödinger equation is a hypothesis on $\psi$; the precession $a' = n\times a$
-  is not integrated to a finite rotation. ``Hamiltonian evolution'' is checked for vector fields
+\item Example~2 uses three models of the sphere: $P(\mathbb C^2)$ with the Fubini--Study form of
+  Theorem~1, the unit sphere of $\mathbb R^3$ with the area form $x \cdot (v \times w)$ and
+  Mathlib's surface measure, and the Riemann sphere \lean{OnePoint}~$\mathbb C$ with TauCeti's
+  Fubini--Study form, of total area $1$. They are compared: the Bloch map is a diffeomorphism
+  pulling the area form back to $4\omega$, and $\omega$ is $\pi$ times the form of the Riemann
+  sphere. The brief's normalization of the area is not fixed, and the factor $4$ changes neither
+  the Hamiltonian vector fields, up to scaling the Hamiltonian, nor the null sets.
+  ``Darboux coordinates'' becomes the statement that $4\omega$ is $d\theta \wedge dz$ in longitude
+  and height, and ``the Liouville measure is the area'' that it is a quarter of the surface
+  measure, which TauCeti identifies with the Hausdorff area; the solid angle of a set is its
+  surface measure. ``Linear Hamiltonian'' is $x \mapsto x\cdot n$ on the unit sphere with the area
+  form. The area-preserving map that is not Hamiltonian is complex conjugation of the Riemann
+  sphere, which corresponds to the Bloch reflection $a_1 \mapsto -a_1$; area preservation is
+  invariance of the Fubini--Study density. Quantum evolution is the action of a unitary on rays,
+  and for a Hamiltonian the Schrödinger equation is a hypothesis on $\psi$, for the integrated
+  rotation at all times. ``Hamiltonian evolution'' is checked for vector fields
   and for evolutions: the time-dependent flows of jointly smooth time-dependent vector fields,
   which preserve the Fubini--Study form exactly when each velocity field $X_t$ is the
   Hamiltonian vector field of a smooth $H_t$, and the smooth isotopies from the identity with
@@ -360,10 +415,7 @@ Example~2, linear Hamiltonians $h = n\cdot x$ give rotations about $n$ &
   time, not as one jointly smooth $H(t, x)$.
 \item Not formalized:
   \begin{itemize}
-  \item in Example~2: the Liouville measure of the Fubini--Study form and the symplectic form
-    $dz \wedge d\theta$ in the chart; the diffeomorphism $\mathbb CP^1 \cong S^2$ with the
-    comparison of the Fubini--Study and round area forms; ensembles as densities $\rho(z,\theta)$
-    (Radon--Nikodym, not restated); the classical side of linear Hamiltonians (moment maps);
+  \item in Example~2: ensembles as densities $\rho(z,\theta)$ (Radon--Nikodym, not restated);
     that every orientation-preserving, area-preserving diffeomorphism of the sphere is the end of a
     Hamiltonian evolution, which needs Smale's theorem $\mathrm{Diff}^+(S^2) \simeq SO(3)$;
   \item Insight~4, which is informal.
