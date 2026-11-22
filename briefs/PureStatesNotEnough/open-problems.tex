@@ -41,8 +41,9 @@ checked; no claim of the brief waits on them.
 Theorem~5 is verified, and Theorem~3 for $\dim\mathcal H \ge 2$. Example~2 is verified at the
 level of topology and measure and, on the Riemann sphere, of the symplectic form and of
 Hamiltonian evolution, with the correction of the item ``Hamiltonian evolution on the classical
-qubit''. Of Theorem~1 only the ``if'' is checked, without the Liouville measure: see the two items
-marked below.
+qubit''. Theorem~1 is verified with its Liouville measure, for $1 \le \dim V < \infty$ when $P(V)$
+keeps its quotient topology and the empty space is excluded; which range the brief means is the
+item marked below.
 
 \section*{From the brief}
 \begin{enumerate}
@@ -66,8 +67,9 @@ marked below.
     ``only if'' is false: $P(\ell^2)$ and the sphere $P(\mathbb C^2)$ both have $\mathfrak c$
     points (\lean{nonempty_projectivization_equiv}), and the sphere's symplectic structure can be
     carried over. The theorem needs $V$ Hausdorff and $X$ to carry the quotient topology of
-    $P(V)$; finiteness then comes from CST's Liouville measure $\omega^n$ with finite $n$, not
-    from $X$ being symplectic (Log, ``Problems found'').
+    $P(V)$; finiteness then comes from the finite dimension of the manifold $X$, through local
+    compactness (\lean{finiteDimensional_of_homeomorph}), not from $X$ being symplectic. With
+    this reading the theorem is checked (\lean{qpRayCst_iff}; Log, ``Problems found'').
   \end{itemize}
   Proposed: exclude dimension $0$ and the empty space, so that Theorem~1 reads
   $2 \le \dim V < \infty$ for a Hausdorff $V$ with $X = P(V)$ as topological spaces. Theorem~3 and its Lean proof then stand
@@ -80,9 +82,9 @@ marked below.
   $\dim\mathcal H \ge 3$ no ensemble has support in $P(A)$, which has Liouville measure zero,
   and for $\dim\mathcal H = \infty$ there is no Liouville measure on $P(\mathcal H)$. As written,
   the proof works only for $\dim\mathcal H = 2$. The formalization compares the whole ensemble
-  spaces instead (\lean{cst_qeDens_inconsistent}), which needs $\dim\mathcal H < \infty$ and so,
-  for $\dim\mathcal H = \infty$, the ``only if'' of Theorem~1. (Log, ``Problems found'', second
-  item.)
+  spaces instead (\lean{cst_qeDens_inconsistent}), which needs $\dim\mathcal H < \infty$; for
+  $\dim\mathcal H = \infty$ this comes from the ``only if'' of Theorem~1
+  (\lean{cst_qeDens_inconsistent_of_homeomorph}). (Log, ``Problems found'', second item.)
 
   Proposed: read ``the ensembles with support in $A$'' as the ensembles of the two-level system
   $A$ itself, CST on the sphere $P(A)$ with its own Liouville measure against QE-DENS on $A$, and
@@ -90,7 +92,7 @@ marked below.
   $A$. The proof is then the case $\dim\mathcal H = 2$, which is checked, and it covers every
   $\mathcal H$ with $\dim\mathcal H \ge 2$, also infinite-dimensional ones, without the ``only
   if'' of Theorem~1. The alternative is to compare the whole spaces as in Lean and keep
-  $\dim\mathcal H < \infty$ from Theorem~1.
+  $\dim\mathcal H < \infty$ from Theorem~1, which is checked.
 \item \textbf{Hamiltonian evolution on the classical qubit.} \emph{Formalization gap.} Example~2 identifies Hamiltonian
   evolution with the diffeomorphisms that conserve the volume. Area-preserving reflections of the
   sphere are not Hamiltonian, so the area form should be meant. Lean checks this for complex
@@ -114,33 +116,16 @@ marked below.
 
 \section*{From the formalization}
 \begin{enumerate}
-\item \blocker{formalization gap}\textbf{Theorem~1.} The ``if'' is formalized up to the
-  Liouville measure. $\mathbb CP^n$, with TauCeti's real manifold structure, has exactly one
-  symplectic form whose pullback along the Hopf map $S^{2n+1} \to \mathbb CP^n$ is the standard
-  form $\operatorname{Im}\langle u, w\rangle$ of $\mathbb C^{n+1}$ restricted to the unit sphere,
-  the Fubini--Study form (\lean{existsUnique_isSymplectic_projectivization}). For a complex inner
-  product space $V$ of dimension $n + 1$, an orthonormal basis identifies $P(V)$ with
-  $\mathbb CP^n$ (\lean{basisHomeomorph}), and a change of basis is smooth and preserves the form
-  (\lean{mpullback_basisHomeomorph_symm_trans}). Two parts are open.
-  \begin{itemize}
-  \item \emph{The Liouville measure.} CST asks for the measure $\omega^n$ of the symplectic form,
-    which is still missing upstream.
-  \item \emph{The ``only if''.} That a symplectic $P(V)$ forces $\dim V < \infty$ needs the
-    topology of $P(V)$; as sets it is false (\lean{nonempty_projectivization_equiv}). Theorem~3
-    for $\dim\mathcal H = \infty$ rests on it, so it is formalized only for
-    $\dim\mathcal H < \infty$; with the reading proposed in the item ``Ensembles supported on a
-    subspace'' it no longer does.
-  \end{itemize}
-  (Log, ``Results''.)
 \item \textbf{Example~2.} \emph{Formalization gap.} $P(\mathbb C^2)$ is homeomorphic to the sphere
   (\lean{nonempty_homeomorph_sphere}), its area is $dz\,d\theta$ (\lean{toSphere_eq_dz_dtheta}),
   the quantum evolutions are the rotations (\lean{exists_unitaryAction_eq_iff}) and every
   Hamiltonian makes the Bloch vector precess (\lean{exists_blochVector_precession}). Still
   missing: the area as the Liouville measure of the Fubini--Study form, and
-  $\omega = dz \wedge d\theta$ in the chart, which need a Liouville measure upstream; the
-  diffeomorphism $\mathbb CP^1 \cong S^2$ that compares the Fubini--Study form with the round area
-  form, and TauCeti's form on the Riemann sphere, of total area $1$, with the form of the previous
-  item for $n = 1$ (\lean{Projectivization.fubiniStudyForm}), which should give area $\pi$; the integrated rotation of the precession; the classical side of linear Hamiltonians,
+  $\omega = dz \wedge d\theta$ in the chart, which TauCeti's Liouville measure now makes
+  possible; the diffeomorphism $\mathbb CP^1 \cong S^2$ that compares the Fubini--Study form with
+  the round area form, and TauCeti's form on the Riemann sphere, of total area $1$, with the form
+  of Theorem~1 for $n = 1$ (\lean{Projectivization.fubiniStudyForm}), which should give area
+  $\pi$; the integrated rotation of the precession; the classical side of linear Hamiltonians,
   $X_{n\cdot x} = n \times x$, which needs moment maps. Refinements of Hamiltonian evolution are
   in the next item. (Log, ``Differences''.)
 \item \textsc{[optional]}~\textbf{Refinements of Hamiltonian evolution.} \emph{Formalization gap.} The evolutions of
@@ -159,7 +144,8 @@ marked below.
   \item \emph{Area instead of area form along an evolution.} Along an isotopy from the identity,
     $\varphi_t^*\omega = \pm\omega$ forces the sign $+$, since it cannot jump; with area
     preservation stated pointwise this is a short continuity argument. The measure-theoretic
-    statement needs the Liouville measure of $\omega$, which is missing upstream (item~2).
+    statement needs the Liouville measure of $\omega$ on the Riemann sphere, compared with the
+    area (item~1).
   \item \emph{Conservation of entropy.} The brief's ``and therefore the entropy is conserved''
     follows from measure preservation, since the Gibbs entropy is invariant under
     measure-preserving bijections. For the rotations this is direct; for a general Hamiltonian

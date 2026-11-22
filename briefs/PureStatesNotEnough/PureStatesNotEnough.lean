@@ -7,14 +7,16 @@ module
 
 public import ForMathlib.Analysis.Convex.Combination
 public import ForMathlib.Analysis.InnerProductSpace.l2Space
-public import ForMathlib.Geometry.Symplectic.Manifold.FubiniStudy
+public import ForMathlib.Geometry.Symplectic.Manifold.FubiniStudy.Liouville
 public import ForMathlib.MeasureTheory.Constructions.HaarToSphere
+public import ForMathlib.Topology.Algebra.Projectivization.LocallyCompact
 public import ForPhyslib.ProbabilisticTheory.HilbertSpace.TraceClass.CanonicalExpansion
 public import ForPhyslib.QuantumMechanics.DensityOperator
 public import ForPhyslib.QuantumMechanics.Qubit.HamiltonianIsotopy
 public import ForPhyslib.QuantumMechanics.Qubit.Precession
 public import Mathlib.Analysis.Convex.Extreme
 public import Mathlib.Analysis.Convex.Integral
+public import TauCeti.Geometry.Symplectic.Manifold.LiouvilleMeasure
 import ForPhyslib.QuantumMechanics.Kadison
 import TauCeti.Geometry.Symplectic.Manifold.Descent
 
@@ -69,19 +71,28 @@ would be a class in `H¹_dR`, which vanishes because the sphere is simply connec
 single orientation-preserving, area-preserving diffeomorphism is the end of a Hamiltonian evolution
 needs Smale's theorem `Diff⁺(S²) ≃ SO(3)` and is not formalized.
 
-**Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is formalized in
-part. The "if" holds for every complex inner product space `V` of finite dimension `n + 1`.
+**Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is formalized for
+every Hausdorff complex topological vector space `V` whose continuous linear functionals separate
+points, in particular every normed space, with "represented by" read as: `P(V)`, with its quotient
+topology, is homeomorphic to a nonempty symplectic manifold. For the "if", let `dim V = n + 1`.
 `ℂPⁿ` has exactly one symplectic form that pulls back along the Hopf map `S²ⁿ⁺¹ → ℂPⁿ` to the
 restriction of the standard form `Im ⟪u, w⟫` of `ℂⁿ⁺¹`, the Fubini–Study form, obtained by
-symplectic descent. An orthonormal basis of `V` identifies `P(V)` with `ℂPⁿ` as topological
-spaces; a change of basis acts on `ℂPⁿ` through a unitary map, which is smooth and preserves the
-Fubini–Study form, so the symplectic structure carried over to `P(V)` does not depend on the
-basis. Not formalized are the Liouville measure of the form and the "only if". The edges are
-checked. `P(V)` is empty for `V = 0`, a single point for `dim V = 1`, and has two points
-exactly when `2 ≤ dim V`. If a point counts as a `0`-dimensional symplectic manifold, Theorem 3
-fails for `dim H = 1`: the CST ensembles of a point and the density operators of `ℂ` are both a
-single point. And as sets `P(ℓ²)` and `P(ℂ²)` are in bijection, so the "only if" of Theorem 1
-needs the topology of `P(V)`, not only its points.
+symplectic descent. A linear isomorphism `V ≅ ℂⁿ⁺¹` identifies `P(V)` with `ℂPⁿ` as topological
+spaces. For an inner product space and orthonormal bases, a change of basis acts on `ℂPⁿ` through
+a unitary map, which is smooth and preserves the Fubini–Study form and its Liouville measure, so
+the symplectic structure and the Liouville measure carried over to `P(V)` do not depend on the
+basis. The Liouville measure `|ωⁿ / n!|` is TauCeti's; it is finite, since `ℂPⁿ` is compact, and
+not zero, since `ω` is nondegenerate, so CST has ensembles. The brief's `μ(U) = ∫_U ωⁿ` differs by
+the constant `n!`, which changes neither the null sets nor the ensembles. For the "only if", a
+manifold modelled on a finite-dimensional space is locally compact. On the open set where a
+continuous linear functional `φ` does not vanish, `v ↦ ([v], φ v)` is an open embedding into
+`P(V) × ℂ`, so a locally compact `P(V)` makes `V` locally compact, hence finite-dimensional by
+Riesz's theorem. This also gives Theorem 3 for every `H`: a CST state space homeomorphic to `P(H)`
+forces `dim H < ∞`. The edges are checked. `P(V)` is empty for `V = 0`, a single point for
+`dim V = 1`, and has two points exactly when `2 ≤ dim V`. If a point counts as a `0`-dimensional
+symplectic manifold, Theorem 3 fails for `dim H = 1`: the CST ensembles of a point and the density
+operators of `ℂ` are both a single point. And as sets `P(ℓ²)` and `P(ℂ²)` are in bijection, so the
+"only if" of Theorem 1 needs the topology of `P(V)`, not only its points.
 
 ## ii. Key results
 
@@ -90,12 +101,22 @@ needs the topology of `P(V)`, not only its points.
   into a finite-dimensional real vector space is injective.
 - `PureStatesNotEnough.hasManyDisjointSets_restrict`: a Darboux chart has enough disjoint sets.
 - `PureStatesNotEnough.cst_qeDens_inconsistent`: Theorem 3.
+- `PureStatesNotEnough.cst_qeDens_inconsistent_of_homeomorph`: Theorem 3 for every `H`, with the
+  Liouville measure of a symplectic manifold homeomorphic to `P(H)`.
+- `PureStatesNotEnough.hasManyDisjointSets_of_isOpenPosMeasure`: the Liouville measure of a compact
+  symplectic manifold of positive dimension has enough disjoint sets.
+- `PureStatesNotEnough.qpRayCst_iff`: Theorem 1, QP-RAY and CST are consistent if and only if
+  `1 ≤ dim V < ∞`.
+- `PureStatesNotEnough.finiteDimensional_of_homeomorph`: Theorem 1, "only if".
 - `PureStatesNotEnough.existsUnique_isSymplectic_projectivization`: Theorem 1, "if", for
   `V = ℂⁿ⁺¹`; `ℂPⁿ` with the Fubini–Study form is a symplectic manifold.
 - `PureStatesNotEnough.basisHomeomorph`, `PureStatesNotEnough.contMDiff_basisHomeomorph_symm_trans`,
   `PureStatesNotEnough.mpullback_basisHomeomorph_symm_trans`: Theorem 1, "if", for every
   finite-dimensional `V`; the structure carried over along an orthonormal basis does not depend
   on the basis.
+- `PureStatesNotEnough.liouvilleMeasure`, `PureStatesNotEnough.liouvilleMeasure_eq`,
+  `PureStatesNotEnough.isFiniteMeasure_ne_zero_liouvilleMeasure`: the Liouville measure of `P(V)`
+  does not depend on the basis, is finite and not zero.
 - `PureStatesNotEnough.subsingleton_projectivization`: for `dim V = 1`, `P(V)` is one point.
 - `PureStatesNotEnough.isEmpty_projectivization`,
   `PureStatesNotEnough.nonempty_projectivization_iff`,
@@ -538,7 +559,128 @@ theorem mpullback_basisHomeomorph_symm_trans (b₁ b₂ : OrthonormalBasis (Fin 
     exact Projectivization.mpullback_unitaryMap_fubiniStudyForm _
   exact key _ _ (basisHomeomorph_symm_trans b₁ b₂)
 
+/-- **The Liouville measure of `P(V)`**, carried over from `ℂPⁿ` along an orthonormal basis `b`.
+It does not depend on `b` (`liouvilleMeasure_eq`). -/
+def liouvilleMeasure (b : OrthonormalBasis (Fin (n + 1)) ℂ V) : Measure (ℙ ℂ V) :=
+  (Projectivization.fubiniStudyMeasure n).map (basisHomeomorph b).symm
+
+/-- The Liouville measure carried over to `P(V)` does not depend on the orthonormal basis, since
+a change of basis acts on `ℂPⁿ` through a unitary map, which preserves the Liouville measure. -/
+theorem liouvilleMeasure_eq (b₁ b₂ : OrthonormalBasis (Fin (n + 1)) ℂ V) :
+    liouvilleMeasure b₁ = liouvilleMeasure b₂ := by
+  have h : ⇑(basisHomeomorph b₁).symm =
+      (basisHomeomorph b₂).symm ∘ ((basisHomeomorph b₁).symm.trans (basisHomeomorph b₂)) := by
+    ext p; simp
+  rw [liouvilleMeasure, liouvilleMeasure, h, basisHomeomorph_symm_trans,
+    ← Measure.map_map (basisHomeomorph b₂).symm.continuous.measurable
+      (Projectivization.unitaryMap _).continuous.measurable,
+    (Projectivization.measurePreserving_unitaryMap _).map_eq]
+
+/-- **Theorem 1, "if", with the Liouville measure.** The Liouville measure of `P(V)` is finite and
+not zero, so CST has ensembles, for instance the normalized Liouville measure. -/
+theorem isFiniteMeasure_ne_zero_liouvilleMeasure (b : OrthonormalBasis (Fin (n + 1)) ℂ V) :
+    IsFiniteMeasure (liouvilleMeasure b) ∧ liouvilleMeasure b ≠ 0 ∧
+      (liouvilleMeasure b Set.univ)⁻¹ • liouvilleMeasure b ∈
+        classicalEnsembles (liouvilleMeasure b) := by
+  have hne : liouvilleMeasure b ≠ 0 := by
+    rw [liouvilleMeasure, Ne, Measure.map_eq_zero_iff
+      (basisHomeomorph b).symm.continuous.measurable.aemeasurable]
+    exact Projectivization.fubiniStudyMeasure_ne_zero
+  have : IsFiniteMeasure (liouvilleMeasure b) := by rw [liouvilleMeasure]; infer_instance
+  exact ⟨this, hne, ⟨⟨by rw [smul_apply, smul_eq_mul, ENNReal.inv_mul_cancel
+    (Measure.measure_univ_ne_zero.2 hne) (measure_ne_top _ _)]⟩,
+    Measure.smul_absolutelyContinuous⟩⟩
+
 end Transport
+
+section Consistency
+
+open scoped Manifold ContDiff
+
+/-- QP-RAY and CST hold together for `V`: the rays `P(V)`, with their quotient topology, are
+homeomorphic to a nonempty symplectic manifold `X` modelled on a finite-dimensional real space. -/
+def QpRayCst (V : Type) [AddCommGroup V] [Module ℂ V] [TopologicalSpace V] : Prop :=
+  ∃ (E : Type) (_ : NormedAddCommGroup E) (_ : NormedSpace ℝ E) (_ : FiniteDimensional ℝ E)
+    (X : Type) (_ : TopologicalSpace X) (_ : ChartedSpace E X) (_ : IsManifold 𝓘(ℝ, E) ∞ X)
+    (σ : TauCeti.SmoothTwoForm 𝓘(ℝ, E) X), σ.IsSymplectic ∧ Nonempty X ∧ Nonempty (X ≃ₜ ℙ ℂ V)
+
+/-- **Theorem 1, "only if".** If `P(V)` is homeomorphic to a manifold modelled on a
+finite-dimensional space, such as a symplectic manifold, then `V` is finite-dimensional. The
+manifold is locally compact, and on the open set where a continuous linear functional `φ` does not
+vanish, `v ↦ ([v], φ v)` is an open embedding into `P(V) × ℂ`, so `V` is locally compact; Riesz's
+theorem applies. As sets the statement is false (`nonempty_projectivization_equiv`). -/
+theorem finiteDimensional_of_homeomorph {V : Type*} [AddCommGroup V] [Module ℂ V]
+    [TopologicalSpace V] [IsTopologicalAddGroup V] [ContinuousSMul ℂ V] [T2Space V]
+    [SeparatingDual ℂ V] (E : Type*) {X : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [FiniteDimensional ℝ E] [TopologicalSpace X] [ChartedSpace E X] (e : X ≃ₜ ℙ ℂ V) :
+    FiniteDimensional ℂ V := by
+  have : LocallyCompactSpace X := ChartedSpace.locallyCompactSpace E X
+  have : LocallyCompactSpace (ℙ ℂ V) := e.symm.isOpenEmbedding.locallyCompactSpace
+  exact Projectivization.finiteDimensional_of_locallyCompactSpace
+
+/-- **Theorem 1.** For a Hausdorff complex topological vector space `V` whose continuous linear
+functionals separate points, such as a normed space, QP-RAY and CST are consistent if and only if
+`1 ≤ dim V < ∞`: `P(V)` is homeomorphic to a nonempty symplectic manifold exactly then. For
+`dim V = n + 1` the manifold is `ℂPⁿ` with the Fubini–Study form, and its Liouville measure is
+finite and not zero (`isFiniteMeasure_ne_zero_liouvilleMeasure`). -/
+theorem qpRayCst_iff {V : Type} [AddCommGroup V] [Module ℂ V] [TopologicalSpace V]
+    [IsTopologicalAddGroup V] [ContinuousSMul ℂ V] [T2Space V] [SeparatingDual ℂ V] :
+    QpRayCst V ↔ FiniteDimensional ℂ V ∧ Nontrivial V := by
+  constructor
+  · rintro ⟨E, _, _, _, X, _, _, _, σ, -, ⟨x⟩, ⟨e⟩⟩
+    exact ⟨finiteDimensional_of_homeomorph E e, nonempty_projectivization_iff.1 ⟨e x⟩⟩
+  · rintro ⟨_, _⟩
+    obtain ⟨n, hn⟩ : ∃ n, Module.finrank ℂ V = n + 1 :=
+      Nat.exists_eq_succ_of_ne_zero Module.finrank_pos.ne'
+    let L : V ≃L[ℂ] (Fin (n + 1) → ℂ) :=
+      (LinearEquiv.ofFinrankEq V (Fin (n + 1) → ℂ) (by simp [hn])).toContinuousLinearEquiv
+    exact ⟨Fin n → ℂ, inferInstance, inferInstance, inferInstance, ℙ ℂ (Fin (n + 1) → ℂ),
+      inferInstance, inferInstance, inferInstance, Projectivization.fubiniStudyForm n,
+      Projectivization.isSymplectic_fubiniStudyForm,
+      ⟨Projectivization.mk ℂ (Pi.single 0 1) (by simp)⟩,
+      ⟨Projectivization.mapHomeomorph L.symm⟩⟩
+
+/-- A finite measure on a Hausdorff space that is positive on nonempty open sets and null on
+points has enough disjoint sets: `N` distinct points have disjoint open neighbourhoods. -/
+theorem hasManyDisjointSets_of_isOpenPosMeasure {X : Type*} [TopologicalSpace X] [T2Space X]
+    [MeasurableSpace X] [OpensMeasurableSpace X] [Nonempty X] (μ : Measure X)
+    [μ.IsOpenPosMeasure] [IsFiniteMeasure μ] [NullSingletonClass μ] : HasManyDisjointSets μ := by
+  have : Infinite X := by
+    by_contra h
+    have : Finite X := not_infinite_iff_finite.1 h
+    exact (isOpen_univ.measure_pos μ Set.univ_nonempty).ne' (Set.finite_univ.measure_zero μ)
+  intro N
+  let f : Fin N ↪ X := Fin.valEmbedding.trans (Infinite.natEmbedding X)
+  obtain ⟨U, hU, hUd⟩ := (Set.finite_range f).t2_separation
+  exact ⟨fun i => U (f i), fun i => (hU _).2.measurableSet,
+    fun i j hij => hUd ⟨i, rfl⟩ ⟨j, rfl⟩ (f.injective.ne hij),
+    fun i => ⟨((hU _).2.measure_pos μ ⟨_, (hU _).1⟩).ne', measure_ne_top _ _⟩⟩
+
+/-- **Theorem 3 for every `H`.** Let the states of CST be a nonempty symplectic manifold `X` with
+at least one degree of freedom, homeomorphic to the rays `P(H)` of a complex inner product space
+`H` of any dimension. Then no injective map from the ensembles of its Liouville measure to the
+density operators of `H` preserves mixtures. The homeomorphism forces `dim H < ∞`
+(`finiteDimensional_of_homeomorph`), and the Liouville measure then has enough disjoint sets. -/
+theorem cst_qeDens_inconsistent_of_homeomorph {H : Type*} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] {E X : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    [FiniteDimensional ℝ E] [Nontrivial E] [TopologicalSpace X] [ChartedSpace E X]
+    [IsManifold 𝓘(ℝ, E) ∞ X] [MeasurableSpace X] [BorelSpace X] [LindelofSpace X] [Nonempty X]
+    {m : ℕ} [Fact (Module.finrank ℝ E = 2 * m)] {σ : TauCeti.SmoothTwoForm 𝓘(ℝ, E) X}
+    (hσ : σ.IsSymplectic) (e : X ≃ₜ ℙ ℂ H) :
+    ¬ ∃ F : Measure X → (H →L[ℂ] H),
+      Set.MapsTo F (classicalEnsembles (σ.liouvilleMeasure m)) {ρ | IsDensity ρ} ∧
+      Set.InjOn F (classicalEnsembles (σ.liouvilleMeasure m)) ∧
+      ∀ ν₁ ∈ classicalEnsembles (σ.liouvilleMeasure m),
+        ∀ ν₂ ∈ classicalEnsembles (σ.liouvilleMeasure m), ∀ a b : ℝ≥0, a + b = 1 →
+          F (a • ν₁ + b • ν₂) = ((a : ℝ) : ℂ) • F ν₁ + ((b : ℝ) : ℂ) • F ν₂ := by
+  have : FiniteDimensional ℂ H := finiteDimensional_of_homeomorph E e
+  have : T2Space X := e.isEmbedding.t2Space
+  have : CompactSpace X := e.symm.compactSpace
+  have : (σ.liouvilleMeasure m).IsOpenPosMeasure :=
+    hσ.isNondegenerate.isOpenPosMeasure_liouvilleMeasure
+  exact cst_qeDens_inconsistent (hasManyDisjointSets_of_isOpenPosMeasure _)
+
+end Consistency
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 

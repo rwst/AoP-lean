@@ -8,6 +8,7 @@ module
 public import ForPhyslib.QuantumMechanics.Qubit.AntisymplecticReflection
 public import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 public import TauCeti.Geometry.Manifold.Flow.TimeDependent
+public import TauCeti.Geometry.Symplectic.Hamiltonian.CommutingFlow
 public import TauCeti.Geometry.Symplectic.Hamiltonian.SymplecticVectorField
 import ForMathlib.Topology.Compactification.OnePoint.SimplyConnected
 import TauCeti.Geometry.Manifold.DeRham.SimplyConnected
@@ -52,8 +53,6 @@ identity with jointly smooth inverses. It is the time-dependent flow of its gene
   the Riemann sphere preserves `ω_FS` exactly when it is Hamiltonian.
 - `QuantumMechanics.Qubit.range_negHamiltonianₗ_fubiniStudyForm`: every symplectic vector field
   of `ω_FS` is `-X_f`.
-- `TauCeti.SmoothTwoForm.mpullback_timeDependentFlowOf_of_isHamiltonianVectorField`: a
-  time-dependent Hamiltonian flow preserves a closed form.
 - `TauCeti.SmoothTwoForm.forall_mpullback_timeDependentFlowOf_eq_iff`: on a simply connected
   manifold, a time-dependent flow preserves a closed form exactly when it is Hamiltonian.
 - `QuantumMechanics.Qubit.mpullback_timeDependentFlowOf_fubiniStudyForm`,
@@ -135,22 +134,6 @@ end SimplyConnected
 section TimeDependent
 
 variable [I.Boundaryless] {X : ℝ → (x : M) → TangentSpace I x}
-
-/-- **Time-dependent Hamiltonian flows preserve the form.** Let `X` be a jointly `C²`
-time-dependent vector field with complete suspension, such that each `X t` is the Hamiltonian
-vector field of a `C²` function `H t` for a closed form `σ`. Then the time-dependent flow of `X`
-satisfies `φ_{s,t}^* σ = σ`. -/
-theorem mpullback_timeDependentFlowOf_of_isHamiltonianVectorField (hσ : σ.IsClosed)
-    (hc : IsCompleteVectorField (timeDependentSuspensionField X))
-    (hX : ContMDiff (𝓘(ℝ, ℝ).prod I) I.tangent 2
-      (fun p : ℝ × M ↦ (⟨p.2, X p.1 p.2⟩ : TangentBundle I M)))
-    {H : ℝ → M → ℝ} (hH : ∀ t, ContMDiff I 𝓘(ℝ) 2 (H t))
-    (hXH : ∀ t, σ.IsHamiltonianVectorField (H t) (X t)) (s t : ℝ) :
-    mpullback I I (timeDependentFlowOf X s t) σ.1 = σ.1 :=
-  mpullback_timeDependentFlowOf_of_mextDeriv_interior_eq_zero hc hX σ.mdifferentiable
-    ((SmoothForm.isClosed_def σ).1 hσ)
-    (fun u ↦ by rw [isHamiltonianVectorField_iff_interior_eq.1 (hXH u),
-      mextDeriv_mextDeriv_ofFunction (hH u)]) s t
 
 /-- **Form-preserving time-dependent flows are Hamiltonian.** On a simply connected manifold, let
 `X` be a jointly smooth time-dependent vector field with complete suspension and `σ` a closed
@@ -337,10 +320,9 @@ theorem mpullback_timeDependentFlowOf_fubiniStudyForm
     (hXH : ∀ t, fubiniStudyForm.IsHamiltonianVectorField (H t) (X t)) (s t : ℝ) :
     mpullback 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (timeDependentFlowOf X s t) fubiniStudyForm.1 =
       fubiniStudyForm.1 :=
-  SmoothTwoForm.mpullback_timeDependentFlowOf_of_isHamiltonianVectorField
-    isSymplectic_fubiniStudyForm.isClosed
-    (isCompleteVectorField_timeDependentSuspensionField_onePoint (hX.of_le one_le_two)) hX hH hXH
-    s t
+  SmoothTwoForm.mpullback_timeDependentFlowOf_of_isHamiltonianVectorField hXH
+    isSymplectic_fubiniStudyForm.isClosed hH
+    (isCompleteVectorField_timeDependentSuspensionField_onePoint (hX.of_le one_le_two)) hX s t
 
 /-- **Complex conjugation is not a time-dependent Hamiltonian evolution.** No time map of the
 time-dependent flow of `C²` Hamiltonians on the Riemann sphere is complex conjugation, although
