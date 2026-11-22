@@ -30,6 +30,15 @@ computed with. Countably many chart pieces then cover `M`, as in the case of one
   carries the measure of `Φ^* ψ` to the measure of `ψ`.
 * `Homeomorph.measurePreserving_liouvilleMeasure_of_finrank_eq`: a differentiable homeomorphism
   pulling one two-form back to another carries Liouville measure to Liouville measure.
+
+Conversely, the measure of a continuous top form determines the form up to a sign at each point:
+in a chart both measures are Haar measure with continuous densities `|φ(∂₁, …, ∂ₖ)|`, which agree
+almost everywhere and hence everywhere, and a top form is determined by its value on a basis.
+
+* `TauCeti.RoughForm.eq_or_eq_neg_of_measure_eq`: continuous top forms with the same measure agree
+  up to a sign at each point.
+* `Homeomorph.measure_mpullback_eq_of_measurePreserving`: a differentiable homeomorphism that
+  preserves the measure of `ψ` leaves it unchanged under pullback, `|Φ^* ψ| = |ψ|`.
 -/
 
 public section
@@ -143,5 +152,93 @@ theorem measurePreserving_liouvilleMeasure_of_finrank_eq [IsManifold I ∞ M] [I
   rw [SmoothTwoForm.liouvilleMeasure_def, SmoothTwoForm.liouvilleMeasure_def,
     ← SmoothTwoForm.mpullback_volumeForm h]
   exact Φ.measurePreserving_measure_mpullback_of_finrank_eq hΦ _
+
+end Homeomorph
+
+/-! ### The measure determines the form up to sign -/
+
+namespace TauCeti.RoughForm
+
+variable [IsManifold I 1 M] {k : ℕ} [hk : Fact (finrank ℝ E = k)]
+
+/-- **A top form is determined up to sign at each point by its measure.** On a manifold without
+boundary, two continuous top forms `φ` and `ψ` with `|φ| = |ψ|` satisfy `ψ x = ± φ x` at every
+point. In the chart at `x` both measures are Haar measure with the continuous densities
+`|φ(∂₁, …, ∂ₖ)|` and `|ψ(∂₁, …, ∂ₖ)|` on the open chart target; these agree almost everywhere,
+hence everywhere, and a top form is the multiple of the determinant given by its value on the
+basis. The sign may change from point to point. -/
+theorem eq_or_eq_neg_of_measure_eq [I.Boundaryless] {φ ψ : RoughForm I M ℝ k}
+    (hφ : IsSmoothForm I 0 φ) (hψ : IsSmoothForm I 0 ψ) (h : φ.measure = ψ.measure) (x : M) :
+    ψ x = φ x ∨ ψ x = -φ x := by
+  set b := finBasisOfFinrankEq ℝ E hk.out
+  set e := extChartAt I x
+  have hT : IsOpen e.target := isOpen_extChartAt_target x
+  have hsrc : MeasurableSet e.source := (isOpen_extChartAt_source x).measurableSet
+  have himg : e '' e.source = e.target := e.image_source_eq_target
+  have hf := aemeasurable_ofReal_abs_inChartAt hφ b hsrc subset_rfl (μ := b.addHaar)
+  have hg := aemeasurable_ofReal_abs_inChartAt hψ b hsrc subset_rfl (μ := b.addHaar)
+  rw [himg] at hf hg
+  -- The two coordinate densities define the same measure on the chart target.
+  have hwd : (b.addHaar.restrict e.target).withDensity
+        (fun y ↦ ENNReal.ofReal |φ.inChartAt x y b|) =
+      (b.addHaar.restrict e.target).withDensity (fun y ↦ ENNReal.ofReal |ψ.inChartAt x y b|) := by
+    ext A hA
+    rw [withDensity_apply _ hA, withDensity_apply _ hA, Measure.restrict_restrict hA]
+    have hs : MeasurableSet (e.source ∩ e ⁻¹' A) := by
+      have hm : Measurable (e.source.domRestrict e) :=
+        (continuousOn_extChartAt x).domRestrict.measurable
+      have h' := hsrc.subtype_image (hm hA)
+      rwa [Set.domRestrict_eq, Set.preimage_comp, Subtype.image_preimage_coe] at h'
+    have hes : e '' (e.source ∩ e ⁻¹' A) = A ∩ e.target := by
+      ext y
+      refine ⟨?_, fun hy ↦ ⟨e.symm y, ⟨e.map_target hy.2, ?_⟩, e.right_inv hy.2⟩⟩
+      · rintro ⟨z, hz, rfl⟩
+        exact ⟨hz.2, e.map_source hz.1⟩
+      · simpa [Set.mem_preimage, e.right_inv hy.2] using hy.1
+    rw [← hes, ← measure_apply_of_subset φ hs inter_subset_left, h,
+      measure_apply_of_subset ψ hs inter_subset_left]
+  -- Continuous densities that agree almost everywhere on an open set agree there.
+  have hcont (χ : RoughForm I M ℝ k) (hχ : IsSmoothForm I 0 χ) :
+      ContinuousOn (fun y ↦ ENNReal.ofReal |χ.inChartAt x y b|) e.target :=
+    ENNReal.continuous_ofReal.comp_continuousOn (continuous_abs.comp_continuousOn
+      ((continuous_eval_const (⇑b)).comp_continuousOn (hχ.continuousOn_inChartAt x)))
+  have hx := Measure.eqOn_open_of_ae_eq ((withDensity_eq_iff_of_sigmaFinite hf hg).1 hwd) hT
+    (hcont φ hφ) (hcont ψ hψ) (mem_extChartAt_target x)
+  simp only at hx
+  rw [ENNReal.ofReal_eq_ofReal_iff (abs_nonneg _) (abs_nonneg _)] at hx
+  have hneg : (-φ).inChartAt x (e x) = -φ.inChartAt x (e x) := by
+    ext v
+    simp [inChartAt_apply]
+  rcases abs_eq_abs.1 hx with h1 | h1
+  · left
+    rw [← inChartAt_chart_eq_iff (mem_extChartAt_source x)]
+    ext v
+    rw [ContinuousAlternatingMap.apply_eq_det_mul _ b,
+      ContinuousAlternatingMap.apply_eq_det_mul _ b v, h1]
+  · right
+    change ψ x = (-φ) x
+    rw [← inChartAt_chart_eq_iff (mem_extChartAt_source x), hneg]
+    ext v
+    rw [ContinuousAlternatingMap.apply_eq_det_mul _ b, ContinuousAlternatingMap.neg_apply,
+      ContinuousAlternatingMap.apply_eq_det_mul _ b v, h1]
+    ring
+
+end TauCeti.RoughForm
+
+namespace Homeomorph
+
+open TauCeti
+
+/-- A differentiable homeomorphism `Φ` of `M` that preserves the measure of a top form `ψ` leaves
+the measure unchanged under pullback: `|Φ^* ψ| = |ψ|`. Both measures are carried to `|ψ|` by `Φ`
+(`Homeomorph.measurePreserving_measure_mpullback`). -/
+theorem measure_mpullback_eq_of_measurePreserving [IsManifold I 1 M] {k : ℕ}
+    [Fact (finrank ℝ E = k)] (Φ : M ≃ₜ M) (hΦ : MDifferentiable I I Φ) (ψ : RoughForm I M ℝ k)
+    (h : MeasurePreserving Φ ψ.measure ψ.measure) :
+    (mpullback I I Φ ψ).measure = ψ.measure := by
+  have h1 := (Φ.measurePreserving_measure_mpullback hΦ ψ).map_eq
+  rw [← h.map_eq] at h1
+  rw [← Φ.toMeasurableEquiv.map_symm_map (μ := (mpullback I I Φ ψ).measure),
+    Φ.toMeasurableEquiv_coe, h1, ← Φ.toMeasurableEquiv_coe, MeasurableEquiv.map_symm_map]
 
 end Homeomorph

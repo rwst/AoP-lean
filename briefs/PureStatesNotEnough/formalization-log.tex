@@ -55,7 +55,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \begin{itemize}
 \item File: \lean{briefs/PureStatesNotEnough/PureStatesNotEnough.lean}
 \item Library: \lean{PureStatesNotEnough}
-\item Imports: eleven new \lean{ForMathlib} files:\newline
+\item Imports: fifteen new \lean{ForMathlib} files:\newline
   \lean{ForMathlib/Analysis/Convex/Combination.lean}: a map that preserves the convex combinations
   of two points of a convex set preserves all finite convex combinations
   (\lean{Convex.map_sum_of_map_add}), and a convex set contains them
@@ -119,7 +119,30 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   change of variables with the linear equivalence that matches the preferred bases; so a
   differentiable homeomorphism pulling one two-form back to another carries Liouville measure to
   Liouville measure (\lean{Homeomorph.measurePreserving_liouvilleMeasure_of_finrank_eq}), as
-  between $\mathbb CP^1$, modelled on $\mathbb C^1$, and $S^2$, modelled on $\mathbb R^2$.\newline
+  between $\mathbb CP^1$, modelled on $\mathbb C^1$, and $S^2$, modelled on $\mathbb R^2$.
+  Conversely, on a manifold without boundary continuous top forms with the same measure agree up
+  to a sign at each point (\lean{TauCeti.RoughForm.eq_or_eq_neg_of_measure_eq}): in a chart the
+  densities $|\varphi(\partial_1, \dots, \partial_k)|$ are continuous and agree almost everywhere,
+  and a top form is determined by its value on a basis.\newline
+  \lean{ForMathlib/Geometry/Manifold/DifferentialForm/Pullback/Family.lean}: along a smooth isotopy
+  from the identity, a form pulled back to $\pm\sigma$ at every point is pulled back to $\sigma$
+  (\lean{TauCeti.mpullback_eq_of_forall_eq_or_eq_neg}): at a fixed point the pulled-back form
+  depends continuously on the time, by TauCeti's smoothness of slices, and the times with either
+  sign form disjoint closed sets.\newline
+  \lean{ForMathlib/Geometry/Symplectic/Manifold/LiouvilleMeasure.lean}: on a surface the volume form
+  $\sigma^1/1!$ is $\sigma$ (\lean{TauCeti.SmoothTwoForm.volumeForm_one_val}), and a smooth isotopy
+  from the identity preserves the Liouville measure at all times exactly when it preserves $\sigma$
+  (\lean{TauCeti.SmoothTwoForm.forall_measurePreserving_isotopy_iff}).\newline
+  \lean{ForMathlib/Geometry/Symplectic/Hamiltonian/Parametric.lean}: a jointly smooth
+  time-dependent vector field that is Hamiltonian at each time has one jointly smooth Hamiltonian
+  $H(t, x)$, normalized at a base point
+  (\lean{TauCeti.SmoothTwoForm.exists_contMDiff_isHamiltonianVectorField}): the contractions
+  $\iota_{X_t}\sigma$ are the slices of the smooth one-form $\iota_Y\,\mathrm{pr}_1^*\sigma$ on
+  $M \times \mathbb R$, $Y = (X_t, 0)$, and TauCeti selects smooth families of primitives.\newline
+  \lean{ForMathlib/MeasureTheory/Measure/WithDensity/MeasurePreserving.lean}: a measure-preserving
+  equivalence $e$ moves a density $\rho$ to $\rho \circ e^{-1}$
+  (\lean{MeasurePreserving.map_withDensity}) and preserves its Gibbs entropy $\int -\rho\log\rho$
+  (\lean{MeasurePreserving.integral_negMulLog_comp_symm}).\newline
   \lean{ForMathlib/Geometry/Symplectic/Manifold/FubiniStudy/ProjectiveLine.lean}: the projective
   line. Along $t \mapsto [t : 1]$ the Fubini--Study form of $\mathbb CP^1$ pulls back to $\pi$
   times TauCeti's form of the Riemann sphere, which has total area $1$
@@ -141,7 +164,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   measure under $(z, \theta) \mapsto (\sqrt{1 - z^2}\cos\theta, \sqrt{1 - z^2}\sin\theta, z)$, on
   $\theta \in (0, 2\pi)$ and on $\theta \in (-\pi, \pi]$; the map is $2\pi$-periodic in
   $\theta$.\newline
-  Six new \lean{ForPhyslib} files on the qubit, in \lean{ForPhyslib/QuantumMechanics/Qubit/}:\newline
+  Seven new \lean{ForPhyslib} files on the qubit, in \lean{ForPhyslib/QuantumMechanics/Qubit/}:\newline
   \lean{BlochSphere.lean}: the Bloch point of a ray (\lean{blochPoint}), injective, onto the unit
   sphere, and a homeomorphism \lean{blochSphere} $: P(\mathbb C^2) \simeq S^2$;
   $|\psi\rangle\langle\psi| = \frac12(1 + a\cdot\sigma)$ (\lean{hermitianProjector_eq}).\newline
@@ -172,6 +195,16 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   on the Riemann sphere, with completeness from compactness, no time map of a time-dependent
   Hamiltonian flow is complex conjugation (\lean{timeDependentFlowOf_ne_conjSphere}), nor any map
   of a Hamiltonian isotopy (\lean{isotopy_ne_conjSphere}).\newline
+  \lean{HamiltonianArea.lean}: on the Riemann sphere, an isotopy or time-dependent flow that
+  preserves the Fubini--Study form has one jointly smooth Hamiltonian with $H_t(\infty) = 0$
+  (\lean{exists_contMDiff_hamiltonian_isotopy},
+  \lean{exists_contMDiff_hamiltonian_timeDependentFlowOf}); an isotopy from the identity preserves
+  the Liouville measure exactly when it preserves the form
+  (\lean{forall_measurePreserving_isotopy_iff}), so exactly when it is generated by one jointly
+  smooth Hamiltonian (\lean{forall_measurePreserving_isotopy_iff_hamiltonian}); a Hamiltonian
+  evolution moves densities by $\rho \mapsto \rho \circ \varphi_t^{-1}$
+  (\lean{map_withDensity_isotopy}) and conserves their Gibbs entropy
+  (\lean{integral_negMulLog_isotopy}).\newline
   \lean{Precession.lean}: every Hermitian $H$ is $c + \frac12 n\cdot\sigma$
   (\lean{exists_eq_smul_one_add_pauli}); along a solution of $i\psi' = H\psi$ the Bloch vector
   satisfies $a' = n \times a$ (\lean{hasDerivAt_blochVector}), so by uniqueness of solutions of
@@ -192,8 +225,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   and exponentials of skew-symmetric matrices, global Hamiltonian flows,
   area formula and identification of \lean{Measure.toSphere} with Hausdorff measure, simple
   connectivity of spheres, vanishing of $H^1_{dR}$ on simply connected manifolds, symplectic
-  vector fields and the class $[\iota_X\sigma]$, and time-dependent flows with the Lie derivative
-  of forms along them.\newline
+  vector fields and the class $[\iota_X\sigma]$, time-dependent flows with the Lie derivative
+  of forms along them, smoothness of the slices of a form on a product, interior products, and
+  smooth selection of primitives for families of exact one-forms.\newline
   Existing files: \lean{ForMathlib/Analysis/InnerProductSpace/l2Space.lean}
   (\lean{Orthonormal.countable}), \lean{ForPhyslib/QuantumMechanics/DensityOperator.lean}
   (\lean{IsDensityOperator}, \lean{posTrace}), \lean{ForPhyslib/QuantumMechanics/Wigner/Density.lean}
@@ -329,7 +363,12 @@ Example~2, Hamiltonian evolutions are the volume-preserving diffeomorphisms &
   Hamiltonian ones, \lean{preserves_areaForm_iff_hamiltonian}: the time-dependent flows that
   preserve it are the Hamiltonian evolutions, and
   \lean{isotopy_preserves_areaForm_iff_hamiltonian}: so are the isotopies from the identity that
-  preserve it \\
+  preserve it; with the volume, \lean{isotopy_preserves_area_iff_hamiltonian}: the isotopies from
+  the identity that preserve the Liouville measure are exactly the Hamiltonian evolutions, with
+  one jointly smooth Hamiltonian \\
+Example~2, and therefore the entropy is conserved &
+  \lean{hamiltonian_isotopy_conserves_entropy}: a Hamiltonian evolution moves a density $\rho$ to
+  $\rho \circ \varphi_t^{-1}$, with the same Gibbs entropy $\int -\rho\log\rho\,d\mu$ \\
 Example~2, quantum evolutions are exactly the rotations & \lean{exists_unitaryAction_eq_iff}: a
   map of rays is the action of a unitary iff it is a rotation on Bloch vectors;
   \lean{unitaryAction_eq_iff}: unitaries act alike iff they differ by a phase \\
@@ -411,8 +450,10 @@ Example~2, quantum evolution is the case of a linear Hamiltonian $h = n\cdot x$ 
   which preserve the Fubini--Study form exactly when each velocity field $X_t$ is the
   Hamiltonian vector field of a smooth $H_t$, and the smooth isotopies from the identity with
   jointly smooth inverses, which preserve it exactly when each generating field
-  $X_t = \dot\varphi_t \circ \varphi_t^{-1}$ is Hamiltonian. The $H_t$ are found one time at a
-  time, not as one jointly smooth $H(t, x)$.
+  $X_t = \dot\varphi_t \circ \varphi_t^{-1}$ is Hamiltonian. The $H_t$ can be chosen as one
+  jointly smooth $H(t, x)$. ``The volume'' is the Liouville measure $\mu$, and ``the entropy'' is
+  the Gibbs entropy $\int -\rho\log\rho\,d\mu$ of an ensemble with density $\rho$, which a
+  Hamiltonian evolution moves to $\rho \circ \varphi_t^{-1}$.
 \item Not formalized:
   \begin{itemize}
   \item in Example~2: ensembles as densities $\rho(z,\theta)$ (Radon--Nikodym, not restated);
@@ -423,8 +464,8 @@ Example~2, quantum evolution is the case of a linear Hamiltonian $h = n\cdot x$ 
 \end{itemize}
 
 \paragraph{Problems found in the brief.} Theorem~5 holds, and Theorem~3 holds for
-$\dim\mathcal H \ge 2$, but their proofs have gaps. Example~2 holds for evolutions once
-``volume-conserving'' is read as ``area-form-preserving''. At $\dim\mathcal H = 1$ Theorem~3 depends on a
+$\dim\mathcal H \ge 2$, but their proofs have gaps. Example~2 holds as stated for evolutions;
+for single maps ``volume-conserving'' must be read as ``area-form-preserving''. At $\dim\mathcal H = 1$ Theorem~3 depends on a
 convention of Theorem~1. Theorem~1 holds for $1 \le \dim V < \infty$ once $P(V)$ keeps its
 quotient topology and the empty space is excluded.
 \begin{itemize}
@@ -480,9 +521,10 @@ quotient topology and the empty space is excluded.
   Hamiltonian (\lean{preserves_areaForm_iff_hamiltonian},
   \lean{isotopy_preserves_areaForm_iff_hamiltonian}). The obstruction would lie in
   $H^1_{dR}(S^2) = 0$, so no flux homomorphism is involved. Along an evolution from the identity,
-  preserving the area
-  and preserving the form agree, since the sign of the pulled-back form cannot jump (not checked
-  in Lean); only single maps tell them apart.
+  preserving the area and preserving the form agree, since a map preserving the area pulls the
+  form back to $\pm$ itself at each point and the sign cannot jump
+  (\lean{forall_measurePreserving_isotopy_iff}, \lean{isotopy_preserves_area_iff_hamiltonian});
+  only single maps tell them apart.
 \item CST says $p(\xi_1\mid\xi_2) = 0$ ``for all $\xi_1, \xi_2 \in X$'', which includes
   $p(\xi\mid\xi) = 0$. It should say $\xi_1 \ne \xi_2$, as the Remark after Example~2
   ($p(\psi\mid\phi) = \delta_{\psi\phi}$) has it.

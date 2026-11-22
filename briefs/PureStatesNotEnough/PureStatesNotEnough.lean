@@ -8,7 +8,7 @@ module
 public import ForMathlib.MeasureTheory.Constructions.HaarToSphere
 public import ForPhyslib.QuantumMechanics.DensityOperator
 public import ForPhyslib.QuantumMechanics.Qubit.BlochArea
-public import ForPhyslib.QuantumMechanics.Qubit.HamiltonianIsotopy
+public import ForPhyslib.QuantumMechanics.Qubit.HamiltonianArea
 public import Mathlib.Analysis.Convex.Extreme
 public import TauCeti.Geometry.Symplectic.Manifold.DuistermaatHeckman.Sphere
 public import TauCeti.LinearAlgebra.Matrix.CrossProduct
@@ -77,8 +77,14 @@ preserves the Fubini–Study form exactly when it is Hamiltonian, and a jointly 
 flow preserves it at all times exactly when every velocity field is Hamiltonian. The same holds
 for an evolution given as a smooth isotopy from the identity, through its generating field
 `X_t = φ̇_t ∘ φ_t⁻¹`. The obstruction
-would be a class in `H¹_dR`, which vanishes because the sphere is simply connected. That every
-single orientation-preserving, area-preserving diffeomorphism is the end of a Hamiltonian evolution
+would be a class in `H¹_dR`, which vanishes because the sphere is simply connected. The
+Hamiltonians, found one time at a time, can be chosen jointly smooth in `(t, x)`. Along an
+evolution from the identity, conserving the volume, the Liouville measure, is the same as
+conserving the area form: a map conserving the area pulls the form back to `±` itself at each
+point, and the sign cannot jump. So the claim holds as stated, with the volume, for evolutions:
+the isotopies that conserve the volume are exactly the Hamiltonian evolutions. These move a
+density `ρ` to `ρ ∘ φ_t⁻¹` and conserve its Gibbs entropy. That every single
+orientation-preserving, area-preserving diffeomorphism is the end of a Hamiltonian evolution
 needs Smale's theorem `Diff⁺(S²) ≃ SO(3)` and is not formalized.
 
 **Theorem 1** (QP-RAY and CST are consistent if and only if `1 ≤ dim V < ∞`) is formalized for
@@ -165,6 +171,10 @@ operators of `ℂ` are both a single point. And as sets `P(ℓ²)` and `P(ℂ²)
   the area form are the Hamiltonian evolutions.
 - `PureStatesNotEnough.isotopy_preserves_areaForm_iff_hamiltonian`: the same for evolutions given
   as isotopies.
+- `PureStatesNotEnough.isotopy_preserves_area_iff_hamiltonian`: the isotopies that conserve the
+  volume are the Hamiltonian evolutions, with one jointly smooth Hamiltonian.
+- `PureStatesNotEnough.hamiltonian_isotopy_conserves_entropy`: Hamiltonian evolution moves
+  densities along the flow and conserves their entropy.
 - `PureStatesNotEnough.exists_unitaryAction_eq_iff`: the quantum evolutions of a qubit are exactly
   the rotations of the Bloch sphere.
 - `PureStatesNotEnough.exists_blochVector_precession`: every Hamiltonian makes the Bloch vector
@@ -1119,6 +1129,45 @@ theorem isotopy_preserves_areaForm_iff_hamiltonian {φ ψ : ℝ → OnePoint ℂ
       ∀ t, ∃ f : OnePoint ℂ → ℝ, ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ) ∞ f ∧
         fubiniStudyForm.IsHamiltonianVectorField f (TauCeti.isotopyField 𝓘(ℝ, ℂ) φ ψ t) :=
   forall_mpullback_isotopy_fubiniStudyForm_iff hφ hψ hφψ hψφ hφ0
+
+/-- **Hamiltonian evolution of the classical qubit is the area-preserving evolution.** A smooth
+isotopy `φ t` of the Riemann sphere from the identity, with jointly smooth inverses `ψ t`,
+conserves the volume, the Liouville measure of the Fubini–Study form, at all times exactly when it
+is a Hamiltonian evolution: every generating field `X_t = φ̇_t ∘ φ_t⁻¹` is the Hamiltonian vector
+field of `H t` for one jointly smooth Hamiltonian `H (t, x)`. Along an evolution, conserving the
+area and conserving the area form agree; for single maps they do not
+(`PureStatesNotEnough.conjSphere_preserves_area_reverses_form`). -/
+theorem isotopy_preserves_area_iff_hamiltonian {_ : MeasurableSpace (OnePoint ℂ)}
+    [BorelSpace (OnePoint ℂ)] {φ ψ : ℝ → OnePoint ℂ → OnePoint ℂ}
+    (hφ : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ) ∞ (fun p : ℝ × OnePoint ℂ ↦ φ p.1 p.2))
+    (hψ : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ) ∞ (fun p : ℝ × OnePoint ℂ ↦ ψ p.1 p.2))
+    (hφψ : ∀ t y, φ t (ψ t y) = y) (hψφ : ∀ t x, ψ t (φ t x) = x) (hφ0 : ∀ x, φ 0 x = x) :
+    (∀ t, MeasureTheory.MeasurePreserving (φ t) (fubiniStudyForm.liouvilleMeasure 1)
+        (fubiniStudyForm.liouvilleMeasure 1)) ↔
+      ∃ H : ℝ → OnePoint ℂ → ℝ,
+        ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ) ∞ (fun p : ℝ × OnePoint ℂ ↦ H p.1 p.2) ∧
+          ∀ t, fubiniStudyForm.IsHamiltonianVectorField (H t)
+            (TauCeti.isotopyField 𝓘(ℝ, ℂ) φ ψ t) :=
+  forall_measurePreserving_isotopy_iff_hamiltonian hφ hψ hφψ hψφ hφ0
+
+/-- **Hamiltonian evolution of the classical qubit conserves the entropy.** A Hamiltonian
+evolution `φ t` of the Riemann sphere carries the ensemble with density `ρ` with respect to the
+Liouville measure to the ensemble with density `ρ ∘ φ_t⁻¹`, and this density has the same Gibbs
+entropy `∫ -ρ log ρ` as `ρ`. -/
+theorem hamiltonian_isotopy_conserves_entropy {_ : MeasurableSpace (OnePoint ℂ)}
+    [BorelSpace (OnePoint ℂ)] {φ ψ : ℝ → OnePoint ℂ → OnePoint ℂ}
+    (hφ : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ) ∞ (fun p : ℝ × OnePoint ℂ ↦ φ p.1 p.2))
+    (hψ : ContMDiff (𝓘(ℝ, ℝ).prod 𝓘(ℝ, ℂ)) 𝓘(ℝ, ℂ) ∞ (fun p : ℝ × OnePoint ℂ ↦ ψ p.1 p.2))
+    (hφψ : ∀ t y, φ t (ψ t y) = y) (hψφ : ∀ t x, ψ t (φ t x) = x) (hφ0 : ∀ x, φ 0 x = x)
+    (hH : ∀ t, ∃ f : OnePoint ℂ → ℝ, ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ) ∞ f ∧
+      fubiniStudyForm.IsHamiltonianVectorField f (TauCeti.isotopyField 𝓘(ℝ, ℂ) φ ψ t))
+    (ρ : OnePoint ℂ → ℝ) (t : ℝ) :
+    ((fubiniStudyForm.liouvilleMeasure 1).withDensity fun x ↦ ENNReal.ofReal (ρ x)).map (φ t) =
+        (fubiniStudyForm.liouvilleMeasure 1).withDensity (fun y ↦ ENNReal.ofReal (ρ (ψ t y))) ∧
+      ∫ y, Real.negMulLog (ρ (ψ t y)) ∂(fubiniStudyForm.liouvilleMeasure 1) =
+        ∫ x, Real.negMulLog (ρ x) ∂(fubiniStudyForm.liouvilleMeasure 1) :=
+  ⟨map_withDensity_isotopy hφ hψ hφψ hψφ hφ0 hH _ t,
+    integral_negMulLog_isotopy hφ hψ hφψ hψφ hφ0 hH ρ t⟩
 
 /-- **The quantum evolutions of a qubit are exactly the rotations of the Bloch sphere**: a map of
 rays is the action of a unitary if and only if it is a rotation on Bloch vectors. -/
