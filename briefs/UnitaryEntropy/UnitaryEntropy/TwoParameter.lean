@@ -123,7 +123,7 @@ theorem exists_unitary_of_wigner (hΨ : IsEvolution Ψ)
         ∃ U : E ≃ₗᵢ⋆[ℂ] E, ∀ ψ : E, ‖ψ‖ = 1 → Ψ t₀ t₁ (proj ψ) = proj (U ψ))
     {r t : ℝ} (h : r ≤ t) :
     ∃ U : E ≃ₗᵢ[ℂ] E, ∀ ψ : E, ‖ψ‖ = 1 → Ψ r t (proj ψ) = proj (U ψ) := by
-  have := FiniteDimensional.complete ℂ E
+  have := FiniteDimensional.completeSpace ℂ E
   by_cases h2 : 1 < Module.finrank ℂ E
   swap
   · exact (hW r t h).elim id (unitary_of_antiunitary (not_lt.mp h2))

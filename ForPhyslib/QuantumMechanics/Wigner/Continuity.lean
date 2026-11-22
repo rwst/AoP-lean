@@ -168,7 +168,7 @@ lemma PhaseEqOnSphere.false_of_unitary_of_antiunitary [FiniteDimensional ℂ E]
     (h2 : 1 < Module.finrank ℂ E) {f : E → E} {U : E ≃ₗᵢ[ℂ] E} {U' : E ≃ₗᵢ⋆[ℂ] E}
     (h : PhaseEqOnSphere f U) (h' : PhaseEqOnSphere f U') : False := by
   obtain ⟨i, k, hik⟩ := exists_ne_of_one_lt_finrank h2
-  have := FiniteDimensional.complete ℂ E
+  have := FiniteDimensional.completeSpace ℂ E
   set b := (stdOrthonormalBasis ℂ E).toHilbertBasis
   have h₁ : ‖b i‖ = 1 := b.orthonormal.1 i
   have h₂ := norm_vecSub (b := b) hik
@@ -245,7 +245,7 @@ theorem eventually_exists_unitary [FiniteDimensional ℂ E] {Φ : ℝ → (E →
     (h₀ : ∀ ψ : E, ‖ψ‖ = 1 → Φ t₀ (rankOne ℂ ψ ψ) = rankOne ℂ ψ ψ)
     (hc : ∀ ψ : E, ‖ψ‖ = 1 → ContinuousAt (fun t => Φ t (rankOne ℂ ψ ψ)) t₀) :
     ∀ᶠ t in 𝓝 t₀, ∃ U : E ≃ₗᵢ[ℂ] E, ∀ ψ, ‖ψ‖ = 1 → Φ t (rankOne ℂ ψ ψ) = rankOne ℂ (U ψ) (U ψ) :=
-  have := FiniteDimensional.complete ℂ E
+  have := FiniteDimensional.completeSpace ℂ E
   eventually_exists_unitary_of_unitary_or_antiunitary
     (fun t => wigner_rankOne (Φ t) (hP t) (htr t)) h₀ hc
 

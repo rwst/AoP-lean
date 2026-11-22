@@ -7,7 +7,7 @@ module
 
 public import QuantumVectorSpaces
 public import HilbertUnphysicality
-public import TauCeti.Analysis.SpecialFunctions.Gaussian.Schwartz
+public import TauCeti.Analysis.Distribution.SchwartzSpace.Gaussian
 
 /-!
 # Further results: the Hilbert brief's change of frame on `𝓢(ℝ)`
@@ -54,13 +54,13 @@ open HilbertUnphysicality MeasureTheory SchwartzMap QuantumMechanics
 /-- The Gaussian packet `ψ(x) = (e^{-x²}/√π)^{1/2} = π^{-1/4} e^{-x²/2}` as a Schwartz
 function. -/
 def gaussSchwartz : 𝓢(ℝ, ℂ) :=
-  ((√(√Real.pi) : ℝ) : ℂ)⁻¹ • TauCeti.gaussianSchwartzMap (b := (1 / 2 : ℂ)) (by norm_num)
+  ((√(√Real.pi) : ℝ) : ℂ)⁻¹ • SchwartzMap.gaussian (b := (1 / 2 : ℂ)) (by norm_num)
 
 lemma gaussSchwartz_apply (x : ℝ) : gaussSchwartz x = gaussFun x := by
   have h : √(Real.exp (-x ^ 2) / √Real.pi) = (√(√Real.pi))⁻¹ * Real.exp (-(1 / 2) * x ^ 2) := by
     rw [Real.sqrt_div (Real.exp_pos _).le, div_eq_inv_mul, ← Real.exp_half]
     ring_nf
-  simp only [gaussSchwartz, smul_apply, TauCeti.gaussianSchwartzMap_apply, smul_eq_mul, gaussFun,
+  simp only [gaussSchwartz, smul_apply, SchwartzMap.gaussian_apply, smul_eq_mul, gaussFun,
     gaussDensity, h, Real.norm_eq_abs]
   rw [← Complex.ofReal_pow, sq_abs]
   push_cast

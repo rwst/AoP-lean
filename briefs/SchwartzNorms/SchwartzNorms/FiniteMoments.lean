@@ -139,7 +139,7 @@ theorem forall_memL2_of_schwartzMap (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
   refine ⟨(SchwartzMap.smulLeftCLM ℂ (fun x : ℝ => (x : ℂ) ^ α)
     ((SchwartzMap.derivCLM ℂ ℂ)^[β] F)).toLp 2, ?_⟩
   rw [hit, Lp.toTemperedDistribution_toLp_eq]
-  exact smulLeftCLM_toTemperedDistributionCLM_eq (hasTemperateGrowth_pow α) _
+  exact smulLeftCLM_toTemperedDistributionCLM_eq _
 
 /-- **Finite moments imply Schwartz.** A tempered distribution `u` is a Schwartz function iff
 every `x^α ∂^β u`, taken in the sense of distributions, is an `L²` function. -/

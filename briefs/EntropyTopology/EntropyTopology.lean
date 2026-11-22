@@ -1005,7 +1005,7 @@ def tvTopology (μ : Measure X) : TopologicalSpace (Density μ) :=
 lemma dist_toL1 (σ ρ : Density μ) : dist (Density.toL1 σ) (Density.toL1 ρ) = l1dist μ σ.1 ρ.1 := by
   have hi := σ.2.integrable.sub ρ.2.integrable
   rw [dist_eq_norm, Density.toL1, Density.toL1, ← Integrable.toL1_sub,
-    Integrable.norm_toL1_eq_lintegral_enorm, ← integral_norm_eq_lintegral_enorm hi.1]
+    Integrable.norm_toL1_eq_lintegral_eNorm, ← integral_norm_eq_lintegral_eNorm hi.1]
   rfl
 
 lemma nhds_l1Topology (ρ : Density μ) :
@@ -1095,8 +1095,8 @@ lemma tendstoInMeasure_of_l1dist {τ : ℕ → X → ℝ} (hτ : ∀ n, IsDensit
   refine tendstoInMeasure_of_tendsto_eLpNorm one_ne_zero ?_
   have e : ∀ n, eLpNorm (τ n - σ) 1 μ = ENNReal.ofReal (l1dist μ (τ n) σ) := by
     intro n
-    rw [eLpNorm_one_eq_lintegral_enorm, l1dist,
-      ← ofReal_integral_norm_eq_lintegral_enorm ((hτ _).integrable.sub hσ.integrable)]
+    rw [eLpNorm_one_eq_lintegral_eNorm, l1dist,
+      ← ofReal_integral_norm_eq_lintegral_eNorm ((hτ _).integrable.sub hσ.integrable)]
     · rfl
     · exact ((hτ _).integrable.sub hσ.integrable).aestronglyMeasurable
   simp_rw [e]
@@ -1627,7 +1627,7 @@ theorem continuous_mixture_entropyDensity :
   have hL := continuous_toL1_entropyDensity (μ := μ)
   have hS := continuous_entropy_entropyDensity (μ := μ)
   have ht : Continuous fun p : unitInterval × EntropyDensity μ × EntropyDensity μ => (p.1 : ℝ) :=
-    continuous_subtype_val.comp continuous_fst
+    continuous_subtypeVal.comp continuous_fst
   have h1 : Continuous fun p : unitInterval × EntropyDensity μ × EntropyDensity μ => p.2.1 :=
     continuous_fst.comp continuous_snd
   have h2 : Continuous fun p : unitInterval × EntropyDensity μ × EntropyDensity μ => p.2.2 :=

@@ -59,7 +59,7 @@ def chart (φ : V →L[K] K) (v : {v : V // φ v ≠ 0}) : ℙ K V × K :=
 
 omit [ContinuousSMul K V] in
 theorem continuous_chart (φ : V →L[K] K) : Continuous (chart φ) :=
-  (continuous_mk continuous_subtype_val _).prodMk (φ.continuous.comp continuous_subtype_val)
+  (continuous_mk continuous_subtypeVal _).prodMk (φ.continuous.comp continuous_subtypeVal)
 
 /-- The chart is an embedding: a vector `w` near `v` is recovered from its line `[w]`, through a
 nearby `w'` with `[w'] = [w]`, and from `φ w`, which fixes the scalar `w = (φ w / φ w') w'`. -/
@@ -83,7 +83,7 @@ theorem isInducing_chart (φ : V →L[K] K) : IsInducing (chart φ) := by
   have hv₁ : v.1 ∈ W₁ := mem_interior_iff_mem_nhds.2 (inter_mem ht hφ)
   have hv₀ : v.1 ≠ 0 := fun h => v.2 (by rw [h, map_zero])
   have hO : mk' K '' (((↑) : {v : V // v ≠ 0} → V) ⁻¹' W₁) ∈ 𝓝 (chart φ v).1 :=
-    (isOpenMap_mk' _ (isOpen_interior.preimage continuous_subtype_val)).mem_nhds
+    (isOpenMap_mk' _ (isOpen_interior.preimage continuous_subtypeVal)).mem_nhds
       ⟨⟨v.1, hv₀⟩, hv₁, rfl⟩
   refine ⟨_ ×ˢ Metric.ball z η, prod_mem_nhds hO (Metric.ball_mem_nhds _ hη), fun w hw => ?_⟩
   obtain ⟨⟨w', hw'W₁, hw'⟩, hwz⟩ := hw
@@ -140,7 +140,7 @@ theorem secondCountableTopology_of [ContinuousAdd V] [SecondCountableTopology K]
   let O (φ : V →L[K] K) : Set (ℙ K V) := {p | φ p.rep ≠ 0}
   have hOo (φ : V →L[K] K) : IsOpen (O φ) := by
     rw [← isQuotientMap_mk'.isOpen_preimage]
-    convert (hUo φ).preimage continuous_subtype_val using 1
+    convert (hUo φ).preimage continuous_subtypeVal using 1
     ext v
     exact hsmul φ v.1 v.2
   obtain ⟨T, hT, hTU⟩ := TopologicalSpace.isOpen_iUnion_countable O hOo

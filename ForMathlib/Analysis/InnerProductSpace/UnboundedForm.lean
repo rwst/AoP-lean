@@ -194,7 +194,7 @@ theorem not_continuousAt_inner_div (hA : Dense (A.domain : Set E))
   refine not_continuousAt_inner hA hu x₀ ?_
   have hn : ContinuousAt (fun x : A.domain => ((‖(x : E)‖ ^ 2 : ℝ) : ℂ)) x₀ :=
     (Complex.continuous_ofReal.comp
-      ((continuous_norm.comp continuous_subtype_val).pow 2)).continuousAt
+      ((continuous_norm.comp continuous_subtypeVal).pow 2)).continuousAt
   refine (hn.mul h).congr ?_
   filter_upwards [isOpen_ne.mem_nhds hx₀] with x hx
   have hx' : ((‖(x : E)‖ ^ 2 : ℝ) : ℂ) ≠ 0 := by

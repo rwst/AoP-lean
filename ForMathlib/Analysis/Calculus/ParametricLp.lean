@@ -63,7 +63,7 @@ theorem hasFDerivAt_toLp_of_dominated (hp : p ≠ ∞) {G : P → α → F} {G' 
         (hG q₀).coeFn_toLp, hL (q - q₀)] with x h1 h2 h3 h4 h5
       rw [h1, Pi.sub_apply, h2, Pi.sub_apply, h3, h4, h5]
     rw [Lp.norm_def, eLpNorm_congr_ae hae, eLpNorm_const_smul, ENNReal.toReal_mul,
-      toReal_enorm, norm_inv, norm_norm]
+      toReal_eNorm, norm_inv, norm_norm]
   rw [hasFDerivAt_iff_tendsto]
   simp_rw [hnorm]
   rw [← ENNReal.toReal_zero]
@@ -97,13 +97,13 @@ theorem hasFDerivAt_toLp_of_dominated (hp : p ≠ ∞) {G : P → α → F} {G' 
     have := ((ENNReal.continuous_rpow_const (y := p.toReal)).tendsto 0).comp h''
     rwa [ENNReal.zero_rpow_of_pos hpr] at this
   have hfin : ∫⁻ x, ‖2 * B x‖ₑ ^ p.toReal ∂μ ≠ ∞ :=
-    (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top hp0 hp
+    (lintegral_rpow_eNorm_lt_top_of_eLpNorm_lt_top hp0 hp
       (hB.const_mul 2).eLpNorm_lt_top).ne
   have hint : Tendsto (fun q => ∫⁻ x, ‖Q q x‖ₑ ^ p.toReal ∂μ) (𝓝 q₀) (𝓝 0) := by
     have := tendsto_lintegral_filter_of_dominated_convergence' (μ := μ) (l := 𝓝 q₀)
       (F := fun q x => ‖Q q x‖ₑ ^ p.toReal) (f := fun _ => 0)
       (fun x => ‖2 * B x‖ₑ ^ p.toReal)
-      (Eventually.of_forall fun q => ((hQm q).enorm.pow_const _))
+      (Eventually.of_forall fun q => ((hQm q).eNorm.pow_const _))
       (eventually_of_mem (ball_mem_nhds q₀ hr) fun q hq => ae_of_all _ fun x => by
         gcongr
         rw [← ofReal_norm, ← ofReal_norm]
@@ -114,6 +114,6 @@ theorem hasFDerivAt_toLp_of_dominated (hp : p ≠ ∞) {G : P → α → F} {G' 
   have := (ENNReal.continuous_rpow_const (y := 1 / p.toReal)).tendsto 0 |>.comp hint
   rw [ENNReal.zero_rpow_of_pos (by positivity)] at this
   refine this.congr fun q => ?_
-  rw [Function.comp_apply, eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hp (hQm q)]
+  rw [Function.comp_apply, eLpNorm_eq_lintegral_rpow_eNorm_toReal hp0 hp (hQm q)]
 
 end MeasureTheory

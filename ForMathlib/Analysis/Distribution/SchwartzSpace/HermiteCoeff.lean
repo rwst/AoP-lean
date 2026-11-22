@@ -165,16 +165,16 @@ theorem hermiteNorm_coordMulCLM_le [DecidableEq ι] (K : ℕ) (i : ι)
     (g : 𝓢(EuclideanSpace ℝ ι, ℂ)) :
     hermiteNorm K (coordMulCLM i g) ≤ 2 ^ (K + 2) * hermiteNorm (K + 1) g :=
   iSup_le fun β => mul_enorm_le_of_ladder K β i g _ (by
-    rw [hermiteCoeff_coordMulCLM, ← enorm_mul, ← enorm_mul]
-    exact enorm_add_le _ _)
+    rw [hermiteCoeff_coordMulCLM, ← eNorm_mul, ← eNorm_mul]
+    exact eNorm_add_le _ _)
 
 /-- Shift bound for a partial derivative. -/
 theorem hermiteNorm_coordDerivCLM_le [DecidableEq ι] (K : ℕ) (i : ι)
     (g : 𝓢(EuclideanSpace ℝ ι, ℂ)) :
     hermiteNorm K (coordDerivCLM i g) ≤ 2 ^ (K + 2) * hermiteNorm (K + 1) g :=
   iSup_le fun β => mul_enorm_le_of_ladder K β i g _ (by
-    rw [hermiteCoeff_coordDerivCLM, ← enorm_mul, ← enorm_mul]
-    exact enorm_sub_le)
+    rw [hermiteCoeff_coordDerivCLM, ← eNorm_mul, ← eNorm_mul]
+    exact eNorm_sub_le)
 
 /-! ### The number operator -/
 
@@ -245,7 +245,7 @@ lemma enorm_hermiteCoeff_le_toLp (α : ι → ℕ) (f : 𝓢(EuclideanSpace ℝ 
 lemma hermiteNorm_le_toLp_numberCLM [DecidableEq ι] (K : ℕ) (f : 𝓢(EuclideanSpace ℝ ι, ℂ)) :
     hermiteNorm K f ≤ ‖(numberCLM^[K] f).toLp 2‖ₑ := by
   refine iSup_le fun α => le_trans ?_ (enorm_hermiteCoeff_le_toLp α _)
-  rw [hermiteCoeff_numberCLM_iterate, enorm_mul, enorm_pow]
+  rw [hermiteCoeff_numberCLM_iterate, eNorm_mul, eNorm_pow]
   gcongr
   have h : (2 * ((hermiteWeight α : ℂ) + Fintype.card ι)) =
       ((2 * (hermiteWeight α + Fintype.card ι) : ℕ) : ℂ) := by push_cast; ring

@@ -12,7 +12,7 @@ public import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Commute
 public import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Basic
 public import Mathlib.Analysis.CStarAlgebra.ContinuousLinearMap
 public import TauCeti.Analysis.InnerProductSpace.HilbertSchmidt.Basic
-public import TauCeti.Analysis.Normed.Operator.FiniteDimensional
+public import TauCeti.Topology.Algebra.Module.ContinuousLinearMap.FiniteDimensional
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import TauCeti.Analysis.InnerProductSpace.FunctionalCalculusComparison
 public import TauCeti.Analysis.SpecialFunctions.Log.MulLog

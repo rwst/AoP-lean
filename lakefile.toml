@@ -12,23 +12,26 @@ defaultTargets = ["ForMathlib", "SuperpositionAndLinearity", "SuperpositionAndMu
 # physlib's own pin is Mathlib v4.35.0; the root Mathlib below takes precedence.
 # Pinned (2026-10-30): the infinite-dimensional layer builds on PhyslibAlpha (trace class,
 # unbounded spectral theorem, Stone), which is the less stable part of physlib.
+# From the fork rwst/physlib, branch aop/mathlib-31ce06ea: upstream 848dca4 plus one commit that
+# makes it build against the root Mathlib (`open scoped Pointwise`, explicit field in
+# `spectrum.isClosed`/`spectrum.isCompact`). Return to upstream once physlib has caught up.
 [[require]]
 name = "physlib"
-git = "https://github.com/leanprover-community/physlib"
-rev = "848dca442b63be5fd69c82b84ae42b0632941864"
+git = "https://github.com/rwst/physlib"
+rev = "a1fe45e4e544eb7059e56de9919a847d67c72236"
 
 # TauCeti, on the same Mathlib commit as the root pin below. Keep it out of defaultTargets
 # and never `lake build TauCeti`: only the TauCeti modules we import get compiled.
 [[require]]
 name = "TauCeti"
 git = "https://github.com/TauCetiProject/TauCeti"
-rev = "e7e7f52d948560db58d39261f4c56ed4e600ca1f"
+rev = "b608709b45f23ccda55703d572b0adb1fdec30fd"
 
-# Same Mathlib commit as TauCeti (e7e7f52); lake-manifest.json carries the exact pin.
+# Same Mathlib commit as TauCeti (b608709); lake-manifest.json carries the exact pin.
 [[require]]
 name = "mathlib"
 git = "https://github.com/leanprover-community/mathlib4"
-rev = "1b1ccf4b088b32fa3f23f2de1127433254a81e1e"
+rev = "31ce06eaadf4a200c0e1407c5f10953cf606b8f8"
 
 # Material that belongs in Mathlib, in Mathlib's directory layout.
 [[lean_lib]]

@@ -8,7 +8,7 @@ module
 public import Mathlib.Analysis.Fourier.FourierTransform
 public import Mathlib.Analysis.Calculus.FDeriv.Defs
 import Mathlib.Analysis.Complex.CauchyIntegral
-import TauCeti.Analysis.Fourier.SineSeries
+import TauCeti.Analysis.Fourier.Uniqueness
 
 /-!
 # A function and its Fourier transform cannot both have bounded support
@@ -22,8 +22,8 @@ The proof: for `f` supported in `(a, b]`, the function
 under the integral sign), and `G ξ = 𝓕 f ξ` for real `ξ`. If `𝓕 f` vanishes on an open set, so
 does `G` on a set accumulating in `ℂ`, and the identity theorem gives `G = 0`. In particular all
 Fourier coefficients of `f` on `[a, b]`, which are values of `G` at real points, vanish, and
-`f = 0` almost everywhere on `(a, b]` by Parseval's identity
-(`TauCeti.ae_eq_zero_of_forall_fourierCoeffOn_eq_zero`).
+`f = 0` almost everywhere on `(a, b]` by uniqueness of Fourier coefficients
+(`MeasureTheory.IntegrableOn.ae_eq_zero_of_forall_fourierCoeffOn_eq_zero`).
 
 ## Main results
 
@@ -174,7 +174,7 @@ theorem ae_eq_zero_of_fourier_eqOn_zero (hab : a < b) (hf : MemLp f 2 (volume.re
       push_cast
       field_simp
     rw [this, hG0 (mem_univ _), Pi.zero_apply, smul_zero]
-  have h0 := TauCeti.ae_eq_zero_of_forall_fourierCoeffOn_eq_zero hab hf hc
+  have h0 := hint.ae_eq_zero_of_forall_fourierCoeffOn_eq_zero hab hc
   filter_upwards [hsupp, ae_imp_of_ae_restrict h0] with x h1 h2
   by_cases hx : x ∈ Ioc a b
   · exact h2 hx

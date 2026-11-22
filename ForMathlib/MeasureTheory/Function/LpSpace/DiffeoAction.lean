@@ -55,7 +55,7 @@ namespace MeasureTheory
 theorem quasiMeasurePreserving_of_mem_diffeoGroup (e : diffeoGroup E) :
     QuasiMeasurePreserving (e : Perm E) μ μ := by
   have hm := (differentiable_of_mem_diffeoGroup e).continuous.measurable
-  refine ⟨hm, Measure.AbsolutelyContinuous.mk fun s hs h0 => ?_⟩
+  refine ⟨hm.aemeasurable, Measure.AbsolutelyContinuous.mk fun s hs h0 => ?_⟩
   rw [Measure.map_apply hm hs, ← (e : Perm E).image_symm_eq_preimage]
   exact addHaar_image_eq_zero_of_differentiableOn_of_addHaar_eq_zero μ
     (differentiable_symm_of_mem_diffeoGroup e).differentiableOn h0
@@ -125,12 +125,12 @@ theorem eLpNorm_pullback (hp0 : p ≠ 0) (hp : p ≠ ∞) (e : diffeoGroup E) {f
   have hp' : p.toReal ≠ 0 := (ENNReal.toReal_pos hp0 hp).ne'
   rw [eLpNorm_eq_eLpNorm' hp0 hp hf, eLpNorm_eq_eLpNorm' hp0 hp
       (aestronglyMeasurable_pullback μ _ e hf),
-    eLpNorm'_eq_lintegral_enorm, eLpNorm'_eq_lintegral_enorm]
+    eLpNorm'_eq_lintegral_eNorm, eLpNorm'_eq_lintegral_eNorm]
   congr 1
   refine Eq.trans ?_ (lintegral_pullback μ e fun x => ‖f x‖ₑ ^ p.toReal)
   congr 1 with x
-  rw [pullback, enorm_smul, ENNReal.mul_rpow_of_nonneg _ _ ENNReal.toReal_nonneg,
-    Real.enorm_of_nonneg (Real.rpow_nonneg (abs_nonneg _) _),
+  rw [pullback, eNorm_smul, ENNReal.mul_rpow_of_nonneg _ _ ENNReal.toReal_nonneg,
+    Real.eNorm_of_nonneg (Real.rpow_nonneg (abs_nonneg _) _),
     ENNReal.ofReal_rpow_of_nonneg (Real.rpow_nonneg (abs_nonneg _) _) ENNReal.toReal_nonneg,
     Real.rpow_inv_rpow (abs_nonneg _) hp']
 

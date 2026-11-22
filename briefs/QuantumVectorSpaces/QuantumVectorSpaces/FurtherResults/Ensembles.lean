@@ -75,7 +75,7 @@ def IsSchwartzDensity (ρ : L2 →L[ℂ] L2) : Prop :=
 lemma summable_exp_neg_mul_pow_one {β : ℝ} (hβ : 0 < β) :
     Summable fun n : ℕ => exp (-(β * (n : ℝ) ^ 1)) := by
   have h : ∀ n : ℕ, exp (-(β * (n : ℝ) ^ 1)) = exp (-β) ^ n := fun n => by
-    rw [← Real.exp_nat_mul]; ring_nf
+    rw [← Real.exp_natCast_mul]; ring_nf
   simp_rw [h]
   exact summable_geometric_of_lt_one (exp_pos _).le ((Real.exp_lt_exp.2 (by linarith : -β < 0)).trans_eq Real.exp_zero)
 

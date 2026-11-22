@@ -306,8 +306,8 @@ theorem tendsto_traceENorm_of_tendsto_inner {α : Type*} {l : Filter α} {ρ' : 
     refine tendsto_finsetSum _ fun j _ => tendsto_finsetSum _ fun k _ => ?_
     have h1 := (h (b j) (b k)).sub_const ⟪b j, ρ (b k)⟫_ℂ
     rw [sub_self] at h1
-    have h2 := (continuous_enorm.tendsto 0).comp h1
-    rw [enorm_zero] at h2
+    have h2 := (continuous_eNorm.tendsto 0).comp h1
+    rw [eNorm_zero] at h2
     exact h2
   have hev2 := hmid.eventually (gt_mem_nhds (ENNReal.ofReal_pos.mpr hη))
   filter_upwards [hev1, hev2] with a ha1 ha2

@@ -34,8 +34,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \section*{Setup}
 
 \begin{itemize}
-\item Lean \texttt{v4.36.0-rc2}; Mathlib at commit \texttt{1b1ccf4b}; physlib (\texttt{master})
-  and TauCeti (commit \texttt{e7e7f52}, on the same Mathlib) as further dependencies.
+\item Lean \texttt{v4.37.0-rc1}; Mathlib at commit \texttt{31ce06ea}; physlib (commit \texttt{a1fe45e}
+  of the fork \texttt{rwst/physlib}: upstream \texttt{848dca4} adapted to this Mathlib) and
+  TauCeti (commit \texttt{b608709}, on the same Mathlib) as further dependencies.
 \item Build: \texttt{lake build} in the project root.
 \item Every file is checked with \texttt{\#print axioms} on its main results. A result is
   recorded here only if it depends on no axioms beyond \lean{propext},
@@ -126,7 +127,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   Sobolev bound for the values) and four TauCeti files:\newline
   \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/Pi/Basis.lean},\newline
   \lean{TauCeti/Analysis/SpecialFunctions/Hermite/Function/Ladder.lean},\newline
-  \lean{TauCeti/Analysis/SpecialFunctions/Gaussian/Schwartz.lean},\newline
+  \lean{TauCeti/Analysis/Distribution/SchwartzSpace/Gaussian.lean},\newline
   \lean{TauCeti/Analysis/InnerProductSpace/Parseval.lean}.\newline
   It is kept out of the comparator lane, which stays unchanged.
 \item Fifth file, for classical cutoffs:\newline
@@ -138,7 +139,7 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \lean{ForMathlib/Analysis/Fourier/PaleyWiener.lean} (a function and its Fourier transform
   cannot both have bounded support),\newline
   the second with the TauCeti file
-  \lean{TauCeti/Analysis/Fourier/SineSeries.lean} (uniqueness of Fourier coefficients on an
+  \lean{TauCeti/Analysis/Fourier/Uniqueness.lean} (uniqueness of Fourier coefficients on an
   interval).\newline
   It is kept out of the comparator lane, which stays unchanged.
 \item Not in this log: results that go beyond the brief, by R.~Stephan, are in

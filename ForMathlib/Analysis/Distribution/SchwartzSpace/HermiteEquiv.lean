@@ -248,14 +248,17 @@ theorem exists_unitary_schwartzEquiv (n m : ℕ) :
       (T : 𝓢(EuclideanSpace ℝ (Fin (n + 1)), ℂ) ≃L[ℂ] 𝓢(EuclideanSpace ℝ (Fin (m + 1)), ℂ)),
       ∀ f, (T f).toLp 2 = U (f.toLp 2) := by
   obtain ⟨σ, P, Q, hP, hQ⟩ := exists_multiIndex_equiv n m
-  refine ⟨reindexUnitary σ, ContinuousLinearEquiv.equivOfInverse (reindexCLM σ hP)
-    (reindexCLM σ.symm hQ) (fun f => ?_) (fun g => ?_), toLp_reindexCLM σ hP⟩
-  · refine eq_of_hermiteCoeff_eq fun α => ?_
-    rw [hermiteCoeff_reindexCLM, hermiteCoeff_reindexCLM, Equiv.symm_symm,
-      Equiv.symm_apply_apply]
+  refine ⟨reindexUnitary σ, ContinuousLinearEquiv.ofContinuousLinearMap (reindexCLM σ hP)
+    (reindexCLM σ.symm hQ) (ContinuousLinearMap.ext fun g => ?_)
+    (ContinuousLinearMap.ext fun f => ?_), toLp_reindexCLM σ hP⟩
   · refine eq_of_hermiteCoeff_eq fun β => ?_
-    rw [hermiteCoeff_reindexCLM, hermiteCoeff_reindexCLM, Equiv.symm_symm,
+    rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, hermiteCoeff_reindexCLM,
+      hermiteCoeff_reindexCLM, Equiv.symm_symm,
       Equiv.apply_symm_apply]
+  · refine eq_of_hermiteCoeff_eq fun α => ?_
+    rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, hermiteCoeff_reindexCLM,
+      hermiteCoeff_reindexCLM, Equiv.symm_symm,
+      Equiv.symm_apply_apply]
 
 /-- `𝓢(ℝⁿ⁺¹)` and `𝓢(ℝᵐ⁺¹)` are isomorphic as topological vector spaces. -/
 theorem nonempty_schwartzEquiv (n m : ℕ) :

@@ -128,12 +128,12 @@ theorem exists_norm_mulOp_le_freeHamiltonian (hV : Measurable V) (hW : MemLp W 2
     exact hx.trans (le_abs_self _)
   have hW' : (eLpNorm (fun x => M * ‖W x‖) 2 volume).toReal = M * N := by
     rw [show (fun x => M * ‖W x‖) = M • fun x => ‖W x‖ from rfl, eLpNorm_const_smul,
-      eLpNorm_norm _ hW.aestronglyMeasurable, ENNReal.toReal_mul, toReal_enorm,
+      eLpNorm_norm _ hW.aestronglyMeasurable, ENNReal.toReal_mul, toReal_eNorm,
       Real.norm_of_nonneg (le_max_right _ _)]
   have hψ' : (eLpNorm (fun x => C' * ‖(ψ : L2R) x‖) 2 volume).toReal = C' * ‖(ψ : L2R)‖ := by
     rw [show (fun x => C' * ‖(ψ : L2R) x‖) = C' • fun x => ‖(ψ : L2R) x‖ from rfl,
       eLpNorm_const_smul, eLpNorm_norm _ (Lp.aestronglyMeasurable _), ENNReal.toReal_mul,
-      toReal_enorm, Real.norm_of_nonneg (le_max_right _ _), Lp.norm_def]
+      toReal_eNorm, Real.norm_of_nonneg (le_max_right _ _), Lp.norm_def]
   have h2 : (eLpNorm (fun x => M * ‖W x‖ + C' * ‖(ψ : L2R) x‖) 2 volume).toReal ≤
       M * N + C' * ‖(ψ : L2R)‖ := by
     rw [← hW', ← hψ']

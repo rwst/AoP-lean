@@ -20,8 +20,7 @@ in any dimension:
 
 It also transports a Hilbert basis along a linear isometric equivalence.
 
-It also records Parseval's identity for the moduli of the coordinates, and that an isometry `V`
-fixes `x` after its adjoint as soon as `‖V† x‖ = ‖x‖`.
+It also records that an isometry `V` fixes `x` after its adjoint as soon as `‖V† x‖ = ‖x‖`.
 
 ## Main definitions
 
@@ -34,7 +33,6 @@ fixes `x` after its adjoint as soon as `‖V† x‖ = ‖x‖`.
 ## Main results
 
 * `HilbertBasis.ext_inner`: a vector is determined by its coordinates.
-* `HilbertBasis.hasSum_norm_inner_sq`: Parseval, `∑ᵢ ‖⟪b i, x⟫‖² = ‖x‖²`.
 * `HilbertBasis.inner_basis_phaseUnitary_symm`: `⟪b i, U⁻¹ x⟫ = (δ i)⁻¹ * ⟪b i, x⟫`.
 * `HilbertBasis.inner_basis_conjugation`: `⟪b i, J x⟫ = conj ⟪b i, x⟫`.
 * `LinearIsometry.apply_adjoint_apply_of_norm_eq`: `‖V† x‖ = ‖x‖` implies `V (V† x) = x`.
@@ -54,18 +52,6 @@ variable (b : HilbertBasis ι 𝕜 E)
 theorem ext_inner {x y : E} (h : ∀ i, ⟪b i, x⟫_𝕜 = ⟪b i, y⟫_𝕜) : x = y :=
   b.repr.injective <| lp.ext <| funext fun i => by
     rw [b.repr_apply_apply, b.repr_apply_apply, h]
-
-/-- Parseval's identity: the squared moduli of the coordinates sum to the squared norm. -/
-theorem hasSum_norm_inner_sq (x : E) : HasSum (fun i => ‖⟪b i, x⟫_𝕜‖ ^ 2) (‖x‖ ^ 2) := by
-  rw [← RCLike.hasSum_ofReal (𝕜 := 𝕜)]
-  convert b.hasSum_inner_mul_inner x x using 1
-  · ext i
-    rw [← inner_conj_symm x (b i), RCLike.conj_mul]
-    push_cast
-    rfl
-  · rw [inner_self_eq_norm_sq_to_K]
-    push_cast
-    rfl
 
 /-- The image of a Hilbert basis under a linear isometric equivalence. -/
 protected def map {F : Type*} [NormedAddCommGroup F] [InnerProductSpace 𝕜 F] (L : E ≃ₗᵢ[𝕜] F) :

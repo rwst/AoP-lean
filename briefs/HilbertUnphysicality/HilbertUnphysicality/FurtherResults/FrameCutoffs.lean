@@ -137,7 +137,7 @@ theorem memLp_mul_forall_iff {ψ : ℝ → ℂ} (hψ : MemLp ψ 2) :
     -- the mass of `ψ` on the shells
     set m : ℕ → ℝ≥0∞ := fun k => ∫⁻ x in shell k, ‖ψ x‖ₑ ^ (2 : ℝ)
     have hfin : ∫⁻ x, ‖ψ x‖ₑ ^ (2 : ℝ) < ⊤ := by
-      have := (eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top (p := 2) (by norm_num)
+      have := (eLpNorm_lt_top_iff_lintegral_rpow_eNorm_lt_top (p := 2) (by norm_num)
         (by norm_num) hψ.aestronglyMeasurable).1 hψ.eLpNorm_lt_top
       simpa using this
     have hmfin (k : ℕ) : m k ≠ ⊤ :=
@@ -152,7 +152,7 @@ theorem memLp_mul_forall_iff {ψ : ℝ → ℂ} (hψ : MemLp ψ 2) :
         have := hN h
         omega
       have hmeas : AEMeasurable (fun x => ‖ψ x‖ₑ ^ (2 : ℝ)) (volume.restrict (shell k)) :=
-        (hψ.aestronglyMeasurable.enorm.pow_const _).restrict
+        (hψ.aestronglyMeasurable.eNorm.pow_const _).restrict
       rw [lintegral_eq_zero_iff' hmeas] at hk0
       rw [← ae_restrict_iff' (measurableSet_shell k)]
       filter_upwards [hk0] with x hx
@@ -162,7 +162,7 @@ theorem memLp_mul_forall_iff {ψ : ℝ → ℂ} (hψ : MemLp ψ 2) :
     obtain ⟨e, he, he', hec⟩ := Real.exists_contDiff_homeomorph_le_abs c
     have hm := hall e he he'
     have hfin' : ∫⁻ x, ‖(e x : ℂ) * ψ x‖ₑ ^ (2 : ℝ) < ⊤ := by
-      have := (eLpNorm_lt_top_iff_lintegral_rpow_enorm_lt_top (p := 2) (by norm_num)
+      have := (eLpNorm_lt_top_iff_lintegral_rpow_eNorm_lt_top (p := 2) (by norm_num)
         (by norm_num) hm.aestronglyMeasurable).1 hm.eLpNorm_lt_top
       simpa using this
     refine hfin'.ne (eq_top_iff.2 ?_)
@@ -172,7 +172,7 @@ theorem memLp_mul_forall_iff {ψ : ℝ → ℂ} (hψ : MemLp ψ 2) :
       · have hle : ∫⁻ x in shell k, ENNReal.ofReal (c k ^ 2) * ‖ψ x‖ₑ ^ (2 : ℝ) ≤
             ∫⁻ x in shell k, ‖(e x : ℂ) * ψ x‖ₑ ^ (2 : ℝ) := by
           refine setLIntegral_mono' (measurableSet_shell k) fun x hx => ?_
-          rw [enorm_mul, ENNReal.mul_rpow_of_nonneg _ _ (by norm_num)]
+          rw [eNorm_mul, ENNReal.mul_rpow_of_nonneg _ _ (by norm_num)]
           gcongr
           rw [← ofReal_norm, Complex.norm_real, Real.norm_eq_abs,
             ENNReal.ofReal_rpow_of_nonneg (abs_nonneg _) (by norm_num)]

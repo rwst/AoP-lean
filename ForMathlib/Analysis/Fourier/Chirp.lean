@@ -157,7 +157,7 @@ theorem ae_eq_zero_of_fourier_eq_cexp_mul {f g : ℝ → ℂ} (hf : MemLp f 2) (
       _ ≤ Real.exp (-(|a| * x ^ 2)) * (Cg * Real.exp (K * |x|)) ^ 2 := by
         gcongr
       _ = Cg ^ 2 * Real.exp (2 * K * |x| - |a| * x ^ 2) := by
-        rw [mul_pow, ← Real.exp_nat_mul]
+        rw [mul_pow, ← Real.exp_natCast_mul]
         rw [show 2 * K * |x| - |a| * x ^ 2 = -(|a| * x ^ 2) + ((2 : ℕ) * (K * |x|)) by
           push_cast; ring, Real.exp_add]
         ring
@@ -174,7 +174,7 @@ theorem ae_eq_zero_of_fourier_eq_cexp_mul {f g : ℝ → ℂ} (hf : MemLp f 2) (
       _ = Real.exp (-(|a| * y ^ 2)) * ‖G (y * I * ω)‖ ^ 2 := by rw [hH, norm_mul, he]; ring
       _ ≤ Real.exp (-(|a| * y ^ 2)) * (Cf * Real.exp (K * |y|)) ^ 2 := by gcongr
       _ = Cf ^ 2 * Real.exp (-|a| * y ^ 2 + 2 * K * |y|) := by
-        rw [mul_pow, ← Real.exp_nat_mul,
+        rw [mul_pow, ← Real.exp_natCast_mul,
           show -|a| * y ^ 2 + 2 * K * |y| = -(|a| * y ^ 2) + ((2 : ℕ) * (K * |y|)) by
             push_cast; ring, Real.exp_add]
         ring
@@ -206,7 +206,7 @@ theorem ae_eq_zero_of_fourier_eq_cexp_mul {f g : ℝ → ℂ} (hf : MemLp f 2) (
     calc Real.exp x ^ n * ‖k x‖ ≤ Real.exp x ^ n * (Cg ^ 2 * Real.exp (2 * K * x - |a| * x ^ 2)) :=
           mul_le_mul_of_nonneg_left this (by positivity)
       _ = Cg ^ 2 * Real.exp ((n + 2 * K) * x - |a| * x ^ 2) := by
-        rw [← Real.exp_nat_mul, mul_left_comm, ← Real.exp_add]
+        rw [← Real.exp_natCast_mul, mul_left_comm, ← Real.exp_add]
         congr 2
         ring
   -- Phragmén–Lindelöf: `k = 0` on the closed right half-plane.

@@ -161,7 +161,7 @@ namespace MeasureTheory
 variable {𝕜 : Type*} [RCLike 𝕜] (g : ℝ ≃ ℝ)
 theorem quasiMeasurePreserving_of_differentiable_symm (hg : Continuous g)
     (hg' : Differentiable ℝ g.symm) : QuasiMeasurePreserving g volume volume := by
-  refine ⟨hg.measurable, Measure.AbsolutelyContinuous.mk fun s hs h0 => ?_⟩
+  refine ⟨hg.measurable.aemeasurable, Measure.AbsolutelyContinuous.mk fun s hs h0 => ?_⟩
   rw [Measure.map_apply hg.measurable hs, ← g.image_symm_eq_preimage]
   exact addHaar_image_eq_zero_of_differentiableOn_of_addHaar_eq_zero volume
     hg'.differentiableOn h0
@@ -197,11 +197,11 @@ theorem eLpNorm_compDiffeo {ψ : ℝ → 𝕜} (hψ : AEStronglyMeasurable ψ vo
   rw [eLpNorm_eq_eLpNorm' two_ne_zero ENNReal.ofNat_ne_top hψ,
     eLpNorm_eq_eLpNorm' two_ne_zero ENNReal.ofNat_ne_top
       (aestronglyMeasurable_compDiffeo hg hg' hψ),
-    eLpNorm'_eq_lintegral_enorm, eLpNorm'_eq_lintegral_enorm, ENNReal.toReal_ofNat]
+    eLpNorm'_eq_lintegral_eNorm, eLpNorm'_eq_lintegral_eNorm, ENNReal.toReal_ofNat]
   congr 1
   refine Eq.trans ?_ (lintegral_abs_deriv_mul_comp g hg fun x => ‖ψ x‖ₑ ^ (2 : ℝ))
   congr 1 with y
-  rw [enorm_mul, ENNReal.mul_rpow_of_nonneg _ _ (by norm_num), enorm_sqrtAbsDeriv_rpow_two]
+  rw [eNorm_mul, ENNReal.mul_rpow_of_nonneg _ _ (by norm_num), enorm_sqrtAbsDeriv_rpow_two]
 theorem memLp_compDiffeo {ψ : ℝ → 𝕜} (hψ : MemLp ψ 2 volume) :
     MemLp (fun y => sqrtAbsDeriv g y * ψ (g y)) 2 volume := by
   rw [memLp_iff, eLpNorm_compDiffeo hg hg' hψ.aestronglyMeasurable]

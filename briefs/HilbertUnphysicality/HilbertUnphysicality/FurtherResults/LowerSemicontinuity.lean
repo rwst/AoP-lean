@@ -66,7 +66,7 @@ theorem lowerSemicontinuous_diagForm : LowerSemicontinuous (diagForm w) :=
 
 lemma diagForm_term (x : lp (fun _ : ι => ℂ) 2) (i : ι) :
     (w i : ℝ≥0∞) * ‖x i‖ₑ ^ 2 = ((w i * ‖x i‖₊ ^ 2 : ℝ≥0) : ℝ≥0∞) := by
-  simp [enorm]
+  simp [eNorm]
 
 /-- The form is finite exactly on the form domain `{x | ∑ wᵢ |xᵢ|² < ∞}`. -/
 theorem diagForm_ne_top_iff (x : lp (fun _ : ι => ℂ) 2) :
@@ -89,7 +89,7 @@ theorem diagForm_smul (c : ℝ) (x : lp (fun _ : ι => ℂ) 2) :
     diagForm w (c • x) = ENNReal.ofReal (c ^ 2) * diagForm w x := by
   simp only [diagForm, ← ENNReal.tsum_mul_left]
   congr 1 with i
-  rw [lp.coeFn_smul, Pi.smul_apply, enorm_smul, mul_pow, mul_left_comm, Real.enorm_eq_ofReal_abs,
+  rw [lp.coeFn_smul, Pi.smul_apply, eNorm_smul, mul_pow, mul_left_comm, Real.eNorm_eq_ofReal_abs,
     ← ENNReal.ofReal_pow (abs_nonneg _), sq_abs]
 
 /-- The expectation `⟨x, A x⟩ / ‖x‖²` of the diagonal operator in the state of the ray of `x`,

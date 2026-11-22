@@ -111,7 +111,7 @@ theorem tendsto_pow_exp_of_tendsto_smul_sub_one {f : ℝ → 𝔸} {b : 𝔸}
           gcongr
           linarith [Real.add_one_le_exp (C * (t / n))]
       _ = Real.exp (C * t) := by
-          rw [← Real.exp_nat_mul]
+          rw [← Real.exp_natCast_mul]
           congr 1
           field_simp
   rw [← hgn n hn, norm_smul, Real.norm_eq_abs, abs_of_nonneg (Nat.cast_nonneg n)]

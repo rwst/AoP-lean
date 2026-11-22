@@ -129,7 +129,7 @@ theorem exists_eq_of_continuousOn_localCocycle (hα : α ≤ 0) (hε : 0 < ε)
   -- Precompose `θ` with the retraction onto `[-2ε, 2ε]` to make it continuous everywhere.
   have h2ε : 2 * α ≤ 2 * ε := by linarith
   set p : ℝ → ℝ := fun x => (projIcc (2 * α) (2 * ε) h2ε x : ℝ) with hp_def
-  have hp : Continuous p := continuous_subtype_val.comp continuous_projIcc
+  have hp : Continuous p := continuous_subtypeVal.comp continuous_projIcc
   have hpI : ∀ x, p x ∈ Icc (2 * α) (2 * ε) := fun x => (projIcc _ _ h2ε x).2
   have hpx : ∀ x ∈ Icc (2 * α) (2 * ε), p x = x := fun x hx => by
     simp [hp_def, projIcc_of_mem h2ε hx]

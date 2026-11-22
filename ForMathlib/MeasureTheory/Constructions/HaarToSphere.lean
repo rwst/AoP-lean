@@ -234,7 +234,7 @@ private lemma toSphere_volume_apply_preimage (t : Set (EuclideanSpace ℝ (Fin 3
     (volume : Measure (EuclideanSpace ℝ (Fin 3))).toSphere ((↑) ⁻¹' t) =
       μHE[2] (t ∩ sphere 0 1) := by
   rw [TauCeti.toSphere_volume_eq_comap_euclideanHausdorffMeasure, finrank_euclideanSpace_fin,
-    (MeasurableEmbedding.subtype_coe isClosed_sphere.measurableSet).comap_apply,
+    (MeasurableEmbedding.subtypeVal isClosed_sphere.measurableSet).comap_apply,
     Subtype.image_preimage_coe, inter_comm]
 
 /-- The surface measure of the image of a measurable subset `s` of `(-1, 1) × (-π, π]` under
@@ -261,7 +261,7 @@ theorem map_toSphere_volume_eq_map_cylinderToSphere :
       nullSingletonClass_hausdorff _ (by norm_num)
     rw [Measure.euclideanHausdorffMeasure_def, smul_apply, (toFinite _).measure_zero, smul_zero]
   ext t ht
-  rw [map_apply measurable_subtype_coe ht, map_apply hcyl ht, restrict_apply (hcyl ht),
+  rw [map_apply measurable_subtypeVal ht, map_apply hcyl ht, restrict_apply (hcyl ht),
     ← toSphere_volume_preimage_image_cylinderToSphere (hcyl ht |>.inter hD) inter_subset_right,
     image_preimage_inter]
   refine le_antisymm ?_ (measure_mono (preimage_mono inter_subset_left))
@@ -286,7 +286,7 @@ theorem map_toSphere_volume_height :
     (EuclideanSpace.proj (2 : Fin 3) : EuclideanSpace ℝ (Fin 3) →L[ℝ] ℝ).continuous.measurable
   rw [show (fun x : sphere (0 : EuclideanSpace ℝ (Fin 3)) 1 ↦ (x : EuclideanSpace ℝ (Fin 3)) 2) =
       (fun y : EuclideanSpace ℝ (Fin 3) ↦ y 2) ∘ (↑) from rfl,
-    ← map_map hproj measurable_subtype_coe, map_toSphere_volume_eq_map_cylinderToSphere,
+    ← map_map hproj measurable_subtypeVal, map_toSphere_volume_eq_map_cylinderToSphere,
     map_map hproj continuous_cylinderToSphere.measurable]
   rw [show (fun y : EuclideanSpace ℝ (Fin 3) ↦ y 2) ∘ cylinderToSphere = Prod.fst from rfl,
     volume_eq_prod, ← prod_restrict, map_fst_prod, restrict_apply_univ, Real.volume_Ioc]

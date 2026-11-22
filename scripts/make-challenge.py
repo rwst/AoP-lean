@@ -143,7 +143,7 @@ elab "#challengeData " dir:str : command => do
   let mut changed := true
   while changed do
     changed := false
-    for (c, ci) in env.constants.map₁.toList do
+    for (c, ci) in env.constants.map₁.toArray do
       if done.contains c || isPrivateName c || !Lean.Meta.isInstanceCore env c then continue
       if (challengeOwner env c).isNone then continue
       let used := ci.type.getUsedConstants.filter fun n => (challengeOwner env n).isSome
@@ -155,13 +155,13 @@ elab "#challengeData " dir:str : command => do
         if let some r ← challengeRow env c d then rows := rows.push (r.replace "TARGET" "dep")
   IO.FS.writeFile (dir ++ "/closure.tsv") (String.intercalate "\n" rows.toList)
   let mut decls : Array String := #[]
-  for (c, _) in env.constants.map₁.toList do
+  for (c, _) in env.constants.map₁.toArray do
     let some m := challengeOwner env c | continue
     if let some r ← findDeclarationRanges? c then
       decls := decls.push s!"{m}\t{r.range.pos.line}\t{r.range.endPos.line}"
   IO.FS.writeFile (dir ++ "/decls.tsv") (String.intercalate "\n" decls.toList)
   let mut outside : NameSet := {}
-  for (c, _) in env.constants.map₁.toList do
+  for (c, _) in env.constants.map₁.toArray do
     if (challengeOwner env c).isNone then
       let mut p := c.getPrefix
       while !p.isAnonymous && !outside.contains p do
@@ -169,7 +169,7 @@ elab "#challengeData " dir:str : command => do
         p := p.getPrefix
   let mut names : Array String := #[]
   let mut nsSeen : NameSet := {}
-  for (c, _) in env.constants.map₁.toList do
+  for (c, _) in env.constants.map₁.toArray do
     if (challengeOwner env c).isNone || isPrivateName c then continue
     names := names.push s!"decl\t{c}"
     let mut p := c.getPrefix

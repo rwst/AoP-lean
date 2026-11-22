@@ -194,7 +194,7 @@ theorem exists_hasDerivWithinAt_clm_apply_Icc [CompleteSpace E] (hL : ∀ x, Con
     rw [Real.coe_toNNReal']
     exact le_max_of_le_left (hC t ht)
   have hMn : ∀ t ∈ Icc (t₀ - T) (t₀ + T), ‖L t‖₊ ≤ M := fun t ht => by
-    rw [← NNReal.coe_le_coe, coe_nnnorm]
+    rw [← NNReal.coe_le_coe, coe_nnNorm]
     exact hM t ht
   set R : ℝ := ‖x₀‖ * Real.exp (M * T) + 1
   have hR : 0 < R := by positivity
@@ -209,11 +209,11 @@ theorem exists_hasDerivWithinAt_clm_apply_Icc [CompleteSpace E] (hL : ∀ x, Con
     · rw [hB]
       exact ((L t).le_opNorm _).trans (mul_le_mul (hM t ht) (norm_retraction_le_radius hR.le _)
         (norm_nonneg _) M.2)
-    · simp only [NNReal.coe_add, NNReal.coe_mul, Real.coe_toNNReal _ hT, coe_nnnorm]
+    · simp only [NNReal.coe_add, NNReal.coe_mul, Real.coe_toNNReal _ hT, coe_nnNorm]
       rw [show t₀ + T - t₀ = T by ring, show t₀ - (t₀ - T) = T by ring, max_self]
       linarith
   obtain ⟨x, hx₀, hx⟩ := hPL.exists_eq_forall_mem_Icc_hasDerivWithinAt
-    (x := x₀) (mem_closedBall_zero_iff.mpr (by rw [coe_nnnorm]))
+    (x := x₀) (mem_closedBall_zero_iff.mpr (by rw [coe_nnNorm]))
   have hbound := norm_le_mul_exp M.2 hx fun t ht =>
     ((L t).le_opNorm _).trans (mul_le_mul (hM t ht) (norm_retraction_le hR.le _)
       (norm_nonneg _) M.2)
@@ -241,7 +241,7 @@ theorem eqOn_Icc_of_hasDerivWithinAt_clm_apply {t₀ T C : ℝ} (hC : ∀ t ∈ 
     (HasDerivWithinAt.continuousOn hy)
     (fun t ht => (hy t (Ioo_subset_Icc_self ht)).hasDerivAt (hnhds t ht)) (fun _ _ => trivial) h
   refine ((L t).lipschitzWith.weaken ?_).lipschitzOnWith
-  rw [← NNReal.coe_le_coe, coe_nnnorm, Real.coe_toNNReal']
+  rw [← NNReal.coe_le_coe, coe_nnNorm, Real.coe_toNNReal']
   exact le_max_of_le_left (hC t (Ioo_subset_Icc_self ht))
 
 /-- **Linear ODE, global existence**: for a strongly continuous family of operators `L t`, the

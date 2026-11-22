@@ -241,7 +241,7 @@ theorem AffineOnDensities.inner_eq_zero_of_injOn (hT : AffineOnDensities T)
     (hinj : Set.InjOn T {ρ | IsPure ρ}) {ψ φ a b : E} (hψ : ‖ψ‖ = 1) (hφ : ‖φ‖ = 1)
     (ha : ‖a‖ = 1) (hb : ‖b‖ = 1) (hψφ : ⟪ψ, φ⟫_ℂ = 0) (hTψ : T (proj ψ) = proj a)
     (hTφ : T (proj φ) = proj b) : ⟪a, b⟫_ℂ = 0 := by
-  have := FiniteDimensional.complete ℂ E
+  have := FiniteDimensional.completeSpace ℂ E
   obtain ⟨L, hL⟩ := hT.exists_linearMap
   by_contra h0
   have h1 : ‖⟪a, b⟫_ℂ‖ ≠ 1 := by

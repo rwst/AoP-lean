@@ -603,7 +603,7 @@ theorem exists_spectralProj_max_eq_proj {ψ : E} (hψ : ‖ψ‖ = 1) {τ : ℝ}
   have hσ : IsDensity σ := isDensity_vonNeumannResolvent V τ hψd
   have hs := hσ.isSelfAdjoint
   have hne : (spectrumFinset σ).Nonempty := by
-    rw [Finset.nonempty_iff_ne_empty]
+    rw [← Finset.ne_empty_iff_nonempty]
     intro h
     have h1 := congrArg (fun A : E →L[ℂ] E => A ψ) (sum_spectralProj hs)
     simp only [h, Finset.sum_empty, zero_apply, one_apply_eq_self] at h1

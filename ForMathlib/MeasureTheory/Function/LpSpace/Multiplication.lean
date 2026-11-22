@@ -48,17 +48,17 @@ theorem tendsto_eLpNorm_of_dominated {E ι : Type*} [NormedAddCommGroup E] {l : 
   · exact tendsto_const_nhds.congr' (hf.mono fun i hi => (eLpNorm_exponent_zero hi).symm)
   have hpos : 0 < p.toReal := ENNReal.toReal_pos hp0 hp
   refine Tendsto.congr' (hf.mono fun i hi =>
-    (eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hp hi).symm) ?_
+    (eLpNorm_eq_lintegral_rpow_eNorm_toReal hp0 hp hi).symm) ?_
   have h : Tendsto (fun i => ∫⁻ x, ‖f i x‖ₑ ^ p.toReal ∂μ) l (𝓝 0) := by
     have := tendsto_lintegral_filter_of_dominated_convergence'
-      (fun x => ‖F x‖ₑ ^ p.toReal) (hf.mono fun i hi => (hi.enorm.pow_const _))
+      (fun x => ‖F x‖ₑ ^ p.toReal) (hf.mono fun i hi => (hi.eNorm.pow_const _))
       (hle.mono fun i hi => hi.mono fun x hx =>
         ENNReal.rpow_le_rpow
-          (enorm_le_iff_norm_le.mpr (hx.trans (Real.le_norm_self _))) hpos.le) ?_
+          (eNorm_le_iff_norm_le.mpr (hx.trans (Real.le_norm_self _))) hpos.le) ?_
       (hlim.mono fun x hx => (ENNReal.continuous_rpow_const.tendsto 0).comp
-        (by simpa [Function.comp_def] using (continuous_enorm.tendsto 0).comp hx))
+        (by simpa [Function.comp_def] using (continuous_eNorm.tendsto 0).comp hx))
     · simpa [Function.comp_def, ENNReal.zero_rpow_of_pos hpos] using this
-    · exact (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top hp0 hp hF.eLpNorm_lt_top).ne
+    · exact (lintegral_rpow_eNorm_lt_top_of_eLpNorm_lt_top hp0 hp hF.eLpNorm_lt_top).ne
   have h2 := (ENNReal.continuous_rpow_const (y := 1 / p.toReal)).tendsto 0 |>.comp h
   simpa [Function.comp_def, ENNReal.zero_rpow_of_pos (inv_pos.mpr hpos)] using h2
 

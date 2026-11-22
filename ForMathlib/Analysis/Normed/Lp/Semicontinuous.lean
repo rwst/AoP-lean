@@ -33,6 +33,6 @@ theorem lowerSemicontinuous_tsum_mul_enorm_pow (w : ι → ℝ≥0) (q : ℕ) :
   lowerSemicontinuous_tsum fun i =>
     ((ENNReal.continuous_const_mul ENNReal.coe_ne_top).comp
       ((ENNReal.continuous_pow q).comp
-        (continuous_enorm.comp (lipschitzWith_one_eval p i).continuous))).lowerSemicontinuous
+        (continuous_eNorm.comp (lipschitzWith_one_eval p i).continuous))).lowerSemicontinuous
 
 end lp

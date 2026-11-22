@@ -47,7 +47,7 @@ theorem HilbertBasis.finiteDimensional {ι : Type*} [Finite ι] (b : HilbertBasi
   set S := Submodule.span 𝕜 (Set.range b)
   have : FiniteDimensional 𝕜 S := FiniteDimensional.span_of_finite 𝕜 (Set.finite_range b)
   have hS : S = ⊤ := by
-    rw [← b.dense_span, (Submodule.closed_of_finiteDimensional S).submodule_topologicalClosure_eq]
+    rw [← b.dense_span, (Submodule.isClosed_of_finiteDimensional S).submodule_topologicalClosure_eq]
   have : FiniteDimensional 𝕜 (⊤ : Submodule 𝕜 E) := hS ▸ inferInstance
   exact Submodule.topEquiv.finiteDimensional
 

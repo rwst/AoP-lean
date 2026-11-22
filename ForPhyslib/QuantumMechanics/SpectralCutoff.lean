@@ -145,7 +145,7 @@ def cutoffGroup (M : ℝ) : UnitaryOneParameterGroup E where
     exact ⟨congrArg ContinuousLinearMapWOT.toCLM h.1, congrArg ContinuousLinearMapWOT.toCLM h.2⟩
   continuous := by
     refine LipschitzWith.continuous (K := ‖M‖₊) (LipschitzWith.of_dist_le_mul fun t s => ?_)
-    rw [dist_eq_norm, Real.dist_eq, coe_nnnorm, Real.norm_eq_abs]
+    rw [dist_eq_norm, Real.dist_eq, coe_nnNorm, Real.norm_eq_abs]
     exact norm_cutoffIntegral_sub_le μS M t s
 
 lemma cutoffGroup_apply (M t : ℝ) : cutoffGroup μS M t = (cutoffIntegral μS M t).toCLM := rfl
@@ -155,11 +155,11 @@ theorem norm_cutoffGroup_generator_le {M : ℝ} (hM : 0 ≤ M) :
     ‖(cutoffGroup μS M).generator‖ ≤ M := by
   have hlip : LipschitzWith ‖M‖₊ (cutoffGroup μS M : ℝ → E →L[ℂ] E) :=
     LipschitzWith.of_dist_le_mul fun t s => by
-      rw [dist_eq_norm, Real.dist_eq, coe_nnnorm, Real.norm_eq_abs]
+      rw [dist_eq_norm, Real.dist_eq, coe_nnNorm, Real.norm_eq_abs]
       exact norm_cutoffIntegral_sub_le μS M t s
   rw [UnitaryOneParameterGroup.generator, norm_smul, Complex.norm_I, one_mul]
   refine (norm_deriv_le_of_lipschitz hlip).trans_eq ?_
-  rw [coe_nnnorm, Real.norm_eq_abs, abs_of_nonneg hM]
+  rw [coe_nnNorm, Real.norm_eq_abs, abs_of_nonneg hM]
 
 /-! ## C. Strong convergence -/
 

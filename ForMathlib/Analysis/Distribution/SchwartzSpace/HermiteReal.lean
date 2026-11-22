@@ -95,11 +95,12 @@ lemma measurePreserving_euclideanFinOneEquiv : MeasurePreserving euclideanFinOne
 
 /-- The isomorphism `𝓢(ℝ) ≃ 𝓢(ℝ¹)`, `f ↦ (x ↦ f (x 0))`. -/
 def euclideanFinOneCLE : 𝓢(ℝ, ℂ) ≃L[ℂ] 𝓢(EuclideanSpace ℝ (Fin 1), ℂ) :=
-  ContinuousLinearEquiv.equivOfInverse
+  ContinuousLinearEquiv.ofContinuousLinearMap
     (compCLMOfContinuousLinearEquiv ℂ euclideanFinOneEquiv)
     (compCLMOfContinuousLinearEquiv ℂ euclideanFinOneEquiv.symm)
-    (fun f => by ext x; simp)
-    (fun f => by ext x; exact congrArg f (euclideanFinOneEquiv.symm_apply_apply x))
+    (ContinuousLinearMap.ext fun f => by
+      ext x; exact congrArg f (euclideanFinOneEquiv.symm_apply_apply x))
+    (ContinuousLinearMap.ext fun f => by ext x; simp)
 
 @[simp]
 lemma euclideanFinOneCLE_apply (f : 𝓢(ℝ, ℂ)) (x : EuclideanSpace ℝ (Fin 1)) :

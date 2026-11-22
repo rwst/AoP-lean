@@ -133,8 +133,9 @@ theorem isFrameCompatible_schwartzN {ħ : ℝ} (hħ : ħ ≠ 0) (H : Subgroup (�
 
 /-- Translation of the origin by `a`: `f ↦ f(· - a)`. -/
 def translateN (a : Eₙ) : 𝓢ₙ ≃L[ℂ] 𝓢ₙ :=
-  .equivOfInverse (compSubConstCLM ℂ a) (compSubConstCLM ℂ (-a))
-    (fun f => by ext x; simp) (fun f => by ext x; simp)
+  .ofContinuousLinearMap (compSubConstCLM ℂ a) (compSubConstCLM ℂ (-a))
+    (ContinuousLinearMap.ext fun f => by ext x; simp)
+    (ContinuousLinearMap.ext fun f => by ext x; simp)
 
 lemma translateN_mem (a : Eₙ) : (translateN a).toLinearEquiv ∈ schwartzAut n :=
   mem_schwartzAut _ fun f g => integral_sub_right_eq_self (fun x => conj (f x) * g x) a
@@ -151,19 +152,22 @@ lemma hasTemperateGrowth_exp_neg_mul_I {φ : Eₙ → ℝ} (hφ : φ.HasTemperat
 
 /-- Multiplication by the phase `e^{iφ}`, for a real function `φ` of temperate growth. -/
 def phase {φ : Eₙ → ℝ} (hφ : φ.HasTemperateGrowth) : 𝓢ₙ ≃L[ℂ] 𝓢ₙ :=
-  .equivOfInverse (smulLeftCLM ℂ fun x => exp (φ x * I)) (smulLeftCLM ℂ fun x => exp (-φ x * I))
-    (fun f => by
+  .ofContinuousLinearMap (smulLeftCLM ℂ fun x => exp (φ x * I))
+    (smulLeftCLM ℂ fun x => exp (-φ x * I))
+    (ContinuousLinearMap.ext (fun f => by
       ext x
-      rw [smulLeftCLM_apply_apply (hasTemperateGrowth_exp_neg_mul_I hφ),
-        smulLeftCLM_apply_apply (hasTemperateGrowth_exp_mul_I hφ), smul_eq_mul, smul_eq_mul,
-        ← mul_assoc, ← exp_add]
-      simp)
-    (fun f => by
-      ext x
-      rw [smulLeftCLM_apply_apply (hasTemperateGrowth_exp_mul_I hφ),
+      rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply,
+        smulLeftCLM_apply_apply (hasTemperateGrowth_exp_mul_I hφ),
         smulLeftCLM_apply_apply (hasTemperateGrowth_exp_neg_mul_I hφ), smul_eq_mul, smul_eq_mul,
         ← mul_assoc, ← exp_add]
-      simp)
+      simp))
+    (ContinuousLinearMap.ext (fun f => by
+      ext x
+      rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply,
+        smulLeftCLM_apply_apply (hasTemperateGrowth_exp_neg_mul_I hφ),
+        smulLeftCLM_apply_apply (hasTemperateGrowth_exp_mul_I hφ), smul_eq_mul, smul_eq_mul,
+        ← mul_assoc, ← exp_add]
+      simp))
 
 lemma phase_apply {φ : Eₙ → ℝ} (hφ : φ.HasTemperateGrowth) (f : 𝓢ₙ) (x : Eₙ) :
     phase hφ f x = exp (φ x * I) * f x := by
@@ -214,16 +218,16 @@ lemma integral_comp_symm (A : Eₙ ≃L[ℝ] Eₙ) (h : Eₙ → ℂ) :
 
 /-- The linear change of variable `f ↦ |det A|^{-1/2} f ∘ A⁻¹`. -/
 def dilate (A : Eₙ ≃L[ℝ] Eₙ) : 𝓢ₙ ≃L[ℂ] 𝓢ₙ :=
-  .equivOfInverse ((detFactor A : ℂ) • compCLMOfContinuousLinearEquiv ℂ A.symm)
+  .ofContinuousLinearMap ((detFactor A : ℂ) • compCLMOfContinuousLinearEquiv ℂ A.symm)
     ((detFactor A : ℂ)⁻¹ • compCLMOfContinuousLinearEquiv ℂ A)
-    (fun f => by
+    (ContinuousLinearMap.ext (fun f => by
       have : (detFactor A : ℂ) ≠ 0 := ofReal_ne_zero.2 (detFactor_pos A).ne'
       ext x
-      simp [this])
-    (fun f => by
+      simp [this]))
+    (ContinuousLinearMap.ext (fun f => by
       have : (detFactor A : ℂ) ≠ 0 := ofReal_ne_zero.2 (detFactor_pos A).ne'
       ext x
-      simp [this])
+      simp [this]))
 
 lemma dilate_apply (A : Eₙ ≃L[ℝ] Eₙ) (f : 𝓢ₙ) (x : Eₙ) :
     dilate A f x = detFactor A * f (A.symm x) :=

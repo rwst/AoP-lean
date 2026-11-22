@@ -198,7 +198,7 @@ lemma tsum_lintegral_piece (hρ0 : ∀ x, 0 ≤ ρ x) (hρ : Integrable ρ μ) (
     ∑' k, ∫⁻ x, ‖piece μ ρ k (N k) x‖ₑ ∂μ = ∫⁻ x, ENNReal.ofReal (ρ x) ∂μ := by
   have h : ∀ k, ∫⁻ x, ‖piece μ ρ k (N k) x‖ₑ ∂μ = ∫⁻ x in shell k, ENNReal.ofReal (ρ x) ∂μ := by
     intro k
-    simp_rw [Real.enorm_of_nonneg (piece_nonneg hρ0 k (N k) _)]
+    simp_rw [Real.eNorm_of_nonneg (piece_nonneg hρ0 k (N k) _)]
     rw [← ofReal_integral_eq_lintegral_ofReal (integrable_piece hρ k (N k))
       (ae_of_all _ (piece_nonneg hρ0 k (N k))), integral_piece hρ,
       ofReal_integral_eq_lintegral_ofReal hρ.integrableOn (ae_of_all _ hρ0)]

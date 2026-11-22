@@ -6,7 +6,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import Mathlib.Analysis.InnerProductSpace.LinearPMap
-import TauCeti.Analysis.InnerProductSpace.LinearPMap.SelfAdjoint
+import TauCeti.Analysis.InnerProductSpace.LinearPMap.PairShift
 
 /-!
 # Self-adjoint extensions of real symmetric operators

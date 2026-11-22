@@ -5,19 +5,19 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Adjoint
+public import Mathlib.Analysis.InnerProductSpace.Basic
+public import Mathlib.Analysis.InnerProductSpace.Spectrum
 public import Mathlib.Analysis.InnerProductSpace.l2Space
-public import Mathlib.Analysis.CStarAlgebra.ContinuousLinearMap
-public import Mathlib.Analysis.InnerProductSpace.StarOrder
-public import Mathlib.Analysis.InnerProductSpace.Trace
-public import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.Rpow.Basic
-public import PhyslibAlpha.ProbabilisticTheory.HilbertSpace.TraceClass.Basic
-public import TauCeti.Analysis.InnerProductSpace.HilbertSchmidt.Pythagoras
-public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 public import Mathlib.LinearAlgebra.Eigenspace.ContinuousLinearMap
 public import PhyslibAlpha.ProbabilisticTheory.HilbertSpace.TraceClass.GeneralIdeal
 public import PhyslibAlpha.ProbabilisticTheory.HilbertSpace.TraceClass.Banach
 public import PhyslibAlpha.ProbabilisticTheory.HilbertSpace.TraceClass.RankOne
+public import Mathlib.LinearAlgebra.Center
+public import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Order
+public import Physlib.Relativity.PauliMatrices.Basic
+public import Mathlib.Analysis.InnerProductSpace.GramSchmidtOrtho
+public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+public import TauCeti.Analysis.InnerProductSpace.HilbertSchmidt.Pythagoras
 public import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Commute
 public import Mathlib.InformationTheory.KullbackLeibler.KLFun
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy

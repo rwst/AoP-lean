@@ -8,7 +8,7 @@ module
 public import TauCeti.Analysis.SpecialFunctions.Hermite.Function.Pi.Basis
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 import TauCeti.Analysis.SpecialFunctions.Hermite.Function.Ladder
-import TauCeti.Analysis.SpecialFunctions.Gaussian.Schwartz
+import TauCeti.Analysis.Distribution.SchwartzSpace.Gaussian
 
 /-!
 # Multi-index Hermite functions as Schwartz functions
@@ -163,8 +163,8 @@ theorem exists_hermitePi (α : ι → ℕ) :
     by_cases h0 : ∀ i, α i = 0
     · obtain rfl : α = 0 := funext h0
       refine ⟨((√√Real.pi : ℂ)⁻¹) ^ Fintype.card ι •
-        gaussianSchwartzMap (E := EuclideanSpace ℝ ι) (b := 1 / 2) (by norm_num), fun x => ?_⟩
-      rw [smul_apply, gaussianSchwartzMap_apply, hermitePiFun_zero, smul_eq_mul]
+        SchwartzMap.gaussian (V := EuclideanSpace ℝ ι) (b := 1 / 2) (by norm_num), fun x => ?_⟩
+      rw [smul_apply, SchwartzMap.gaussian_apply, hermitePiFun_zero, smul_eq_mul]
     push Not at h0
     obtain ⟨i, hi⟩ := h0
     set β := Function.update α i (α i - 1) with hβ

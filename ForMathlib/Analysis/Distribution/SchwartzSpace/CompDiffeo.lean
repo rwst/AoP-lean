@@ -150,8 +150,9 @@ variable (𝕜 F) in
 temperate growth, `f ↦ |det De|^{1/2} • (f ∘ e)` is an automorphism of `𝓢(E, F)`. -/
 def compDiffeoCLE (e : E ≃ E) (he : (e : E → E).HasTemperateGrowth)
     (he' : (e.symm : E → E).HasTemperateGrowth) : 𝓢(E, F) ≃L[𝕜] 𝓢(E, F) :=
-  .equivOfInverse (compDiffeoCLM 𝕜 F e he he') (compDiffeoCLM 𝕜 F e.symm he' he)
-    (compDiffeoCLM_symm_comp he he') (compDiffeoCLM_symm_comp (e := e.symm) he' he)
+  .ofContinuousLinearMap (compDiffeoCLM 𝕜 F e he he') (compDiffeoCLM 𝕜 F e.symm he' he)
+    (ContinuousLinearMap.ext (compDiffeoCLM_symm_comp (e := e.symm) he' he))
+    (ContinuousLinearMap.ext (compDiffeoCLM_symm_comp he he'))
 
 lemma compDiffeoCLE_apply (he : (e : E → E).HasTemperateGrowth)
     (he' : (e.symm : E → E).HasTemperateGrowth) (f : 𝓢(E, F)) (x : E) :

@@ -181,7 +181,7 @@ theorem exists_unitary_or_antiunitary_of_surjective [CompleteSpace E] (hf : IsWi
 on unit vectors with a unitary or an anti-unitary operator. -/
 theorem exists_unitary_or_antiunitary [FiniteDimensional ℂ E] (hf : IsWignerMap f) :
     (∃ U : E ≃ₗᵢ[ℂ] E, PhaseEqOnSphere f U) ∨ (∃ U : E ≃ₗᵢ⋆[ℂ] E, PhaseEqOnSphere f U) := by
-  have := FiniteDimensional.complete ℂ E
+  have := FiniteDimensional.completeSpace ℂ E
   rcases hf.exists_linearIsometry_or_conjLinearIsometry with ⟨U, hU⟩ | ⟨U, hU⟩
   · exact Or.inl ⟨LinearIsometryEquiv.ofSurjective U (surjective_of_finiteDimensional U), hU⟩
   · exact Or.inr ⟨LinearIsometryEquiv.ofSurjective U (surjective_of_finiteDimensional U), hU⟩

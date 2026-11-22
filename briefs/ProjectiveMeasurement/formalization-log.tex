@@ -34,8 +34,9 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
 \section*{Setup}
 
 \begin{itemize}
-\item Lean \texttt{v4.36.0-rc2}; Mathlib at commit \texttt{1b1ccf4b}; physlib (\texttt{master})
-  and TauCeti (commit \texttt{e7e7f52}, on the same Mathlib) as further dependencies.
+\item Lean \texttt{v4.37.0-rc1}; Mathlib at commit \texttt{31ce06ea}; physlib (commit \texttt{a1fe45e}
+  of the fork \texttt{rwst/physlib}: upstream \texttt{848dca4} adapted to this Mathlib) and
+  TauCeti (commit \texttt{b608709}, on the same Mathlib) as further dependencies.
 \item Build: \texttt{lake build} in the project root.
 \item Every file is checked with \texttt{\#print axioms} on its main results. A result is
   recorded here only if it depends on no axioms beyond \lean{propext},
@@ -66,7 +67,8 @@ The brief is available at \url{https://assumptionsofphysics.org/resources/briefs
   \begin{itemize}
   \item the Hilbert--Schmidt norm,
     \lean{TauCeti.Analysis.InnerProductSpace.HilbertSchmidt.Basic};
-  \item finiteness of the spectrum, \lean{TauCeti.Analysis.Normed.Operator.FiniteDimensional};
+  \item finiteness of the spectrum,\newline
+    \lean{TauCeti.Topology.Algebra.Module.ContinuousLinearMap.FiniteDimensional};
   \item the eigenvector action of the functional calculus,\newline
     \lean{TauCeti.Analysis.InnerProductSpace.FunctionalCalculusComparison};
   \item the supporting-line bound for $x\log x$,

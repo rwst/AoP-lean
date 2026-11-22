@@ -733,7 +733,7 @@ theorem tendsto_of_tendsto_traceENorm {α : Type*} {l : Filter α} {f : α → E
   rw [tendsto_iff_edist_tendsto_0]
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds h (fun _ => zero_le)
     fun a => ?_
-  rw [edist_eq_enorm_sub]
+  rw [eDist_eq_eNorm_sub]
   exact enorm_le_traceENorm _
 
 /-- Trace-norm limits are unique. -/

@@ -536,7 +536,7 @@ theorem withSeminorms_schwartz (hħ : ħ ≠ 0) : WithSeminorms (seminormFamily 
   · obtain ⟨s, C, hC⟩ := exists_le_sup_of_mem ħ (algebra_le_monoSpan ħ A.2)
     exact ⟨s, C, hC⟩
   · obtain ⟨a, b⟩ := ab
-    have hpos : ‖ħ‖₊ ^ b ≠ 0 := pow_ne_zero _ (nnnorm_ne_zero_iff.mpr hħ)
+    have hpos : ‖ħ‖₊ ^ b ≠ 0 := pow_ne_zero _ (nnNorm_ne_zero_iff.mpr hħ)
     refine ⟨{⟨mono ħ a b, mono_mem_algebra ħ a b⟩}, (‖ħ‖₊ ^ b)⁻¹, ?_⟩
     rw [Finset.sup_singleton, Seminorm.comp_id]
     change l2Family (a, b) ≤ (‖ħ‖₊ ^ b)⁻¹ • l2Core.toSeminorm.comp (mono ħ a b)
@@ -559,7 +559,7 @@ def l2Embedding : 𝓢(ℝ, ℂ) →ₗ[ℂ] (ℕ × ℕ → Lp ℂ 2 (volume : 
 
 lemma norm_l2Embedding (f : 𝓢(ℝ, ℂ)) (ab : ℕ × ℕ) : ‖l2Embedding f ab‖ = l2Family ab f := by
   have h := congrArg (fun p : Seminorm ℂ 𝓢(ℝ, ℂ) => p f) (toSeminorm_comp_mono 1 ab.1 ab.2)
-  simp only [Seminorm.comp_apply, l2Core_toSeminorm, nnnorm_one, one_pow, one_smul] at h
+  simp only [Seminorm.comp_apply, l2Core_toSeminorm, nnNorm_one, one_pow, one_smul] at h
   simp [l2Embedding, norm_toLp, h]
 
 /-- The Schwartz space `𝓢(ℝ)` is second-countable: `l2Embedding` embeds it into a countable

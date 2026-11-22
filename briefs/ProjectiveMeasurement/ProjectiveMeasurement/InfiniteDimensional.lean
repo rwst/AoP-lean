@@ -138,7 +138,7 @@ lemma eq_of_tendsto_traceENorm {α : Type*} {l : Filter α} [l.NeBot] {r : α �
     rw [traceENorm_sub_comm (r a) A]
     exact traceENorm_sub_le A (r a) B
   have h1 : ‖A - B‖ₑ = 0 := le_antisymm (h0 ▸ enorm_le_traceENorm (A - B)) zero_le
-  exact sub_eq_zero.mp (enorm_eq_zero.mp h1)
+  exact sub_eq_zero.mp (eNorm_eq_zero.mp h1)
 
 /-- **Theorem 1**, EQ-LIND ⇔ EQ-MEAS. -/
 theorem eqMeas_iff_eqLind : EqMeas Φ ↔ EqLind Φ := by

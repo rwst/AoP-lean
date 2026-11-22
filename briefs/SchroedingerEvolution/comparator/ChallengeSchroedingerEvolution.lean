@@ -5,9 +5,7 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 -/
 module
 
-public import Mathlib.Analysis.Convex.Basic
-public import Mathlib.Analysis.Normed.Module.Basic
-public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Analysis.InnerProductSpace.LinearMap
 public import Mathlib.Analysis.InnerProductSpace.Positive
 public import Mathlib.Analysis.InnerProductSpace.Trace
 public import Mathlib.Analysis.InnerProductSpace.l2Space

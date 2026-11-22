@@ -116,15 +116,15 @@ lemma lpFamily_two : lpFamily 2 = l2Family := rfl
 lemma eLpNorm_top_weighted (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
     eLpNorm (weighted α β F) ⊤ volume = supNorm α β F := by
   rw [eLpNorm_exponent_top]
-  refine le_antisymm (eLpNormEssSup_le_of_ae_enorm_bound (ae_of_all _ fun x =>
+  refine le_antisymm (eLpNormEssSup_le_of_ae_eNorm_bound (ae_of_all _ fun x =>
     le_iSup (fun y => ‖weighted α β F y‖ₑ) x)) (iSup_le fun x => ?_)
   by_contra! hx
   have hc : Continuous fun y => ‖weighted α β F y‖ₑ :=
-    (continuous_weighted (F.smooth ⊤) α β).enorm
+    (continuous_weighted (F.smooth ⊤) α β).eNorm
   have hU : IsOpen {y | eLpNormEssSup (weighted α β F) volume < ‖weighted α β F y‖ₑ} :=
     isOpen_lt continuous_const hc
   have h0 := (hU.measure_pos volume ⟨x, hx⟩).ne'
-  refine h0 (measure_mono_null (fun y hy => ?_) (ae_iff.1 (enorm_ae_le_eLpNormEssSup
+  refine h0 (measure_mono_null (fun y hy => ?_) (ae_iff.1 (eNorm_ae_le_eLpNormEssSup
     (weighted α β F) volume)))
   exact not_le.2 hy
   exact (continuous_weighted (F.smooth ⊤) α β).aestronglyMeasurable

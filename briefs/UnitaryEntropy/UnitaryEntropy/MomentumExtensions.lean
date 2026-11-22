@@ -77,7 +77,7 @@ lemma circleRep_mem (x : 𝕋) : circleRep x ∈ Ico (0 : ℝ) 1 := by
   exact ⟨h.1, by linarith [h.2]⟩
 
 lemma measurable_circleRep : Measurable circleRep :=
-  measurable_subtype_coe.comp (AddCircle.measurableEquivIco 1 0).measurable
+  measurable_subtypeVal.comp (AddCircle.measurableEquivIco 1 0).measurable
 
 lemma volume_eq_haarAddCircle : (volume : Measure 𝕋) = μc := by
   rw [volume_eq_smul_haarAddCircle, ENNReal.ofReal_one, one_smul]
@@ -93,7 +93,7 @@ lemma haarAddCircle_singleton_zero : μc {0} = 0 := by
   exact nonpos_iff_eq_zero.mp ((Measure.restrict_le_self _).trans h0.le)
 
 lemma ae_ne_zero : ∀ᵐ x ∂μc, x ≠ 0 := by
-  simp [ae_iff, haarAddCircle_singleton_zero]
+  simp [ae_iff]
 
 lemma measurePreserving_sub (s : ℝ) : MeasurePreserving (fun x : 𝕋 => x - s) μc μc :=
   measurePreserving_sub_right μc _
@@ -630,7 +630,7 @@ theorem planeWave_mem_adjoint_domain (hħ : ħ ≠ 0) :
   rw [LinearPMap.mem_adjoint_domain_iff]
   have hc : Continuous fun ψ : (switchedHamiltonian ħ α β).domain =>
       (α : ℂ) * ⟪planeWave α, (ψ : L²)⟫_ℂ :=
-    continuous_const.mul (continuous_const.inner continuous_subtype_val)
+    continuous_const.mul (continuous_const.inner continuous_subtypeVal)
   refine hc.congr fun ψ => ?_
   simp only [LinearMap.coe_comp, Function.comp_apply, innerₛₗ_apply_apply]
   exact (inner_planeWave_switchedHamiltonian hħ ψ).symm
@@ -655,7 +655,7 @@ theorem planeWave_not_mem_switchedDomain (hħ : ħ ≠ 0)
   rw [h₁] at h₂
   have h₃ := mul_left_cancel₀ Complex.I_ne_zero (neg_inj.mp
     (mul_right_cancel₀ (inner_planeWave_planeWave h) h₂))
-  have h₄ : α = β := (div_left_inj' hħ).mp (Complex.ofReal_injective h₃)
+  have h₄ : α = β := (div_left_inj₀ hħ).mp (Complex.ofReal_injective h₃)
   exact h (by rw [h₄])
 
 /-- **The derived Hamiltonian is not self-adjoint.** -/

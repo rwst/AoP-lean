@@ -35,12 +35,12 @@ theorem enorm_le_lintegral_enorm_deriv {f f' : ℝ → E} (hderiv : ∀ x, HasDe
     hf'.integrableOn h0
   rw [sub_zero] at hx
   rw [← hx]
-  exact (enorm_integral_le_lintegral_enorm _).trans (setLIntegral_le_lintegral _ _)
+  exact (eNorm_integral_le_lintegral_eNorm _).trans (setLIntegral_le_lintegral _ _)
 
 theorem norm_le_integral_norm_deriv {f f' : ℝ → E} (hderiv : ∀ x, HasDerivAt f (f' x) x)
     (hf' : Integrable f') (hf : Integrable f) (x : ℝ) : ‖f x‖ ≤ ∫ y, ‖f' y‖ := by
   have := enorm_le_lintegral_enorm_deriv hderiv hf' hf x
-  rw [← ofReal_integral_norm_eq_lintegral_enorm hf', ← ofReal_norm] at this
+  rw [← ofReal_integral_norm_eq_lintegral_eNorm hf', ← ofReal_norm] at this
   exact (ENNReal.ofReal_le_ofReal_iff (integral_nonneg fun _ => norm_nonneg _)).mp this
 
 end MeasureTheory

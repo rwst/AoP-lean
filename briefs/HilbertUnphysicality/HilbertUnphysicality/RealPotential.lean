@@ -248,7 +248,7 @@ theorem exists_lt_norm_schrodingerHamiltonian_of_locallyIntegrableOn (c : ℝ) :
       c * ‖(ψ : L2R)‖ < ‖schrodingerHamiltonian V ψ‖ := by
   -- a bump `f` with support in `U`
   obtain ⟨a, ha⟩ : U.Nonempty := by
-    rw [Set.nonempty_iff_ne_empty]
+    rw [← Set.ne_empty_iff_nonempty]
     rintro rfl
     simp at hUc
   obtain ⟨r, hr, hrU⟩ := Metric.isOpen_iff.1 hU a ha

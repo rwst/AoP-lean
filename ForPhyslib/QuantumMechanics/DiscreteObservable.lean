@@ -403,7 +403,7 @@ theorem hilbertSchmidtEnergy_sub_ne_top {κ : Type*} {ρ σ : E →L[ℂ] E} (h�
   have hlt : (ρ - σ).hilbertSchmidtEnergy b ^ (1 / 2 : ℝ) < ⊤ := by
     refine h.trans_lt (ENNReal.add_lt_top.mpr ⟨?_, ?_⟩)
     · exact ENNReal.rpow_lt_top_of_nonneg (by norm_num) (ne_top_of_le_ne_top ENNReal.one_ne_top hρ1)
-    · simp only [enorm_neg, enorm_one, one_pow, one_mul]
+    · simp only [eNorm_neg, eNorm_one, one_pow, one_mul]
       exact ENNReal.rpow_lt_top_of_nonneg (by norm_num) (ne_top_of_le_ne_top ENNReal.one_ne_top hσ1)
   exact (ENNReal.rpow_lt_top_iff_of_pos (by norm_num)).mp hlt |>.ne
 

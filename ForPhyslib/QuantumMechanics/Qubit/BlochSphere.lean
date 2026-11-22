@@ -105,7 +105,7 @@ theorem continuous_blochPoint : Continuous blochPoint := by
   have hn : ∀ x : {x : Fin 2 → ℂ // x ≠ 0}, ‖WithLp.toLp 2 x.1‖ ^ 2 ≠ 0 := fun x ↦ by
     simpa using x.2
   have hψ : Continuous fun x : {x : Fin 2 → ℂ // x ≠ 0} ↦ WithLp.toLp 2 x.1 :=
-    (PiLp.continuous_toLp 2 _).comp continuous_subtype_val
+    (PiLp.continuous_toLp 2 _).comp continuous_subtypeVal
   exact ((hψ.norm.pow 2).inv₀ hn).smul (continuous_blochVector.comp hψ)
 
 theorem blochPoint_injective : Function.Injective blochPoint := by

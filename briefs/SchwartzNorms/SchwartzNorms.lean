@@ -68,7 +68,7 @@ lemma enorm_ofReal (x : ℝ) : ‖(x : ℂ)‖ₑ = ‖x‖ₑ := by
 
 lemma enorm_weighted_succ (α β : ℕ) (f : ℝ → ℂ) (x : ℝ) :
     ‖weighted (α + 1) β f x‖ₑ = ‖x‖ₑ * ‖weighted α β f x‖ₑ := by
-  simp only [weighted, pow_succ, enorm_mul, enorm_ofReal]
+  simp only [weighted, pow_succ, eNorm_mul, enorm_ofReal]
   ring
 
 lemma continuous_weighted (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) : Continuous (weighted α β f) :=
@@ -76,11 +76,11 @@ lemma continuous_weighted (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) : C
 
 lemma l1Norm_eq (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
     l1Norm α β f = ∫⁻ x, ‖weighted α β f x‖ₑ :=
-  eLpNorm_one_eq_lintegral_enorm (continuous_weighted hf α β).aestronglyMeasurable
+  eLpNorm_one_eq_lintegral_eNorm (continuous_weighted hf α β).aestronglyMeasurable
 
 lemma l2Norm_eq (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
     l2Norm α β f = (∫⁻ x, ‖weighted α β f x‖ₑ ^ (2 : ℝ)) ^ (1 / 2 : ℝ) := by
-  rw [l2Norm, eLpNorm_eq_lintegral_rpow_enorm_toReal two_ne_zero ENNReal.ofNat_ne_top
+  rw [l2Norm, eLpNorm_eq_lintegral_rpow_eNorm_toReal two_ne_zero ENNReal.ofNat_ne_top
     (continuous_weighted hf α β).aestronglyMeasurable]
   simp
 
@@ -128,7 +128,7 @@ theorem l2Norm_sq_le (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
       have hx0' : x ≠ 0 := by rintro rfl; norm_num at h1
       have hx2 : ENNReal.ofReal (x ^ 2)⁻¹ = (‖x‖ₑ ^ 2)⁻¹ := by
         rw [ENNReal.ofReal_inv_of_pos (pow_pos (abs_pos.mpr hx0') 2 |>.trans_eq (sq_abs x)),
-          Real.enorm_eq_ofReal_abs, ← ENNReal.ofReal_pow (abs_nonneg x), sq_abs]
+          Real.eNorm_eq_ofReal_abs, ← ENNReal.ofReal_pow (abs_nonneg x), sq_abs]
       have hx0 : ‖x‖ₑ ^ 2 ≠ 0 := by simpa using hx0'
       rw [hx2, ← div_eq_mul_inv, ENNReal.le_div_iff_mul_le (Or.inl hx0) (Or.inl (by simp)),
         ← mul_pow, mul_comm]
@@ -153,7 +153,7 @@ lemma lintegral_inv_one_add_sq_sq :
   congr 1
   funext x
   rw [ENNReal.ofReal_inv_of_pos (by positivity), ENNReal.ofReal_pow (by positivity),
-    ENNReal.ofReal_add zero_le_one (sq_nonneg x), ENNReal.ofReal_one, Real.enorm_eq_ofReal_abs,
+    ENNReal.ofReal_add zero_le_one (sq_nonneg x), ENNReal.ofReal_one, Real.eNorm_eq_ofReal_abs,
     ← ENNReal.ofReal_pow (abs_nonneg x), sq_abs]
 
 lemma rpow_half_le (A B C : ℝ≥0∞) :
@@ -172,7 +172,7 @@ theorem l1Norm_le (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) :
     l1Norm α β f ≤ ENNReal.ofReal √(π / 2) *
       (l2Norm α β f + 2 * l2Norm (α + 1) β f + l2Norm (α + 2) β f) := by
   let w : ℕ → ℝ → ℝ≥0∞ := fun k x => ‖weighted k β f x‖ₑ
-  have hw : ∀ k, Measurable (w k) := fun k => (continuous_weighted hf k β).measurable.enorm
+  have hw : ∀ k, Measurable (w k) := fun k => (continuous_weighted hf k β).measurable.eNorm
   let ρ : ℝ → ℝ≥0∞ := fun x => 1 + ‖x‖ₑ ^ 2
   have hρ : Measurable ρ := by fun_prop
   have key : ∀ x, (ρ x * w α x) ^ 2 = w α x ^ 2 + 2 * w (α + 1) x ^ 2 + w (α + 2) x ^ 2 := by
@@ -224,11 +224,11 @@ theorem supNorm_le (hf : ContDiff ℝ (⊤ : ℕ∞) f) (α β : ℕ) (h : l1Nor
       α * l1Norm (α - 1) β f + l1Norm α (β + 1) f := by
     calc ∫⁻ x, ‖(α : ℂ) * weighted (α - 1) β f x + weighted α (β + 1) f x‖ₑ
         ≤ ∫⁻ x, ((α : ℝ≥0∞) * ‖weighted (α - 1) β f x‖ₑ + ‖weighted α (β + 1) f x‖ₑ) :=
-          lintegral_mono fun x => (enorm_add_le _ _).trans <| by
-            rw [enorm_mul, ← ofReal_norm, Complex.norm_natCast, ENNReal.ofReal_natCast]
+          lintegral_mono fun x => (eNorm_add_le _ _).trans <| by
+            rw [eNorm_mul, ← ofReal_norm, Complex.norm_natCast, ENNReal.ofReal_natCast]
       _ = _ := by
-        rw [lintegral_add_left ((continuous_weighted hf _ β).measurable.enorm.const_mul _),
-          lintegral_const_mul _ (continuous_weighted hf _ β).measurable.enorm, l1Norm_eq hf,
+        rw [lintegral_add_left ((continuous_weighted hf _ β).measurable.eNorm.const_mul _),
+          lintegral_const_mul _ (continuous_weighted hf _ β).measurable.eNorm, l1Norm_eq hf,
           l1Norm_eq hf]
   rcases eq_or_ne (α * l1Norm (α - 1) β f + l1Norm α (β + 1) f) ⊤ with hR | hR
   · rw [hR]
@@ -278,7 +278,7 @@ open SchwartzMap
 
 lemma enorm_weighted_eq (α β : ℕ) (f : ℝ → ℂ) (x : ℝ) :
     ‖weighted α β f x‖ₑ = ENNReal.ofReal (|x| ^ α * ‖iteratedDeriv β f x‖) := by
-  rw [weighted, enorm_mul, enorm_pow, enorm_ofReal, Real.enorm_eq_ofReal_abs, ← ofReal_norm,
+  rw [weighted, eNorm_mul, eNorm_pow, enorm_ofReal, Real.eNorm_eq_ofReal_abs, ← ofReal_norm,
     ← ENNReal.ofReal_pow (abs_nonneg _), ← ENNReal.ofReal_mul (by positivity)]
 
 /-- On `𝓢(ℝ)`, the brief's sup seminorm (1) is Mathlib's `SchwartzMap.seminorm`. -/
@@ -458,16 +458,16 @@ theorem enorm_moment_le (ħ : ℝ) (F : 𝓢(ℝ, ℂ)) (α β : ℕ) :
     ‖SchwartzMomentProblem.moment ħ F α β‖ₑ ≤ ‖ħ‖ₑ ^ β * (l2Norm 0 0 F * l2Norm α β F) := by
   have hF := F.smooth ⊤
   have hw : ∀ k n, Measurable fun x => ‖weighted k n F x‖ₑ :=
-    fun k n => (continuous_weighted hF k n).measurable.enorm
+    fun k n => (continuous_weighted hF k n).measurable.eNorm
   have hpt : ∀ x, ‖SchwartzMomentProblem.density ħ F α β x‖ₑ =
       ‖ħ‖ₑ ^ β * ((fun x => ‖weighted 0 0 F x‖ₑ) * fun x => ‖weighted α β F x‖ₑ) x := by
     intro x
     have hI : ‖Complex.I‖ₑ = 1 := by rw [← ofReal_norm, Complex.norm_I, ENNReal.ofReal_one]
     simp only [SchwartzMomentProblem.density, Pi.mul_apply, weighted, iteratedDeriv_zero,
-      pow_zero, one_mul, enorm_mul, enorm_pow, RCLike.enorm_conj, enorm_neg, hI, enorm_ofReal]
+      pow_zero, one_mul, eNorm_mul, eNorm_pow, RCLike.eNorm_conj, eNorm_neg, hI, enorm_ofReal]
     ring
   calc ‖SchwartzMomentProblem.moment ħ F α β‖ₑ
-      ≤ ∫⁻ x, ‖SchwartzMomentProblem.density ħ F α β x‖ₑ := enorm_integral_le_lintegral_enorm _
+      ≤ ∫⁻ x, ‖SchwartzMomentProblem.density ħ F α β x‖ₑ := eNorm_integral_le_lintegral_eNorm _
     _ = ‖ħ‖ₑ ^ β * ∫⁻ x, ((fun x => ‖weighted 0 0 F x‖ₑ) * fun x => ‖weighted α β F x‖ₑ) x := by
         simp_rw [hpt]
         exact lintegral_const_mul _ ((hw 0 0).mul (hw α β))

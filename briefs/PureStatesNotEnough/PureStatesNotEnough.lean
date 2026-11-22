@@ -653,7 +653,7 @@ instance : TopologicalSpace.SeparableSpace (pureStates H) := by
 
 lemma integrable_coe (μ : Measure (pureStates H)) [IsFiniteMeasure μ] :
     Integrable (fun ρ : pureStates H => (ρ : H →L[ℂ] H)) μ :=
-  Integrable.of_bound continuous_subtype_val.aestronglyMeasurable 1 (ae_of_all _ norm_coe_le_one)
+  Integrable.of_bound continuous_subtypeVal.aestronglyMeasurable 1 (ae_of_all _ norm_coe_le_one)
 
 variable [CompleteSpace H]
 
@@ -737,7 +737,7 @@ theorem posTrace_barycenter (μ : Measure (pureStates H)) [IsProbabilityMeasure 
   have hnn : ∀ (x : H) (ρ : pureStates H), 0 ≤ reInnerApply x (ρ : H →L[ℂ] H) := fun x ρ =>
     re_inner_apply_nonneg (isDensityOperator_coe ρ).nonneg x
   have hmeas : ∀ x : H, Measurable fun ρ : pureStates H => reInnerApply x (ρ : H →L[ℂ] H) :=
-    fun x => ((reInnerApply x).continuous.comp continuous_subtype_val).measurable
+    fun x => ((reInnerApply x).continuous.comp continuous_subtypeVal).measurable
   calc posTrace (barycenter μ)
       = ∑' i, ∫⁻ ρ : pureStates H, ENNReal.ofReal (reInnerApply (b i) (ρ : H →L[ℂ] H)) ∂μ := by
         refine tsum_congr fun i => ?_

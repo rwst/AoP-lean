@@ -536,21 +536,23 @@ lemma fderivPolarCoord_apply (p v : ℝ × ℝ) :
 
 /-- `fderivPolarCoordSymm p` as an equivalence, for `p.1 ≠ 0`. -/
 def fderivPolarCoordSymmEquiv (p : ℝ × ℝ) (hp : p.1 ≠ 0) : (ℝ × ℝ) ≃L[ℝ] ℝ × ℝ :=
-  ContinuousLinearEquiv.equivOfInverse (fderivPolarCoordSymm p) (fderivPolarCoord p)
-    (fun v => by
+  ContinuousLinearEquiv.ofContinuousLinearMap (fderivPolarCoordSymm p) (fderivPolarCoord p)
+    (ContinuousLinearMap.ext (fun v => by
       have hr : p.1 * p.1⁻¹ = 1 := mul_inv_cancel₀ hp
-      simp only [fderivPolarCoordSymm_apply, fderivPolarCoord_apply, div_eq_mul_inv]
-      ext
-      · linear_combination v.1 * sin_sq_add_cos_sq p.2
-      · linear_combination (p.1 * p.1⁻¹ * v.2) * sin_sq_add_cos_sq p.2 + v.2 * hr)
-    (fun v => by
-      have hr : p.1 * p.1⁻¹ = 1 := mul_inv_cancel₀ hp
-      simp only [fderivPolarCoordSymm_apply, fderivPolarCoord_apply, div_eq_mul_inv]
+      simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply,
+        fderivPolarCoordSymm_apply, fderivPolarCoord_apply, div_eq_mul_inv]
       ext
       · linear_combination v.1 * sin_sq_add_cos_sq p.2 +
           (sin p.2 ^ 2 * v.1 - sin p.2 * cos p.2 * v.2) * hr
       · linear_combination v.2 * sin_sq_add_cos_sq p.2 +
-          (cos p.2 ^ 2 * v.2 - cos p.2 * sin p.2 * v.1) * hr)
+          (cos p.2 ^ 2 * v.2 - cos p.2 * sin p.2 * v.1) * hr))
+    (ContinuousLinearMap.ext (fun v => by
+      have hr : p.1 * p.1⁻¹ = 1 := mul_inv_cancel₀ hp
+      simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply,
+        fderivPolarCoordSymm_apply, fderivPolarCoord_apply, div_eq_mul_inv]
+      ext
+      · linear_combination v.1 * sin_sq_add_cos_sq p.2
+      · linear_combination (p.1 * p.1⁻¹ * v.2) * sin_sq_add_cos_sq p.2 + v.2 * hr))
 
 lemma contDiff_polarCoord_symm {n : WithTop ℕ∞} : ContDiff ℝ n polarCoord.symm := by
   have : ⇑polarCoord.symm = fun p : ℝ × ℝ => (p.1 * cos p.2, p.1 * sin p.2) :=
