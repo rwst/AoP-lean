@@ -100,7 +100,8 @@ item marked below.
   sphere are not Hamiltonian, so the area form should be meant. Lean checks this for complex
   conjugation of the Riemann sphere, the Bloch reflection $a_1 \mapsto -a_1$
   (\lean{conjSphere_preserves_area_reverses_form}, \lean{globalFlow_ne_conjSphere},
-  \lean{timeDependentFlowOf_ne_conjSphere}). With the area form the claim is checked for
+  \lean{timeDependentFlowOf_ne_conjSphere}, \lean{isotopy_ne_conjSphere}). With the area form the
+  claim is checked for
   evolutions. A vector field preserves the Fubini--Study form exactly when it is Hamiltonian
   (\lean{lieDeriv_areaForm_eq_zero_iff_hamiltonian}), and a jointly smooth time-dependent flow
   preserves it exactly when every velocity field is Hamiltonian
@@ -109,9 +110,24 @@ item marked below.
   is needed: the obstruction is a class in $H^1_{dR}(S^2)$, which vanishes because the sphere is
   simply connected. Open is the
   statement for single maps, that every orientation-preserving, area-preserving diffeomorphism of
-  the sphere is the end of a Hamiltonian evolution. It needs Smale's theorem
-  $\mathrm{Diff}^+(S^2) \simeq SO(3)$, or at least that $\mathrm{Diff}^+(S^2)$ is connected through
-  smooth isotopies, and a Moser argument for area forms on $S^2$. That quantum evolutions are
+  the sphere is the end of a Hamiltonian evolution. Two steps are missing.
+  \begin{itemize}
+  \item \emph{Smale's theorem} $\mathrm{Diff}^+(S^2) \simeq SO(3)$, or at least that
+    $\mathrm{Diff}^+(S^2)$ is connected through smooth isotopies. The reduction to
+    diffeomorphisms of the disc fixing its boundary follows from the disc theorem, which TauCeti
+    has. The core, that these form a connected group, is missing. It needs a smooth Schoenflies
+    theorem for arcs in the disc, or uniformization with parameters, and TauCeti has neither.
+  \item \emph{Moser's argument with a parameter.} Moser's theorem for a single family of forms,
+    applied to $\varphi_t^*\omega$ along an isotopy $\varphi_t$ from the identity to $f$, gives
+    an area-form-preserving isotopy that ends at $f \circ \psi$ for some $\psi$ preserving the area
+    form, not at $f$. What is needed instead is Moser's deformation along the linear paths from
+    $\omega$ to $\varphi_t^*\omega$, smoothly in $t$. The primitives
+    $\int_0^t \varphi_u^*\iota_{X_u}\omega\,du$ are corrected by an exact term, using
+    $H^1_{dR}(S^2) = 0$, so that they vanish at both ends. TauCeti has Moser's theorem for one
+    family; the time-dependent flow that depends smoothly on a second parameter is missing.
+  \end{itemize}
+  The isotopy obtained is then Hamiltonian by
+  \lean{isotopy_preserves_areaForm_iff_hamiltonian}. That quantum evolutions are
   exactly the rotations is checked (\lean{exists_unitaryAction_eq_iff}). (Log, ``Problems
   found'', Example~2 item.)
 \end{enumerate}
