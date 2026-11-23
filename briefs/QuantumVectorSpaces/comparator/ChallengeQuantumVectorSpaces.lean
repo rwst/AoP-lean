@@ -13,6 +13,9 @@ public import TauCeti.Analysis.Distribution.SchwartzSpace.WeightedPlancherel
 public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 public import Mathlib.Analysis.Matrix.Hermitian
 public import Mathlib.MeasureTheory.Measure.SeparableMeasure
+public import Mathlib.Data.Finsupp.Pointwise
+public import Mathlib.Topology.Algebra.Projectivization
+public import Mathlib.Algebra.Lie.OfAssociative
 
 /-!
 # QuantumVectorSpaces: the statements of record
@@ -163,6 +166,72 @@ theorem isQuantumVectorSpace_schwartzN (hħ : ħ ≠ 0) :
     IsQuantumVectorSpace (l2CoreN n) (obsN n ħ) ħ (obsNConst n) := by
   sorry
 end SchwartzN
+end QuantumVectorSpaces
+end
+end
+-- QuantumVectorSpaces.Frames
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Topology
+@[expose] public noncomputable section
+namespace QuantumVectorSpaces
+section Frames
+variable {V : Type*} [AddCommGroup V] [Module ℂ V] (c : PreInnerProductSpace.Core ℂ V)
+  {ι κ : Type*} (X : ι → Module.End ℂ V) (Y : κ → Module.End ℂ V)
+def IsObservable (t : TopologicalSpace V) (A : Module.End ℂ V) : Prop :=
+  IsSymmetric c A ∧ @Continuous V V t t A
+theorem topology_eq_iff_continuous :
+    topology c X = topology c Y ↔
+      (∀ i, @Continuous V V (topology c Y) (topology c Y) (X i)) ∧
+        ∀ j, @Continuous V V (topology c X) (topology c X) (Y j) := by
+  sorry
+theorem isObservable_iff_of_frames
+    (hX : ∀ i, IsObservable c (topology c Y) (X i)) (hY : ∀ j, IsObservable c (topology c X) (Y j))
+    (A : Module.End ℂ V) :
+    IsObservable c (topology c X) A ↔ IsObservable c (topology c Y) A := by
+  sorry
+end Frames
+end QuantumVectorSpaces
+end
+end
+-- QuantumVectorSpaces.Isomorphisms
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Topology
+open scoped LinearAlgebra.Projectivization
+attribute [local instance 100] LieRing.ofAssociativeRing
+@[expose] public noncomputable section
+namespace QuantumVectorSpaces
+variable {V W U : Type*} [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
+  [AddCommGroup U] [Module ℂ U]
+  {ι κ μ : Type*} (c : PreInnerProductSpace.Core ℂ V) (X : ι → Module.End ℂ V)
+  (c' : PreInnerProductSpace.Core ℂ W) (Y : κ → Module.End ℂ W)
+  (c'' : PreInnerProductSpace.Core ℂ U) (Z : μ → Module.End ℂ U)
+section Transport
+def PreservesInner (e : V ≃ₗ[ℂ] W) : Prop := ∀ v w, c'.inner (e v) (e w) = c.inner v w
+end Transport
+abbrev lieAlgebra : LieSubalgebra ℂ (Module.End ℂ V) := LieSubalgebra.lieSpan ℂ _ (Set.range X)
+structure LieIso extends V ≃ₗ[ℂ] W where
+  preservesInner : PreservesInner c c' toLinearEquiv
+  conj_mem_iff (A : Module.End ℂ V) : toLinearEquiv.conj A ∈ lieAlgebra Y ↔ A ∈ lieAlgebra X
+end QuantumVectorSpaces
+end
+end
+-- QuantumVectorSpaces.SchwartzIsomorphisms
+run_cmd Lean.modifyEnv (Lean.Meta.auxLemmasExt.setState · {})
+section
+open Complex SchwartzMap
+open scoped ContDiff
+attribute [local instance 100] LieRing.ofAssociativeRing
+@[expose] public noncomputable section
+namespace QuantumVectorSpaces
+variable (n : ℕ)
+set_option hygiene false in
+local notation "𝓢ₙ" => 𝓢(EuclideanSpace ℝ (Fin n), ℂ)
+variable {n} {ħ : ℝ}
+theorem nonempty_lieIso_schwartzN_iff {m : ℕ} {ħ' : ℝ} (hħ : ħ ≠ 0) (hħ' : ħ' ≠ 0) :
+    Nonempty (LieIso (l2CoreN n) (obsN n ħ) (l2CoreN m) (obsN m ħ')) ↔ n = m := by
+  sorry
 end QuantumVectorSpaces
 end
 end

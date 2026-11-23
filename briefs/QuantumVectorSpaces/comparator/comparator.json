@@ -6,8 +6,11 @@
     "QuantumVectorSpaces.locallyConvexSpace",
     "QuantumVectorSpaces.topology_schwartzN",
     "QuantumVectorSpaces.isQuantumVectorSpace_schwartzN",
+    "QuantumVectorSpaces.nonempty_lieIso_schwartzN_iff",
     "QuantumVectorSpaces.isQuantumVectorSpace_qubit",
-    "QuantumVectorSpaces.IsAdmissible.continuous_expectation"
+    "QuantumVectorSpaces.IsAdmissible.continuous_expectation",
+    "QuantumVectorSpaces.topology_eq_iff_continuous",
+    "QuantumVectorSpaces.isObservable_iff_of_frames"
   ],
   "permitted_axioms": [
     "propext",

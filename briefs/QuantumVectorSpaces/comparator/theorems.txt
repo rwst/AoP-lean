@@ -7,5 +7,8 @@ QuantumVectorSpaces.isGreatest_topology  # Corollary 2: the coarsest admissible 
 QuantumVectorSpaces.locallyConvexSpace  # Corollary 2: locally convex
 QuantumVectorSpaces.topology_schwartzN  # Example 3, Remark: the topology of S(R^n)
 QuantumVectorSpaces.isQuantumVectorSpace_schwartzN  # Example 3: S(R^n) is a quantum vector space
+QuantumVectorSpaces.nonempty_lieIso_schwartzN_iff  # Example 3: S(R^n) ≅ S(R^m) iff n = m
 QuantumVectorSpaces.isQuantumVectorSpace_qubit  # Example 4: the qubit is a quantum vector space
 QuantumVectorSpaces.IsAdmissible.continuous_expectation  # Theorem 5, [B]COBS
+QuantumVectorSpaces.topology_eq_iff_continuous  # Theorem 5, [B]WDQ: equal topologies
+QuantumVectorSpaces.isObservable_iff_of_frames  # Theorem 5, [B]WDQ: same observables

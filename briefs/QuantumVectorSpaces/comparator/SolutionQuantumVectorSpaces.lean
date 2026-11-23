@@ -6,6 +6,8 @@ See https://creativecommons.org/publicdomain/zero/1.0/
 module
 
 public import QuantumVectorSpaces
+public import QuantumVectorSpaces.Frames
+public import QuantumVectorSpaces.SchwartzIsomorphisms
 
 /-!
 # Physical vector spaces for quantum mechanics, re-exported for `lake comparator`
