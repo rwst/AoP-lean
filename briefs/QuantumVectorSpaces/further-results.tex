@@ -901,6 +901,18 @@ $S^{1/2}_{1/2}$ is the smallest nonzero space of the scale~\cite[Sec.~1]{lcp}. I
 the functions whose Hermite coefficients decrease exponentially~\cite[Remark~1.3]{gpr}, that is,
 the analytic vectors $\bigcup_{t > 0} D(e^{tN})$ of the number operator $N$.
 
+\paragraph{Fourier transform and coherent states.} Two facts in one variable make the space a
+natural one for quantum mechanics. First, the unitary Fourier transform
+$\mathcal F f(\xi) = (2\pi)^{-1/2}\int e^{-ix\xi}f(x)\,dx$ satisfies
+$\mathcal F h_j = (-i)^j h_j$, so $c_j(\mathcal F f) = (-i)^j c_j(f)$ and $\mathcal F$ maps
+$S^{1/2}_{1/2}(\mathbb R)$ onto itself. Second, let $a_- = X + D$, so that
+$c_j(a_- g) = \sqrt{2(j+1)}\,c_{j+1}(g)$. If a Schwartz function satisfies $a_- g = zg$, then
+$|c_j(g)|^2 = (|z|^2/2)^j|c_0(g)|^2/j!$, which decreases faster than any exponential, so
+$g \in S^{1/2}_{1/2}(\mathbb R)$. The translated Gaussians
+$g(x) = \pi^{-1/4}e^{-(x-x_0)^2/2}$ satisfy $a_- g = x_0 g$, and $\|g\| = 1$ gives the
+Poisson weights $|c_j(g)|^2 = e^{-\lambda}\lambda^j/j!$ with $\lambda = x_0^2/2$. So the space
+contains the coherent states of the oscillator, and with them their Fourier transforms.
+
 \begin{theorem}\label{thm:gs}
   Let $\mu, \nu \ge \frac12$ and $n, m \ge 1$. Then $S^\mu_\mu(\mathbb R^n)$ and
   $S^\nu_\nu(\mathbb R^m)$ are isomorphic as locally convex spaces if and only if
@@ -974,9 +986,87 @@ which counting excludes when $n \ne m$. Theorem~\ref{thm:gs} shows that no isomo
 kind exists.
 
 \paragraph{Only the product $\mu n$ is remembered.} For example
-$S^{1/2}_{1/2}(\mathbb R^2) \cong S^1_1(\mathbb R)$. So the number of degrees of freedom becomes a
+$S^{1/2}_{1/2}(\mathbb R^2) \cong S^1_1(\mathbb R)$. An explicit isomorphism sends
+$h_a \otimes h_b$ to $h_{\pi(a,b)}$, where $\pi(a,b) = b^2 + a$ for $a < b$ and
+$\pi(a,b) = a^2 + a + b$ otherwise enumerates $\mathbb N^2$ in square shells. Since
+$\max(a,b)^2 \le \pi(a,b) < (\max(a,b)+1)^2$, the weights $e^{t(a+b)}$ and
+$e^{t\sqrt{\pi(a,b)}}$ dominate each other up to a change of~$t$ and a constant factor. So the number of degrees of freedom becomes a
 topological invariant only once $\mu$ is fixed. The natural choice is $\mu = \frac12$, the
 smallest nonzero space of the scale.
+
+\subsection{What the space does not remember}
+
+The topology of $S^{1/2}_{1/2}(\mathbb R^n)$ fixes $n$, but not the configuration space
+$\mathbb R^n$. Let $A(M)$ be the space of complex-valued real-analytic functions on a compact
+real-analytic manifold~$M$, with its usual topology: the inductive limit of the Banach spaces
+$H^\infty(U)$ of bounded holomorphic functions on complex neighbourhoods $U$ of~$M$, along a
+decreasing basis of such neighbourhoods~\cite[Sec.~1]{domanski}. For the torus
+$\mathbb T^n = \mathbb R^n/2\pi\mathbb Z^n$ take
+$U_r = \{z \in \mathbb C^n/2\pi\mathbb Z^n : |\operatorname{Im} z_i| < r\}$, $r = 1, \frac12,
+\frac13, \dots$
+
+\begin{theorem}\label{thm:gs-torus}
+  For $n \ge 1$, $S^{1/2}_{1/2}(\mathbb R^n) \cong A(\mathbb T^n)$ as locally convex spaces. More
+  generally $S^{1/2}_{1/2}(\mathbb R^n) \cong A(M)$ for every connected compact real-analytic
+  manifold $M$ of dimension~$n$.
+\end{theorem}
+
+\begin{proof}
+  For $k \in \mathbb Z^n$ write $|k| = |k_1| + \dots + |k_n|$ and
+  $\hat g(k) = (2\pi)^{-n}\int_{[0,2\pi]^n} g(x)e^{-ik\cdot x}\,dx$.
+
+  \emph{Coefficients.} We show that $g \in A(\mathbb T^n)$ if and only if
+  $|\hat g(k)| \le Ce^{-\varepsilon|k|}$ for some $C, \varepsilon > 0$. Let $g$ extend to a
+  holomorphic function bounded by $C$ on~$U_r$, and let $0 < \rho < r$. Shifting the contour in
+  each variable, which periodicity allows, gives
+  $\hat g(k) = (2\pi)^{-n}\int_{[0,2\pi]^n} g(x+iy)e^{-ik\cdot(x+iy)}\,dx$ for every
+  $y \in \mathbb R^n$ with $|y_i| < r$. With $y_i = -\rho\operatorname{sgn}k_i$ the exponential has
+  modulus $e^{k\cdot y} = e^{-\rho|k|}$, so $|\hat g(k)| \le Ce^{-\rho|k|}$. Conversely, if
+  $|\hat g(k)| \le Ce^{-\varepsilon|k|}$ and $\rho < \varepsilon$, then on $U_\rho$ the terms of
+  $\sum_k \hat g(k)e^{ik\cdot z}$ are bounded by $Ce^{-(\varepsilon-\rho)|k|}$. This is summable,
+  since at most $(2M+1)^n$ points of $\mathbb Z^n$ have $|k| \le M$. So the series defines a
+  bounded holomorphic function on $U_\rho$, and it equals $g$ on $\mathbb T^n$, because a
+  continuous function with absolutely summable Fourier coefficients is the sum of its Fourier
+  series.
+
+  \emph{Topology.} Let $F$ be the space of families $(c_k)_{k \in \mathbb Z^n}$ with
+  $\sup_k |c_k|e^{|k|/l} < \infty$ for some $l \in \mathbb N$, with the inductive limit topology
+  of these weighted $\ell^\infty$ spaces. The Fourier map $A(\mathbb T^n) \to F$ is a linear
+  bijection by the first step and the uniqueness of Fourier coefficients. Both spaces are
+  countable inductive limits of Banach spaces, and every coefficient functional is continuous on
+  both: $|\hat g(k)| \le \sup_{\mathbb T^n}|g|$, which is at most the norm of $g$ in
+  $H^\infty(U_r)$. So the Fourier map and its inverse have closed graphs, and by Grothendieck's
+  closed graph theorem~\cite{mv} both are continuous. The weighted $\ell^2$ spaces give the same
+  inductive limit, since
+  $\sum_k |c_k|^2e^{2|k|/(2l)} \le \sup_k(|c_k|e^{|k|/l})^2\sum_k e^{-|k|/l}$ and
+  $\sup_k |c_k|e^{|k|/l} \le (\sum_k |c_k|^2e^{2|k|/l})^{1/2}$. In other words
+  $A(\mathbb T^n) = \bigcup_{t > 0} D(e^{tA})$ with $A = \sum_i |\partial_i|$, the analogue of
+  $S^{1/2}_{1/2}(\mathbb R^n) = \bigcup_{t > 0} D(e^{tN})$.
+
+  \emph{Counting.} Enumerate $\mathbb Z^n$ as $k'(0), k'(1), \dots$ with $|k'(j)|$ nondecreasing.
+  If $|k'(j)| = M$, the $\binom{M-1+n}{n} \ge M^n/n!$ points of $\mathbb N^n$ with $|k| \le M-1$
+  come before $k'(j)$, and $k'(j)$ is among the at most $(2M+1)^n$ points with $|k| \le M$. Hence
+  $\frac12(j+1)^{1/n} - \frac12 \le |k'(j)| \le (n!\,j)^{1/n}$. Additive and multiplicative
+  constants in the exponent change only the step index, so relabelling along $k'$ maps $F$ onto
+  the space $\{x : \sum_j |x_j|^2e^{2sj^{1/n}} < \infty \text{ for some } s > 0\}$, with its
+  inductive limit topology. That is $\Lambda_0(a^{n,1/2})'_b$, $a^{n,1/2}_j = j^{1/n}$, which is
+  $S^{1/2}_{1/2}(\mathbb R^n)$ by the proof of Theorem~\ref{thm:gs}.
+
+  \emph{General $M$.} Vogt proved $A(M) \cong A(\mathbb T^n)$ for every connected compact
+  real-analytic manifold $M$ of dimension~$n$~\cite[Cor.~4.12]{domanski}.
+\end{proof}
+
+The composite isomorphism takes the $j$-th Hermite function on $\mathbb R^n$, in the graded order
+of Theorem~\ref{thm:gs}, to $(2\pi)^{-n/2}e^{ik'(j)\cdot x}$ on $\mathbb T^n$. It is a unitary
+$L^2(\mathbb R^n) \to L^2(\mathbb T^n)$, but not a natural one: already for $n = 1$ it gives
+$e^{ix}$ and $e^{-ix}$ different eigenvalues of the transported number operator. It matches the
+spectra of $N$ and of $\sum_i |\partial_i|$ only up to constants, which is all the topology sees.
+If $A(M)$ is taken as the analogue of $S^{1/2}_{1/2}$ for a particle on~$M$, then a particle on
+$\mathbb R^n$, on $\mathbb T^n$ or on the sphere $S^n$ has the same space of states, as a locally
+convex space. The topology fixes $n$ and nothing more about
+the configuration space; the rest must come from the observables. The smooth case behaves in
+the same way with polynomial weights: $C^\infty(\mathbb T^n) \cong s \cong \mathcal S(\mathbb R^n)$
+by the same Fourier argument, and there not even $n$ survives.
 
 \subsection{The cost in Definition 1}
 
@@ -1070,9 +1160,130 @@ its Hermite coefficients~\cite[Remark~1.3]{gpr}, not by the Gelfand--Shilov esti
     \lean{exists_not_mem_gelfandShilov}, \lean{not_completeSpace_gelfandShilov},
     \lean{not_isQuantumVectorSpace_gelfandShilov}: Theorem~\ref{thm:gs-def1}(2).
 \end{itemize}
-Not formalized: Theorem~\ref{thm:gs}, which needs the Gelfand--Shilov estimates for Hermite
-expansions, inductive limit topologies and the classification of power series spaces; and
-Theorems~\ref{thm:gs-def1}(1) and~\ref{thm:gs-moments}.
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.HermiteSpaces},\\ namespace
+\lean{QuantumVectorSpaces.FurtherResults.HermiteSpace}, with the general part in\\
+\lean{ForMathlib.Analysis.Normed.Module.KolmogorovWidth},\\
+\lean{ForMathlib.Analysis.InnerProductSpace.KolmogorovWidth},\\
+\lean{ForMathlib.Analysis.LocallyConvex.PowerSeriesSpace} and\\
+\lean{ForMathlib.Order.GradedEnumeration}. These check the coefficient and classification steps
+of the proof of Theorem~\ref{thm:gs}, for sequence spaces defined by Hermite coefficients.
+\begin{itemize}
+  \item \lean{kolmogorovWidth}, \lean{HilbertBasis.kolmogorovWidth_weightedBall}: Kolmogorov
+    widths, defined algebraically, and the widths $1/w_k$ of the unit ball of $\ell^2(w)$ in
+    $\ell^2$.
+  \item \lean{PowerSeriesSpace}, \lean{PowerSeriesSpace.kolmogorovWidth_closedBall}: the spaces
+    $\Lambda_r(a)$ for $r = 0$ and $r = \infty$ with their seminorms $|\cdot|_t$, $t < r$; the
+    $k$-th width of the unit ball of $|\cdot|_t$ relative to that of $|\cdot|_s$ is
+    $e^{-(t-s)a_k}$.
+  \item \lean{PowerSeriesSpace.nonempty_continuousLinearEquiv_iff_zero},\\
+    \lean{PowerSeriesSpace.nonempty_continuousLinearEquiv_iff_top}: the classification step.
+    For nondecreasing $a, b \ge 0$, $\Lambda_r(a) \cong \Lambda_r(b)$ if and only if
+    $a \le Cb + D$ and $b \le Ca + D$ for some $C > 0$ and $D$. No stability of $a$ or $b$ is
+    assumed. For $a, b \to \infty$ this is the criterion of~\cite[Thm.~5.12]{vogt}.
+  \item \lean{exists_equiv_nat_monotone}, \lean{HermiteSpace.enum}, \lean{HermiteSpace.level},
+    \lean{HermiteSpace.level_le}, \lean{HermiteSpace.rpow_inv_le_level_add_one}: the enumeration
+    $k(j)$ of $\mathbb N^n$ by degree, and the count
+    $j^{1/n} - 1 \le |k(j)| \le n\,j^{1/n}$.
+  \item \lean{HermiteSpace}, \lean{HermiteSpace.toPowerSeriesSpace}: the families
+    $(c_k)_{k \in \mathbb N^n}$ with $\sum_k |c_k|^2 e^{2tf(|k|)} < \infty$ for all $t < r$, for
+    a function $f \colon \mathbb N \to \mathbb R$, and their identification with
+    $\Lambda_r\bigl(f(|k(j)|)\bigr)$.
+  \item \lean{HermiteSpace.nonempty_continuousLinearEquiv_gelfandShilov_iff}: for
+    $f(d) = d^{1/(2\mu)}$ the spaces for $(n, \mu)$ and $(m, \nu)$ are isomorphic if and only if
+    $\mu n = \nu m$, for all $\mu, \nu > 0$. With $r = 0$ these are the spaces
+    $\Lambda_0(a^{n,\mu})$ of the proof, whose strong duals are the $S^\mu_\mu(\mathbb R^n)$;
+    with $r = \infty$ they are the power series spaces of infinite type, the coefficient spaces
+    of the Beurling-type spaces $\Sigma^\mu_\mu(\mathbb R^n)$. Then
+    \lean{HermiteSpace.nonempty_continuousLinearEquiv_rpow_iff_eq}: for fixed $\mu$, if and only
+    if $n = m$.
+\end{itemize}
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.HermiteStepSpaces}, with the general part in\\
+\lean{ForMathlib.Analysis.LocallyConvex.DualPowerSeriesSpace}. These check
+Theorem~\ref{thm:gs} itself on the coefficient side, without the duality step and without
+inductive limit topologies. The spaces are unions of their steps, and an isomorphism is replaced
+by a linear bijection that, together with its inverse, maps every step ball into a multiple of
+some step ball. Every isomorphism of the locally convex spaces has this property: it maps
+bounded sets to bounded sets, and in the strong dual of the Fr\'echet space $\Lambda_0(a)$ every
+bounded set is equicontinuous (Banach--Steinhaus), hence lies in the polar of a neighbourhood of
+zero, which is a multiple of a step ball~\cite{mv}. This passage is not formalized.
+\begin{itemize}
+  \item \lean{DualPowerSeriesSpace.union}, \lean{DualPowerSeriesSpace.ball},
+    \lean{DualPowerSeriesSpace.IsStepBounded}: the union of the steps
+    $\{x : \sum_j |x_j|^2e^{2ta_j} < \infty\}$, $t > 0$, their unit balls $B_t$, and the
+    step-bounded maps.
+  \item \lean{DualPowerSeriesSpace.kolmogorovWidth_ballIn_le},\\
+    \lean{DualPowerSeriesSpace.ofReal_le_kolmogorovWidth_ballIn}: in any subspace of
+    $\mathbb K^{\mathbb N}$ that contains the unit vectors, the $k$-th width of $B_t$ relative
+    to $B_s$ is $e^{-(t-s)a_k}$.
+  \item \lean{DualPowerSeriesSpace.exists_isStepBounded_equiv_iff}: the classification. For
+    nondecreasing $a, b \ge 0$ a step-bounded bijection exists if and only if $a \le Cb + D$
+    and $b \le Ca + D$ for some $C > 0$ and $D$.
+  \item \lean{HermiteSpace.stepSpace}, \lean{HermiteSpace.mem_stepSpace_iff}: the families
+    $(c_k)_{k \in \mathbb N^n}$ with $\sum_k |c_k|^2 e^{2tf(|k|)} < \infty$ for some $t > 0$.
+    For $f(d) = d^{1/(2\mu)}$ this is the coefficient space of $S^\mu_\mu(\mathbb R^n)$
+    of~\cite{gpr}.
+  \item \lean{HermiteSpace.exists_isStepBounded_equiv_gelfandShilov_iff}: for
+    $f(d) = d^{1/(2\mu)}$, a step-bounded bijection between the spaces for $(n, \mu)$ and
+    $(m, \nu)$ exists if and only if $\mu n = \nu m$;
+    \lean{HermiteSpace.exists_isStepBounded_equiv_iff_eq}: for $S^{1/2}_{1/2}$, that is
+    $f(d) = d$, if and only if $n = m$.
+\end{itemize}
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.HermitePairing}. This gives the explicit
+isomorphism $S^{1/2}_{1/2}(\mathbb R^2) \cong S^1_1(\mathbb R)$ in the same step form, on the
+coefficient spaces of \lean{HermiteSpace.stepSpace} with $f(d) = d$ on $\mathbb N^2$ and
+$f(d) = \sqrt d$ on~$\mathbb N$.
+\begin{itemize}
+  \item \lean{HermiteSpace.pairEquiv}, \lean{HermiteSpace.sqrt_degree_le},
+    \lean{HermiteSpace.degree_le_sqrt}: the enumeration $\pi$ of $\mathbb N^2$
+    (\lean{Nat.pair}), with $\sqrt{\pi(a,b)} \le a + b + 1$ and
+    $a + b \le 2\sqrt{\pi(a,b)}$.
+  \item \lean{HermiteSpace.pairingEquiv}, \lean{HermiteSpace.pairingEquiv_apply_pair}: the
+    relabelling $(Tc)_{\pi(a,b)} = c_{(a,b)}$, a linear bijection between the two coefficient
+    spaces.
+  \item \lean{HermiteSpace.isStepBounded_pairingEquiv},
+    \lean{HermiteSpace.isStepBounded_pairingEquiv_symm}: $T$ and $T^{-1}$ map every step ball
+    into a multiple of some step ball.
+\end{itemize}
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.FourierCoherentStates}, with the dilations
+of Schwartz functions in \lean{ForMathlib.Analysis.Distribution.SchwartzSpace.Dilation}. This
+checks the paragraph on the Fourier transform and coherent states, with
+$S^{1/2}_{1/2}(\mathbb R)$ defined by its Hermite coefficients.
+\begin{itemize}
+  \item \lean{fourierOp}, \lean{fourierOp_apply}: the unitary Fourier transform, obtained from
+    Mathlib's transform with kernel $e^{-2\pi ix\xi}$ by conjugating with the dilation
+    $f \mapsto (2\pi)^{1/4}f(\sqrt{2\pi}\,\cdot)$, and its integral formula.
+  \item \lean{fourierOp_hermite}, \lean{coef_fourierOp}, \lean{fourierOp_four}:
+    $\mathcal F h_j = (-i)^j h_j$, from TauCeti's eigenrelation for the dilated Hermite
+    functions; $c_j(\mathcal F f) = (-i)^j c_j(f)$; $\mathcal F^4 = 1$.
+  \item \lean{fourierOp_mem_gelfandShilov_iff}: $\mathcal F f \in S^{1/2}_{1/2}(\mathbb R)$ if
+    and only if $f \in S^{1/2}_{1/2}(\mathbb R)$.
+  \item \lean{norm_coef_sq_of_lowerOp_eq_smul}, \lean{mem_gelfandShilov_of_lowerOp_eq_smul}:
+    eigenvectors of $a_-$ and their coefficients.
+  \item \lean{gaussianAt}, \lean{lowerOp_gaussianAt}, \lean{norm_coef_gaussianAt_sq},
+    \lean{gaussianAt_mem_gelfandShilov}: the translated Gaussians and their Poisson weights.
+\end{itemize}
+Module:\\ \lean{QuantumVectorSpaces.FurtherResults.AnalyticVectors}. This checks the estimate
+in the proof of Theorem~\ref{thm:gs-moments}, with $S^{1/2}_{1/2}(\mathbb R)$ defined by its
+Hermite coefficients as in \lean{GelfandShilov}.
+\begin{itemize}
+  \item \lean{creationOp}, \lean{annihilationOp}, \lean{creationOp_hermite}: $a^\dagger$ and
+    $a$, normalized by $a^\dagger h_j = \sqrt{j+1}\,h_{j+1}$.
+  \item \lean{inner_annihilationOp_pow_creationOp_pow}:
+    $\langle\psi, a^k(a^\dagger)^k\psi\rangle = \|(a^\dagger)^k\psi\|^2$.
+  \item \lean{hasSum_norm_coef_sq}, \lean{norm_coef_creationOp_pow_sq}: Parseval, and
+    $|c_j((a^\dagger)^k f)|^2 = j(j-1)\cdots(j-k+1)\,|c_{j-k}(f)|^2$.
+  \item \lean{exists_norm_creationOp_pow_sq_le}: for $\psi \in S^{1/2}_{1/2}(\mathbb R)$,
+    $\|(a^\dagger)^k\psi\|^2 \le k!\,S\,q^k$ for some $S$ and $q$. The proof takes
+    $p = e^{-\varepsilon}$ in the binomial bound.
+  \item \lean{summable_woronowicz}: the series
+    $\sum_k \omega(a^k(a^\dagger)^k)^{1/2}\,t^k/k!$ converges for every real~$t$.
+\end{itemize}
+Not formalized: Theorem~\ref{thm:gs} as stated, which needs in addition the Gelfand--Shilov
+estimates for Hermite expansions~\cite{gpr, lcp}, inductive limit topologies and the
+passage from isomorphisms to step-bounded bijections;
+Theorem~\ref{thm:gs-torus}, which needs in addition the Fourier description of $A(\mathbb T^n)$;
+Theorem~\ref{thm:gs-def1}(1); and Woronowicz's theorem~\cite{woronowicz70}, which turns the
+estimate into Theorem~\ref{thm:gs-moments}.
 
 \section{Example 3 from a single operator}
 \label{sec:oscillator}
@@ -1185,6 +1396,9 @@ Module:\\ \lean{QuantumVectorSpaces.FurtherResults.OscillatorDomain}, namespace
   2000.
 \bibitem{mv} R.~Meise, D.~Vogt, \emph{Introduction to Functional Analysis}, Oxford University
   Press, 1997.
+\bibitem{domanski} P.~Doma\'nski, Notes on real analytic functions and classical operators, in:
+  \emph{Topics in Complex Analysis and Operator Theory}, Contemp. Math. \textbf{561}, Amer. Math.
+  Soc., 2012, 3--47.
 \bibitem{woronowicz70} S.~L.~Woronowicz, The quantum problem of moments I, Rep. Math. Phys.
   \textbf{1} (1970) 135.
 \bibitem{further-hilbert} R.~Stephan, \emph{Further results on the brief ``Unphysicality of

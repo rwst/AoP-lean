@@ -18,9 +18,9 @@ mechanics"*).
 The Schwartz spaces `𝓢(ℝⁿ)` are isomorphic for all `n` (`SchwartzMap.nonempty_schwartzEquiv`), so
 as bare topological vector spaces they do not remember the number of degrees of freedom. The
 Gelfand–Shilov spaces `S^{1/2}_{1/2}(ℝⁿ)` do: they are pairwise non-isomorphic (Sec. 5 of the
-note, not formalized). In one dimension, `S^{1/2}_{1/2}(ℝ)` is the space of functions whose
-Hermite coefficients decrease exponentially (Gramchev–Pilipović–Rodino), and that is the
-definition used here.
+note; its coefficient and classification steps are in `HermiteSpaces.lean`). In one dimension,
+`S^{1/2}_{1/2}(ℝ)` is the space of functions whose Hermite coefficients decrease exponentially
+(Gramchev–Pilipović–Rodino), and that is the definition used here.
 
 This file shows that `S^{1/2}_{1/2}(ℝ)` does not fit Definition 1 with the observables of
 Example 3: `X` and `P` map it into itself, but in the topology of Corollary 2 it is not complete,
