@@ -33,7 +33,7 @@ formalization is missing, or \emph{Research}, when the question itself is open.
 \section*{From the brief}
 \begin{enumerate}
 \item \textbf{Propagator for unbounded time-dependent $H(t)$.} \emph{Formalization
-  gap} under Kato's hypotheses (next section, item~(vi)); research beyond them. ``The Schr\"odinger equation
+  gap} under Kato's hypotheses (next section, item~(v)); research beyond them. ``The Schr\"odinger equation
   gives rise to a differentiable unitary propagator $U_{t_0\to t_1}$'' is assumed. For a
   continuous family of bounded self-adjoint $H(t)$ this is now proved, in any dimension, from
   the global existence and uniqueness theorem for linear ODEs: the propagator exists, is unique
@@ -70,7 +70,7 @@ norm-differentiable at $0$ (\lean{movingPhase_counterexample}; log, ``No norm-di
 propagator'').
 \begin{enumerate}
 \item \textbf{Unbounded time-dependent Hamiltonians.} \emph{Research}, with the
-  formalization gaps (iv)--(vi) at the end of this item. EVDIFF on every density operator forces a
+  formalization gaps (iii)--(v) at the end of this item. EVDIFF on every density operator forces a
   bounded $H$ (Banach--Steinhaus). With EVDIFF on a dense set of states, Theorem~2 is formalized
   for a time-independent evolution, with unbounded self-adjoint $H$
   (\lean{drSceq_iff_drInfo_and_evDiff}, by Stone's theorem). Without EVTI, Step~3 gives only a
@@ -96,7 +96,13 @@ propagator'').
   (\lean{switchedHamiltonian_le_momentum_left}, \lean{switchedHamiltonian_le_momentum_right}).
   \begin{enumerate}
   \item[(a)] \emph{Two-sided derivative}, as in Step~3: DR-INFO + EVDIFF do not give a
-    self-adjoint $H(t_0)$. This is settled by the example above.
+    self-adjoint $H(t_0)$. This is settled by the example above. The general criteria below
+    hold for the two-sided generator too: it is the infimum of the two one-sided ones
+    (\lean{twoSidedHamiltonian_eq_inf}), self-adjoint iff the evolution is tangent to a
+    one-parameter unitary group from both sides (\lean{isSelfAdjoint_twoSidedHamiltonian_iff}),
+    and the invariant-core criteria carry over
+    (\lean{isEssentiallySelfAdjoint_twoSidedHamiltonian},
+    \lean{isSelfAdjoint_twoSidedHamiltonian}).
   \item[(b)] \emph{Forward derivative only.} The evolution $\Phi_{t_0\to t_1}$ is only given
     for $t_0 \le t_1$, so one can define $H(t_0)$ by the right derivative of
     $t \mapsto \Phi_{t_0\to t}$ at $t_0$. The example above says nothing here: its forward
@@ -122,13 +128,19 @@ propagator'').
     differ from the one at $t_0$ by operators bounded on $D$
     (\lean{isEssentiallySelfAdjoint_forwardHamiltonian}). If the differences also tend to $0$
     as $t \to t_0^+$, the forward generator itself is self-adjoint, by a Duhamel estimate
-    (\lean{isSelfAdjoint_forwardHamiltonian}). The example has no such $D$. Open: a relative
+    (\lean{isSelfAdjoint_forwardHamiltonian}). The example has no such $D$. The
+    bounded-difference condition cannot be dropped: on $\ell^2(\mathbb{N})$ the propagator
+    $U(t,s) = e^{-itB}e^{-i(t-s)A}e^{isB}$, with $A$ and $B$ direct sums of $2 \times 2$ blocks
+    whose sum is the Jacobi matrix with zero diagonal and off-diagonal entries $2^n$, has the
+    finitely supported sequences as a dense invariant subspace with differentiable orbits, and
+    the forward generator restricted to it is not essentially self-adjoint
+    (\lean{jacobi_counterexample}, \lean{not_boundedDifference_jacobi}). Open: a relative
     bound in place of a bounded difference, as for a time-dependent unbounded potential. The usual meaning of ``$U$ solves the
     Cauchy problem'' is not enough: dense subspaces $Y_t$ with $U(t,s)Y_s \subseteq Y_t$ on
     which $t \mapsto U(t,s)\psi$ is $C^1$ (Engel--Nagel, Def.~VI.9.2). In the example
-    $Y_0 = H^1_0(0,1)$ and $Y_t = D(H_{\alpha(t)})$ for $t > 0$ are such subspaces, by direct
-    computation (not formalized): for $\psi \in H^1_0$, $|\psi(1-u)| = o(\sqrt u)$ compensates the
-    derivative $\tfrac1{2\sqrt u}$ of the phase. Engel and Nagel note that no analogue of the
+    $Y_0 = H^1_0(0,1)$ and $Y_t = D(H_{\alpha(t)})$ for $t > 0$ are such subspaces
+    (\lean{sqrtPhase_cauchyProblem}): for $\psi \in H^1_0$, $|\psi(1-u)| \le \sqrt u\,\|\psi'\|$
+    compensates the derivative $\tfrac1{2\sqrt u}$ of the phase. Engel and Nagel note that no analogue of the
     generation theorem is known for time-dependent problems (Sec.~VI.9.a). Kato's theorem gives
     the $\Leftarrow$ direction under its hypotheses (constant domain, $t\mapsto H(t)\psi$ of
     class $C^1$); in the example the domain is not constant.
@@ -156,17 +168,12 @@ propagator'').
     is the forward generator self-adjoint for almost every $t_0$? A phase $\alpha$ of
     Brownian type (exponent $\tfrac12$ and nowhere $o(\sqrt s)$) breaks ``almost every''
     without that hypothesis, but such evolutions do not solve the Cauchy problem.
-  \item[(iii)] \emph{Research.} Does an invariant dense $D$ with $C^1$ orbits suffice for
-    essential self-adjointness on $D$ without the bounded-difference condition? Heuristic
-    counterexample, not checked: $U(t,s) = G(t)e^{-i(t-s)p^2}G(s)^{-1}$ with
-    $G(t) = e^{it^2x^4}$ and $D$ the Schwartz space; the generator at $t_0$ is like
-    $p^2 - 2t_0x^4$, limit circle at infinity.
-  \item[(iv)] \emph{Formalization gap.} Known. $K = H(t) - i\hbar\,\partial_t$ on a core for a time-dependent family
+  \item[(iii)] \emph{Formalization gap.} Known. $K = H(t) - i\hbar\,\partial_t$ on a core for a time-dependent family
     $H(t)$ under Kato-type hypotheses (Howland 1974).
-  \item[(v)] \emph{Formalization gap.} Known. Nickel's characterization: $U$ solves the Cauchy problem iff $K$ has an
+  \item[(iv)] \emph{Formalization gap.} Known. Nickel's characterization: $U$ solves the Cauchy problem iff $K$ has an
     invariant core of the form $G_0 + A$ (Nickel 1997, Thm.~2.9, cited in Engel--Nagel,
     Rem.~VI.9.12). The paper could not be obtained.
-  \item[(vi)] \emph{Formalization gap.} Known. Kato's theorem: constant domain and $t \mapsto H(t)\psi$ of class $C^1$
+  \item[(v)] \emph{Formalization gap.} Known. Kato's theorem: constant domain and $t \mapsto H(t)\psi$ of class $C^1$
     give a unitary propagator. Needs Yosida-approximation or product-integral machinery that
     neither Mathlib nor Physlib has.
   \end{enumerate}

@@ -873,6 +873,9 @@ All hypotheses of \lean{schrodinger_of_preserves_vonNeumannEntropy} hold, and no
   \lean{solvesSchrodinger_schrodingerPropagator} ($e^{-itH/\hbar}$ solves the Schr\"odinger
   equation for $H$), \lean{schrodingerPropagator_zero} and
   \lean{schrodingerPropagator_mem_unitary} were added.
+\item New file \lean{ForPhyslib/QuantumMechanics/TwoSidedHamiltonian.lean}: the backward and
+  two-sided Hamiltonians, with the results for the forward one carried over (``Backward and
+  two-sided derivatives'' below). Imports: \lean{ForPhyslib.QuantumMechanics.ForwardHamiltonian}.
 \item New file \lean{ForPhyslib/QuantumMechanics/Howland.lean}: Howland's extended space, the
   positive counterpart (``Howland's generator'' below). Imports:
   \lean{ForPhyslib.QuantumMechanics.Stone},
@@ -957,6 +960,11 @@ Forward derivative, any unitary evolution: the forward Hamiltonian is symmetric,
   \lean{forwardHamiltonian_eq_of_isLittleO}, \lean{isSelfAdjoint_forwardHamiltonian_iff} \\
 Forward derivative, $\alpha(t) = \alpha_0 + \sqrt t$: at $0$ no one-parameter unitary group is
   tangent to the evolution & \lean{not_exists_tangent_sqrtPhase} \\
+Forward derivative, $\alpha(t) = \alpha_0 + \sqrt t$: the propagator solves the Cauchy problem
+  (Engel--Nagel, Def.~VI.9.2) on $Y_t = D(H_{\alpha(t)})$ for $t > 0$ and
+  $Y_0 = H^1_0(0,1) \subsetneq D(H_{\alpha_0})$ &
+  \lean{SolvesCauchyProblem}, \lean{sqrtPhase_solvesCauchyProblem},
+  \lean{sqrtPhase_cauchyProblem}, \lean{exists_classical_solution} \\
 Forward derivative, invariant core: a dense subspace invariant under the evolution, on which the
   generators near $t_0$ differ from the one at $t_0$ by bounded operators, is a core, and the
   forward Hamiltonian is essentially self-adjoint &
@@ -965,6 +973,24 @@ Forward derivative, invariant core: a dense subspace invariant under the evoluti
 Forward derivative, invariant core with generator differences tending to $0$ as $t \to t_0^+$:
   the forward Hamiltonian is self-adjoint &
   \lean{isSelfAdjoint_forwardHamiltonian}, \lean{norm_sub_schrodingerPropagator_le} \\
+Backward and two-sided derivatives, any unitary evolution: the backward Hamiltonian is the
+  forward one of $\tau \mapsto F(-\tau)$ for $-\hbar$, the two-sided one is the infimum of the
+  two; both are symmetric, and self-adjoint iff the evolution is tangent to a one-parameter
+  unitary group from the left resp.\ from both sides &
+  \lean{backwardHamiltonian}, \lean{twoSidedHamiltonian},
+  \lean{backwardHamiltonian_eq_forwardHamiltonian}, \lean{twoSidedHamiltonian_eq_inf},
+  \lean{isSelfAdjoint_backwardHamiltonian_iff}, \lean{isSelfAdjoint_twoSidedHamiltonian_iff} \\
+Backward and two-sided derivatives, invariant core: all three Hamiltonians are essentially
+  self-adjoint with one closure; with generator differences tending to $0$ as $t \to t_0^-$
+  the backward one is self-adjoint, as $t \to t_0$ all three are, and they coincide &
+  \lean{isEssentiallySelfAdjoint_twoSidedHamiltonian}, \lean{isSelfAdjoint_backwardHamiltonian},
+  \lean{isSelfAdjoint_twoSidedHamiltonian} \\
+Forward derivative, invariant core without bounded differences: on $\ell^2(\mathbb{N})$ a
+  unitary propagator built from two direct sums of $2 \times 2$ blocks has a dense invariant
+  subspace with differentiable orbits, on which the forward Hamiltonian is a Jacobi matrix that
+  is not essentially self-adjoint &
+  \lean{jacobi_counterexample}, \lean{not_isEssentiallySelfAdjoint_jacobi},
+  \lean{not_boundedDifference_jacobi} \\
 Howland: a strongly continuous unitary propagator $U(t,s)$ gives a strongly continuous unitary
   group $W$ on $L^2(\mathbb{R};E)$ with self-adjoint generator $K$ &
   \lean{UnitaryPropagator}, \lean{UnitaryPropagator.howlandGroup},
@@ -1126,9 +1152,30 @@ Howland, finite dimension: DR-INFO + EVDIFF give a strongly continuous unitary p
     Hamiltonian at $0$ is then the minimal momentum $-i\,d/dx$ on $H^1_0(0,1)$, the operator
     $H_0$ of the switched example (\lean{forwardHamiltonian_sqrtPhase}): dense domain, symmetric,
     not self-adjoint (\lean{not_isSelfAdjoint_forwardHamiltonian_sqrtPhase}).
+  \item The propagator solves the Cauchy problem $\dot u = -iH_{\alpha(t)}u$ in the sense of
+    Engel--Nagel (Def.~VI.9.2), on $[0,\infty)$ (\lean{SolvesCauchyProblem},
+    \lean{sqrtPhase_solvesCauchyProblem}, file \texttt{VaryingPhaseCauchy.lean}). The map
+    $(t,s) \mapsto U(t,s)\psi$ is continuous (\lean{continuous_phasePropagator_apply}). The
+    spaces of initial values are the forward domains $Y_t$: $D(H_{\alpha(t)})$ for $t > 0$ and
+    $H^1_0(0,1) \subsetneq D(H_{\alpha_0})$ for $t = 0$ (\lean{sqrtPhase_cauchyProblem}). For
+    $\psi \in Y_s$, $t \mapsto U(t,s)\psi$ is $C^1$ on $[s,\infty)$, and $U(t,s)\psi \in Y_t$
+    (\lean{exists_classical_solution}), with derivative $-iH_{\alpha(t)}U(t,s)\psi$.
+  \item The time derivative comes from shifting the phase in time, without differentiating in
+    $x$: $U(t+\tau,s+\tau)$ is $U(t,s)$ for the phase $r \mapsto \alpha(r+\tau)$
+    (\lean{phasePropagator_add_time}). Its derivative in $\tau$ is
+    $-i\bigl(\sum_j \alpha'(s_j)\bigr)U(t,s)\psi$, over the wrap-around times $s_j$ of the point
+    (\lean{hasDerivAt_phasePropagator_shift}), by dominated convergence with
+    $|\sqrt{r+\tau} - \sqrt r| \le |\tau|/\sqrt r$. For $s > 0$, $\alpha' \le 1/(2\sqrt s)$ and
+    $\psi$ is bounded. For $s = 0$ the first wrap-around time of the point $z$ is $1 - z$, and
+    $|\psi(z)| \le \sqrt{1-z}\,\|\psi'\|$ on $H^1_0$ (\lean{norm_integral_le_sqrt}) compensates
+    $\alpha'(1-z) = 1/(2\sqrt{1-z})$. The product rule then gives a right derivative that is
+    continuous in $t$ (\lean{hasDerivWithinAt_phasePropagator_sqrtPhase},
+    \lean{continuousOn_rateVec}), and a continuous right derivative is a derivative
+    (\lean{hasDerivWithinAt_of_hasDerivWithinAt_Ici}).
   \end{itemize}
   So $\tfrac12$ is the threshold: Hölder continuity of $\alpha$ with exponent above $\tfrac12$
-  gives the self-adjoint $H_{\alpha(t_0)}$, exponent $\tfrac12$ does not.
+  gives the self-adjoint $H_{\alpha(t_0)}$, exponent $\tfrac12$ does not. Solving the Cauchy
+  problem does not change this: at $0$ the generator on $Y_0$ is still not self-adjoint.
 \end{itemize}
 
 \paragraph{Howland's generator.} What survives without any hypothesis on $H(t)$ is a
@@ -1252,7 +1299,69 @@ $H(t) = H + V(t)$ with $V$ bounded and norm-continuous.
   density for every $\psi \in E$. So $F$ is tangent to $e^{-i\tau A/\hbar}$, and by the local
   Stone theorem $H_0 = A$.
 \end{itemize}
+The bounded-difference condition cannot be dropped
+(\lean{jacobi_counterexample}, file \texttt{JacobiCounterexample.lean}). On
+$\ell^2(\mathbb{N})$ let $A$ act on the pairs $(e_{2k}, e_{2k+1})$ by $4^k\sigma_x$, and $B$ on
+the pairs $(e_{2k+1}, e_{2k+2})$ by $2\cdot 4^k\sigma_x$, and by $0$ on $e_0$. Take
+$U(t,s) = e^{-itB}e^{-i(t-s)A}e^{isB}$, $F(\tau) = U(\tau,0)$, and $D$ the finitely supported
+sequences.
+\begin{itemize}
+\item On each pair $e^{-i\tau\kappa\sigma_x} = \cos(\kappa\tau) - i\sin(\kappa\tau)\sigma_x$. Summing
+  $|(Rx)_n|^2 + |(Rx)_{n'}|^2 = |x_n|^2 + |x_{n'}|^2$ over the pairs, reindexed by the involution
+  $n \leftrightarrow n'$, shows that these rotations are unitary on $\ell^2(\mathbb{N})$
+  (\lean{Pairing.rotU_mem_unitary}); the addition formulas give the group law
+  (\lean{Pairing.rotU_add}) and the composition law of $U$ (\lean{jacobiPropagator_mul}).
+\item $D$ is dense and invariant, and the orbit of $x \in D$ stays in a fixed
+  finite-dimensional span, so it is differentiable coordinatewise
+  (\lean{differentiable_jacobiEvolution}). On $D$ the forward Hamiltonian is $\hbar J$, where
+  $J = A + B$ is the Jacobi matrix with zero diagonal and off-diagonal entries $c_n = 2^n$
+  (\lean{forwardHamiltonian_jacobi}).
+\item $u = (1, 0, -\tfrac12, 0, \tfrac14, \dots)$ and $v = (0, 1, 0, -\tfrac12, 0, \tfrac14, \dots)$
+  are square summable, with $Ju = 0$ and $Jv = e_0$ row by row (\lean{jac_uSeq},
+  \lean{jac_vSeq}). Against finitely supported $x$ the sums are finite, and reindexing by the
+  involution needs no summability (\lean{Pairing.tsum_gen_mul_conj}), so $u$ and $v$ lie in the
+  domain of the adjoint of $H_0|_D$ (\lean{mem_adjoint_jacobi}).
+\item If $H_0|_D$ were essentially self-adjoint, its adjoint would be the closure, hence
+  symmetric; but $\langle (H_0|_D)^\dagger u, v\rangle - \langle u, (H_0|_D)^\dagger v\rangle =
+  -\hbar u_0 = -\hbar \ne 0$ (\lean{not_isEssentiallySelfAdjoint_jacobi}). Since the other
+  hypotheses hold, the bound $C\|\psi\|$ fails for every $C$ (\lean{not_boundedDifference_jacobi}).
+\end{itemize}
+This is the indeterminate case of a Jacobi matrix ($\sum 1/c_n < \infty$). The analogue for a
+Schr\"odinger operator, $G(t) = e^{it^2x^4}$ conjugating the free evolution with $D$ the Schwartz
+space and the generator at $t_0 > 0$ conjugate to $p^2 - 2t_0x^4$, is not formalized.
+
 Not formalized: a relative bound $C(\|B\psi\| + \|\psi\|)$ in place of $C\|\psi\|$, which
 time-dependent unbounded potentials need.
+
+\paragraph{Backward and two-sided derivatives.} The same statements hold for the left and for the
+two-sided derivative (file \texttt{TwoSidedHamiltonian.lean}). The backward Hamiltonian
+$H_-\psi = i\hbar\,\partial_-F(\tau)\psi$ and the two-sided Hamiltonian
+$H_\pm\psi = i\hbar\,\partial F(\tau)\psi$ at $\tau = 0$ are defined like $H_0$, on the vectors
+where the left derivative resp.\ the derivative exists (\lean{backwardHamiltonian},
+\lean{twoSidedHamiltonian}).
+\begin{itemize}
+\item Reflection: $H_-$ is the forward Hamiltonian of $\tau \mapsto F(-\tau)$ for $-\hbar$
+  (\lean{backwardHamiltonian_eq_forwardHamiltonian}), and
+  $e^{-i\tau H/(-\hbar)} = e^{-i(-\tau)H/\hbar}$ by uniqueness of the propagator
+  (\lean{schrodingerPropagator_neg}). So $H_-$ is symmetric
+  (\lean{backwardHamiltonian_isSymmetric}), and self-adjoint iff $F$ is tangent to a
+  one-parameter unitary group as $\tau \to 0^-$ (\lean{isSelfAdjoint_backwardHamiltonian_iff}).
+\item $H_\pm$ is the infimum $H_0 \wedge H_-$: its domain is the set of vectors on which both
+  one-sided derivatives exist and agree (\lean{twoSidedHamiltonian_eq_inf}). It is symmetric as a
+  restriction of $H_0$ (\lean{twoSidedHamiltonian_isSymmetric}). It is self-adjoint iff $F$ is
+  tangent to a one-parameter unitary group as $\tau \to 0$
+  (\lean{isSelfAdjoint_twoSidedHamiltonian_iff}); then $H_0 = H_- = H_\pm = H$
+  (\lean{twoSidedHamiltonian_eq_of_isLittleO}). In the switched example $H_0 = H_\alpha$ and
+  $H_- = H_\beta$ are self-adjoint, and $H_\pm$ is their common restriction to $H^1_0(0,1)$
+  (\lean{switchedDomain_eq}).
+\item The invariant-core hypotheses are symmetric in time, and $H_0|_D$ lies below $H_\pm$ and
+  $H_-$. A symmetric extension of an essentially self-adjoint operator is essentially
+  self-adjoint with the same closure (\lean{isEssentiallySelfAdjoint_of_le}), so all three are
+  essentially self-adjoint with the closure of $H_0|_D$
+  (\lean{isEssentiallySelfAdjoint_twoSidedHamiltonian}). If the generator differences tend to
+  $0$ as $t \to 0^-$, $H_-$ is self-adjoint (\lean{isSelfAdjoint_backwardHamiltonian}, by
+  reflection); if they tend to $0$ from both sides, $H_0 = H_- = H_\pm$ is self-adjoint
+  (\lean{isSelfAdjoint_twoSidedHamiltonian}).
+\end{itemize}
 
 \end{document}
